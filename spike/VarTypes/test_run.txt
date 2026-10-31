@@ -1,0 +1,399 @@
+Original values:
+  L:S_OH_PNEUMATIC_PACK_FLOW       1
+  L:S_FCU_EFIS1_ND_MODE            3
+  L:S_FCU_EFIS1_ND_ZOOM            1
+  L:S_OH_HYD_RAT_MAN_ON_Cover      0
+  L:S_OH_ELEC_IDG1_Cover           0
+  L:S_OH_HYD_RAT_MAN_ON            0
+  L:S_OH_ELEC_IDG1                 0
+  L:E_FCU_ALTITUDE                 0
+  L:E_FCU_HEADING                  0
+  L:E_FCU_SPEED                    -100
+  L:N_FCU_ALTITUDE                 100
+  L:N_FCU_HEADING                  0
+  L:N_FCU_SPEED                    100
+  L:A_OH_PNEUMATIC_COCKPIT_TEMP    0.5
+  L:A_DISPLAY_BRIGHTNESS_CO        0.5
+  L:S_ECAM_ENGINE                  0
+  L:S_ECAM_HYD                     0
+  L:I_ECAM_ENGINE                  0
+  L:I_ECAM_HYD                     0
+  L:S_MIP_MASTER_CAUTION_CAPT      24
+
+L:S_OH_PNEUMATIC_PACK_FLOW: 3 positions
+   1 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar    21,9  effect     n/a  gql sub    FAIL  http    62,0
+   1 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar    16,6  effect     n/a  gql sub    FAIL  http    84,1
+   1 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar    23,5  effect     n/a  gql sub    FAIL  http    54,4
+   2 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar     9,5  effect     n/a  gql sub    FAIL  http    87,4
+   2 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar    20,2  effect     n/a  gql sub    FAIL  http    64,5
+   2 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar     9,0  effect     n/a  gql sub    FAIL  http    83,3
+   3 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar     5,9  effect     n/a  gql sub    FAIL  http    37,7
+   3 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar    17,1  effect     n/a  gql sub    FAIL  http    66,4
+   3 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar     8,4  effect     n/a  gql sub    FAIL  http    86,9
+   4 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar     9,1  effect     n/a  gql sub    FAIL  http    55,8
+   4 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar     5,2  effect     n/a  gql sub    FAIL  http    83,9
+   4 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar     9,7  effect     n/a  gql sub    FAIL  http    68,7
+   5 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar    20,8  effect     n/a  gql sub    FAIL  http    84,1
+   5 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar    12,9  effect     n/a  gql sub    FAIL  http    62,1
+   5 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar    14,2  effect     n/a  gql sub    FAIL  http    40,0
+   6 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar    13,8  effect     n/a  gql sub    FAIL  http    70,7
+   6 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar     8,5  effect     n/a  gql sub    FAIL  http    63,6
+   6 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar    18,0  effect     n/a  gql sub    FAIL  http    69,4
+   7 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar    20,4  effect     n/a  gql sub    FAIL  http    90,8
+   7 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar     4,4  effect     n/a  gql sub    FAIL  http    61,5
+   7 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar    10,5  effect     n/a  gql sub    FAIL  http    90,0
+   8 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar     8,0  effect     n/a  gql sub    FAIL  http    60,9
+   8 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar     6,8  effect     n/a  gql sub    FAIL  http    38,1
+   8 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar     8,2  effect     n/a  gql sub    FAIL  http    65,5
+   9 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar    22,9  effect     n/a  gql sub    FAIL  http    81,0
+   9 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar    28,5  effect     n/a  gql sub    FAIL  http    65,1
+   9 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar    20,5  effect     n/a  gql sub    FAIL  http    84,9
+  10 L:S_OH_PNEUMATIC_PACK_FLOW     = 2      lvar    19,5  effect     n/a  gql sub    FAIL  http   109,0
+  10 L:S_OH_PNEUMATIC_PACK_FLOW     = 0      lvar    20,4  effect     n/a  gql sub    FAIL  http    78,6
+  10 L:S_OH_PNEUMATIC_PACK_FLOW     = 1      lvar    19,9  effect     n/a  gql sub    FAIL  http    97,5
+
+L:S_FCU_EFIS1_ND_MODE: 5 positions
+   1 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    19,4  effect     n/a  gql sub    FAIL  http    69,7
+   1 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    12,0  effect     n/a  gql sub    FAIL  http    83,5
+   1 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    21,3  effect     n/a  gql sub    FAIL  http    61,6
+   1 L:S_FCU_EFIS1_ND_MODE          = 2      lvar     6,9  effect     n/a  gql sub    FAIL  http    84,5
+   1 L:S_FCU_EFIS1_ND_MODE          = 3      lvar     4,1  effect     n/a  gql sub    FAIL  http    37,9
+   2 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    17,3  effect     n/a  gql sub    FAIL  http    68,3
+   2 L:S_FCU_EFIS1_ND_MODE          = 0      lvar     4,6  effect     n/a  gql sub    FAIL  http    84,0
+   2 L:S_FCU_EFIS1_ND_MODE          = 1      lvar     4,5  effect     n/a  gql sub    FAIL  http    56,8
+   2 L:S_FCU_EFIS1_ND_MODE          = 2      lvar    20,0  effect     n/a  gql sub    FAIL  http    95,1
+   2 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    19,3  effect     n/a  gql sub    FAIL  http    50,8
+   3 L:S_FCU_EFIS1_ND_MODE          = 4      lvar     8,4  effect     n/a  gql sub    FAIL  http    64,0
+   3 L:S_FCU_EFIS1_ND_MODE          = 0      lvar     3,1  effect     n/a  gql sub    FAIL  http    78,5
+   3 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    22,8  effect     n/a  gql sub    FAIL  http   110,0
+   3 L:S_FCU_EFIS1_ND_MODE          = 2      lvar     9,3  effect     n/a  gql sub    FAIL  http    71,1
+   3 L:S_FCU_EFIS1_ND_MODE          = 3      lvar     7,5  effect     n/a  gql sub    FAIL  http    90,8
+   4 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    22,3  effect     n/a  gql sub    FAIL  http    62,3
+   4 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    10,7  effect     n/a  gql sub    FAIL  http    82,7
+   4 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    13,6  effect     n/a  gql sub    FAIL  http    60,4
+   4 L:S_FCU_EFIS1_ND_MODE          = 2      lvar     9,2  effect     n/a  gql sub    FAIL  http    87,0
+   4 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    16,2  effect     n/a  gql sub    FAIL  http    59,6
+   5 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    16,5  effect     n/a  gql sub    FAIL  http    82,7
+   5 L:S_FCU_EFIS1_ND_MODE          = 0      lvar     6,6  effect     n/a  gql sub    FAIL  http    52,5
+   5 L:S_FCU_EFIS1_ND_MODE          = 1      lvar     6,7  effect     n/a  gql sub    FAIL  http    60,3
+   5 L:S_FCU_EFIS1_ND_MODE          = 2      lvar    24,4  effect     n/a  gql sub    FAIL  http    97,1
+   5 L:S_FCU_EFIS1_ND_MODE          = 3      lvar     7,3  effect     n/a  gql sub    FAIL  http    52,1
+   6 L:S_FCU_EFIS1_ND_MODE          = 4      lvar     4,5  effect     n/a  gql sub    FAIL  http    64,8
+   6 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    14,0  effect     n/a  gql sub    FAIL  http    92,0
+   6 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    19,7  effect     n/a  gql sub    FAIL  http    57,9
+   6 L:S_FCU_EFIS1_ND_MODE          = 2      lvar     9,9  effect     n/a  gql sub    FAIL  http    84,0
+   6 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    24,0  effect     n/a  gql sub    FAIL  http    98,7
+   7 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    16,9  effect     n/a  gql sub    FAIL  http    54,8
+   7 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    18,5  effect     n/a  gql sub    FAIL  http    81,1
+   7 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    14,3  effect     n/a  gql sub    FAIL  http    47,9
+   7 L:S_FCU_EFIS1_ND_MODE          = 2      lvar     8,3  effect     n/a  gql sub    FAIL  http    73,2
+   7 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    12,2  effect     n/a  gql sub    FAIL  http    91,8
+   8 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    14,0  effect     n/a  gql sub    FAIL  http    49,0
+   8 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    20,1  effect     n/a  gql sub    FAIL  http    78,3
+   8 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    20,0  effect     n/a  gql sub    FAIL  http   103,2
+   8 L:S_FCU_EFIS1_ND_MODE          = 2      lvar    14,0  effect     n/a  gql sub    FAIL  http    53,8
+   8 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    12,6  effect     n/a  gql sub    FAIL  http    92,4
+   9 L:S_FCU_EFIS1_ND_MODE          = 4      lvar     8,6  effect     n/a  gql sub    FAIL  http    69,1
+   9 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    22,5  effect     n/a  gql sub    FAIL  http   101,7
+   9 L:S_FCU_EFIS1_ND_MODE          = 1      lvar     7,9  effect     n/a  gql sub    FAIL  http    57,8
+   9 L:S_FCU_EFIS1_ND_MODE          = 2      lvar    24,9  effect     n/a  gql sub    FAIL  http    92,5
+   9 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    18,5  effect     n/a  gql sub    FAIL  http    50,4
+  10 L:S_FCU_EFIS1_ND_MODE          = 4      lvar    15,3  effect     n/a  gql sub    FAIL  http    92,8
+  10 L:S_FCU_EFIS1_ND_MODE          = 0      lvar    12,4  effect     n/a  gql sub    FAIL  http    43,6
+  10 L:S_FCU_EFIS1_ND_MODE          = 1      lvar    21,8  effect     n/a  gql sub    FAIL  http    57,9
+  10 L:S_FCU_EFIS1_ND_MODE          = 2      lvar    14,4  effect     n/a  gql sub    FAIL  http    81,4
+  10 L:S_FCU_EFIS1_ND_MODE          = 3      lvar    12,1  effect     n/a  gql sub    FAIL  http    44,3
+
+L:S_FCU_EFIS1_ND_ZOOM: 6 positions
+   1 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     8,8  effect     n/a  gql sub    FAIL  http    68,2
+   1 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    10,0  effect     n/a  gql sub    FAIL  http    91,1
+   1 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    14,6  effect     n/a  gql sub    FAIL  http    54,4
+   1 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    15,1  effect     n/a  gql sub    FAIL  http    81,8
+   1 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    24,7  effect     n/a  gql sub    FAIL  http    87,2
+   1 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    22,1  effect     n/a  gql sub    FAIL  http    51,3
+   2 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     6,2  effect     n/a  gql sub    FAIL  http    70,7
+   2 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar     6,8  effect     n/a  gql sub    FAIL  http    39,9
+   2 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    16,6  effect     n/a  gql sub    FAIL  http    66,9
+   2 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar     4,8  effect     n/a  gql sub    FAIL  http    39,4
+   2 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    11,3  effect     n/a  gql sub    FAIL  http    58,4
+   2 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    25,2  effect     n/a  gql sub    FAIL  http    97,9
+   3 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar    23,2  effect     n/a  gql sub    FAIL  http    67,8
+   3 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    11,3  effect     n/a  gql sub    FAIL  http    90,8
+   3 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar     7,2  effect     n/a  gql sub    FAIL  http    55,6
+   3 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    10,1  effect     n/a  gql sub    FAIL  http    68,5
+   3 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    16,2  effect     n/a  gql sub    FAIL  http    48,9
+   3 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    27,7  effect     n/a  gql sub    FAIL  http    77,8
+   4 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     3,3  effect     n/a  gql sub    FAIL  http    48,9
+   4 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    18,3  effect     n/a  gql sub    FAIL  http    80,0
+   4 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    10,8  effect     n/a  gql sub    FAIL  http    94,0
+   4 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar     8,0  effect     n/a  gql sub    FAIL  http    48,8
+   4 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar     4,0  effect     n/a  gql sub    FAIL  http    80,4
+   4 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar     5,4  effect     n/a  gql sub    FAIL  http    39,5
+   5 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar    20,9  effect     n/a  gql sub    FAIL  http    69,6
+   5 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    21,0  effect     n/a  gql sub    FAIL  http    92,7
+   5 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    14,6  effect     n/a  gql sub    FAIL  http    60,1
+   5 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    13,9  effect     n/a  gql sub    FAIL  http    82,7
+   5 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    21,5  effect     n/a  gql sub    FAIL  http   102,2
+   5 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar     7,6  effect     n/a  gql sub    FAIL  http    62,8
+   6 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     8,3  effect     n/a  gql sub    FAIL  http    38,4
+   6 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    12,5  effect     n/a  gql sub    FAIL  http    70,7
+   6 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    20,6  effect     n/a  gql sub    FAIL  http    51,1
+   6 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar     5,9  effect     n/a  gql sub    FAIL  http    68,6
+   6 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    19,1  effect     n/a  gql sub    FAIL  http    80,3
+   6 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    18,4  effect     n/a  gql sub    FAIL  http   102,0
+   7 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar    22,6  effect     n/a  gql sub    FAIL  http    66,6
+   7 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar     3,3  effect     n/a  gql sub    FAIL  http    40,7
+   7 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    15,1  effect     n/a  gql sub    FAIL  http    89,2
+   7 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    16,9  effect     n/a  gql sub    FAIL  http    55,4
+   7 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar     8,9  effect     n/a  gql sub    FAIL  http    87,3
+   7 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    18,2  effect     n/a  gql sub    FAIL  http   105,2
+   8 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     6,0  effect     n/a  gql sub    FAIL  http    65,9
+   8 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar     4,9  effect     n/a  gql sub    FAIL  http    40,6
+   8 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    21,1  effect     n/a  gql sub    FAIL  http    69,9
+   8 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    17,1  effect     n/a  gql sub    FAIL  http    87,7
+   8 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    15,0  effect     n/a  gql sub    FAIL  http    50,9
+   8 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    16,0  effect     n/a  gql sub    FAIL  http    70,3
+   9 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     3,5  effect     n/a  gql sub    FAIL  http    39,2
+   9 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    29,2  effect     n/a  gql sub    FAIL  http    77,2
+   9 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    20,7  effect     n/a  gql sub    FAIL  http    50,4
+   9 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    22,7  effect     n/a  gql sub    FAIL  http    80,2
+   9 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar    22,5  effect     n/a  gql sub    FAIL  http    97,8
+   9 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    19,8  effect     n/a  gql sub    FAIL  http    67,8
+  10 L:S_FCU_EFIS1_ND_ZOOM          = 2      lvar     5,9  effect     n/a  gql sub    FAIL  http    76,7
+  10 L:S_FCU_EFIS1_ND_ZOOM          = 3      lvar    48,8  effect     n/a  gql sub    FAIL  http   121,9
+  10 L:S_FCU_EFIS1_ND_ZOOM          = 4      lvar    13,9  effect     n/a  gql sub    FAIL  http    62,2
+  10 L:S_FCU_EFIS1_ND_ZOOM          = 5      lvar    11,8  effect     n/a  gql sub    FAIL  http    38,5
+  10 L:S_FCU_EFIS1_ND_ZOOM          = 0      lvar     5,5  effect     n/a  gql sub    FAIL  http    54,3
+  10 L:S_FCU_EFIS1_ND_ZOOM          = 1      lvar    13,2  effect     n/a  gql sub    FAIL  http    84,5
+
+L:S_OH_HYD_RAT_MAN_ON_Cover: open / close (guarded switch L:S_OH_HYD_RAT_MAN_ON must not change)
+   1 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    21,4  effect     n/a  gql sub     n/a  http     n/a
+   1 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    22,8  effect     n/a  gql sub     n/a  http     n/a
+   2 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar     7,8  effect     n/a  gql sub     n/a  http     n/a
+   2 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    19,8  effect     n/a  gql sub     n/a  http     n/a
+   3 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    20,6  effect     n/a  gql sub     n/a  http     n/a
+   3 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    24,6  effect     n/a  gql sub     n/a  http     n/a
+   4 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar     5,7  effect     n/a  gql sub     n/a  http     n/a
+   4 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    22,9  effect     n/a  gql sub     n/a  http     n/a
+   5 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    12,2  effect     n/a  gql sub     n/a  http     n/a
+   5 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar     8,7  effect     n/a  gql sub     n/a  http     n/a
+   6 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    22,0  effect     n/a  gql sub     n/a  http     n/a
+   6 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar     6,7  effect     n/a  gql sub     n/a  http     n/a
+   7 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    19,2  effect     n/a  gql sub     n/a  http     n/a
+   7 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    22,4  effect     n/a  gql sub     n/a  http     n/a
+   8 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    10,5  effect     n/a  gql sub     n/a  http     n/a
+   8 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar     5,7  effect     n/a  gql sub     n/a  http     n/a
+   9 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar    12,8  effect     n/a  gql sub     n/a  http     n/a
+   9 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    14,2  effect     n/a  gql sub     n/a  http     n/a
+  10 L:S_OH_HYD_RAT_MAN_ON_Cover    = 1      lvar     8,1  effect     n/a  gql sub     n/a  http     n/a
+  10 L:S_OH_HYD_RAT_MAN_ON_Cover    = 0      lvar    19,3  effect     n/a  gql sub     n/a  http     n/a
+
+L:S_OH_ELEC_IDG1_Cover: open / close (guarded switch L:S_OH_ELEC_IDG1 must not change)
+   1 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    22,0  effect     n/a  gql sub     n/a  http     n/a
+   1 L:S_OH_ELEC_IDG1_Cover         = 0      lvar     9,0  effect     n/a  gql sub     n/a  http     n/a
+   2 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    20,9  effect     n/a  gql sub     n/a  http     n/a
+   2 L:S_OH_ELEC_IDG1_Cover         = 0      lvar    21,2  effect     n/a  gql sub     n/a  http     n/a
+   3 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    18,7  effect     n/a  gql sub     n/a  http     n/a
+   3 L:S_OH_ELEC_IDG1_Cover         = 0      lvar    15,8  effect     n/a  gql sub     n/a  http     n/a
+   4 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    25,4  effect     n/a  gql sub     n/a  http     n/a
+   4 L:S_OH_ELEC_IDG1_Cover         = 0      lvar     6,9  effect     n/a  gql sub     n/a  http     n/a
+   5 L:S_OH_ELEC_IDG1_Cover         = 1      lvar     8,2  effect     n/a  gql sub     n/a  http     n/a
+   5 L:S_OH_ELEC_IDG1_Cover         = 0      lvar    11,8  effect     n/a  gql sub     n/a  http     n/a
+   6 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    22,8  effect     n/a  gql sub     n/a  http     n/a
+   6 L:S_OH_ELEC_IDG1_Cover         = 0      lvar     4,2  effect     n/a  gql sub     n/a  http     n/a
+   7 L:S_OH_ELEC_IDG1_Cover         = 1      lvar     7,3  effect     n/a  gql sub     n/a  http     n/a
+   7 L:S_OH_ELEC_IDG1_Cover         = 0      lvar    24,1  effect     n/a  gql sub     n/a  http     n/a
+   8 L:S_OH_ELEC_IDG1_Cover         = 1      lvar     3,9  effect     n/a  gql sub     n/a  http     n/a
+   8 L:S_OH_ELEC_IDG1_Cover         = 0      lvar    25,7  effect     n/a  gql sub     n/a  http     n/a
+   9 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    14,0  effect     n/a  gql sub     n/a  http     n/a
+   9 L:S_OH_ELEC_IDG1_Cover         = 0      lvar    20,8  effect     n/a  gql sub     n/a  http     n/a
+  10 L:S_OH_ELEC_IDG1_Cover         = 1      lvar    14,6  effect     n/a  gql sub     n/a  http     n/a
+  10 L:S_OH_ELEC_IDG1_Cover         = 0      lvar     8,5  effect     n/a  gql sub     n/a  http     n/a
+
+L:E_FCU_ALTITUDE: +1 / -1 detent, read back via L:N_FCU_ALTITUDE
+   1 L:E_FCU_ALTITUDE               = 1      lvar    15,5  effect   107,8  gql sub    FAIL  http    67,8
+   1 L:E_FCU_ALTITUDE               = 0      lvar    19,1  effect   119,2  gql sub    FAIL  http    79,7
+  one detent: 100 -> 1000 -> 100
+   2 L:E_FCU_ALTITUDE               = 1      lvar    21,0  effect   150,8  gql sub    FAIL  http   104,4
+   2 L:E_FCU_ALTITUDE               = 0      lvar    21,7  effect    97,5  gql sub    FAIL  http    54,5
+   3 L:E_FCU_ALTITUDE               = 1      lvar    19,7  effect   111,9  gql sub    FAIL  http    67,0
+   3 L:E_FCU_ALTITUDE               = 0      lvar    22,5  effect   123,3  gql sub    FAIL  http    89,9
+   4 L:E_FCU_ALTITUDE               = 1      lvar    22,9  effect    89,1  gql sub    FAIL  http    61,5
+   4 L:E_FCU_ALTITUDE               = 0      lvar     8,5  effect   127,1  gql sub    FAIL  http    83,6
+   5 L:E_FCU_ALTITUDE               = 1      lvar    22,5  effect    88,2  gql sub    FAIL  http    50,0
+   5 L:E_FCU_ALTITUDE               = 0      lvar     4,9  effect   121,3  gql sub    FAIL  http    79,6
+   6 L:E_FCU_ALTITUDE               = 1      lvar     6,2  effect    74,2  gql sub    FAIL  http    32,5
+   6 L:E_FCU_ALTITUDE               = 0      lvar     6,4  effect    98,6  gql sub    FAIL  http    59,7
+   7 L:E_FCU_ALTITUDE               = 1      lvar     5,4  effect   119,2  gql sub    FAIL  http    80,0
+   7 L:E_FCU_ALTITUDE               = 0      lvar     8,8  effect    97,3  gql sub    FAIL  http    56,6
+   8 L:E_FCU_ALTITUDE               = 1      lvar    15,4  effect   103,3  gql sub    FAIL  http    75,4
+   8 L:E_FCU_ALTITUDE               = 0      lvar    23,8  effect   135,6  gql sub    FAIL  http   107,0
+   9 L:E_FCU_ALTITUDE               = 1      lvar    22,4  effect    91,6  gql sub    FAIL  http    61,0
+   9 L:E_FCU_ALTITUDE               = 0      lvar    15,5  effect   128,1  gql sub    FAIL  http    90,0
+  10 L:E_FCU_ALTITUDE               = 1      lvar    19,6  effect    88,9  gql sub    FAIL  http    52,0
+  10 L:E_FCU_ALTITUDE               = 0      lvar    24,5  effect   115,4  gql sub    FAIL  http    90,7
+
+L:E_FCU_HEADING: +1 / -1 detent, read back via L:N_FCU_HEADING
+   1 L:E_FCU_HEADING                = 1      lvar     7,5  effect    98,2  gql sub    FAIL  http    70,2
+   1 L:E_FCU_HEADING                = 0      lvar     6,6  effect   119,1  gql sub    FAIL  http    89,5
+  one detent: 0 -> 1 -> 0
+   2 L:E_FCU_HEADING                = 1      lvar    24,6  effect    92,5  gql sub    FAIL  http    58,9
+   2 L:E_FCU_HEADING                = 0      lvar     9,5  effect   123,7  gql sub    FAIL  http    87,0
+   3 L:E_FCU_HEADING                = 1      lvar     6,4  effect    93,8  gql sub    FAIL  http    57,8
+   3 L:E_FCU_HEADING                = 0      lvar     7,2  effect   115,5  gql sub    FAIL  http    79,9
+   4 L:E_FCU_HEADING                = 1      lvar     3,8  effect    75,2  gql sub    FAIL  http    50,1
+   4 L:E_FCU_HEADING                = 0      lvar    20,8  effect   105,6  gql sub    FAIL  http    77,0
+   5 L:E_FCU_HEADING                = 1      lvar     6,8  effect    74,1  gql sub    FAIL  http    38,4
+   5 L:E_FCU_HEADING                = 0      lvar     8,3  effect    98,2  gql sub    FAIL  http    69,4
+   6 L:E_FCU_HEADING                = 1      lvar    37,6  effect   121,9  gql sub    FAIL  http    97,0
+   6 L:E_FCU_HEADING                = 0      lvar     6,8  effect    95,0  gql sub    FAIL  http    59,5
+   7 L:E_FCU_HEADING                = 1      lvar    21,5  effect   109,8  gql sub    FAIL  http    88,2
+   7 L:E_FCU_HEADING                = 0      lvar    12,4  effect    77,8  gql sub    FAIL  http    55,1
+   8 L:E_FCU_HEADING                = 1      lvar    13,4  effect   101,6  gql sub    FAIL  http    80,6
+   8 L:E_FCU_HEADING                = 0      lvar     5,8  effect    73,2  gql sub    FAIL  http    36,4
+   9 L:E_FCU_HEADING                = 1      lvar    19,0  effect   104,9  gql sub    FAIL  http    69,7
+   9 L:E_FCU_HEADING                = 0      lvar    23,7  effect   133,6  gql sub    FAIL  http    97,2
+  10 L:E_FCU_HEADING                = 1      lvar    13,3  effect   103,9  gql sub    FAIL  http    69,6
+  10 L:E_FCU_HEADING                = 0      lvar    14,8  effect   131,1  gql sub    FAIL  http    90,2
+
+L:E_FCU_SPEED: +1 / -1 detent, read back via L:N_FCU_SPEED
+   1 L:E_FCU_SPEED                  = -99    lvar     4,7  effect    93,4  gql sub    FAIL  http    66,1
+   1 L:E_FCU_SPEED                  = -100   lvar    13,9  effect   128,0  gql sub    FAIL  http    90,9
+  one detent: 100 -> 101 -> 100
+   2 L:E_FCU_SPEED                  = -99    lvar     3,5  effect    94,2  gql sub    FAIL  http    60,1
+   2 L:E_FCU_SPEED                  = -100   lvar    18,6  effect   131,7  gql sub    FAIL  http    90,0
+   3 L:E_FCU_SPEED                  = -99    lvar    16,6  effect    91,5  gql sub    FAIL  http    70,8
+   3 L:E_FCU_SPEED                  = -100   lvar    11,1  effect   134,9  gql sub    FAIL  http    80,0
+   4 L:E_FCU_SPEED                  = -99    lvar    22,2  effect   148,7  gql sub    FAIL  http    97,8
+   4 L:E_FCU_SPEED                  = -100   lvar    17,1  effect   132,9  gql sub    FAIL  http    70,7
+   5 L:E_FCU_SPEED                  = -99    lvar    25,0  effect   117,9  gql sub    FAIL  http    82,8
+   5 L:E_FCU_SPEED                  = -100   lvar    17,2  effect    93,7  gql sub    FAIL  http    61,9
+   6 L:E_FCU_SPEED                  = -99    lvar    25,6  effect   128,9  gql sub    FAIL  http    82,9
+   6 L:E_FCU_SPEED                  = -100   lvar    14,0  effect    90,2  gql sub    FAIL  http    49,1
+   7 L:E_FCU_SPEED                  = -99    lvar    36,4  effect   130,6  gql sub    FAIL  http    85,2
+   7 L:E_FCU_SPEED                  = -100   lvar    14,6  effect    96,5  gql sub    FAIL  http    50,2
+   8 L:E_FCU_SPEED                  = -99    lvar    21,0  effect   115,6  gql sub    FAIL  http    74,6
+   8 L:E_FCU_SPEED                  = -100   lvar    21,3  effect   141,8  gql sub    FAIL  http    98,0
+   9 L:E_FCU_SPEED                  = -99    lvar     6,9  effect   105,9  gql sub    FAIL  http    69,0
+   9 L:E_FCU_SPEED                  = -100   lvar    19,0  effect   147,7  gql sub    FAIL  http    93,4
+  10 L:E_FCU_SPEED                  = -99    lvar     5,0  effect    75,9  gql sub    FAIL  http    54,0
+  10 L:E_FCU_SPEED                  = -100   lvar    13,8  effect   111,8  gql sub    FAIL  http    76,2
+
+L:A_OH_PNEUMATIC_COCKPIT_TEMP: values 0..1, GraphQL shows value x 1024
+   1 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0      lvar    21,9  effect     n/a  gql sub    FAIL  http    98,0
+   2 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.25   lvar    28,7  effect     n/a  gql sub    FAIL  http    71,1
+   3 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.5    lvar    16,6  effect     n/a  gql sub    FAIL  http    99,8
+   4 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.75   lvar    14,1  effect     n/a  gql sub    FAIL  http    50,8
+   5 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 1      lvar     6,3  effect     n/a  gql sub    FAIL  http    81,0
+   6 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.1    lvar    23,7  effect     n/a  gql sub    FAIL  http   113,8
+   7 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.9    lvar    27,6  effect     n/a  gql sub    FAIL  http    53,5
+   8 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.33   lvar    25,5  effect     n/a  gql sub    FAIL  http    66,0
+   9 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.66   lvar    21,9  effect     n/a  gql sub    FAIL  http    46,8
+  10 L:A_OH_PNEUMATIC_COCKPIT_TEMP  = 0.05   lvar    17,6  effect     n/a  gql sub    FAIL  http    80,1
+
+L:A_DISPLAY_BRIGHTNESS_CO: values 0..1, GraphQL shows value x 1024
+   1 L:A_DISPLAY_BRIGHTNESS_CO      = 0      lvar    12,6  effect     n/a  gql sub    FAIL  http    52,9
+   2 L:A_DISPLAY_BRIGHTNESS_CO      = 0.25   lvar     7,8  effect     n/a  gql sub    FAIL  http    65,2
+   3 L:A_DISPLAY_BRIGHTNESS_CO      = 0.5    lvar    12,2  effect     n/a  gql sub    FAIL  http    87,4
+   4 L:A_DISPLAY_BRIGHTNESS_CO      = 0.75   lvar    20,3  effect     n/a  gql sub    FAIL  http    53,0
+   5 L:A_DISPLAY_BRIGHTNESS_CO      = 1      lvar    21,1  effect     n/a  gql sub    FAIL  http    66,9
+   6 L:A_DISPLAY_BRIGHTNESS_CO      = 0.1    lvar    25,7  effect     n/a  gql sub    FAIL  http    83,8
+   7 L:A_DISPLAY_BRIGHTNESS_CO      = 0.9    lvar    21,7  effect     n/a  gql sub    FAIL  http   107,0
+   8 L:A_DISPLAY_BRIGHTNESS_CO      = 0.33   lvar    13,7  effect     n/a  gql sub    FAIL  http    70,3
+   9 L:A_DISPLAY_BRIGHTNESS_CO      = 0.66   lvar    13,4  effect     n/a  gql sub    FAIL  http    94,8
+  10 L:A_DISPLAY_BRIGHTNESS_CO      = 0.05   lvar     8,4  effect     n/a  gql sub    FAIL  http    60,9
+
+L:S_ECAM_ENGINE: press (1, 0 after 150 ms) toggles L:I_ECAM_ENGINE
+   1 L:S_ECAM_ENGINE                = 1      lvar    21,9  effect   114,3  gql sub    FAIL  http    75,8
+   1 L:S_ECAM_ENGINE                = 1      lvar    14,5  effect    81,3  gql sub    FAIL  http    39,5
+   2 L:S_ECAM_ENGINE                = 1      lvar    25,7  effect   100,5  gql sub    FAIL  http    66,2
+   2 L:S_ECAM_ENGINE                = 1      lvar     4,6  effect    82,1  gql sub    FAIL  http    39,2
+   3 L:S_ECAM_ENGINE                = 1      lvar    27,9  effect   122,4  gql sub    FAIL  http    80,8
+   3 L:S_ECAM_ENGINE                = 1      lvar    18,2  effect   137,8  gql sub    FAIL  http    94,3
+   4 L:S_ECAM_ENGINE                = 1      lvar    16,3  effect    87,1  gql sub    FAIL  http    50,2
+   4 L:S_ECAM_ENGINE                = 1      lvar    17,6  effect   116,9  gql sub    FAIL  http    76,3
+   5 L:S_ECAM_ENGINE                = 1      lvar    20,3  effect    90,4  gql sub    FAIL  http    66,7
+   5 L:S_ECAM_ENGINE                = 1      lvar     8,8  effect   124,7  gql sub    FAIL  http    88,9
+   6 L:S_ECAM_ENGINE                = 1      lvar    27,0  effect   159,4  gql sub    FAIL  http   109,7
+   6 L:S_ECAM_ENGINE                = 1      lvar    23,9  effect   120,1  gql sub    FAIL  http    76,6
+   7 L:S_ECAM_ENGINE                = 1      lvar    10,8  effect   139,7  gql sub    FAIL  http    97,3
+   7 L:S_ECAM_ENGINE                = 1      lvar    21,5  effect   116,7  gql sub    FAIL  http    53,4
+   8 L:S_ECAM_ENGINE                = 1      lvar    12,8  effect   122,8  gql sub    FAIL  http    77,5
+   8 L:S_ECAM_ENGINE                = 1      lvar    20,0  effect   101,2  gql sub    FAIL  http    47,6
+   9 L:S_ECAM_ENGINE                = 1      lvar    21,7  effect   103,1  gql sub    FAIL  http    72,9
+   9 L:S_ECAM_ENGINE                = 1      lvar    10,7  effect   138,2  gql sub    FAIL  http    93,3
+  10 L:S_ECAM_ENGINE                = 1      lvar     5,2  effect    94,9  gql sub    FAIL  http    52,0
+  10 L:S_ECAM_ENGINE                = 1      lvar     8,2  effect   113,7  gql sub    FAIL  http    80,7
+
+L:S_ECAM_HYD: press (1, 0 after 150 ms) toggles L:I_ECAM_HYD
+   1 L:S_ECAM_HYD                   = 1      lvar    19,2  effect   100,4  gql sub    FAIL  http    50,3
+   1 L:S_ECAM_HYD                   = 1      lvar     7,5  effect   137,7  gql sub    FAIL  http    81,3
+   2 L:S_ECAM_HYD                   = 1      lvar    12,8  effect    94,3  gql sub    FAIL  http    58,7
+   2 L:S_ECAM_HYD                   = 1      lvar     7,8  effect   133,3  gql sub    FAIL  http    88,7
+   3 L:S_ECAM_HYD                   = 1      lvar    12,4  effect   108,5  gql sub    FAIL  http    69,7
+   3 L:S_ECAM_HYD                   = 1      lvar    16,5  effect   125,1  gql sub    FAIL  http    91,5
+   4 L:S_ECAM_HYD                   = 1      lvar    17,6  effect   169,0  gql sub    FAIL  http   105,4
+   4 L:S_ECAM_HYD                   = 1      lvar    13,1  effect   114,9  gql sub    FAIL  http    72,2
+   5 L:S_ECAM_HYD                   = 1      lvar    22,6  effect   150,0  gql sub    FAIL  http    96,6
+   5 L:S_ECAM_HYD                   = 1      lvar    18,5  effect   122,0  gql sub    FAIL  http    75,6
+   6 L:S_ECAM_HYD                   = 1      lvar    19,0  effect    89,0  gql sub    FAIL  http    46,7
+   6 L:S_ECAM_HYD                   = 1      lvar     8,2  effect   104,2  gql sub    FAIL  http    69,0
+   7 L:S_ECAM_HYD                   = 1      lvar    19,5  effect   127,1  gql sub    FAIL  http    91,0
+   7 L:S_ECAM_HYD                   = 1      lvar     8,9  effect   105,8  gql sub    FAIL  http    58,6
+   8 L:S_ECAM_HYD                   = 1      lvar    17,6  effect   139,1  gql sub    FAIL  http    91,9
+   8 L:S_ECAM_HYD                   = 1      lvar    20,5  effect    91,2  gql sub    FAIL  http    60,0
+   9 L:S_ECAM_HYD                   = 1      lvar    22,3  effect   131,6  gql sub    FAIL  http    88,7
+   9 L:S_ECAM_HYD                   = 1      lvar     4,6  effect    96,7  gql sub    FAIL  http    56,4
+  10 L:S_ECAM_HYD                   = 1      lvar    22,9  effect   111,0  gql sub    FAIL  http    77,9
+  10 L:S_ECAM_HYD                   = 1      lvar     4,4  effect    71,2  gql sub    FAIL  http    36,7
+
+L:S_MIP_MASTER_CAUTION_CAPT: press counter, odd = held; +1 (hold 700 ms) then +1
+   1 L:S_MIP_MASTER_CAUTION_CAPT    = 25     lvar     4,3  effect     n/a  gql sub    FAIL  http    FAIL  FAIL
+   2 L:S_MIP_MASTER_CAUTION_CAPT    = 27     lvar     8,2  effect     n/a  gql sub    FAIL  http    63,9
+   3 L:S_MIP_MASTER_CAUTION_CAPT    = 29     lvar    12,3  effect     n/a  gql sub    FAIL  http    41,0
+   4 L:S_MIP_MASTER_CAUTION_CAPT    = 31     lvar    20,8  effect     n/a  gql sub    FAIL  http    69,4
+   5 L:S_MIP_MASTER_CAUTION_CAPT    = 33     lvar    20,8  effect     n/a  gql sub    FAIL  http    98,2
+   6 L:S_MIP_MASTER_CAUTION_CAPT    = 35     lvar    12,1  effect     n/a  gql sub    FAIL  http    59,9
+   7 L:S_MIP_MASTER_CAUTION_CAPT    = 37     lvar     8,1  effect     n/a  gql sub    FAIL  http    90,8
+   8 L:S_MIP_MASTER_CAUTION_CAPT    = 39     lvar     6,4  effect     n/a  gql sub    FAIL  http    59,6
+   9 L:S_MIP_MASTER_CAUTION_CAPT    = 41     lvar    21,6  effect     n/a  gql sub    FAIL  http    80,4
+  10 L:S_MIP_MASTER_CAUTION_CAPT    = 43     lvar     5,9  effect     n/a  gql sub    FAIL  http    46,0
+
+Restoring:
+  L:S_OH_PNEUMATIC_PACK_FLOW              1 -> 1        ok
+  L:S_FCU_EFIS1_ND_MODE                   3 -> 3        ok
+  L:S_FCU_EFIS1_ND_ZOOM                   1 -> 1        ok
+  L:S_OH_HYD_RAT_MAN_ON_Cover             0 -> 0        ok
+  L:S_OH_ELEC_IDG1_Cover                  0 -> 0        ok
+  L:S_OH_HYD_RAT_MAN_ON                   0 -> 0        ok
+  L:S_OH_ELEC_IDG1                        0 -> 0        ok
+  L:E_FCU_ALTITUDE                        0 -> 0        ok
+  L:E_FCU_HEADING                         0 -> 0        ok
+  L:E_FCU_SPEED                        -100 -> -100     ok
+  L:N_FCU_ALTITUDE                      100 -> 100      ok
+  L:N_FCU_HEADING                         0 -> 0        ok
+  L:N_FCU_SPEED                         100 -> 100      ok
+  L:A_OH_PNEUMATIC_COCKPIT_TEMP         0.5 -> 0.5      ok
+  L:A_DISPLAY_BRIGHTNESS_CO             0.5 -> 0.5      ok
+  L:S_ECAM_ENGINE                         0 -> 0        ok
+  L:S_ECAM_HYD                            0 -> 0        ok
+  L:I_ECAM_ENGINE                         0 -> 0        ok
+  L:I_ECAM_HYD                            0 -> 0        ok
+  L:S_MIP_MASTER_CAUTION_CAPT            24 -> 24       ok
+
+var                            type        n | lvar min/med/p95/max        | effect med | gql sub med | gql http med | fail
+L:S_OH_PNEUMATIC_PACK_FLOW     rotary     30 |   4.4   14.0   23.5   28.5 |          - |           - | 69.1 (30/30) | 0
+L:S_FCU_EFIS1_ND_MODE          rotary     50 |   3.1   14.0   24.0   24.9 |          - |           - | 70.4 (50/50) | 0
+L:S_FCU_EFIS1_ND_ZOOM          rotary     60 |   3.3   14.6   25.2   48.8 |          - |           - | 68.6 (60/60) | 0
+L:S_OH_HYD_RAT_MAN_ON_Cover    cover      20 |   5.7   16.7   22.9   24.6 |          - |           - |            - | 0
+L:S_OH_ELEC_IDG1_Cover         cover      20 |   3.9   15.2   25.4   25.7 |          - |           - |            - | 0
+L:E_FCU_ALTITUDE               encoder    20 |   4.9   19.3   23.8   24.5 | 109.8 (20/20) |           - | 71.6 (20/20) | 0
+L:E_FCU_HEADING                encoder    20 |   3.8   10.9   24.6   37.6 | 102.8 (20/20) |           - | 69.9 (20/20) | 0
+L:E_FCU_SPEED                  encoder    20 |   3.5   16.8   25.6   36.4 | 116.7 (20/20) |           - | 75.4 (20/20) | 0
+L:A_OH_PNEUMATIC_COCKPIT_TEMP  analog     10 |   6.3   21.9   28.7   28.7 |          - |           - | 75.6 (10/10) | 0
+L:A_DISPLAY_BRIGHTNESS_CO      analog     10 |   7.8   13.5   25.7   25.7 |          - |           - | 68.6 (10/10) | 0
+L:S_ECAM_ENGINE                momentary  20 |   4.6   17.9   27.0   27.9 | 115.5 (20/20) |           - | 76.1 (20/20) | 0
+L:S_ECAM_HYD                   momentary  20 |   4.4   17.0   22.6   22.9 | 112.9 (20/20) |           - | 73.9 (20/20) | 0
+L:S_MIP_MASTER_CAUTION_CAPT    momentary  10 |   4.3   10.2   21.6   21.6 |          - |           - |  63.9 (9/10) | 1
+
+Samples written to C:\Users\t1mbe\Documents\crosscheck\spike\VarTypes\results.csv

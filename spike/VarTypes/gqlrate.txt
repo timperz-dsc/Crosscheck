@@ -1,0 +1,24 @@
+One subscription, 22 datarefs, 15,0 s, 25 distinct message timestamps
+Gap between messages: min 0.0 / median 0.0 / max 434.3 ms
+  aircraft.mcdu1.display                            1 updates     0,1/s   last "\u003Croot\u003E\r\n  \u003Ctitle\u003E…
+  aircraft.mcdu2.display                            1 updates     0,1/s   last "\u003Croot\u003E\r\n  \u003Ctitle\u003E…
+  aircraft.fuel.left.amount.kg                      1 updates     0,1/s   last 1499.999999999795
+  aircraft.fuel.right.amount.kg                     1 updates     0,1/s   last 1499.999999999795
+  aircraft.fuel.center.amount.kg                    1 updates     0,1/s   last 0
+  aircraft.fuel.total.amount.kg                     1 updates     0,1/s   last 2999.99999999959
+  aircraft.hydraulics.green.pressure                1 updates     0,1/s   last 2.654169467324209
+  aircraft.hydraulics.blue.pressure                 1 updates     0,1/s   last 2.654169467324209
+  aircraft.hydraulics.yellow.pressure               1 updates     0,1/s   last 2.654169467324209
+  aircraft.electrical.battery1.voltage              1 updates     0,1/s   last 26.895609523755674
+  aircraft.cabin.pressure                           1 updates     0,1/s   last 14.571062047368702
+  aircraft.cabin.fwd.temp.air                       2 updates     0,1/s   last 6.074446721230004
+  aircraft.heading.magnetic                         2 updates     0,1/s   last 190.7916682574863
+  aircraft.altitude                                 2 updates     0,1/s   last 685.1291077123977
+  aircraft.cg                                       1 updates     0,1/s   last 25.858286023139954
+  aircraft.weight.zfw                               1 updates     0,1/s   last 43829.73377297716
+  system.numerical.N_FCU_ALTITUDE                   1 updates     0,1/s   last 100
+  system.numerical.N_FCU_HEADING                    1 updates     0,1/s   last 0
+  system.numerical.N_FCU_SPEED                      1 updates     0,1/s   last 100
+  system.switches.S_OH_ELEC_BAT1                    1 updates     0,1/s   last 1
+  system.indicators.I_MIP_GEAR_1_L                  1 updates     0,1/s   last 1
+  system.analog.A_OH_PNEUMATIC_COCKPIT_TEMP         1 updates     0,1/s   last 512
