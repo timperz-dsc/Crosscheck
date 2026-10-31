@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <MsfsSdkDir>$([MSBuild]::EnsureTrailingSlash('$(MSFS2024_SDK)'))</MsfsSdkDir>
+    <SimConnectLibDir>$(MsfsSdkDir)SimConnect SDK\lib\</SimConnectLibDir>
+    <RootNamespace>LvarScanner</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.FlightSimulator.SimConnect">
+      <HintPath>$(SimConnectLibDir)managed\Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+    </Reference>
+    <None Include="$(SimConnectLibDir)SimConnect.dll" Link="SimConnect.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <Target Name="CheckMsfsSdk" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(MSFS2024_SDK)' == ''" Text="MSFS2024_SDK environment variable is not set." />
+    <Error Condition="!Exists('$(SimConnectLibDir)SimConnect.dll')" Text="SimConnect.dll not found under $(SimConnectLibDir)" />
+  </Target>
+
+</Project>
