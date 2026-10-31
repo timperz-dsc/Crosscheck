@@ -240,7 +240,7 @@ void Report()
     Console.WriteLine();
     Console.WriteLine(double.IsNaN(median)
         ? "GATE: FAIL (no successful read-backs)"
-        : $"GATE: {(median < GateMs ? "PASS" : "FAIL")} (overall median {median:F1} ms, gate < {GateMs} ms)");
+        : $"GATE: {(median < GateMs ? "PASS" : "FAIL")} (overall median {F(median)} ms, gate < {GateMs} ms)");
 }
 
 static Def WriteDef(int i) => (Def)(i + 1);
