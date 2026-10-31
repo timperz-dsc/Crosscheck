@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=../schema/profile.schema.json
+# Fenix A320 profile, format 1. Starter set only: entries taken from what our own
+# spikes proved (spike/VarTypes). CRO-8 fills in the rest from the scan.
+format: 1
+
+aircraft:
+  id: fenix-a320
+  name: Fenix A320
+  match:
+    # TODO(CRO-8): add `titles:` once the title the sim reports for the Fenix is recorded.
+    packages: [fnx-aircraft-320]
+  builds: ["3.0.0.7613"]
+
+groups:
+  [overhead, fcu, efis, mip, pedestal, cdu1, cdu2, ecam, cb, flightcontrols, cabin, systems]
+
+# Vars that do not belong to the aircraft at all (GSX, Chaseplane, other aircraft,
+# HUES mods, docking guidance). Aircraft-related leftovers (A320_*, ...) are not
+# excluded: CRO-8 classifies them, mostly as `ignore`.
+exclude:
+  - "FSDT_*"
+  - "p42_*"
+  - "A310_*"
+  - "H145_*"
+  - "HUES_*"
+  - "hues_*"
+  - "SAFEGATE_*"
+  - "safegate_*"
+  - "rlg_*"
+  - "agnis_*"
+  - "APIS_*"
+
+vars:
+  # verified: absolute value, read back from the own L: var, effect from another source.
+  - name: S_OH_ELEC_APU_MASTER
+    class: verified
+    group: overhead
+    values: [0, 1]
+    verify: { lvar: I_OH_ELEC_APU_MASTER_L, settle_ms: 150 }
+    note: Effect lamp is not proven yet, confirm in CRO-8.
+
+  # 5-position rotary. GraphQL mirrors it with the same numbers (GRAPHQL.md).
+  - name: S_FCU_EFIS1_ND_MODE
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4]
+    verify: { graphql: system.switches.S_FCU_EFIS1_ND_MODE, settle_ms: 100 }
+
+  # delta: write the change only, never the absolute value. N_FCU_ALTITUDE shows the result.
+  - name: E_FCU_ALTITUDE
+    class: delta
+    group: fcu
+    display: N_FCU_ALTITUDE
+
+  # pulse: 1, then 0 after pulse_ms. Key to screen takes ~450 ms inside Fenix.
+  - name: S_CDU1_KEY_FPLN
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
+    verify: { mcdu: 1, settle_ms: 600 }
+
+  # analog: 0.0 to 1.0 in the L: var; GraphQL shows value x 1024.
+  - name: A_OH_PNEUMATIC_COCKPIT_TEMP
+    class: analog
+    group: overhead
+    range: [0, 1]
+    verify: { graphql: system.analog.A_OH_PNEUMATIC_COCKPIT_TEMP, scale: 1024, settle_ms: 100 }
+
+  # observe: never written, compared between the sims as a desync alarm.
+  - name: I_MIP_GEAR_1_L
+    class: observe
+    group: mip
+
+  - name: N_FCU_ALTITUDE
+    class: observe
+    group: fcu
+
+  - name: I_OH_ELEC_APU_MASTER_L
+    class: observe
+    group: overhead
+
+datarefs:
+  # Name confirmed in spike/VarTypes/GRAPHQL.md ("fuel per tank").
+  - path: aircraft.fuel.left.amount.kg
+    class: owned
+    group: systems
+    poll_hz: 1

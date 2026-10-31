@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/profile.schema.json",
+  "title": "Crosscheck aircraft profile",
+  "description": "One file per aircraft. Structure, types and allowed keys are checked here. Class rules (pulse needs pulse_ms, delta needs display, ...) and cross references are checked by the Crosscheck.Profiles validator, see profiles/SCHEMA.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "aircraft", "groups", "vars"],
+  "properties": {
+    "format": {
+      "description": "Profile format version. The bridge refuses versions it does not know.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "aircraft": { "$ref": "#/$defs/aircraft" },
+    "groups": {
+      "description": "Panel groups. Used for snapshot hashing and control ownership.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "exclude": {
+      "description": "Glob patterns (* and ?) for scanned vars that do not belong to the aircraft at all.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "vars": {
+      "description": "L: variables.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/var" }
+    },
+    "datarefs": {
+      "description": "Fenix GraphQL datarefs. Fenix cannot list them, so each one is written down by hand.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/dataref" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "syncClass": {
+      "enum": ["verified", "delta", "pulse", "analog", "stream", "owned", "observe", "ignore"]
+    },
+    "aircraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "match", "builds"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "match": {
+          "description": "How the bridge recognises the loaded aircraft. At least one of titles / packages.",
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "titles": {
+              "description": "Globs against the aircraft title the sim reports.",
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "packages": {
+              "description": "Package names, for example fnx-aircraft-320.",
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "builds": {
+          "description": "Aircraft builds this profile was made and tested for.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "numberRange": {
+      "description": "[min, max]",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    "verify": {
+      "description": "Where the effect of a write is checked. Exactly one of lvar / mcdu / graphql.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["settle_ms"],
+      "properties": {
+        "lvar": {
+          "description": "Another var in this profile that shows the effect.",
+          "type": "string",
+          "minLength": 1
+        },
+        "mcdu": {
+          "description": "1 or 2. The screen hash of this CDU must be equal on both sims after settle_ms.",
+          "enum": [1, 2]
+        },
+        "graphql": {
+          "description": "A dataref path. Polled over HTTP and compared between the sims.",
+          "type": "string",
+          "minLength": 1
+        },
+        "settle_ms": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "expect": {
+          "description": "same: value equals the other sim's value after settle (default). parity: only odd/even is compared (press counters).",
+          "enum": ["same", "parity"]
+        },
+        "scale": {
+          "description": "Factor between the written value and what this source shows, for example 1024 for analog knobs in GraphQL.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "contains": {
+          "description": "mcdu only, for local tests only: the screen must contain this text. Never used in a session.",
+          "type": "string"
+        }
+      }
+    },
+    "var": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "class", "group"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "class": { "$ref": "#/$defs/syncClass" },
+        "group": { "$ref": "#/$defs/identifier" },
+        "values": {
+          "description": "Allowed discrete values (verified).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "number" }
+        },
+        "range": {
+          "description": "Allowed [min, max] (verified, analog). Hard write limit.",
+          "$ref": "#/$defs/numberRange"
+        },
+        "verify": { "$ref": "#/$defs/verify" },
+        "pulse_ms": {
+          "description": "pulse: time between writing 1 and writing 0.",
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 2000
+        },
+        "press": {
+          "description": "pulse: edge (default) = 1 then 0. counter = Fenix counts press and release, odd = pressed.",
+          "enum": ["edge", "counter"]
+        },
+        "display": {
+          "description": "delta: the var that shows the value the encoder changes.",
+          "type": "string",
+          "minLength": 1
+        },
+        "rate_hz": {
+          "description": "stream: send rate from the PF.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 60
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "dataref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "class", "group"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "class": { "enum": ["owned", "observe", "ignore"] },
+        "group": { "$ref": "#/$defs/identifier" },
+        "poll_hz": { "type": "number", "exclusiveMinimum": 0, "maximum": 20 },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}
