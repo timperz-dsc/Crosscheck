@@ -22,3 +22,6 @@ spike/**/*.csv
 # lvar-scanner build output
 tools/lvar-scanner/module/build/
 tools/lvar-scanner/package/
+
+# Local Claude Code context
+CLAUDE.md
