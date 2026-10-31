@@ -1,0 +1,13 @@
+{
+  "name": "crosscheck-brand",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "geist": "^1.9.0",
+    "opentype.js": "^2.0.0"
+  }
+}
