@@ -66,6 +66,8 @@ public sealed class LocalApi : IAsyncDisposable
             await Stream(ws, hub, ctx.RequestAborted);
         });
 
+        app.MapPost("/api/settings/server", async (HttpRequest req) =>
+            await Body(req) is { } b && b["url"]?.GetValue<string>() is { } url ? Answer(bridge.SetServer(url)) : BadRequest("url missing"));
         app.MapPost("/api/session/create", async () => Answer(await bridge.CreateAsync()));
         app.MapPost("/api/session/check", async (HttpRequest req) =>
             await Body(req) is { } b && b["code"]?.GetValue<string>() is { } code ? Answer(await bridge.CheckAsync(code)) : BadRequest("code missing"));

@@ -1,0 +1,9 @@
+**/node_modules
+**/.git
+bridge
+ui
+spike
+tools
+profiles
+docs
+server/logs

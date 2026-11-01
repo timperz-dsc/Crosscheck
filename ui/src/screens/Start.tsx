@@ -19,8 +19,48 @@ export function ThisComputer({ status }: { status: Status }) {
         <dd>{profileText(status)}</dd>
         <dt className="muted">Server</dt>
         <dd className="mono">{pc.server}</dd>
+        {status.log && (
+          <>
+            <dt className="muted">Log folder</dt>
+            <dd className="mono">{status.log.folder}</dd>
+          </>
+        )}
       </dl>
     </section>
+  );
+}
+
+/** The session server address; saved on this computer. Only changeable between sessions (the Start screen). */
+export function ServerSetting({ status, actions, busy }: { status: Status; actions: Actions; busy: boolean }) {
+  const current = status.this_computer.server;
+  const [value, setValue] = useState<string | null>(null);
+  const text = value ?? current;
+  const changed = text.trim() !== current;
+
+  const save = (e: FormEvent) => {
+    e.preventDefault();
+    if (!changed) return;
+    void actions.setServer(text).then(() => setValue(null));
+  };
+
+  return (
+    <form className="stack" onSubmit={save}>
+      <label htmlFor="server" className="muted">Session server</label>
+      <div className="row">
+        <input
+          id="server"
+          className="mono"
+          type="text"
+          placeholder="wss://your-server.up.railway.app/ws"
+          autoComplete="off"
+          spellCheck={false}
+          value={text}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <Button type="submit" variant="secondary" disabled={busy || !changed}>Save</Button>
+      </div>
+      <p className="muted">Both pilots must use the same server. Saved on this computer.</p>
+    </form>
   );
 }
 
@@ -73,6 +113,7 @@ export function Start({ status, actions, busy, error }: { status: Status; action
           {blocked && <p className="warning">Start the simulator to create or join a session.</p>}
           {!blocked && problem && <p className="warning">{problem}</p>}
         </div>
+        <ServerSetting status={status} actions={actions} busy={busy} />
         <ThisComputer status={status} />
       </main>
     </>

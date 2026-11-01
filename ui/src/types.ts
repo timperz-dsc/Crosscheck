@@ -80,6 +80,8 @@ export interface Status {
   phase: Phase;
   bridge_version: string;
   last_error: string | null;
+  /** This bridge's own log file, for sending to the developer after a test. */
+  log: { folder: string; file: string } | null;
   this_computer: ThisComputer;
   start_blocked: 'sim_not_connected' | null;
   preflight: Preflight | null;
@@ -125,4 +127,5 @@ export interface Actions {
   takeControl(confirmPeerLost?: boolean): Promise<void>;
   giveControl(): Promise<void>;
   setBoth(variable: string, value: number): Promise<void>;
+  setServer(url: string): Promise<void>;
 }

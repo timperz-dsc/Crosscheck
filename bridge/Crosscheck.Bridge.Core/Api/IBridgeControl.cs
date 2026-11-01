@@ -17,6 +17,7 @@ public interface IBridgeControl
 {
     JsonObject StatusJson();
     JsonArray Recent();
+    ApiResult SetServer(string? address);
     Task<ApiResult> CreateAsync();
     Task<ApiResult> CheckAsync(string code);
     Task<ApiResult> JoinAsync(string code);

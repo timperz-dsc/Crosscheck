@@ -10,6 +10,7 @@ export function idle(over: Partial<Status> = {}): Status {
     phase: 'idle',
     bridge_version: '0.1.0',
     last_error: null,
+    log: { folder: 'C:\Users\pilot\AppData\Local\Crosscheck\logs', file: 'C:\Users\pilot\AppData\Local\Crosscheck\logs\bridge-1.jsonl' },
     this_computer: {
       sim: { connected: true, name: 'MSFS 2024' },
       aircraft: { name: 'Fenix A320', app_version: '3.0.0.7613', package_version: '3.0.0.7613', reading: false },
@@ -79,7 +80,7 @@ type Mocked = { [K in keyof Actions]: ReturnType<typeof vi.fn> & Actions[K] };
 export function actions(): Mocked {
   const ok = () => vi.fn(async () => {});
   return {
-    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(),
+    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), setServer: ok(),
   } as unknown as Mocked;
 }
 

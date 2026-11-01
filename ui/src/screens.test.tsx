@@ -36,9 +36,31 @@ describe('start', () => {
     expect(screen.getByText('Start the simulator to create or join a session.')).toBeInTheDocument();
   });
 
+  it('saves a new session server address and shows the log folder', async () => {
+    const user = userEvent.setup();
+    const b = bridge(idle());
+    show(b);
+    expect(screen.getByText('C:\Users\pilot\AppData\Local\Crosscheck\logs')).toBeInTheDocument();
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save).toBeDisabled();
+    const input = screen.getByLabelText('Session server');
+    await user.clear(input);
+    await user.type(input, 'crosscheck.up.railway.app');
+    await user.click(save);
+    expect(b.actions.setServer).toHaveBeenCalledWith('crosscheck.up.railway.app');
+  });
+
   it('shows why a request failed', () => {
     show(bridge(idle({ last_error: 'No session with the code ZZZZZZ. Check the code with the captain.' })));
     expect(screen.getByText('No session with the code ZZZZZZ. Check the code with the captain.')).toHaveClass('warning');
+  });
+});
+
+describe('session ended', () => {
+  it('shows where the log of this computer is', () => {
+    show(bridge(inSession({ phase: 'ended' })));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('The session has ended');
+    expect(screen.getByText('C:\Users\pilot\AppData\Local\Crosscheck\logs')).toBeInTheDocument();
   });
 });
 

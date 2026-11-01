@@ -17,9 +17,16 @@ Stop it with Ctrl+C.
 
 | Environment variable | Default | Meaning |
 |---|---|---|
-| `CROSSCHECK_PORT` | `8787` | Port |
-| `CROSSCHECK_HOST` | `127.0.0.1` | Only this PC can connect. Set `0.0.0.0` so the second PC on the LAN can connect (two-computer test). |
-| `CROSSCHECK_LOG_DIR` | `logs` | One JSONL file per session; attach it to desync reports. |
+| `PORT` | – | Set by hosts such as Railway. If set, the server listens on it and on `0.0.0.0`. |
+| `CROSSCHECK_PORT` | `8787` | Port when `PORT` is not set |
+| `CROSSCHECK_HOST` | `127.0.0.1` (`0.0.0.0` if `PORT` is set) | Only this PC can connect. Set `0.0.0.0` so the second PC on the LAN can connect (two-computer test). |
+| `LOG_DIR` | `logs` | One JSONL file per session; attach it to desync reports. (`CROSSCHECK_LOG_DIR` also works.) |
+| `CROSSCHECK_CREATE_LIMIT` | `10` | Per IP: sessions that may be created per 10 min (`0` = off) |
+| `CROSSCHECK_JOIN_LIMIT` | `30` | Per IP: join and preflight checks per 10 min (`0` = off) |
+| `CROSSCHECK_TRUST_PROXY` | on at Railway | Read the client IP from `X-Forwarded-For` (`1`/`0`) |
+
+Every session event is also printed to stdout as one JSON line (join codes left out).
+Hosting on Railway: [docs/hosting.md](../docs/hosting.md). `/health` returns the server version.
 
 PowerShell example for the LAN test: `$env:CROSSCHECK_HOST = "0.0.0.0"; npm start`
 (Windows may ask to allow Node through the firewall).
@@ -52,6 +59,7 @@ heartbeat → 50 ms), so the full suite takes about half a minute.
 | 12 | No corrections during a control handover freeze |
 | 13 | Only the PF streams; rate limit; stream frozen during handover |
 | 14 | Owned values (fuel) are never written, not even at join; differences are reported as drift only |
+| 15 | `/health` with version; per-IP limit on create and join; one stdout line per event; an unwritable log folder never stops a session |
 | unit, schema | Safety rule, loop guard, preflight, join codes, replay log, schema examples |
 
 ## Layout

@@ -41,6 +41,11 @@ export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
               <h1>The session has ended</h1>
               <p className="lead">The other pilot left or the server closed the session. Your sim keeps flying as it is.</p>
             </div>
+            {status.log && (
+              <p className="muted">
+                Your log of this session is in <span className="mono">{status.log.folder}</span>. Send the newest file there if something went wrong.
+              </p>
+            )}
             <div className="row">
               <Button onClick={() => void actions.leave()} disabled={busy}>Back to start</Button>
             </div>

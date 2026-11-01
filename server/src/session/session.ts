@@ -135,7 +135,7 @@ export class Session {
     private readonly validator: ProtocolValidator,
     private readonly onEnd: (session: Session) => void,
   ) {
-    this.log = new SessionLog(config.logDir, id);
+    this.log = new SessionLog(config.logDir, id, config.echoEvents);
     this.replay = new ReplayLog(config.logSize);
     this.guard = new CorrectionGuard(config.correctionLoopMax, config.correctionLoopWindowMs);
     this.pending = new PendingAcks({

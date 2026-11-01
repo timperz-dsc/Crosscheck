@@ -5,10 +5,12 @@ import type { CreateBody, Envelope, ErrorCode, JoinBody, ResumeBody } from '../p
 import { generateJoinCode, newSessionId, normalizeJoinCode } from './joinCode.js';
 import { Session, type Conn } from './session.js';
 import { comparePreflight } from './preflight.js';
+import { RateLimiter } from './rateLimit.js';
 
 class SocketConn implements Conn {
   slot?: Conn['slot'];
   session?: Session;
+  ip = 'unknown';
   handshakeTimer: NodeJS.Timeout | null = null;
 
   constructor(private readonly ws: WebSocket) {}
@@ -30,11 +32,23 @@ export class SessionManager {
   readonly sessions = new Map<string, Session>();
   private readonly byCode = new Map<string, Session>();
   private readonly sockets = new Set<WebSocket>();
+  private readonly createLimiter: RateLimiter;
+  private readonly joinLimiter: RateLimiter;
+  private readonly pruneTimer: NodeJS.Timeout;
 
-  constructor(private readonly config: ServerConfig, private readonly validator: ProtocolValidator) {}
+  constructor(private readonly config: ServerConfig, private readonly validator: ProtocolValidator) {
+    this.createLimiter = new RateLimiter(config.createLimit, config.createWindowMs);
+    this.joinLimiter = new RateLimiter(config.joinLimit, config.joinWindowMs);
+    this.pruneTimer = setInterval(() => {
+      this.createLimiter.prune();
+      this.joinLimiter.prune();
+    }, 60 * 1000);
+    this.pruneTimer.unref();
+  }
 
-  handleSocket(ws: WebSocket): void {
+  handleSocket(ws: WebSocket, ip = 'unknown'): void {
     const conn = new SocketConn(ws);
+    conn.ip = ip;
     this.sockets.add(ws);
     conn.handshakeTimer = setTimeout(() => {
       if (!conn.session) ws.terminate();
@@ -77,12 +91,27 @@ export class SessionManager {
       return conn.session.handle(conn.slot, msg);
     }
     switch (msg.type) {
-      case 'create': return this.create(conn, msg);
-      case 'join': return this.join(conn, msg);
-      case 'preflight_check': return this.check(conn, msg);
+      case 'create': return this.limited(conn, 'create') ? undefined : this.create(conn, msg);
+      case 'join': return this.limited(conn, 'join') ? undefined : this.join(conn, msg);
+      case 'preflight_check': return this.limited(conn, 'join') ? undefined : this.check(conn, msg);
       case 'resume': return this.resume(conn, msg);
       default: return this.error(conn, 'not_in_session', `${msg.type} needs a session: send create, join or resume first`);
     }
+  }
+
+  /** Per-IP limit on create and join (a public server must not be spammed). Returns true if the request was refused. */
+  private limited(conn: SocketConn, kind: 'create' | 'join'): boolean {
+    const limiter = kind === 'create' ? this.createLimiter : this.joinLimiter;
+    const max = kind === 'create' ? this.config.createLimit : this.config.joinLimit;
+    if (max <= 0) return false;
+    const waitMs = limiter.hit(conn.ip);
+    if (waitMs === 0) return false;
+    const minutes = Math.max(1, Math.ceil(waitMs / 60000));
+    if (this.config.echoEvents) {
+      console.log(JSON.stringify({ time: new Date().toISOString(), event: 'rate_limited', kind, ip: conn.ip, retry_in_ms: waitMs }));
+    }
+    this.error(conn, 'forbidden', `Too many ${kind === 'create' ? 'create' : 'join'} attempts from your address. Try again in about ${minutes} min.`);
+    return true;
   }
 
   private attached(conn: SocketConn): void {
@@ -163,6 +192,7 @@ export class SessionManager {
 
   /** Server shutdown. */
   closeAll(): void {
+    clearInterval(this.pruneTimer);
     for (const s of [...this.sessions.values()]) s.end('server_shutdown');
     for (const ws of this.sockets) ws.terminate();
     this.sockets.clear();

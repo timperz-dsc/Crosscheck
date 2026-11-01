@@ -36,6 +36,7 @@ internal static class UiStatus
             : "session";
         json["bridge_version"] = BridgeRuntime.BridgeVersion;
         json["last_error"] = r.LastError;
+        json["log"] = r.LogPath is { } logFile ? new JsonObject { ["folder"] = Path.GetDirectoryName(logFile), ["file"] = logFile } : null;
         json["this_computer"] = new JsonObject
         {
             ["sim"] = new JsonObject { ["connected"] = simConnected, ["name"] = "MSFS 2024" },

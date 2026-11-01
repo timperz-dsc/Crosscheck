@@ -41,6 +41,16 @@ export interface ServerConfig {
   handshakeTimeoutMs: number;
   /** Directory for JSONL session logs. null = no files. */
   logDir: string | null;
+  /** Print one line per session event to stdout (hosted: shows in the platform's log view). */
+  echoEvents: boolean;
+  /** Per IP: create requests allowed per createWindowMs. 0 = no limit. */
+  createLimit: number;
+  createWindowMs: number;
+  /** Per IP: join and preflight_check requests allowed per joinWindowMs (also slows guessing codes). 0 = no limit. */
+  joinLimit: number;
+  joinWindowMs: number;
+  /** Take the client IP from X-Forwarded-For (only behind a trusted proxy such as Railway's). */
+  trustProxy: boolean;
   /** Validate every outgoing message against the schema (tests). */
   validateOutgoing: boolean;
   /** Max WebSocket message size in bytes. */
@@ -69,6 +79,12 @@ export const DEFAULT_CONFIG: ServerConfig = {
   summaryIntervalMs: 10 * 1000,
   handshakeTimeoutMs: 10 * 1000,
   logDir: null,
+  echoEvents: false,
+  createLimit: 10,
+  createWindowMs: 10 * 60 * 1000,
+  joinLimit: 30,
+  joinWindowMs: 10 * 60 * 1000,
+  trustProxy: false,
   validateOutgoing: false,
   maxPayload: 256 * 1024,
 };
@@ -77,7 +93,7 @@ const TIME_KEYS = [
   'heartbeatMs', 'lostAfterMs', 'sessionTtlMs', 'ackMarginMs', 'conflictWindowMs',
   'snapshotIntervalMs', 'snapshotRequestTimeoutMs', 'freezeMs', 'controlAckTimeoutMs',
   'correctionSettleMs', 'correctionLoopWindowMs', 'streamNoticeIntervalMs', 'streamIdleMs',
-  'summaryIntervalMs', 'handshakeTimeoutMs',
+  'summaryIntervalMs', 'handshakeTimeoutMs', 'createWindowMs', 'joinWindowMs',
 ] as const satisfies readonly (keyof ServerConfig)[];
 
 /**

@@ -46,7 +46,8 @@ namespace Crosscheck.Bridge.App
               crosscheck join <CODE> [options]  headless: join a session
 
             Options:
-              --server <url>        session server (default ws://127.0.0.1:8787/ws)
+              --server <url>        session server, e.g. wss://your-server.up.railway.app/ws
+                                    (default: the address saved in the UI, else ws://127.0.0.1:8787/ws)
               --profile <file>      aircraft profile (default profiles/fenix-a320/profile.yaml)
               --sim simconnect|fake real sim (default) or an in-memory fake sim
               --name <text>         your name shown to the other pilot
@@ -63,7 +64,7 @@ namespace Crosscheck.Bridge.App
 
         private static readonly string[] Flags = ["--verbose", "--no-browser", "--no-tray"];
 
-        public static bool TryParse(string[] args, out Cli cli, out string error)
+        public static bool TryParse(string[] args, out Cli cli, out string error, string? settingsPath = null)
         {
             cli = null!;
             error = "";
@@ -135,10 +136,19 @@ namespace Crosscheck.Bridge.App
                 error = "--seat-side must be captain or fo";
                 return false;
             }
-            if (!Uri.TryCreate(opts.GetValueOrDefault("--server") ?? "ws://127.0.0.1:8787/ws", UriKind.Absolute, out var server))
+            // Order: --server, then the address saved from the UI, then the local development server.
+            Uri server;
+            if (opts.GetValueOrDefault("--server") is { } given)
             {
-                error = "--server is not a valid URL";
-                return false;
+                if (!ServerAddress.TryNormalize(given, out server, out var why))
+                {
+                    error = $"--server: {why}";
+                    return false;
+                }
+            }
+            else if (!ServerAddress.TryNormalize(UserSettings.Load(settingsPath ?? UserSettings.DefaultPath).Server, out server, out _))
+            {
+                server = new Uri(ServerAddress.Default);
             }
             cli = new Cli(
                 mode, code, server, ResolveProfile(opts.GetValueOrDefault("--profile")), sim == "fake",
@@ -179,7 +189,7 @@ namespace Crosscheck.Bridge.App
             var options = new BridgeOptions
             {
                 Server = cli.Server, ProfilePath = cli.ProfilePath, Mode = cli.Mode, JoinCode = cli.Code, Name = cli.Name,
-                ApiPort = cli.ApiPort, LogDir = cli.LogDir, Airac = cli.Airac, UiDir = cli.UiDir,
+                ApiPort = cli.ApiPort, LogDir = cli.LogDir, SettingsPath = UserSettings.DefaultPath, Airac = cli.Airac, UiDir = cli.UiDir,
                 Engine = new EngineOptions { SeatSide = cli.Side },
                 VersionTimeout = cli.FakeSim ? TimeSpan.Zero : TimeSpan.FromSeconds(30),
             };
