@@ -42,6 +42,7 @@ resume.
 |---|---|---|
 | `create` / `created` | C→S / S→C | Create a session; creator is host and PF. |
 | `join` / `joined` / `join_rejected` | C→S / S→C | Join with the code; preflight check. |
+| `preflight_check` / `preflight_result` | C→S / S→C | Compare versions before joining (takes no slot). |
 | `peer_status` | S→C | Other pilot joined, lost, resumed, left, expired. |
 | `leave` | C→S | Leave on purpose. |
 | `resume` / `resumed` | C→S / S→C | Re-attach after a lost connection. |
@@ -53,6 +54,7 @@ resume.
 | `snapshot_hash` | C→S | Hash of one panel group, every ~2 s. |
 | `snapshot_request` / `snapshot_values` | S→C / C→S | Values of groups on mismatch or resync. |
 | `snapshot_diff` | S→C | Differences of one group and the decision per var. |
+| `drift` | S→C | Owned values (fuel, payload) that differ, for information. |
 | `correction` | S→C | Write this target value (decided by the PF safety rule). |
 | `control_request` | C→S | "I have control" (from the PM). |
 | `control_give` | C→S | "You have control" (from the PF). |
@@ -76,6 +78,16 @@ case-insensitive. The session id is separate and is what the envelope carries.
 warnings}` and `peer_status {state: "joined", warnings}` to the other pilot. Max two pilots
 (`join_rejected session_full`). A fresh join triggers a full snapshot comparison (section 7),
 so a cold & dark cockpit is aligned to the PF the same way as after a resync.
+
+**Preflight check before joining.** `preflight_check {join_code, preflight}` (no session) →
+`preflight_result {join_code, reference, rejects, warnings}`, or `join_rejected`
+(`unknown_code`, `session_full`). It takes no slot and changes nothing; the UI shows the table
+and the pilot then sends `join`, which compares again.
+
+**What must match.** Bridge major version, profile id and hash, aircraft package and app
+version: a difference rejects the join. AIRAC differences warn. An aircraft version a bridge
+could not read is sent as `unknown`; it cannot be compared, so it warns (on one or both
+sides) instead of rejecting.
 
 **Seats and roles.** Seat `host`/`guest` never changes. Role `pf` (holds the control token)
 or `pm` changes with control transfer. The host is PF at the start.
@@ -192,6 +204,15 @@ the PF's current value. Nothing else.
 
 Why rule 2 needs "never confirmed": if the PF applied a pilot's command and its aircraft later
 changed the value itself, pushing the old command back would be a write no pilot did.
+
+**Owned values** (fuel, payload; Fenix simulates them on each side). They are aligned once,
+by the join-time comparison (`snapshot_request reason: join`): the joiner is corrected to the
+PF's value with rule 3. After that an owned difference is never corrected, never a desync and
+never counted by the loop guard. It is reported as `drift`: after each value comparison of a
+group with owned vars the server sends `drift {group, values: [{var, pf, pm, delta}]}` to
+both (unsequenced, not replayed; values in the dataref's own units, `delta` = pm − pf). Empty
+`values` means no drift any more. In `snapshot_diff` such a var has action `drift`, and a
+group whose only differences are drift does not count as differing for `control_changed`.
 
 `correction {id, var, class, target, group, settle_ms, source, source_seq?, request_id}` is
 acked like a command (same retries). A confirmed correction → `notice corrected` to both. A

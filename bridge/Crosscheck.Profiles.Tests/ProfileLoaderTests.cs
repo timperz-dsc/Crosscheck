@@ -336,6 +336,39 @@ public class ProfileLoaderTests
         Assert.False(Load(WithTakeover.Replace("  takeover:", "  takeoff:")).IsValid);
     }
 
+    // --- labels ---
+
+    [Fact]
+    public void Labels_load()
+    {
+        var yaml = Valid.Replace("    values: [0, 1]\n    verify: { lvar: I_LAMP",
+                "    values: [0, 1]\n    label: BAT 1\n    value_labels: { \"0\": OFF, \"1\": ON }\n    verify: { lvar: I_LAMP")
+            .Replace("    poll_hz: 1", "    poll_hz: 1\n    label: Fuel left\n    unit: kg")
+            + "\ngroup_labels: { overhead: Overhead, cdu1: CDU 1 }\n";
+        var result = Load(yaml);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        var p = result.Profile!;
+        Assert.Equal("BAT 1", p.Vars[0].Label);
+        Assert.Equal("ON", p.Vars[0].ValueLabels!["1"]);
+        Assert.Equal("kg", p.Datarefs![0].Unit);
+        Assert.Equal("CDU 1", p.GroupLabels!["cdu1"]);
+    }
+
+    [Fact]
+    public void Value_labels_must_name_allowed_values()
+    {
+        var yaml = Valid.Replace("    values: [0, 1]\n    verify: { lvar: I_LAMP",
+            "    values: [0, 1]\n    value_labels: { \"2\": AUTO }\n    verify: { lvar: I_LAMP");
+        Assert.Contains("not an allowed value", Single(Load(yaml)).Message);
+        Assert.False(Load(yaml.Replace("\"2\": AUTO", "on: AUTO")).IsValid); // keys are numbers
+    }
+
+    [Fact]
+    public void Group_labels_must_name_groups()
+    {
+        Assert.Contains("not listed in 'groups'", Single(Load(Valid + "\ngroup_labels: { nowhere: Nowhere }\n")).Message);
+    }
+
     [Fact]
     public void Verify_cannot_point_at_the_var_itself()
     {

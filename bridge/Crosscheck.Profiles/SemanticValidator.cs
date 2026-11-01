@@ -69,7 +69,12 @@ internal sealed class SemanticValidator
             CheckValues(v, at);
             if (v.Verify is { } verify) CheckVerify(verify, v.Name, $"{at}/verify", varsByName, datarefPaths);
             if (v.Class == SyncClass.Delta && v.Display is { } display) CheckDisplay(v.Name, display, at, varsByName);
+            if (v.ValueLabels is { } labels) CheckValueLabels(v, labels, at);
         }
+
+        foreach (var group in (_profile.GroupLabels ?? new Dictionary<string, string>()).Keys)
+            if (!groups.Contains(group))
+                Add($"/group_labels/{group}", $"group_labels names '{group}', which is not listed in 'groups'");
 
         for (var i = 0; i < (_profile.Datarefs?.Count ?? 0); i++)
         {
@@ -86,6 +91,19 @@ internal sealed class SemanticValidator
         }
 
         if (_profile.Roles?.Takeover is { } takeover) CheckTakeover(takeover, varsByName);
+    }
+
+    private void CheckValueLabels(VarEntry v, IReadOnlyDictionary<string, string> labels, string at)
+    {
+        foreach (var key in labels.Keys)
+        {
+            var value = double.Parse(key, System.Globalization.CultureInfo.InvariantCulture); // the schema checked the format
+            var allowed = v.Values is { } values ? values.Contains(value)
+                : v.Range is [var min, var max] ? value >= min && value <= max
+                : true;
+            if (!allowed)
+                Add($"{at}/value_labels/{key}", $"value_labels has {key}, which is not an allowed value of {v.Name}");
+        }
     }
 
     private void CheckTakeover(TakeoverRole takeover, Dictionary<string, int> varsByName)

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Crosscheck.Bridge;
 using Crosscheck.Bridge.App;
 using Crosscheck.Bridge.Fenix;
@@ -23,6 +24,7 @@ builder.Logging.AddSimpleConsole(o =>
     o.TimestampFormat = "HH:mm:ss ";
 });
 builder.Logging.SetMinimumLevel(cli.Verbose ? LogLevel.Debug : LogLevel.Information);
+builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
 builder.Services.AddSingleton(cli);
 builder.Services.AddHostedService<BridgeService>();
 var host = builder.Build();
@@ -31,49 +33,62 @@ return Environment.ExitCode;
 
 namespace Crosscheck.Bridge.App
 {
+    /// <summary>Command line. No command = UI mode (browser + tray); create/join = headless.</summary>
     public sealed record Cli(
-        SessionMode Mode, string? Code, Uri Server, string ProfilePath, bool FakeSim, int ApiPort,
-        string? LogDir, double GqlPollHz, string? Airac, string? Name, bool Verbose, SeatSide? Side = null)
+        SessionMode? Mode, string? Code, Uri Server, string ProfilePath, bool FakeSim, int ApiPort,
+        string? LogDir, double GqlPollHz, string? Airac, string? Name, bool Verbose, SeatSide? Side = null,
+        bool NoBrowser = false, bool NoTray = false, string? UiDir = null)
     {
         public const string Usage = """
             Usage:
-              crosscheck create [options]
-              crosscheck join <CODE> [options]
+              crosscheck [options]              open the Crosscheck UI (create or join there)
+              crosscheck create [options]       headless: create a session
+              crosscheck join <CODE> [options]  headless: join a session
 
             Options:
               --server <url>        session server (default ws://127.0.0.1:8787/ws)
               --profile <file>      aircraft profile (default profiles/fenix-a320/profile.yaml)
               --sim simconnect|fake real sim (default) or an in-memory fake sim
               --name <text>         your name shown to the other pilot
-              --api-port <n>        local API port on 127.0.0.1 (default 8790, -1 = off)
+              --api-port <n>        local API and UI port on 127.0.0.1 (default 8790, -1 = off)
               --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
               --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
               --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
               --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
+              --ui-dir <dir>        folder with the built UI (default wwwroot next to the program)
+              --no-browser          do not open the UI in the browser on start
+              --no-tray             no tray icon
               --verbose             more console output
             """;
+
+        private static readonly string[] Flags = ["--verbose", "--no-browser", "--no-tray"];
 
         public static bool TryParse(string[] args, out Cli cli, out string error)
         {
             cli = null!;
             error = "";
-            if (args.Length == 0 || args[0] is not ("create" or "join"))
-            {
-                error = "First argument must be create or join.";
-                return false;
-            }
-            var mode = args[0] == "create" ? SessionMode.Create : SessionMode.Join;
-            var i = 1;
+            SessionMode? mode = null;
+            var i = 0;
             string? code = null;
-            if (mode == SessionMode.Join)
+            if (args.Length > 0 && !args[0].StartsWith("--", StringComparison.Ordinal))
             {
-                if (args.Length < 2 || args[1].StartsWith("--", StringComparison.Ordinal))
+                if (args[0] is not ("create" or "join"))
                 {
-                    error = "join needs the 6-character code: crosscheck join <CODE>";
+                    error = $"Unknown command {args[0]}. Use create, join, or no command for the UI.";
                     return false;
                 }
-                code = args[1];
-                i = 2;
+                mode = args[0] == "create" ? SessionMode.Create : SessionMode.Join;
+                i = 1;
+                if (mode == SessionMode.Join)
+                {
+                    if (args.Length < 2 || args[1].StartsWith("--", StringComparison.Ordinal))
+                    {
+                        error = "join needs the 6-character code: crosscheck join <CODE>";
+                        return false;
+                    }
+                    code = args[1];
+                    i = 2;
+                }
             }
             var opts = new Dictionary<string, string?>(StringComparer.Ordinal);
             for (; i < args.Length; i++)
@@ -84,7 +99,7 @@ namespace Crosscheck.Bridge.App
                     error = $"Unexpected argument {key}";
                     return false;
                 }
-                if (key == "--verbose")
+                if (Flags.Contains(key))
                 {
                     opts[key] = "true";
                     continue;
@@ -96,8 +111,8 @@ namespace Crosscheck.Bridge.App
                 }
                 opts[key] = args[++i];
             }
-            var known = new[] { "--server", "--profile", "--sim", "--api-port", "--log-dir", "--gql-poll-hz", "--airac", "--name", "--verbose", "--seat-side" };
-            if (opts.Keys.FirstOrDefault(k => !known.Contains(k)) is { } unknown)
+            var known = new[] { "--server", "--profile", "--sim", "--api-port", "--log-dir", "--gql-poll-hz", "--airac", "--name", "--seat-side", "--ui-dir" };
+            if (opts.Keys.FirstOrDefault(k => !known.Contains(k) && !Flags.Contains(k)) is { } unknown)
             {
                 error = $"Unknown option {unknown}";
                 return false;
@@ -130,7 +145,8 @@ namespace Crosscheck.Bridge.App
                 int.Parse(opts.GetValueOrDefault("--api-port") ?? "8790", System.Globalization.CultureInfo.InvariantCulture),
                 opts.GetValueOrDefault("--log-dir"),
                 double.Parse(opts.GetValueOrDefault("--gql-poll-hz") ?? "2", System.Globalization.CultureInfo.InvariantCulture),
-                opts.GetValueOrDefault("--airac"), opts.GetValueOrDefault("--name"), opts.ContainsKey("--verbose"), side);
+                opts.GetValueOrDefault("--airac"), opts.GetValueOrDefault("--name"), opts.ContainsKey("--verbose"), side,
+                opts.ContainsKey("--no-browser"), opts.ContainsKey("--no-tray"), opts.GetValueOrDefault("--ui-dir"));
             return true;
         }
 
@@ -151,10 +167,11 @@ namespace Crosscheck.Bridge.App
         }
     }
 
-    /// <summary>Runs one bridge until Ctrl+C; then leaves the session.</summary>
+    /// <summary>Runs one bridge until Ctrl+C or Quit in the tray; then leaves the session.</summary>
     public sealed class BridgeService(Cli cli, ILoggerFactory loggers, IHostApplicationLifetime lifetime) : BackgroundService
     {
         private BridgeRuntime? _runtime;
+        private TrayIcon? _tray;
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
@@ -162,7 +179,7 @@ namespace Crosscheck.Bridge.App
             var options = new BridgeOptions
             {
                 Server = cli.Server, ProfilePath = cli.ProfilePath, Mode = cli.Mode, JoinCode = cli.Code, Name = cli.Name,
-                ApiPort = cli.ApiPort, LogDir = cli.LogDir, Airac = cli.Airac,
+                ApiPort = cli.ApiPort, LogDir = cli.LogDir, Airac = cli.Airac, UiDir = cli.UiDir,
                 Engine = new EngineOptions { SeatSide = cli.Side },
                 VersionTimeout = cli.FakeSim ? TimeSpan.Zero : TimeSpan.FromSeconds(30),
             };
@@ -176,9 +193,15 @@ namespace Crosscheck.Bridge.App
                 await _runtime.StartAsync(ct);
                 if (cli.Mode == SessionMode.Create)
                     log.LogInformation("Session created. Join code: {Code}   (other pilot: crosscheck join {Code})", _runtime.JoinCode, _runtime.JoinCode);
-                else
+                else if (cli.Mode == SessionMode.Join)
                     log.LogInformation("Joined the session.");
-                if (_runtime.Api is { } api) log.LogInformation("Local API: http://127.0.0.1:{Port}/status", api.Port);
+                if (_runtime.Api is { } api)
+                {
+                    var url = $"http://127.0.0.1:{api.Port}/";
+                    log.LogInformation("Crosscheck: {Url}", url);
+                    if (cli.Mode is null && !cli.NoBrowser) OpenBrowser(url, log);
+                    if (!cli.NoTray) _tray = TrayIcon.Start(() => OpenBrowser(url, log), lifetime.StopApplication);
+                }
                 log.LogInformation("Bridge log: {Path}", _runtime.Log.Path);
                 log.LogInformation("Commands: control | control @peer_lost | give | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");
                 await ConsoleLoop(log, ct);
@@ -192,6 +215,18 @@ namespace Crosscheck.Bridge.App
                 log.LogError("{Message}", e.Message);
                 Environment.ExitCode = 1;
                 lifetime.StopApplication();
+            }
+        }
+
+        private static void OpenBrowser(string url, ILogger log)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
+            {
+                log.LogWarning("Could not open the browser ({Message}). Open {Url} yourself.", e.Message, url);
             }
         }
 
@@ -211,10 +246,10 @@ namespace Crosscheck.Bridge.App
                 {
                     switch (parts)
                     {
-                        case ["control"]: runtime.Engine.RequestControl(); break;
-                        case ["control", .. var confirm]: runtime.Engine.RequestControl(confirm); break;
-                        case ["give"]: runtime.Engine.GiveControl(); break;
-                        case ["status"]: log.LogInformation("{Status}", runtime.Status.ToJson(runtime.Engine.Counters).ToJsonString()); break;
+                        case ["control"]: Report(runtime.TakeControl(false)); break;
+                        case ["control", "@peer_lost"]: Report(runtime.TakeControl(true)); break;
+                        case ["give"]: Report(runtime.GiveControl()); break;
+                        case ["status"]: log.LogInformation("{Status}", runtime.StatusJson().ToJsonString()); break;
                         case ["set", var name, var value] when runtime.Sim is FakeSimAdapter f: f.PilotSet(name, double.Parse(value, System.Globalization.CultureInfo.InvariantCulture)); break;
                         case ["turn", var name, var clicks] when runtime.Sim is FakeSimAdapter f: f.PilotTurn(name, double.Parse(clicks, System.Globalization.CultureInfo.InvariantCulture)); break;
                         case ["press", var name] when runtime.Sim is FakeSimAdapter f: _ = f.PilotPress(name); break;
@@ -227,10 +262,16 @@ namespace Crosscheck.Bridge.App
                     log.LogWarning("{Message}", e.Message);
                 }
             }
+
+            void Report(Crosscheck.Bridge.Api.ApiResult r)
+            {
+                if (!r.Ok) log.LogWarning("{Error}", r.Error);
+            }
         }
 
         public override async Task StopAsync(CancellationToken ct)
         {
+            _tray?.Dispose();
             if (_runtime is not null) await _runtime.StopAsync(); // leave: frees the slot for the other pilot
             await base.StopAsync(ct);
         }

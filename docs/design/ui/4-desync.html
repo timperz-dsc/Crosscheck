@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crosscheck – A control differs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#138A52}a:hover{color:#0E6B3F}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFFFFF; color: #111315; font-family: 'Geist', 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 48px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><path d="M20 50 L36 66" stroke="#111315" stroke-width="13" stroke-linecap="round" fill="none"></path><path d="M50 65.5 L82 30" stroke="#138A52" stroke-width="13" stroke-linecap="round" fill="none"></path></svg>
+<span style="font-size: 19px; font-weight: 600; letter-spacing: -0.03em">Crosscheck</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 14px">
+<span style="color: #555A60">Session <span style="font-family: 'Geist Mono', ui-monospace, monospace; color: #111315">K7RX2M</span></span>
+<span style="color: #555A60">Connected, 41 ms</span>
+<button type="button" style="height: 36px; padding: 0 14px; border: 1px solid #C9CCC6; border-radius: 8px; background: #FFFFFF; color: #111315; font: inherit; cursor: pointer">Leave</button>
+</div>
+</header>
+<main style="max-width: 1180px; padding: 48px 48px 72px; display: flex; flex-wrap: wrap; gap: 64px">
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#B42318" stroke-width="2"></circle><path d="M12 7 L12 13" stroke="#B42318" stroke-width="2.2" stroke-linecap="round" fill="none"></path><circle cx="12" cy="16.8" r="1.3" fill="#B42318"></circle></svg>
+<h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15">One control differs</h1>
+</div>
+<p style="margin: 0; color: #555A60">Everything else matches. Last compared 1 second ago.</p>
+</div>
+<section aria-labelledby="d1" style="display: flex; flex-direction: column; gap: 18px; padding: 24px 0; border-top: 1px solid #E3E5E1; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px">
+<h2 id="d1" style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.015em">ENG 1 BLEED</h2>
+<span style="color: #555A60">Overhead, open since 12:43:10</span>
+</div>
+<dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: 4px 24px">
+<dt style="color: #555A60; font-size: 14px">You</dt>
+<dt style="color: #555A60; font-size: 14px">Captain</dt>
+<dd style="margin: 0; font-size: 22px; font-weight: 600">ON</dd>
+<dd style="margin: 0; font-size: 22px; font-weight: 600">OFF</dd>
+</dl>
+<p style="margin: 0; max-width: 620px">You switched it on, but the captain's switch did not move after 3 tries. Set it in the cockpit, or choose a value for both of you here. The alarm clears when both match.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 8px; background: #111315; color: #FFFFFF; font: inherit; font-weight: 500; cursor: pointer">Set both to ON</button>
+<button type="button" style="height: 44px; padding: 0 20px; border: 1px solid #C9CCC6; border-radius: 8px; background: #FFFFFF; color: #111315; font: inherit; font-weight: 500; cursor: pointer">Set both to OFF</button>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">Recent</h2>
+<ol style="margin: 0; padding: 0; list-style: none; border-top: 1px solid #E3E5E1">
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:43:10</span><span>ENG 1 BLEED on by you. Not confirmed by the captain's sim after 3 tries.</span></li>
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:42:51</span><span>CDU 1 INIT pressed by captain. Screens match.</span></li>
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:42:30</span><span>FCU altitude 5 clicks up by captain. Both FCUs show 12000.</span></li>
+</ol>
+</section>
+</div>
+<aside style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">Panels</h2>
+<dl style="margin: 0; display: grid; grid-template-columns: 1fr auto; border-top: 1px solid #E3E5E1">
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1; font-weight: 600">Overhead</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #B42318; font-weight: 500">1 differs</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">FCU</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">EFIS</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Main panel</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Pedestal</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">CDU 1</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">CDU 2</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">ECAM</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Circuit breakers</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Fuel</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">12 kg apart</dd>
+</dl>
+</aside>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -43,6 +43,7 @@ public sealed class BridgeStatus
 {
     private readonly object _gate = new();
     private readonly Dictionary<string, JsonObject> _desyncs = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, DateTimeOffset> _desyncSince = new(StringComparer.Ordinal);
 
     public string? SessionId { get; set; }
     public string? JoinCode { get; set; }
@@ -62,12 +63,39 @@ public sealed class BridgeStatus
 
     public void SetDesync(string var, JsonObject body)
     {
-        lock (_gate) _desyncs[var] = body;
+        lock (_gate)
+        {
+            _desyncs[var] = body;
+            _desyncSince.TryAdd(var, DateTimeOffset.UtcNow);
+        }
+    }
+
+    /// <summary>Open desyncs with the time this bridge first saw them.</summary>
+    public IReadOnlyList<(JsonObject Body, DateTimeOffset Since)> Desyncs
+    {
+        get { lock (_gate) return _desyncs.Select(d => ((JsonObject)d.Value.DeepClone(), _desyncSince[d.Key])).ToList(); }
+    }
+
+    /// <summary>Back to "not in a session": forget everything session-specific.</summary>
+    public void ResetSession()
+    {
+        lock (_gate)
+        {
+            _desyncs.Clear();
+            _desyncSince.Clear();
+        }
+        SessionId = JoinCode = ClientId = Seat = SeatSide = Role = PfClientId = PeerState = null;
+        RttMs = null;
+        Server = "disconnected";
     }
 
     public void ClearDesync(string var)
     {
-        lock (_gate) _desyncs.Remove(var);
+        lock (_gate)
+        {
+            _desyncs.Remove(var);
+            _desyncSince.Remove(var);
+        }
     }
 
     public IReadOnlyCollection<string> OpenDesyncs

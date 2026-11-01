@@ -10,22 +10,29 @@ Protocol: [docs/protocol.md](../docs/protocol.md).
 | `Crosscheck.Profiles` (+ `.Cli`, `.Tests`) | profile format, loader and validator |
 | `Crosscheck.Bridge.Core` | sim and Fenix interfaces with fakes, sync engine, protocol client, local API, log |
 | `Crosscheck.Bridge.SimConnect` | the real sim adapter (needs the MSFS 2024 SDK) |
-| `Crosscheck.Bridge` | the `crosscheck` console program |
+| `Crosscheck.Bridge` | the `crosscheck` program: UI in the browser, tray icon, console |
 | `Crosscheck.Bridge.Tests` | unit and end-to-end tests (no sim needed) |
 | `Crosscheck.Bridge.SimSmoke.Tests` | real-sim smoke test, skipped by default ([README](Crosscheck.Bridge.SimSmoke.Tests/README.md)) |
 
 Requirements: Windows x64, .NET 8 SDK, the MSFS 2024 SDK with `MSFS2024_SDK` pointing at its
-folder (for SimConnect), and Node 22+ for the session server.
+folder (for SimConnect), and Node 22+ for the session server and the UI.
 
 ## Build and test
 
 ```
+cd ui && npm install && npm run build && cd ..   # the UI; the bridge build copies ui/dist to wwwroot
 dotnet build bridge/Crosscheck.sln
 dotnet test bridge/Crosscheck.sln
 ```
 
 The end-to-end tests start the real session server from `server/`, so run `npm install`
 in `server/` once first. They take about a minute.
+
+## Run it
+
+`crosscheck` without a command starts the bridge and opens the Crosscheck UI in the browser
+(`http://127.0.0.1:8790/`). A tray icon offers "Open Crosscheck" and "Quit" (Quit leaves the
+session properly). Create or join the session in the UI.
 
 ## Try it: two bridges with fake sims
 
@@ -36,14 +43,17 @@ Three terminals, all from the repo root.
    cd server
    npm start
    ```
-2. First pilot (creates the session and prints a join code):
+2. First pilot (the browser opens; click Create session):
    ```
-   dotnet run --project bridge/Crosscheck.Bridge -- create --sim fake --name Sebastian
+   dotnet run --project bridge/Crosscheck.Bridge -- --sim fake --name Sebastian
    ```
-3. Second pilot (needs another local API port because both run on one PC):
+3. Second pilot (needs another port because both run on one PC; enter the code under Join):
    ```
-   dotnet run --project bridge/Crosscheck.Bridge -- join <CODE> --sim fake --api-port 8792 --name Tim
+   dotnet run --project bridge/Crosscheck.Bridge -- --sim fake --api-port 8792 --name Tim
    ```
+
+Headless, without the UI: `crosscheck create ...` prints the join code, and
+`crosscheck join <CODE> ...` joins right away.
 
 In fake mode you can act as the pilot by typing into either bridge window:
 
@@ -65,18 +75,22 @@ finds the sim through SimConnect and keeps retrying if it is not running yet or 
 ## Options
 
 ```
-crosscheck create [options]
-crosscheck join <CODE> [options]
+crosscheck [options]              UI mode (browser + tray)
+crosscheck create [options]       headless: create a session
+crosscheck join <CODE> [options]  headless: join a session
 
 --server <url>        session server (default ws://127.0.0.1:8787/ws)
 --profile <file>      aircraft profile (default profiles/fenix-a320/profile.yaml)
 --sim simconnect|fake real sim (default) or an in-memory fake sim
 --name <text>         your name shown to the other pilot
---api-port <n>        local API port on 127.0.0.1 (default 8790, -1 = off)
+--api-port <n>        local API and UI port on 127.0.0.1 (default 8790, -1 = off)
 --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
 --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
 --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
 --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
+--ui-dir <dir>        folder with the built UI (default wwwroot next to the program)
+--no-browser          do not open the UI in the browser on start
+--no-tray             no tray icon
 --verbose             more console output
 ```
 
@@ -85,10 +99,10 @@ crosscheck join <CODE> [options]
 Control changes at once, like in a real cockpit. Differences between the sims never block
 it; they are shown to the new PF in the `control_changed` event ("Open differences: ...").
 
-- Take control: `control` in the console, or press the **sidestick takeover pushbutton on
+- Take control: "I have control" in the UI, `control` in the console, or press the **sidestick takeover pushbutton on
   your own seat** while you are PM (profile `roles.takeover`; your seat is `--seat-side`).
   The press is also synced to the other sim like any other button.
-- Give control: `give` in the console (as PF).
+- Give control: "You have control" in the UI, or `give` in the console (as PF).
 - If the PF is not connected, a plain request is refused; `control @peer_lost` takes it anyway.
 
 ## Aircraft build in the preflight
@@ -100,19 +114,28 @@ The bridge reads the running aircraft build; it never copies it from the profile
   only read.
 
 It retries for up to 30 s while the aircraft loads. A value it cannot read is sent as
-`unknown`, with a clear warning in the console, on `/status` and in the log. The profile's
+`unknown`, with a clear warning in the console, in the UI and in the log. The other side sees
+it as a warning in the preflight table; the join is allowed. The profile's
 `builds` list is only used to warn when the running version is not one the profile was made
 for. In fake mode the package version is the profile's first build.
 
-## Local API (for the coming UI)
+## Local API
 
-Only on `127.0.0.1`; requests from web pages of other sites are refused.
+Serves the UI and the API on `127.0.0.1` only. Refused: requests from web pages of other
+sites (Origin), a foreign Host header (DNS rebinding), and POSTs that are not JSON.
 
-- `GET http://127.0.0.1:8790/status`: session, join code, seat, cockpit seat side and role, server and sim
-  connection, RTT, aircraft versions, warnings, open desyncs, counters.
-- `ws://127.0.0.1:8790/events`: one JSON object per event (`desync`, `desync_cleared`,
-  `overridden`, `corrected`, `peer_lost`, `peer_resumed`, `control_changed`, `control_denied`, `takeover_pressed`, `sim_state`,
-  `warning`, `correction_refused`, `safety_refused`, …).
+| Request | Does |
+|---|---|
+| `GET /api/status` | everything the UI shows: `phase` (idle, preflight, waiting, session, ended), this computer, preflight table, crew and roles, panels with open differences, fuel drift, open desyncs with both values and "Set both" options, server and sim connection, counters |
+| `GET /api/recent` | the last 50 entries of the Recent list, newest first |
+| `WS /api/events` | one JSON object per event (`action_confirmed`, `action_applied`, `desync`, `desync_cleared`, `corrected`, `peer_lost`, `control_changed`, `control_denied`, `takeover_pressed`, `warning`, `safety_refused`, …) |
+| `POST /api/session/create` | create a session |
+| `POST /api/session/check {code}` | compare versions with the session before joining (`preflight_check`) |
+| `POST /api/session/join {code}` / `cancel` / `leave` | join, drop the preflight table, leave |
+| `POST /api/control/take {confirm_peer_lost?}` / `give` | "I have control" / "You have control" |
+| `POST /api/set {var, value}` | "Set both to X": a normal pilot command from this seat, logged as such; only switches and knobs, only values the profile allows |
+
+Errors answer 409 with `{ok: false, error}`; the error is a sentence the UI shows as is.
 
 ## Log
 

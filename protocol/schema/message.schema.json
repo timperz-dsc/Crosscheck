@@ -20,6 +20,12 @@
       "$ref": "messages/join_rejected.schema.json"
     },
     {
+      "$ref": "messages/preflight_check.schema.json"
+    },
+    {
+      "$ref": "messages/preflight_result.schema.json"
+    },
+    {
       "$ref": "messages/peer_status.schema.json"
     },
     {
@@ -57,6 +63,9 @@
     },
     {
       "$ref": "messages/snapshot_diff.schema.json"
+    },
+    {
+      "$ref": "messages/drift.schema.json"
     },
     {
       "$ref": "messages/correction.schema.json"

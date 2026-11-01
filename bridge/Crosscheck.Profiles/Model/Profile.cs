@@ -55,14 +55,18 @@ public sealed record VarEntry(
     PressMode? Press = null,
     string? Display = null,
     double? RateHz = null,
-    string? Note = null);
+    string? Note = null,
+    string? Label = null,
+    IReadOnlyDictionary<string, string>? ValueLabels = null);
 
 public sealed record DatarefEntry(
     string Path,
     SyncClass Class,
     string Group,
     double? PollHz = null,
-    string? Note = null);
+    string? Note = null,
+    string? Label = null,
+    string? Unit = null);
 
 /// <summary>The sidestick takeover pushbutton of each seat (left = captain, right = first officer).</summary>
 public sealed record TakeoverRole(string Captain, string Fo);
@@ -77,4 +81,5 @@ public sealed record Profile(
     IReadOnlyList<VarEntry> Vars,
     IReadOnlyList<string>? Exclude = null,
     IReadOnlyList<DatarefEntry>? Datarefs = null,
-    ProfileRoles? Roles = null);
+    ProfileRoles? Roles = null,
+    IReadOnlyDictionary<string, string>? GroupLabels = null);

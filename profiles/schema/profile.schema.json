@@ -35,7 +35,13 @@
       "type": "array",
       "items": { "$ref": "#/$defs/dataref" }
     },
-    "roles": { "$ref": "#/$defs/roles" }
+    "roles": { "$ref": "#/$defs/roles" },
+    "group_labels": {
+      "description": "Names of the panel groups as the pilots see them, for example mip: Main panel.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
   },
   "$defs": {
     "identifier": {
@@ -164,7 +170,14 @@
           "exclusiveMinimum": 0,
           "maximum": 60
         },
-        "note": { "type": "string" }
+        "note": { "type": "string" },
+        "label": { "description": "Name as the pilots see it, for example ENG 1 BLEED.", "type": "string", "minLength": 1 },
+        "value_labels": {
+          "description": "Names of values as the pilots see them, for example { \"0\": OFF, \"1\": ON }.",
+          "type": "object",
+          "propertyNames": { "pattern": "^-?[0-9]+([.][0-9]+)?$" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        }
       }
     },
     "roles": {
@@ -193,7 +206,9 @@
         "class": { "enum": ["owned", "observe", "ignore"] },
         "group": { "$ref": "#/$defs/identifier" },
         "poll_hz": { "type": "number", "exclusiveMinimum": 0, "maximum": 20 },
-        "note": { "type": "string" }
+        "note": { "type": "string" },
+        "label": { "description": "Name as the pilots see it, for example Fuel left.", "type": "string", "minLength": 1 },
+        "unit": { "description": "Unit of the value, for example kg. Shown with drift.", "type": "string", "minLength": 1 }
       }
     }
   }

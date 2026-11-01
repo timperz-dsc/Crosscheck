@@ -122,9 +122,9 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
 
         Sim(host).PilotSet("S_OH_ELEC_APU_MASTER", 1);
         await Wait.Until(() => Sim(guest).Get("S_OH_ELEC_APU_MASTER") == 1, "guest switch");
-        await Wait.Until(() => host.Engine.AcksOk == 1, "ack back at the host");
+        await Wait.Until(() => host.Engine!.AcksOk == 1, "ack back at the host");
         await Wait.Until(() => Sim(guest).Get("I_OH_ELEC_APU_MASTER_L") == 1, "effect on the guest");
-        Assert.Equal(0, guest.Engine.CommandsSent);
+        Assert.Equal(0, guest.Engine!.CommandsSent);
     }
 
     [Fact]
@@ -139,8 +139,8 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
             await Task.Delay(40);
         }
         await Wait.Until(() => Sim(host).Get("N_FCU_ALTITUDE") == 3 && Sim(guest).Get("N_FCU_ALTITUDE") == 3,
-            () => $"both displays at +3 (host display {Sim(host).Get("N_FCU_ALTITUDE")} counter {Sim(host).Get("E_FCU_ALTITUDE")} sent {host.Engine.CommandsSent}; " +
-                  $"guest display {Sim(guest).Get("N_FCU_ALTITUDE")} counter {Sim(guest).Get("E_FCU_ALTITUDE")} sent {guest.Engine.CommandsSent}; " +
+            () => $"both displays at +3 (host display {Sim(host).Get("N_FCU_ALTITUDE")} counter {Sim(host).Get("E_FCU_ALTITUDE")} sent {host.Engine!.CommandsSent}; " +
+                  $"guest display {Sim(guest).Get("N_FCU_ALTITUDE")} counter {Sim(guest).Get("E_FCU_ALTITUDE")} sent {guest.Engine!.CommandsSent}; " +
                   $"host writes [{string.Join(",", Sim(host).Writes.Select(w => w.Value))}] guest writes [{string.Join(",", Sim(guest).Writes.Select(w => w.Value))}])", 8000);
         await Task.Delay(500);
         Assert.True(Sim(host).Get("N_FCU_ALTITUDE") == 3 && Sim(guest).Get("N_FCU_ALTITUDE") == 3,
@@ -153,23 +153,23 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         var (host, guest) = await Pair();
         await Sim(host).PilotPress("S_CDU1_KEY_FPLN");
         await Wait.Until(() => Sim(guest).McduText(1) == "FPLN", "guest MCDU");
-        await Wait.Until(() => host.Engine.AcksOk == 1, "ack");
+        await Wait.Until(() => host.Engine!.AcksOk == 1, "ack");
         await Task.Delay(500);
         Assert.Equal("FPLN", Sim(guest).McduText(1));
         Assert.Equal("FPLN", Sim(host).McduText(1));
         Assert.Equal(0, Sim(guest).Get("S_CDU1_KEY_FPLN"));
-        Assert.Equal(0, guest.Engine.CommandsSent);
-        Assert.Equal(1, host.Engine.CommandsSent);
+        Assert.Equal(0, guest.Engine!.CommandsSent);
+        Assert.Equal(1, host.Engine!.CommandsSent);
     }
 
     [Fact]
     public async Task A_lost_command_is_retried_and_then_acked()
     {
         var (host, guest) = await Pair();
-        guest.Engine.DropIncomingCommands(1);
+        guest.Engine!.DropIncomingCommands(1);
         Sim(host).PilotSet("S_FCU_EFIS1_ND_MODE", 3);
         await Wait.Until(() => Sim(guest).Get("S_FCU_EFIS1_ND_MODE") == 3, "applied on the re-send", 5000);
-        await Wait.Until(() => host.Engine.AcksOk == 1, "ack after retry");
+        await Wait.Until(() => host.Engine!.AcksOk == 1, "ack after retry");
         Assert.Empty(host.Status.OpenDesyncs);
     }
 
@@ -183,7 +183,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         Sim(host).PilotSet("S_OH_ELEC_APU_MASTER", 1);
         await Wait.Until(() => host.Status.OpenDesyncs.Contains("S_OH_ELEC_APU_MASTER") && guest.Status.OpenDesyncs.Contains("S_OH_ELEC_APU_MASTER"), "desync on both", 10000);
         await Wait.Until(() => { lock (events) return events.Any(e => e["type"]!.GetValue<string>() == "desync"); }, "desync on the local API event stream");
-        var status = JsonNode.Parse(await new HttpClient().GetStringAsync($"http://127.0.0.1:{guest.Api!.Port}/status"))!;
+        var status = JsonNode.Parse(await new HttpClient().GetStringAsync($"http://127.0.0.1:{guest.Api!.Port}/api/status"))!;
         Assert.Contains(status["open_desyncs"]!.AsArray(), d => d!["reason"]!.GetValue<string>() == "refused");
     }
 
@@ -200,7 +200,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         await Wait.Until(() =>
             Sim(guest).Get("S_OH_ELEC_APU_MASTER") == 1 && Sim(guest).Get("S_FCU_EFIS1_ND_MODE") == 4 && Sim(guest).Get("N_FCU_ALTITUDE") == 2,
             "missed commands applied", 8000);
-        Assert.Equal(0, guest.Engine.CommandsSent);
+        Assert.Equal(0, guest.Engine!.CommandsSent);
     }
 
     [Fact]
@@ -214,10 +214,10 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
             await Task.Delay(i % 3 == 0 ? 20 : 4); // some changes share a frame, some do not
         }
         await Wait.Until(() => Sim(guest).Get("N_FCU_ALTITUDE") == 100 && Sim(guest).Get("S_FCU_EFIS1_ND_MODE") == 4, "guest caught up", 20000);
-        var sentBefore = host.Engine.CommandsSent;
+        var sentBefore = host.Engine!.CommandsSent;
         await Task.Delay(1500);
-        Assert.Equal(0, guest.Engine.CommandsSent); // the receiver never sent anything back
-        Assert.Equal(sentBefore, host.Engine.CommandsSent); // and nothing keeps bouncing
+        Assert.Equal(0, guest.Engine!.CommandsSent); // the receiver never sent anything back
+        Assert.Equal(sentBefore, host.Engine!.CommandsSent); // and nothing keeps bouncing
         Assert.Equal(100, Sim(host).Get("N_FCU_ALTITUDE"));
         Assert.Empty(host.Status.OpenDesyncs);
     }
@@ -227,8 +227,8 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
     {
         var (host, guest) = await Pair();
         using var http = new HttpClient();
-        var hs = JsonNode.Parse(await http.GetStringAsync($"http://127.0.0.1:{host.Api!.Port}/status"))!;
-        var gs = JsonNode.Parse(await http.GetStringAsync($"http://127.0.0.1:{guest.Api!.Port}/status"))!;
+        var hs = JsonNode.Parse(await http.GetStringAsync($"http://127.0.0.1:{host.Api!.Port}/api/status"))!;
+        var gs = JsonNode.Parse(await http.GetStringAsync($"http://127.0.0.1:{guest.Api!.Port}/api/status"))!;
         Assert.Equal("pf", hs["role"]!.GetValue<string>());
         Assert.Equal("pm", gs["role"]!.GetValue<string>());
         Assert.Equal(hs["session_id"]!.GetValue<string>(), gs["session_id"]!.GetValue<string>());
@@ -236,7 +236,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         Assert.Equal("connected", gs["sim"]!.GetValue<string>());
         Assert.Equal(FakeFenixGraphQl.FakeSoftwareVersion, gs["aircraft"]!["app_version"]!.GetValue<string>());
 
-        using var foreign = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.Api.Port}/status");
+        using var foreign = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.Api.Port}/api/status");
         foreign.Headers.Add("Origin", "https://example.com");
         Assert.Equal(HttpStatusCode.Forbidden, (await http.SendAsync(foreign)).StatusCode);
     }
@@ -248,7 +248,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         Sim(guest).Logic("I_MIP_GEAR_1_L", 1); // an observe var differs: a desync on both sides
         await Wait.Until(() => guest.Status.OpenDesyncs.Contains("I_MIP_GEAR_1_L"), "desync open", 10000);
 
-        guest.Engine.RequestControl();
+        guest.Engine!.RequestControl();
         await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 3000);
         Assert.True(guest.Sim.Stream.IsPf); // the new PF's stream writer refuses frames
         Assert.False(host.Sim.Stream.IsPf); // the new PM follows
@@ -265,7 +265,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
     public async Task The_PF_can_give_control_to_the_PM()
     {
         var (host, guest) = await Pair();
-        host.Engine.GiveControl();
+        host.Engine!.GiveControl();
         await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 3000);
         var changed = host.Events.Recent.Last(e => e.Type == "control_changed");
         Assert.Equal("give", changed.Data!["kind"]!.GetValue<string>());
@@ -284,7 +284,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 0, "release synced");
         await Task.Delay(300);
         Assert.Equal("pf", guest.Status.Role); // the release is not a second request, and the host did not take it back
-        Assert.Equal(0, host.Engine.CommandsSent);
+        Assert.Equal(0, host.Engine!.CommandsSent);
     }
 
     [Fact]
@@ -313,7 +313,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
     {
         var list = new List<JsonNode>();
         var ws = new ClientWebSocket();
-        await ws.ConnectAsync(new Uri($"ws://127.0.0.1:{b.Api!.Port}/events"), CancellationToken.None);
+        await ws.ConnectAsync(new Uri($"ws://127.0.0.1:{b.Api!.Port}/api/events"), CancellationToken.None);
         _ = Task.Run(async () =>
         {
             var buffer = new byte[64 * 1024];

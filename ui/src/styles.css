@@ -1,0 +1,153 @@
+/*
+  Crosscheck UI. The look of docs/design/ui/*.html: white, Geist, hairlines, type for hierarchy.
+  Colours (and nothing else):
+    ink #111315, grey #555A60, hairlines #E3E5E1 / #C9CCC6,
+    green #138A52 only for "matches", red #B42318 only for "differs", amber #8A4B00 only for warnings.
+  Fonts are bundled from the geist package; nothing is loaded from the network.
+*/
+
+@font-face {
+  font-family: 'Geist';
+  src: url('../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ink: #111315;
+  --grey: #555a60;
+  --rule: #e3e5e1;
+  --rule-strong: #c9ccc6;
+  --matches: #138a52;
+  --differs: #b42318;
+  --warning: #8a4b00;
+  --mono: 'Geist Mono', ui-monospace, monospace;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: 'Geist', 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a { color: var(--matches); }
+
+h1, h2, p, dl, dd, ol { margin: 0; }
+
+h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; }
+h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+
+.mono { font-family: var(--mono); }
+.muted { color: var(--grey); }
+.differs { color: var(--differs); font-weight: 500; }
+.warning { color: var(--warning); font-weight: 500; }
+.strong { font-weight: 600; }
+
+/* ---- header ---- */
+
+.header {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px 48px; border-bottom: 1px solid var(--rule);
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-name { font-size: 19px; font-weight: 600; letter-spacing: -0.03em; }
+.header-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 14px; }
+.header-meta .mono, .ink { color: var(--ink); }
+.header-note { font-size: 14px; color: var(--grey); }
+
+/* One status line under the header (peer lost, reconnecting). */
+.line {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+  padding: 12px 48px; border-bottom: 1px solid var(--rule);
+}
+
+/* ---- layouts ---- */
+
+.main { display: flex; flex-direction: column; padding: 64px 48px 72px; }
+.main-start { max-width: 760px; gap: 56px; }
+.main-preflight { max-width: 860px; gap: 40px; }
+.main-session { max-width: 1180px; padding: 48px 48px 72px; flex-direction: row; flex-wrap: wrap; gap: 64px; }
+.session-col { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px; }
+.session-aside { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+
+.intro { display: flex; flex-direction: column; gap: 10px; }
+.intro .lead { font-size: 16px; color: var(--grey); max-width: 560px; }
+.heading { display: flex; flex-direction: column; gap: 8px; }
+.heading-title { display: flex; align-items: center; gap: 12px; }
+.heading h1 { font-size: 30px; }
+
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 48px; }
+.choice { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.stack-wide { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.row-wide { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.prose { max-width: 620px; }
+.hint { color: var(--grey); font-size: 14px; }
+
+/* ---- controls ---- */
+
+.btn {
+  height: 44px; padding: 0 20px; border-radius: 8px; font: inherit; font-weight: 500; cursor: pointer;
+}
+.btn-primary { border: 0; background: var(--ink); color: #ffffff; }
+.btn-secondary { border: 1px solid var(--rule-strong); background: #ffffff; color: var(--ink); }
+.btn-small { height: 36px; padding: 0 14px; font-weight: 400; }
+.btn:disabled { cursor: default; background: var(--rule); color: var(--grey); border: 0; }
+
+.code-input {
+  height: 44px; width: 150px; box-sizing: border-box; padding: 0 14px;
+  border: 1px solid var(--rule-strong); border-radius: 8px;
+  font-family: var(--mono); font-size: 17px; letter-spacing: 0.04em; color: var(--ink);
+}
+
+.join-code { font-family: var(--mono); font-size: 48px; font-weight: 500; letter-spacing: 0.04em; line-height: 1.1; }
+
+/* ---- lists ---- */
+
+.list { display: grid; grid-template-columns: minmax(120px, 180px) 1fr; border-top: 1px solid var(--rule); }
+.list-crew { grid-template-columns: minmax(140px, 200px) 1fr; }
+.list dt, .list dd { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.list dd .mono, .list dd.mono { font-size: 14px; }
+
+.panels { display: grid; grid-template-columns: 1fr auto; border-top: 1px solid var(--rule); }
+.panels dt, .panels dd { padding: 10px 0; border-bottom: 1px solid var(--rule); }
+
+.recent { padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+.recent li { display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+.recent time { font-family: var(--mono); font-size: 13px; color: var(--grey); padding-top: 2px; }
+
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; min-width: 560px; border-collapse: collapse; text-align: left; }
+.table th { font-weight: 500; font-size: 14px; color: var(--grey); padding: 0 16px 10px 0; border-bottom: 1px solid var(--rule-strong); }
+.table th:last-child { padding-right: 0; }
+.table td { padding: 14px 16px 14px 0; border-bottom: 1px solid var(--rule); }
+.table td:last-child { padding-right: 0; }
+.table td.mono { font-size: 14px; }
+
+/* A control that differs, and the control-change notice (same pattern, no red). */
+.block { display: flex; flex-direction: column; gap: 18px; padding: 24px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.block-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+.block-title h2 { font-size: 20px; letter-spacing: -0.015em; }
+.values { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: 4px 24px; }
+.values dt { color: var(--grey); font-size: 14px; }
+.values dd { font-size: 22px; font-weight: 600; }
+.blocks { display: flex; flex-direction: column; }
+.blocks .block + .block { border-top: 0; }
+
+@media (max-width: 640px) {
+  .header, .line { padding-left: 24px; padding-right: 24px; }
+  .main { padding-left: 24px; padding-right: 24px; }
+}

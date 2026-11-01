@@ -5,11 +5,15 @@ export interface PreflightResult {
   warnings: DiffEntry[];
 }
 
+/** What a bridge sends when it could not read a version. */
+export const UNKNOWN = 'unknown';
+
 const major = (version: string) => version.split(/[.+-]/)[0] ?? '';
 
 /**
  * Compares a joining client's preflight with the session reference (the creator's).
- * Bridge major version, profile and aircraft build must match; AIRAC only warns.
+ * Bridge major version, profile and aircraft build must match. AIRAC only warns, and so does
+ * an aircraft version that one side could not read ("unknown"): it cannot be compared.
  */
 export function comparePreflight(reference: Preflight, joining: Preflight): PreflightResult {
   const rejects: DiffEntry[] = [];
@@ -27,14 +31,16 @@ export function comparePreflight(reference: Preflight, joining: Preflight): Pref
   if (reference.profile_hash !== joining.profile_hash) {
     reject('profile_hash', reference.profile_hash, joining.profile_hash, 'Profile files differ. Both pilots need the same profile.');
   }
-  if (reference.aircraft.package_version !== joining.aircraft.package_version) {
-    reject('aircraft.package_version', reference.aircraft.package_version, joining.aircraft.package_version,
-      'Aircraft package version differs. Both pilots need the same aircraft build.');
-  }
-  if (reference.aircraft.app_version !== joining.aircraft.app_version) {
-    reject('aircraft.app_version', reference.aircraft.app_version, joining.aircraft.app_version,
-      'Aircraft app version differs. Both pilots need the same aircraft build.');
-  }
+  const build = (field: 'aircraft.package_version' | 'aircraft.app_version', ref: string, join: string, what: string) => {
+    if (ref === UNKNOWN || join === UNKNOWN) {
+      warnings.push({ field, reference: ref, joining: join, severity: 'warn',
+        message: `Aircraft ${what} version unknown on ${ref === UNKNOWN && join === UNKNOWN ? 'both sides' : 'one side'}: it cannot be compared. Make sure both pilots run the same aircraft build.` });
+    } else if (ref !== join) {
+      reject(field, ref, join, `Aircraft ${what} version differs. Both pilots need the same aircraft build.`);
+    }
+  };
+  build('aircraft.package_version', reference.aircraft.package_version, joining.aircraft.package_version, 'package');
+  build('aircraft.app_version', reference.aircraft.app_version, joining.aircraft.app_version, 'app');
 
   const refAirac = reference.airac ?? null;
   const joinAirac = joining.airac ?? null;

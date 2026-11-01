@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crosscheck – Start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#138A52}a:hover{color:#0E6B3F}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFFFFF; color: #111315; font-family: 'Geist', 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 48px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><path d="M20 50 L36 66" stroke="#111315" stroke-width="13" stroke-linecap="round" fill="none"></path><path d="M50 65.5 L82 30" stroke="#138A52" stroke-width="13" stroke-linecap="round" fill="none"></path></svg>
+<span style="font-size: 19px; font-weight: 600; letter-spacing: -0.03em">Crosscheck</span>
+</div>
+<span style="font-size: 14px; color: #555A60">Not in a session</span>
+</header>
+<main style="max-width: 760px; padding: 64px 48px 72px; display: flex; flex-direction: column; gap: 56px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15">Start a shared cockpit</h1>
+<p style="margin: 0; font-size: 16px; color: #555A60; max-width: 560px">Create a session and send the code to your first officer, or join with a code you were given.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 48px">
+<section style="display: flex; flex-direction: column; gap: 14px; align-items: flex-start">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">Create</h2>
+<p style="margin: 0; color: #555A60">You will be captain and pilot flying. The code appears once the session is open.</p>
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 8px; background: #111315; color: #FFFFFF; font: inherit; font-weight: 500; cursor: pointer">Create session</button>
+</section>
+<section style="display: flex; flex-direction: column; gap: 14px; align-items: flex-start">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">Join</h2>
+<label for="code" style="color: #555A60">Session code</label>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<input id="code" type="text" placeholder="K7RX2M" maxlength="6" style="height: 44px; width: 150px; box-sizing: border-box; padding: 0 14px; border: 1px solid #C9CCC6; border-radius: 8px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 17px; letter-spacing: 0.04em; color: #111315">
+<button type="button" style="height: 44px; padding: 0 20px; border: 1px solid #C9CCC6; border-radius: 8px; background: #FFFFFF; color: #111315; font: inherit; font-weight: 500; cursor: pointer">Join</button>
+</div>
+</section>
+</div>
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">This computer</h2>
+<dl style="margin: 0; display: grid; grid-template-columns: minmax(120px, 180px) 1fr; border-top: 1px solid #E3E5E1">
+<dt style="padding: 12px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Simulator</dt>
+<dd style="margin: 0; padding: 12px 0; border-bottom: 1px solid #E3E5E1">Connected to MSFS 2024</dd>
+<dt style="padding: 12px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Aircraft</dt>
+<dd style="margin: 0; padding: 12px 0; border-bottom: 1px solid #E3E5E1">Fenix A320, app 3.0.0.7613</dd>
+<dt style="padding: 12px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Profile</dt>
+<dd style="margin: 0; padding: 12px 0; border-bottom: 1px solid #E3E5E1">fenix-a320, made for 3.0.0.7613</dd>
+<dt style="padding: 12px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Server</dt>
+<dd style="margin: 0; padding: 12px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">ws://127.0.0.1:8787</dd>
+</dl>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

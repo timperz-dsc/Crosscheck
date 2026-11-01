@@ -4,6 +4,7 @@ import type { ProtocolValidator } from '../protocol/validate.js';
 import type { CreateBody, Envelope, ErrorCode, JoinBody, ResumeBody } from '../protocol/types.js';
 import { generateJoinCode, newSessionId, normalizeJoinCode } from './joinCode.js';
 import { Session, type Conn } from './session.js';
+import { comparePreflight } from './preflight.js';
 
 class SocketConn implements Conn {
   slot?: Conn['slot'];
@@ -78,6 +79,7 @@ export class SessionManager {
     switch (msg.type) {
       case 'create': return this.create(conn, msg);
       case 'join': return this.join(conn, msg);
+      case 'preflight_check': return this.check(conn, msg);
       case 'resume': return this.resume(conn, msg);
       default: return this.error(conn, 'not_in_session', `${msg.type} needs a session: send create, join or resume first`);
     }
@@ -115,6 +117,22 @@ export class SessionManager {
       return this.send(conn, null, 'join_rejected', rejected);
     }
     this.attached(conn);
+  }
+
+  /** Preflight comparison before joining: takes no slot and changes nothing. */
+  private check(conn: SocketConn, msg: Envelope): void {
+    const body = msg.body as unknown as JoinBody;
+    const code = normalizeJoinCode(body.join_code);
+    const session = code ? this.byCode.get(code) : undefined;
+    if (!session) {
+      return this.send(conn, null, 'join_rejected', { reason: 'unknown_code', message: 'No session with this join code.', diff: [] });
+    }
+    if (session.slots.length >= 2) {
+      return this.send(conn, null, 'join_rejected', { reason: 'session_full', message: 'This session already has two pilots.', diff: [] });
+    }
+    const { rejects, warnings } = comparePreflight(session.reference, body.preflight);
+    session.log.event('preflight_checked', { rejects: rejects.map((r) => r.field), warnings: warnings.map((w) => w.field) });
+    this.send(conn, null, 'preflight_result', { join_code: session.joinCode, reference: session.reference, rejects, warnings });
   }
 
   private resume(conn: SocketConn, msg: Envelope): void {

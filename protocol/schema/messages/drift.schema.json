@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/drift.schema.json",
+  "title": "drift",
+  "description": "Differences of owned values (fuel, payload) in one group, in the dataref's own units. Information only: owned values are aligned once at join and never corrected afterwards. Empty values = no drift. Not sequenced, not replayed. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "drift"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group",
+        "values"
+      ],
+      "properties": {
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "var",
+              "pf",
+              "pm",
+              "delta"
+            ],
+            "properties": {
+              "var": {
+                "$ref": "../common.schema.json#/$defs/varName"
+              },
+              "pf": {
+                "type": "number"
+              },
+              "pm": {
+                "type": "number"
+              },
+              "delta": {
+                "description": "pm - pf",
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

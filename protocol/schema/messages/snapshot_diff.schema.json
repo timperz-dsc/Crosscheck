@@ -61,12 +61,13 @@
                 "$ref": "../common.schema.json#/$defs/scalar"
               },
               "action": {
-                "description": "correct = a correction is sent; desync = cannot be fixed; held = open desync, not corrected again; deferred = control handover in progress, decided afterwards.",
+                "description": "correct = a correction is sent; desync = cannot be fixed; held = open desync, not corrected again; deferred = control handover in progress, decided afterwards; drift = owned value differs, reported only (never corrected after the join).",
                 "enum": [
                   "correct",
                   "desync",
                   "held",
-                  "deferred"
+                  "deferred",
+                  "drift"
                 ]
               },
               "target": {

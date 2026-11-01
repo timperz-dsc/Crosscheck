@@ -1,0 +1,12 @@
+{
+  "v": 1,
+  "type": "drift",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "group": "systems",
+    "values": [
+      { "var": "aircraft.fuel.left.amount.kg", "pf": 1500, "pm": 1488, "delta": -12 }
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crosscheck – In session</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#138A52}a:hover{color:#0E6B3F}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFFFFF; color: #111315; font-family: 'Geist', 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 48px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><path d="M20 50 L36 66" stroke="#111315" stroke-width="13" stroke-linecap="round" fill="none"></path><path d="M50 65.5 L82 30" stroke="#138A52" stroke-width="13" stroke-linecap="round" fill="none"></path></svg>
+<span style="font-size: 19px; font-weight: 600; letter-spacing: -0.03em">Crosscheck</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 14px">
+<span style="color: #555A60">Session <span style="font-family: 'Geist Mono', ui-monospace, monospace; color: #111315">K7RX2M</span></span>
+<span style="color: #555A60">Connected, 38 ms</span>
+<button type="button" style="height: 36px; padding: 0 14px; border: 1px solid #C9CCC6; border-radius: 8px; background: #FFFFFF; color: #111315; font: inherit; cursor: pointer">Leave</button>
+</div>
+</header>
+<main style="max-width: 1180px; padding: 48px 48px 72px; display: flex; flex-wrap: wrap; gap: 64px">
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true"><path d="M20 50 L36 66" stroke="#111315" stroke-width="13" stroke-linecap="round" fill="none"></path><path d="M50 65.5 L82 30" stroke="#138A52" stroke-width="13" stroke-linecap="round" fill="none"></path></svg>
+<h1 style="margin: 0; font-size: 30px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15">Both cockpits match</h1>
+</div>
+<p style="margin: 0; color: #555A60">Last compared 2 seconds ago.</p>
+</div>
+<section style="display: flex; flex-direction: column; gap: 16px">
+<dl style="margin: 0; display: grid; grid-template-columns: minmax(140px, 200px) 1fr; border-top: 1px solid #E3E5E1">
+<dt style="padding: 12px 0; border-bottom: 1px solid #E3E5E1">Captain</dt>
+<dd style="margin: 0; padding: 12px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Pilot flying</dd>
+<dt style="padding: 12px 0; border-bottom: 1px solid #E3E5E1">First officer (you)</dt>
+<dd style="margin: 0; padding: 12px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Pilot monitoring</dd>
+</dl>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 8px; background: #111315; color: #FFFFFF; font: inherit; font-weight: 500; cursor: pointer">I have control</button>
+<span style="color: #555A60; font-size: 14px">Takes over at once. The takeover button on your sidestick does the same.</span>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">Recent</h2>
+<ol style="margin: 0; padding: 0; list-style: none; border-top: 1px solid #E3E5E1">
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:42:51</span><span>CDU 1 INIT pressed by captain. Screens match.</span></li>
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:42:30</span><span>FCU altitude 5 clicks up by captain. Both FCUs show 12000.</span></li>
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:41:12</span><span>APU START pressed by you. Confirmed.</span></li>
+<li style="display: grid; grid-template-columns: 84px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid #E3E5E1"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #555A60; padding-top: 2px">12:41:07</span><span>APU MASTER on by you. Confirmed.</span></li>
+</ol>
+</section>
+</div>
+<aside style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em">Panels</h2>
+<dl style="margin: 0; display: grid; grid-template-columns: 1fr auto; border-top: 1px solid #E3E5E1">
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Overhead</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">FCU</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">EFIS</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Main panel</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Pedestal</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">CDU 1</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">CDU 2</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">ECAM</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Circuit breakers</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">Match</dd>
+<dt style="padding: 10px 0; border-bottom: 1px solid #E3E5E1">Fuel</dt><dd style="margin: 0; padding: 10px 0; border-bottom: 1px solid #E3E5E1; color: #555A60">12 kg apart</dd>
+</dl>
+</aside>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

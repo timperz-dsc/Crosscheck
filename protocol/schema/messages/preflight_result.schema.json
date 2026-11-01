@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/preflight_result.schema.json",
+  "title": "preflight_result",
+  "description": "Answer to preflight_check: the session reference (the creator's preflight) and the differences. Joining is possible when rejects is empty. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "preflight_result"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "join_code",
+        "reference",
+        "rejects",
+        "warnings"
+      ],
+      "properties": {
+        "join_code": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]{6}$"
+        },
+        "reference": {
+          "$ref": "../common.schema.json#/$defs/preflight"
+        },
+        "rejects": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/diffEntry"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/diffEntry"
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

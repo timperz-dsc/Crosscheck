@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/preflight_check.schema.json",
+  "title": "preflight_check",
+  "description": "Compare a preflight with a session before joining. Takes no slot and changes nothing. Answered with preflight_result, or join_rejected for an unknown code or a full session. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "preflight_check"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "join_code",
+        "preflight"
+      ],
+      "properties": {
+        "join_code": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]{6}$"
+        },
+        "preflight": {
+          "$ref": "../common.schema.json#/$defs/preflight"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

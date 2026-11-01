@@ -59,6 +59,8 @@ public sealed class SyncEngine : IAsyncDisposable
     private readonly Queue<string> _ackOrder = new();
     private readonly HashSet<string> _inFlight = new(StringComparer.Ordinal);
     private readonly Dictionary<string, double> _pressCounter = new(StringComparer.Ordinal);
+    /// <summary>Own command id → what the pilot did, in words (for the ack in the recent list).</summary>
+    private readonly Dictionary<string, string> _sentText = new(StringComparer.Ordinal);
     private readonly IClock _clock;
     private readonly Channel<ApplyJob> _applyQueue = Channel.CreateUnbounded<ApplyJob>(new UnboundedChannelOptions { SingleReader = true });
     private readonly CancellationTokenSource _stop = new();
@@ -87,6 +89,7 @@ public sealed class SyncEngine : IAsyncDisposable
         _clock = clock ?? SystemClock.Instance;
         _echo = new EchoTracker(_clock);
         _vars = profile.Vars.ToDictionary(v => v.Name, StringComparer.Ordinal);
+        Labels = new Labels(profile);
     }
 
     // ---------------------------------------------------------------- counters (status, tests)
@@ -111,32 +114,73 @@ public sealed class SyncEngine : IAsyncDisposable
     };
 
     /// <summary>Only profile vars, and never ignore/stream.</summary>
-    public SimPlan Plan
+    public SimPlan Plan => PlanFor(_profile);
+
+    public static SimPlan PlanFor(Profile profile)
     {
-        get
+        var vars = profile.Vars.Select(v => v.Name).ToHashSet(StringComparer.Ordinal);
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var v in profile.Vars.Where(v => Watched.Contains(v.Class)))
         {
-            var names = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var v in _profile.Vars.Where(v => Watched.Contains(v.Class)))
-            {
-                names.Add(v.Name);
-                if (v.Display is { } d && _vars.ContainsKey(d)) names.Add(d);
-                if (v.Verify?.Lvar is { } e && _vars.ContainsKey(e)) names.Add(e);
-            }
-            return new SimPlan(names.Order(StringComparer.Ordinal).ToList());
+            names.Add(v.Name);
+            if (v.Display is { } d && vars.Contains(d)) names.Add(d);
+            if (v.Verify?.Lvar is { } e && vars.Contains(e)) names.Add(e);
         }
+        return new SimPlan(names.Order(StringComparer.Ordinal).ToList());
     }
 
     /// <summary>GraphQL paths to poll: datarefs and verify sources.</summary>
-    public IReadOnlyCollection<string> GraphQlPaths =>
-        (_profile.Datarefs ?? []).Where(d => d.Class != SyncClass.Ignore).Select(d => d.Path)
-            .Concat(_profile.Vars.Select(v => v.Verify?.Graphql).OfType<string>())
+    public IReadOnlyCollection<string> GraphQlPaths => GraphQlPathsFor(_profile);
+
+    public static IReadOnlyCollection<string> GraphQlPathsFor(Profile profile) =>
+        (profile.Datarefs ?? []).Where(d => d.Class != SyncClass.Ignore).Select(d => d.Path)
+            .Concat(profile.Vars.Select(v => v.Verify?.Graphql).OfType<string>())
             .Distinct().ToList();
+
+    // ---------------------------------------------------------------- what the UI shows
+
+    /// <summary>When the other pilot was lost (null while connected).</summary>
+    public DateTimeOffset? PeerLostAt { get; private set; }
+    /// <summary>Last time this side sent its hashes while the other pilot was connected.</summary>
+    public DateTimeOffset? LastComparedAt { get; private set; }
+    /// <summary>The last control_changed in which this side became PF (open differences as information).</summary>
+    public JsonObject? ControlNotice { get; private set; }
+    public DateTimeOffset? ControlNoticeAt { get; private set; }
+    /// <summary>Peer name from joined / peer_status.</summary>
+    public string? PeerName { get; private set; }
+    /// <summary>Groups this side reports (have at least one value).</summary>
+    public IReadOnlyList<string> ActiveGroups => Groups.ToList();
+
+    private readonly Dictionary<string, JsonArray> _drift = new(StringComparer.Ordinal);
+
+    /// <summary>Latest owned drift per var: (pf, pm, delta) in the dataref's units.</summary>
+    public IReadOnlyDictionary<string, (double Pf, double Pm, double Delta)> Drift
+    {
+        get
+        {
+            lock (_gate)
+                return _drift.Values.SelectMany(a => a).OfType<JsonObject>().ToDictionary(
+                    v => v["var"]!.GetValue<string>(),
+                    v => (v["pf"]!.GetValue<double>(), v["pm"]!.GetValue<double>(), v["delta"]!.GetValue<double>()));
+        }
+    }
+
+    public Labels Labels { get; }
 
     /// <summary>Tests: drop the next n incoming commands as if lost on the way.</summary>
     public void DropIncomingCommands(int n) => Interlocked.Exchange(ref _dropIncoming, n);
 
     public void Start()
     {
+        lock (_gate)
+        {
+            foreach (var name in Plan.Watched)
+            {
+                if (!_sim.TryGet(name, out var v)) continue;
+                _lastSeen[name] = v;
+                if (_vars.TryGetValue(name, out var spec) && spec.Class == SyncClass.Delta) _baseline[name] = v;
+            }
+        }
         _sim.ValueChanged += OnSimValue;
         _sim.StateChanged += OnSimState;
         _client.MessageReceived += OnMessage;
@@ -236,6 +280,8 @@ public sealed class SyncEngine : IAsyncDisposable
         body["group"] = spec.Group;
         body["settle_ms"] = (spec.Verify?.SettleMs ?? _options.DefaultSettleMs) + (spec.Class == SyncClass.Pulse ? spec.PulseMs ?? 0 : 0);
         _pendingOwn[id] = (spec.Name, Absolute.Contains(spec.Class), body);
+        _sentText[id] = Labels.Action(spec.Name, spec.Class, value, delta);
+        if (_sentText.Count > 2000) _sentText.Remove(_sentText.Keys.First());
         CommandsSent++;
         return body;
     }
@@ -277,6 +323,12 @@ public sealed class SyncEngine : IAsyncDisposable
             case "control_changed":
                 SetPf(body["pf_client_id"]!.GetValue<string>());
                 _client.Send("control_ack", new JsonObject { ["epoch"] = body["epoch"]!.DeepClone() });
+                if (IsPf)
+                {
+                    ControlNotice = (JsonObject)body.DeepClone();
+                    ControlNoticeAt = DateTimeOffset.UtcNow;
+                }
+                else ControlNotice = null;
                 _hub.Publish("control_changed", ControlChangedText(body), body);
                 break;
             case "control_handover":
@@ -297,6 +349,8 @@ public sealed class SyncEngine : IAsyncDisposable
             case "peer_status":
                 var state = body["state"]!.GetValue<string>();
                 _status.PeerState = state;
+                if (body["name"] is JsonValue pn) PeerName = pn.GetValue<string>();
+                PeerLostAt = state == "lost" ? DateTimeOffset.UtcNow : null;
                 _hub.Publish("peer_" + state, $"Other pilot ({body["seat"]}): {state}.", body);
                 foreach (var w in body["warnings"] as JsonArray ?? [])
                     _hub.Publish("warning", w!["message"]!.GetValue<string>(), w.AsObject());
@@ -305,9 +359,19 @@ public sealed class SyncEngine : IAsyncDisposable
                 _hub.Publish("snapshot_diff", $"Snapshot differences in {body["group"]}.", body);
                 break;
             case "ack":
-                if (body["ok"]?.GetValue<bool>() == true) Interlocked.Increment(ref _acksOk);
-                else
-                    _hub.Publish("ack_failed", $"Command {body["id"]} was not confirmed by the other sim.", body);
+            {
+                var ok = body["ok"]?.GetValue<bool>() == true;
+                if (ok) Interlocked.Increment(ref _acksOk);
+                else _hub.Publish("ack_failed", $"Command {body["id"]} was not confirmed by the other sim.", body);
+                string? what;
+                lock (_gate) _sentText.Remove(body["id"]!.GetValue<string>(), out what);
+                if (what is not null && body["superseded"]?.GetValue<bool>() != true)
+                    _hub.Publish(ok ? "action_confirmed" : "action_failed",
+                        ok ? $"{what} by you. Confirmed." : $"{what} by you. Not confirmed by the {PeerWord}'s sim.", body);
+                break;
+            }
+            case "drift":
+                lock (_gate) _drift[body["group"]!.GetValue<string>()] = (JsonArray)body["values"]!.DeepClone();
                 break;
             case "stream":
                 if (body["data"] is JsonObject data)
@@ -330,7 +394,12 @@ public sealed class SyncEngine : IAsyncDisposable
         if (_profile.Roles?.Takeover is { } t)
             lock (_gate) _takeoverVar = side == SeatSide.Fo ? t.Fo : t.Captain;
         if (body["join_code"] is JsonValue code) _status.JoinCode = code.GetValue<string>();
-        if (body["peer"] is JsonObject peer) _status.PeerState = peer["state"]!.GetValue<string>();
+        if (body["peer"] is JsonObject peer)
+        {
+            _status.PeerState = peer["state"]!.GetValue<string>();
+            if (peer["name"] is JsonValue pn) PeerName = pn.GetValue<string>();
+            PeerLostAt = _status.PeerState == "lost" ? DateTimeOffset.UtcNow : null;
+        }
         SetPf(body["pf_client_id"]?.GetValue<string>());
         _snapshotTimer?.Dispose();
         _snapshotTimer = new Timer(_ => SendHashes(), null, _client.SnapshotIntervalMs, _client.SnapshotIntervalMs);
@@ -640,6 +709,12 @@ public sealed class SyncEngine : IAsyncDisposable
             _ => _sim.TryGet(name, out var v) ? v : null,
         };
         CommandsApplied++;
+        if (!job.IsCorrection)
+        {
+            var what = Labels.Action(name, spec.Class, job.Value, job.Delta);
+            _hub.Publish("action_applied", ok ? $"{what} by {PeerWord}. Confirmed." : $"{what} by {PeerWord}. Not confirmed in your sim.",
+                new JsonObject { ["id"] = job.Id, ["var"] = name, ["ok"] = ok });
+        }
         _log.Event("applied", new JsonObject
         {
             ["id"] = job.Id, ["var"] = name, ["correction"] = job.IsCorrection, ["stored"] = stored, ["effect"] = effect?.DeepClone(), ["ok"] = ok,
@@ -694,6 +769,7 @@ public sealed class SyncEngine : IAsyncDisposable
     private void SendHashes()
     {
         if (_sim.State != SimState.Connected || _client.State != ServerState.Connected) return;
+        if (_status.PeerState is "joined" or "resumed" or "connected") LastComparedAt = DateTimeOffset.UtcNow;
         foreach (var group in Groups)
         {
             _client.Send("snapshot_hash", new JsonObject
@@ -734,16 +810,45 @@ public sealed class SyncEngine : IAsyncDisposable
         _client.Send("control_request", body);
     }
 
+    /// <summary>
+    /// "Set both to X" from the UI: a normal pilot command from this seat (logged by the server as
+    /// a pilot action, so it clears the desync), and the own sim is set too if it differs. Only
+    /// verified and analog vars, only values the profile allows (checked by the adapter's guard).
+    /// </summary>
+    public async Task PilotSetAsync(string name, double value)
+    {
+        if (!_vars.TryGetValue(name, out var spec) || spec.Class is not (SyncClass.Verified or SyncClass.Analog))
+            throw new SafetyViolationException($"{name} cannot be set from here (only switches and knobs in the profile).");
+        if (!_sim.Guard.IsAllowedValue(name, value))
+            throw new SafetyViolationException($"{Labels.Number(value)} is not an allowed value of {name}.");
+        if (_sim.State != SimState.Connected) throw new InvalidOperationException("The sim is not connected.");
+        JsonObject command;
+        bool write;
+        lock (_gate)
+        {
+            if (!_sessionActive) throw new InvalidOperationException("Not in a session.");
+            command = NewCommand(spec, value, null);
+            write = !(_sim.TryGet(name, out var current) && current == value);
+            if (write) _echo.Expect(name, value, (spec.Verify?.SettleMs ?? _options.DefaultSettleMs) + _options.EchoWindowMs);
+        }
+        _log.Event("pilot_set", new JsonObject { ["var"] = name, ["value"] = value, ["source"] = "ui" });
+        _client.Send("command", command);
+        if (write) await WriteGuarded(name, value);
+    }
+
     /// <summary>"You have control" (as PF): hands control to the other pilot.</summary>
     public void GiveControl() => _client.Send("control_give", new JsonObject());
+
+    /// <summary>The other pilot as the UI names them: "captain" or "first officer".</summary>
+    public string PeerWord => _status.SeatSide == "fo" ? "captain" : "first officer";
 
     /// <summary>What the pilot reads on a control change; open differences are information, not a blocker.</summary>
     private string ControlChangedText(JsonObject body)
     {
         var given = body["kind"]?.GetValue<string>() == "give";
         var text = IsPf
-            ? given ? "You have control (PF): the other pilot gave it to you." : "You have control (PF)."
-            : given ? "You gave control; the other pilot is PF (you are PM)." : "The other pilot took control (you are PM).";
+            ? given ? $"The {PeerWord} gave you control. You are pilot flying." : "You took control. You are pilot flying."
+            : given ? $"You gave control to the {PeerWord}. You are pilot monitoring." : $"The {PeerWord} took control. You are pilot monitoring.";
         var groups = (body["differences"]?["groups"] as JsonArray ?? []).Select(g => g!.GetValue<string>()).ToList();
         var vars = (body["differences"]?["vars"] as JsonArray ?? []).Select(v => v!.GetValue<string>()).ToList();
         if (groups.Count > 0 || vars.Count > 0)

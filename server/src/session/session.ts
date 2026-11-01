@@ -74,12 +74,17 @@ interface GroupState {
   quietSince: number;
   /** A decision fell into a control handover freeze; re-evaluate afterwards. */
   deferred: boolean;
-  /** Vars that differed in the last snapshot diff of this group; cleared when the hashes match. */
+  /** Vars that differed in the last snapshot diff of this group (owned drift excluded); cleared when the hashes match. */
   diffVars: string[];
+  /** Owned vars that drifted in the last comparison; a drift message with no values clears them. */
+  driftVars: string[];
 }
+
+type RequestReason = 'mismatch' | 'resync' | 'join' | 'control';
 
 interface SnapshotRequestState {
   id: string;
+  reason: RequestReason;
   groups: string[] | null;
   responses: Map<string, Map<string, SnapshotValue[]>>;
   done: Set<string>;
@@ -426,7 +431,7 @@ export class Session {
   private group(name: string): GroupState {
     let g = this.groups.get(name);
     if (!g) {
-      g = { reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [] };
+      g = { reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [], driftVars: [] };
       this.groups.set(name, g);
     }
     return g;
@@ -452,6 +457,7 @@ export class Session {
     if (a.hash === b.hash) {
       g.mismatchCount = 0;
       g.diffVars = [];
+      if (g.driftVars.length > 0) this.sendDrift(name, g, []);
       for (const d of [...this.desyncs.values()]) if (d.group === name) this.clearDesync(d.var, 'match');
       return;
     }
@@ -462,14 +468,14 @@ export class Session {
     }
   }
 
-  private requestSnapshot(groups: string[] | null, reason: 'mismatch' | 'resync' | 'join' | 'control'): void {
+  private requestSnapshot(groups: string[] | null, reason: RequestReason): void {
     if (!this.bothConnected()) {
       this.log.event('snapshot_request_skipped', { groups, reason, why: 'peer not connected' });
       return;
     }
     const id = `r${++this.requestCounter}`;
     const timer = setTimeout(() => this.expireRequest(id), this.config.snapshotRequestTimeoutMs);
-    this.requests.set(id, { id, groups, responses: new Map(), done: new Set(), timer });
+    this.requests.set(id, { id, reason, groups, responses: new Map(), done: new Set(), timer });
     for (const name of groups ?? [...this.groups.keys()]) this.group(name).inFlight = id;
     this.emit(this.slots, 'snapshot_request', { request_id: id, groups, reason }, { replayable: false });
   }
@@ -497,7 +503,7 @@ export class Session {
     req.done.add(body.group);
     const g = this.group(body.group);
     if (g.inFlight === req.id) g.inFlight = null;
-    this.processGroup(req.id, body.group, byClient);
+    this.processGroup(req.id, req.reason, body.group, byClient);
     if (req.groups && req.groups.every((n) => req.done.has(n))) {
       clearTimeout(req.timer);
       this.requests.delete(req.id);
@@ -511,19 +517,31 @@ export class Session {
     return { seq: rec.seq, value: rec.value, pfConfirmed: pf !== null && (rec.origin === pf || rec.okBy.has(pf)) };
   }
 
-  /** Builds the diff of one group and applies the PF safety rule, the loop guard and the freeze rule. */
-  private processGroup(requestId: string, group: string, byClient: Map<string, SnapshotValue[]>): void {
+  /**
+   * Builds the diff of one group and applies the PF safety rule, the loop guard and the freeze rule.
+   * Owned values (fuel, payload) are aligned only by the join-time resync; afterwards they are
+   * drift: reported, never corrected, never a desync.
+   */
+  private processGroup(requestId: string, reason: RequestReason, group: string, byClient: Map<string, SnapshotValue[]>): void {
     const pf = this.pfClientId ? this.slot(this.pfClientId) : undefined;
     const ref = pf ?? this.slots.find((s) => s.seat === 'host')!;
     const other = this.other(ref)!;
-    const diffs = diffValues(byClient.get(ref.id)!, byClient.get(other.id)!);
-    const differing = new Set(diffs.map((d) => d.var));
-    this.group(group).diffVars = [...differing].sort();
+    const refValues = byClient.get(ref.id)!;
+    const otherValues = byClient.get(other.id)!;
+    const all = diffValues(refValues, otherValues);
+    const differing = new Set(all.map((d) => d.var));
+    const g = this.group(group);
+    const alignOwned = reason === 'join';
+    const drift = alignOwned ? [] : all.filter((d) => d.class === 'owned');
+    const diffs = alignOwned ? all : all.filter((d) => d.class !== 'owned');
+    g.diffVars = diffs.map((d) => d.var).sort();
     for (const d of [...this.desyncs.values()]) {
       if (d.group === group && !differing.has(d.var)) this.clearDesync(d.var, 'match');
     }
+    const hasOwned = [...refValues, ...otherValues].some((v) => v.class === 'owned');
+    if (hasOwned && !alignOwned) this.sendDrift(group, g, drift);
     if (diffs.length === 0) {
-      this.log.event('snapshot_equal', { request_id: requestId, group });
+      this.log.event(drift.length > 0 ? 'snapshot_drift_only' : 'snapshot_equal', { request_id: requestId, group });
       return;
     }
 
@@ -534,7 +552,6 @@ export class Session {
     const decisions: DiffDecision[] = [];
     const toCorrect: Extract<RawDecision, { action: 'correct' }>[] = [];
     const toRaise: { d: RawDecision; reason: DesyncReason; blocking: boolean; text: string }[] = [];
-    const g = this.group(group);
 
     for (const d of raw) {
       const open = this.desyncs.get(d.var);
@@ -551,7 +568,7 @@ export class Session {
       } else if (this.handover) {
         g.deferred = true;
         decisions.push({ ...base, action: 'deferred' });
-      } else if (!this.guard.allows(d.var)) {
+      } else if (d.class !== 'owned' && !this.guard.allows(d.var)) {
         decisions.push({ ...base, action: 'held', reason: 'correction_loop' });
         toRaise.push({
           d, reason: 'correction_loop', blocking: true,
@@ -579,8 +596,18 @@ export class Session {
     for (const d of toCorrect) this.sendCorrection(d, group, requestId, ref, other);
   }
 
+  /** Owned values that differ in one group, in their own units. Empty values = no drift any more. */
+  private sendDrift(group: string, g: GroupState, drift: { var: string; pf: Scalar; pm: Scalar }[]): void {
+    const values = drift
+      .filter((d): d is { var: string; pf: number; pm: number } => typeof d.pf === 'number' && typeof d.pm === 'number')
+      .map((d) => ({ var: d.var, pf: d.pf, pm: d.pm, delta: Math.round((d.pm - d.pf) * 1000) / 1000 }));
+    g.driftVars = values.map((v) => v.var);
+    for (const s of this.slots) if (s.state === 'connected') this.sendUnsequenced(s, 'drift', { group, values });
+  }
+
   private sendCorrection(d: Extract<RawDecision, { action: 'correct' }>, group: string, requestId: string, pf: ClientSlot, pm: ClientSlot): void {
-    this.guard.record(d.var);
+    // Owned values are only corrected by the join-time alignment; they never count in the loop guard.
+    if (d.class !== 'owned') this.guard.record(d.var);
     for (const side of d.sides) {
       const target = side === 'pf' ? pf : pm;
       const id = `corr:${this.seq + 1}`; // server namespace, cannot collide with client command ids
@@ -639,7 +666,8 @@ export class Session {
     for (const [name, g] of this.groups) {
       const ha = a && g.reports.get(a.id);
       const hb = b && g.reports.get(b.id);
-      if (ha && hb && ha.hash !== hb.hash) groups.add(name);
+      const driftOnly = g.driftVars.length > 0 && g.diffVars.length === 0;
+      if (ha && hb && ha.hash !== hb.hash && !driftOnly) groups.add(name);
       if (g.diffVars.length > 0) {
         groups.add(name);
         for (const v of g.diffVars) vars.add(v);

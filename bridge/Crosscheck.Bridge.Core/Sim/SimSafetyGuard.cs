@@ -25,6 +25,9 @@ public sealed partial class SimSafetyGuard
 
     public bool IsWritable(string name) => _writable.ContainsKey(name);
 
+    /// <summary>Whether a write would pass, without counting a refusal (for the UI's "Set both" options).</summary>
+    public bool IsAllowedValue(string name, double value) => Reason(name, value) is null;
+
     /// <summary>Throws <see cref="SafetyViolationException"/> unless the write is allowed.</summary>
     public void CheckWrite(string name, double value)
     {

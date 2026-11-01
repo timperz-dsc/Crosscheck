@@ -77,6 +77,38 @@ describe('10. preflight on join', () => {
     expect(body(answer).warnings).toEqual([]);
   });
 
+  it('preflight_check compares before joining and takes no slot', async () => {
+    server = await startServer();
+    const host = await hostSession();
+    const guest = await bridge('guest', { ...PREFLIGHT, airac: '2610', aircraft: { ...PREFLIGHT.aircraft, app_version: '3.0.1.340' } });
+    guest.send('preflight_check', { join_code: host.joinCode.toLowerCase(), preflight: { ...PREFLIGHT, airac: '2610', aircraft: { ...PREFLIGHT.aircraft, app_version: '3.0.1.340' } } }, null);
+    const result = body<{ reference: Preflight; rejects: { field: string }[]; warnings: { field: string }[]; join_code: string }>(await guest.waitFor('preflight_result'));
+    expect(result.join_code).toBe(host.joinCode);
+    expect(result.reference).toEqual(PREFLIGHT);
+    expect(result.rejects.map((r) => r.field)).toEqual(['aircraft.app_version']);
+    expect(result.warnings.map((w) => w.field)).toEqual(['airac']);
+    await sleep(50);
+    expect(host.messages('peer_status')).toHaveLength(0);
+
+    // The session is still free: a matching pilot joins.
+    const ok = await bridge('ok');
+    expect((await ok.join(host.joinCode)).type).toBe('joined');
+    const late = await bridge('late');
+    late.send('preflight_check', { join_code: host.joinCode, preflight: PREFLIGHT }, null);
+    expect(body(await late.waitFor('join_rejected'))).toMatchObject({ reason: 'session_full' });
+  });
+
+  it('an aircraft version one side could not read is a warning, not a reject', async () => {
+    server = await startServer();
+    const host = await hostSession();
+    const guest = await bridge('guest', { ...PREFLIGHT, aircraft: { ...PREFLIGHT.aircraft, app_version: 'unknown' } });
+    const answer = await guest.join(host.joinCode);
+    expect(answer.type).toBe('joined');
+    expect(body<{ warnings: { field: string; severity: string; message: string }[] }>(answer).warnings).toEqual([
+      expect.objectContaining({ field: 'aircraft.app_version', severity: 'warn', message: expect.stringContaining('unknown on one side') }),
+    ]);
+  });
+
   it('rejects unknown codes and a third pilot', async () => {
     server = await startServer();
     const host = await hostSession();

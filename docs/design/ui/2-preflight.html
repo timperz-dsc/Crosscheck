@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crosscheck – Preflight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#138A52}a:hover{color:#0E6B3F}
+</style>
+</helmet>
+<div style="min-height: 800px; background: #FFFFFF; color: #111315; font-family: 'Geist', 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 48px; border-bottom: 1px solid #E3E5E1">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><path d="M20 50 L36 66" stroke="#111315" stroke-width="13" stroke-linecap="round" fill="none"></path><path d="M50 65.5 L82 30" stroke="#138A52" stroke-width="13" stroke-linecap="round" fill="none"></path></svg>
+<span style="font-size: 19px; font-weight: 600; letter-spacing: -0.03em">Crosscheck</span>
+</div>
+<span style="font-size: 14px; color: #555A60">Joining <span style="font-family: 'Geist Mono', ui-monospace, monospace; color: #111315">K7RX2M</span></span>
+</header>
+<main style="max-width: 860px; padding: 64px 48px 72px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15">Your setup matches the captain's</h1>
+<p style="margin: 0; font-size: 16px; color: #555A60; max-width: 600px">Both cockpits must run the same versions before anything is synced. One difference needs your attention.</p>
+</div>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 560px; border-collapse: collapse; text-align: left">
+<thead>
+<tr style="color: #555A60; font-size: 14px">
+<th style="font-weight: 500; padding: 0 16px 10px 0; border-bottom: 1px solid #C9CCC6">Item</th>
+<th style="font-weight: 500; padding: 0 16px 10px 0; border-bottom: 1px solid #C9CCC6">You</th>
+<th style="font-weight: 500; padding: 0 16px 10px 0; border-bottom: 1px solid #C9CCC6">Captain</th>
+<th style="font-weight: 500; padding: 0 0 10px 0; border-bottom: 1px solid #C9CCC6">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1">Crosscheck bridge</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">0.1.0</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">0.1.0</td>
+<td style="padding: 14px 0; border-bottom: 1px solid #E3E5E1">Same</td>
+</tr>
+<tr>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1">Profile</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">fenix-a320 · 7f3a9c</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">fenix-a320 · 7f3a9c</td>
+<td style="padding: 14px 0; border-bottom: 1px solid #E3E5E1">Same</td>
+</tr>
+<tr>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1">Fenix app</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">3.0.0.7613</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">3.0.0.7613</td>
+<td style="padding: 14px 0; border-bottom: 1px solid #E3E5E1">Same</td>
+</tr>
+<tr>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1">AIRAC</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">2611</td>
+<td style="padding: 14px 16px 14px 0; border-bottom: 1px solid #E3E5E1; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 14px">2610</td>
+<td style="padding: 14px 0; border-bottom: 1px solid #E3E5E1; color: #8A4B00; font-weight: 500">Different</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="margin: 0; max-width: 620px">The navigation data differs, so SIDs, STARs and approaches may not match in the MCDU. You can join, but load the same AIRAC before you build the flight plan.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 8px; background: #111315; color: #FFFFFF; font: inherit; font-weight: 500; cursor: pointer">Join session</button>
+<button type="button" style="height: 44px; padding: 0 20px; border: 1px solid #C9CCC6; border-radius: 8px; background: #FFFFFF; color: #111315; font: inherit; font-weight: 500; cursor: pointer">Cancel</button>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -24,13 +24,14 @@ exclude: ["FSDT_*", "p42_*"]    # scan filter, see below
 vars: [...]                     # L: variables
 datarefs: [...]                 # Fenix GraphQL datarefs
 roles: {...}                    # vars with a special meaning, optional
+group_labels: {...}             # names of the groups in the UI, optional
 ```
 
 `match` needs at least one of `titles` or `packages`. Group names are lowercase (`a-z`, `0-9`, `_`). Every `group:` in `vars` and `datarefs` must be listed in `groups`.
 
 ## Vars
 
-Common fields: `name`, `class`, `group`, optional `note`.
+Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels`.
 
 | class | write | required | optional |
 |---|---|---|---|
@@ -74,6 +75,22 @@ datarefs:
 ```
 
 `class` is `owned`, `observe` or `ignore`. They are polled over HTTP at `poll_hz`. Group `systems` is meant for these system values (fuel, hydraulics, electrics).
+
+## Labels
+
+Optional names for the UI. Without them the UI shows the var name and the number.
+
+```yaml
+group_labels: { mip: Main panel, cb: Circuit breakers }
+vars:
+  - name: S_OH_ELEC_APU_MASTER
+    label: APU MASTER
+    value_labels: { "0": OFF, "1": ON }    # keys are numbers in values/range
+datarefs:
+  - { path: aircraft.fuel.left.amount.kg, class: owned, group: systems, poll_hz: 1, label: Fuel left, unit: kg }
+```
+
+`group_labels` keys must be listed in `groups`. `unit` is shown with owned drift ("12 kg apart").
 
 ## Roles
 

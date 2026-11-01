@@ -81,6 +81,11 @@ public sealed class ProtocolClient : IProtocolChannel, IAsyncDisposable
         return Handshake("join", body, ["joined", "join_rejected", "error"], ct);
     }
 
+    /// <summary>Compares the preflight with a session before joining. Returns preflight_result, join_rejected or error.</summary>
+    public Task<JsonObject> CheckAsync(string code, JsonObject preflight, CancellationToken ct) =>
+        Handshake("preflight_check", new JsonObject { ["join_code"] = code, ["preflight"] = preflight.DeepClone() },
+            ["preflight_result", "join_rejected", "error"], ct);
+
     private static JsonObject Body(JsonObject preflight, string? name)
     {
         var body = new JsonObject { ["preflight"] = preflight.DeepClone() };
