@@ -28,3 +28,6 @@ CLAUDE.md
 
 # Session server logs
 server/logs/
+
+# Profile probe working files (checkpoint, raw results)
+profiles/**/.probe/

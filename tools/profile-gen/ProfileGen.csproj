@@ -12,4 +12,10 @@
     <ProjectReference Include="..\..\bridge\Crosscheck.Profiles\Crosscheck.Profiles.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- tools/profile-probe (CRO-8 step 2) reuses the naming rules and the scan reader. -->
+    <InternalsVisibleTo Include="ProfileProbe" />
+    <InternalsVisibleTo Include="ProfileProbe.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,330 @@
+// Crosscheck profile probe (CRO-8 step 2). See README.md.
+
+using Crosscheck.Bridge.Fenix;
+using Crosscheck.Bridge.Sim;
+using Crosscheck.Bridge.SimConnect;
+using Microsoft.Extensions.Logging;
+
+namespace ProfileProbe;
+
+static class Program
+{
+    const int ExitError = 1, ExitSafety = 2, ExitNotRestored = 3, ExitCancelled = 4;
+
+    static readonly Phase[] AutoPhases = [Phase.Verified, Phase.Buttons, Phase.Positions, Phase.Encoders, Phase.Breakers];
+
+    static async Task<int> Main(string[] args)
+    {
+        if (args.Length == 0 || args[0] is "-h" or "--help") { Usage(); return 0; }
+        var paths = RepoPaths.Find();
+        var opts = Options.Parse(args.Skip(1).ToArray());
+        using var cts = new CancellationTokenSource();
+        var presses = 0;
+        Console.CancelKeyPress += (_, e) =>
+        {
+            // First Ctrl+C: stop after restoring the current var. A second one kills the process;
+            // the checkpoint then restores the var on the next start.
+            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine("Ctrl+C: restoring the current var, then stopping..."); }
+        };
+
+        try
+        {
+            switch (args[0])
+            {
+                case "plan": return PlanCommand(paths);
+                case "propose": return Proposer.Run(paths, Console.Out);
+                case "release":
+                    Directory.CreateDirectory(paths.WorkDir);
+                    File.WriteAllText(paths.Release, DateTime.UtcNow.ToString("O"));
+                    Console.WriteLine("release requested");
+                    return 0;
+                case "label": return LabelCommand(paths, opts);
+                case "info":
+                    if (opts.Var is null || opts.Text is null) { Console.WriteLine("info needs --var and --text"); return ExitError; }
+                    new ResultLog(paths.Details).Add(new ProbeResult { Var = opts.Var, Phase = Phase.Readonly, Test = "manual", Result = "info", Notes = opts.Text });
+                    return 0;
+                case "restore": return await SimCommand(paths, null, opts, cts.Token);
+                case "undo": return await UndoCommand(paths, opts, cts.Token);
+                case "peek":return await PeekCommand(paths, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray(), args.Contains("--clear"), cts.Token);
+                case "readonly": return await SimCommand(paths, Phase.Readonly, opts, cts.Token);
+                case "auto":
+                    foreach (var p in AutoPhases)
+                    {
+                        var code = await SimCommand(paths, p, opts, cts.Token);
+                        if (code != 0) return code;
+                    }
+                    return 0;
+                case "takeover": return await SimCommand(paths, Phase.Takeover, opts, cts.Token);
+                case "hold": return await SimCommand(paths, Phase.Hold, opts, cts.Token);
+                default:
+                    if (Enum.TryParse<Phase>(args[0], true, out var phase) && AutoPhases.Contains(phase))
+                        return await SimCommand(paths, phase, opts, cts.Token);
+                    Usage();
+                    return ExitError;
+            }
+        }
+        catch (SafetyStopException e) { Console.WriteLine($"SAFETY STOP: {e.Message}"); return ExitSafety; }
+        catch (NotRestoredException e) { Console.WriteLine($"NOT RESTORED: {e.Message}"); return ExitNotRestored; }
+        catch (OperationCanceledException) { Console.WriteLine("stopped"); return ExitCancelled; }
+    }
+
+    static void Usage() => Console.WriteLine("""
+        profile-probe <command> [options]
+          plan                      dry run: what each phase would write (no sim)
+          readonly                  item 7 + c/d/e: 30 s noise sample, TITLE, fuel, AIRAC candidates (no writes)
+          verified | buttons | positions | encoders | breakers   items 1+4, 2, 3, 5, 6
+          auto                      verified, buttons, positions, encoders, breakers back to back
+          takeover --side capt|fo   supervised a: press 1 s, release
+          hold --var NAME --value N [--seconds 60]   supervised b: hold an ND value, then restore
+          release                   ends a running hold
+          label --var NAME --value N --text LABEL    record what the ND showed
+          info --var NAME --text TEXT                record a manual finding (smoke test, AIRAC source, surprise...)
+          restore                   restore a var left pending by an interrupted run
+          propose                   write probe-results.csv, probe-report.md, profile.proposed.yaml (no sim)
+        options: --only NAME (one var), --redo (probe the phase again from the start)
+        exit codes: 0 ok, 1 error, 2 safety stop, 3 a var could not be restored, 4 Ctrl+C
+        """);
+
+    sealed record Options(string? Only, bool Redo, string? Side, string? Var, double? Value, int Seconds, string? Text)
+    {
+        public static Options Parse(string[] a)
+        {
+            string? Get(string key) { var i = Array.IndexOf(a, key); return i >= 0 && i + 1 < a.Length ? a[i + 1] : null; }
+            double? Num(string key) => Get(key) is { } s && double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null;
+            return new Options(Get("--only"), a.Contains("--redo"), Get("--side"), Get("--var"), Num("--value"), (int)(Num("--seconds") ?? 60), Get("--text"));
+        }
+    }
+
+    static int PlanCommand(RepoPaths paths)
+    {
+        var inputs = Inputs.Load(paths);
+        var log = new ResultLog(paths.Details);
+        var rejects = Rejects(log);
+        Console.WriteLine($"watched vars: {ProbeProfile.Watched(inputs).Count}");
+        var deniedInProfile = inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null);
+        Console.WriteLine($"profile vars on the deny list: {deniedInProfile}; breakers in the sample: {inputs.Deny.Breakers.Count}");
+        foreach (var phase in AutoPhases.Append(Phase.Takeover).Append(Phase.Hold))
+        {
+            var (targets, skipped) = Targets.For(phase, inputs, rejects);
+            Console.WriteLine($"\n{phase}: {targets.Count} to probe, {skipped.Count} skipped");
+            foreach (var g in skipped.GroupBy(s => s.Why))
+                Console.WriteLine($"  skipped ({g.Key}): {string.Join(" ", g.Select(s => s.Name))}");
+        }
+        return 0;
+    }
+
+    static List<string> Rejects(ResultLog log) =>
+        log.ReadLatest().Where(r => r.Phase == Phase.Verified && r.Test == "verified-binary" && r.Result == "rejected").Select(r => r.Var).ToList();
+
+    static int LabelCommand(RepoPaths paths, Options o)
+    {
+        if (o.Var is null || o.Value is null || o.Text is null) { Console.WriteLine("label needs --var, --value and --text"); return ExitError; }
+        new ResultLog(paths.Details).Add(new ProbeResult
+        {
+            Var = o.Var, Phase = Phase.Hold, Test = $"label-{o.Value}", Result = "label",
+            ProposedValueLabels = new() { [o.Value.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)] = o.Text },
+            Notes = $"pilot read the ND: {o.Value} = {o.Text}",
+        });
+        Console.WriteLine($"{o.Var} {o.Value} = {o.Text}");
+        return 0;
+    }
+
+    /// <param name="phase">null = only restore a pending var.</param>
+    static async Task<int> SimCommand(RepoPaths paths, Phase? phase, Options opts, CancellationToken ct)
+    {
+        // Only one probe may talk to the sim at a time (two would restore each other's vars).
+        Directory.CreateDirectory(paths.WorkDir);
+        FileStream runLock;
+        try { runLock = new FileStream(Path.Combine(paths.WorkDir, "run.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+        catch (IOException) { Console.WriteLine("another profile-probe run is active; not starting"); return ExitError; }
+        using var heldLock = runLock;
+
+        var inputs = Inputs.Load(paths);
+        var checkpoint = new Checkpoint(paths.Checkpoint);
+        var log = new ResultLog(paths.Details);
+        if (phase is Phase.Takeover or Phase.Hold || opts.Redo && phase is { } rp) checkpoint.ResetPhase(phase!.Value);
+
+        var (targets, skipped) = phase is { } p ? Targets.For(p, inputs, Rejects(log)) : ([], []);
+        if (phase == Phase.Takeover)
+        {
+            var side = opts.Side?.ToLowerInvariant() switch { "capt" => "S_FC_CAPT_INST_DISCONNECT", "fo" => "S_FC_FO_INST_DISCONNECT", _ => null };
+            if (side is null) { Console.WriteLine("takeover needs --side capt|fo"); return ExitError; }
+            targets = targets.Where(t => t.Name == side).ToList();
+        }
+        if (phase == Phase.Hold)
+        {
+            if (opts.Var is null || opts.Value is not { } hv || !Targets.NdValues.Contains(hv)) { Console.WriteLine("hold needs --var (an ND MODE/ZOOM var) and --value 0..5"); return ExitError; }
+            targets = targets.Where(t => t.Name == opts.Var).ToList();
+            if (targets.Count == 0) { Console.WriteLine($"{opts.Var} is not an ND MODE/ZOOM var"); return ExitError; }
+        }
+        if (opts.Only is { } only) targets = targets.Where(t => t.Name == only).ToList();
+        foreach (var s in skipped) log.Add(new ProbeResult { Var = s.Name, Phase = s.Phase, Test = s.Phase.ToString().ToLowerInvariant(), Result = "skipped", Notes = s.Why });
+
+        var pending = checkpoint.Data.Pending;
+        var writable = targets.ToList();
+        if (pending is not null)
+            writable.Add(new Target(pending.Var, pending.Phase, [pending.Original, 0, 1], Delta: pending.Phase == Phase.Encoders, Counter: pending.Kind == RestoreKind.Counter));
+        writable = Merge(writable);
+
+        var watched = ProbeProfile.Watched(inputs);
+        var profile = ProbeProfile.Build(inputs, writable, watched);
+        using var loggerFactory = LoggerFactory.Create(b => b.AddSimpleConsole(o => o.SingleLine = true).SetMinimumLevel(LogLevel.Warning));
+        await using var sim = new SimConnectAdapter(profile, loggerFactory.CreateLogger("sim"));
+        await using var gql = new FenixGraphQlClient(1, loggerFactory.CreateLogger("gql"));
+        await using var simvars = new SimvarReader();
+        await sim.StartAsync(new SimPlan(watched), ct);
+        await simvars.StartAsync(ct);
+
+        Console.WriteLine($"{(phase?.ToString() ?? "restore")}: connecting...");
+        await WaitFor(() => sim.State == SimState.Connected, 60, "the sim (SimConnect)", ct);
+        await WaitFor(() => SafetyVars.Lvars.All(n => sim.TryGet(n, out _)) && simvars.Latest is not null, 15, "first values from the sim", ct);
+        await Task.Delay(1000, ct); // let every chunk deliver its first values
+        if (await gql.SoftwareVersionAsync(ct) is not { } version) throw new SafetyStopException("Fenix GraphQL (localhost:8083) does not answer");
+        Console.WriteLine($"connected; Fenix {version}; title {simvars.Title ?? "?"}");
+
+        var safety = new SafetyMonitor(sim, simvars, gql);
+        safety.TakeBaseline();
+        var noisy = File.Exists(paths.Noisy)
+            ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(File.ReadAllText(paths.Noisy))!.ToHashSet(StringComparer.Ordinal)
+            : [];
+        if (phase is not (null or Phase.Readonly) && noisy.Count == 0)
+            Console.WriteLine("note: no noise sample yet (run `readonly` first); effect diffs may include vars that move on their own");
+        var session = new ProbeSession(sim, gql, safety, checkpoint, log, watched, noisy, new ProbeTiming(), Console.Out) { Inputs = inputs };
+
+        if (pending is not null)
+        {
+            Console.WriteLine($"restoring {pending.Var} left pending by an earlier run...");
+            if (!await RestorePending(session, pending)) throw new NotRestoredException($"{pending.Var} (pending from an earlier run)");
+            Console.WriteLine($"  {pending.Var} restored");
+        }
+        if (phase is null) return Summary(checkpoint);
+
+        if (phase == Phase.Readonly)
+        {
+            await ReadonlyPhase.Run(session, inputs, simvars, paths.Noisy, ct);
+            return 0;
+        }
+
+        var test = phase switch
+        {
+            Phase.Verified => Probes.Verified,
+            Phase.Buttons => Probes.Button,
+            Phase.Positions => Probes.Positions,
+            Phase.Encoders => Probes.Encoder,
+            Phase.Breakers => Probes.Breaker,
+            Phase.Takeover => Probes.Takeover,
+            Phase.Hold => Probes.Hold(opts.Value!.Value, Math.Clamp(opts.Seconds, 5, 120), paths.Release),
+            _ => throw new InvalidOperationException(),
+        };
+        var todo = targets.Count(t => !checkpoint.IsDone(t.Phase, t.Name));
+        Console.WriteLine($"{phase}: {targets.Count} vars ({todo} not done yet), {skipped.Count} skipped");
+        try
+        {
+            foreach (var t in targets)
+                await session.RunVar(t, test, ct);
+        }
+        finally
+        {
+            Summary(checkpoint);
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Writes one var back to the original value the probe recorded for it (latest result),
+    /// and nothing else. For a var a probe left changed without noticing.
+    /// </summary>
+    static async Task<int> UndoCommand(RepoPaths paths, Options opts, CancellationToken ct)
+    {
+        if (opts.Var is null) { Console.WriteLine("undo needs --var"); return ExitError; }
+        var last = new ResultLog(paths.Details).ReadLatest().Where(r => r.Var == opts.Var && r.Original is not null).OrderBy(r => r.At).LastOrDefault();
+        if (last?.Original is not { } original) { Console.WriteLine($"no recorded original value for {opts.Var}"); return ExitError; }
+        Directory.CreateDirectory(paths.WorkDir);
+        using var heldLock = new FileStream(Path.Combine(paths.WorkDir, "run.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var inputs = Inputs.Load(paths);
+        var watched = ProbeProfile.Watched(inputs);
+        var target = new Target(opts.Var, last.Phase, [original]);
+        await using var sim = new SimConnectAdapter(ProbeProfile.Build(inputs, [target], watched), Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+        await using var simvars = new SimvarReader();
+        await sim.StartAsync(new SimPlan(watched), ct);
+        await simvars.StartAsync(ct);
+        await WaitFor(() => sim.State == SimState.Connected, 60, "the sim (SimConnect)", ct);
+        await WaitFor(() => SafetyVars.Lvars.All(n => sim.TryGet(n, out _)) && simvars.Latest is not null, 15, "first values", ct);
+        await Task.Delay(1000, ct);
+        new SafetyMonitor(sim, simvars, new FenixGraphQlClient(1, Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance)).TakeBaseline();
+        sim.TryGet(opts.Var, out var now);
+        Console.WriteLine($"{opts.Var}: now {now}, recorded original {original} ({last.Phase}, {last.At:u})");
+        if (Math.Abs(now - original) < 1e-9) { Console.WriteLine("already at the original value, nothing written"); return 0; }
+        await sim.WriteAsync(opts.Var, original);
+        var until = DateTime.UtcNow.AddSeconds(2);
+        while (DateTime.UtcNow < until && !(sim.TryGet(opts.Var, out var v) && Math.Abs(v - original) < 1e-9)) await Task.Delay(20, ct);
+        sim.TryGet(opts.Var, out var after);
+        Console.WriteLine(Math.Abs(after - original) < 1e-9 ? $"{opts.Var} written back to {original}" : $"NOT RESTORED: {opts.Var} reads {after}");
+        return Math.Abs(after - original) < 1e-9 ? 0 : ExitNotRestored;
+    }
+
+    /// <summary>Read only: no var is writable in this profile. Prints the vars and the pending var's effect check.</summary>
+    static async Task<int> PeekCommand(RepoPaths paths, string[] names, bool clear, CancellationToken ct)
+    {
+        var inputs = Inputs.Load(paths);
+        var checkpoint = new Checkpoint(paths.Checkpoint);
+        var watched = ProbeProfile.Watched(inputs);
+        await using var sim = new SimConnectAdapter(ProbeProfile.Build(inputs, [], watched), Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+        await sim.StartAsync(new SimPlan(watched), ct);
+        await WaitFor(() => sim.State == SimState.Connected, 60, "the sim (SimConnect)", ct);
+        await WaitFor(() => SafetyVars.Lvars.All(n => sim.TryGet(n, out _)), 15, "first values", ct);
+        await Task.Delay(1000, ct);
+        string V(string n) => sim.TryGet(n, out var v) ? v.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture) : "?";
+        foreach (var n in names.Concat(SafetyVars.Lvars)) Console.WriteLine($"  {n,-48} {V(n)}");
+        if (checkpoint.Data.Pending is { } p)
+        {
+            Console.WriteLine($"pending: {p.Var} original {p.Original}, now {V(p.Var)}");
+            foreach (var (k, v) in p.EffectStart.Where(kv => !(sim.TryGet(kv.Key, out var now) && Math.Abs(now - kv.Value) < 1e-6)))
+                Console.WriteLine($"  differs: {k} was {v}, now {V(k)}{(VarRun.Settling(k) ? " (settling value)" : "")}");
+            var allBack = p.EffectStart.All(kv => VarRun.Settling(kv.Key) || sim.TryGet(kv.Key, out var now) && Math.Abs(now - kv.Value) < 1e-6);
+            if (clear && allBack)
+            {
+                // The pilot put it back by hand; nothing is written here.
+                checkpoint.Finish(p.Phase, p.Var, true);
+                Console.WriteLine($"pending {p.Var} cleared: every effect var is back (var reads {V(p.Var)})");
+            }
+            else if (clear) Console.WriteLine("not cleared: effect vars still differ");
+        }
+        return 0;
+    }
+
+    internal static async Task<bool> RestorePending(ProbeSession session, Pending p)
+    {
+        var run = new VarRun(session, new Target(p.Var, p.Phase, null), p.Original) { Kind = p.Kind };
+        foreach (var (k, v) in p.EffectStart) run.EffectStart[k] = v;
+        var (ok, why) = await session.Restore(run);
+        if (ok) session.Checkpoint.ClearPending(true, p.Var);
+        else { session.Checkpoint.KeepPending(p.Var); Console.WriteLine($"  {p.Var}: {why}"); }
+        return ok;
+    }
+
+    static List<Target> Merge(List<Target> targets) =>
+        targets.GroupBy(t => t.Name).Select(g =>
+        {
+            var first = g.First();
+            var values = g.Any(t => t.Values is null) ? null : g.SelectMany(t => t.Values!).Distinct().Order().ToList();
+            return first with { Values = values, Delta = g.Any(t => t.Delta), Counter = g.Any(t => t.Counter) };
+        }).ToList();
+
+    static int Summary(Checkpoint checkpoint)
+    {
+        var bad = checkpoint.Data.NotRestored;
+        Console.WriteLine(bad.Count == 0 ? "not restored: none" : $"NOT RESTORED: {string.Join(", ", bad)}");
+        return bad.Count == 0 ? 0 : ExitNotRestored;
+    }
+
+    static async Task WaitFor(Func<bool> condition, int seconds, string what, CancellationToken ct)
+    {
+        var until = DateTime.UtcNow.AddSeconds(seconds);
+        while (!condition())
+        {
+            if (DateTime.UtcNow > until) throw new SafetyStopException($"no connection to {what} after {seconds} s");
+            await Task.Delay(100, ct);
+        }
+    }
+}

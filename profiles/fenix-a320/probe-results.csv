@@ -1,0 +1,697 @@
+var,test,result,stored_ok,effect_ok,latency_ms,notes
+B_FC_SPEEDBRAKE,noise-30s,noisy,,,,"146 changes, 0..1; observe var that changes with no input"
+N_FC_BRAKE_LEFT,noise-30s,stable,,,,stable at 0; did not move: observe
+N_HYD_PRESSURE_BRAKE_ACCU,noise-30s,noisy,,,,"278 changes, 2.6449..2.6449; changes with no input: ignore (an observe would raise false alarms)"
+N_MIP_CLOCK_UTC,noise-30s,noisy,,,,"30 changes, 133523..133553; changes with no input: ignore (an observe would raise false alarms)"
+N_STANDBY_ATTITUDE_BANK,noise-30s,noisy,,,,"278 changes, 21.9714..21.9714; changes with no input: ignore (an observe would raise false alarms)"
+N_STANDBY_ATTITUDE_PITCH,noise-30s,noisy,,,,"278 changes, 3.3116..3.312; changes with no input: ignore (an observe would raise false alarms)"
+N_STANDBY_COMPASS,noise-30s,noisy,,,,"240 changes, 190.7515..190.7515; changes with no input: ignore (an observe would raise false alarms)"
+TITLE,simvar,info,,,,FenixA320 IAE WF
+airac,manual,info,,,,"AIRAC: none of 25 GraphQL candidate names answered (aircraft.fms.navdata*, aircraft.navdata.*, aircraft.airac*, ...). The file search in the Fenix data folders was not done (owner decision). The MCDU route (DATA > A/C STATUS shows the active nav database) was not tried because the displays were frozen. Unresolved."
+airac.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.airac,graphql-airac,not found,,,,(empty or not found)
+aircraft.airac.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.efb.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.fmgc.airac,graphql-airac,not found,,,,(empty or not found)
+aircraft.fmgc.navdata,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.activeNavDatabase,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.airac,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.database,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.database.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navData,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navData.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navDataCycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navDatabase,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navdata,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.fms.navdb,graphql-airac,not found,,,,(empty or not found)
+aircraft.fuel.ACT1.amount.kg,graphql-fuel,info,,,,0
+aircraft.fuel.ACT2.amount.kg,graphql-fuel,info,,,,0
+aircraft.fuel.center.amount.kg,graphql-fuel,info,,,,0
+aircraft.fuel.left.amount,graphql-fuel,info,,,,(empty or not found)
+aircraft.fuel.left.amount.kg,graphql-fuel,info,,,,1500
+aircraft.fuel.left.capacity,graphql-fuel,info,,,,6264
+aircraft.fuel.right.amount.kg,graphql-fuel,info,,,,1500
+aircraft.fuel.total.amount.kg,graphql-fuel,info,,,,3000
+aircraft.navdata,graphql-airac,not found,,,,(empty or not found)
+aircraft.navdata.airac,graphql-airac,not found,,,,(empty or not found)
+aircraft.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
+aircraft.navigraph.airac,graphql-airac,not found,,,,(empty or not found)
+aircraft.navigraph.cycle,graphql-airac,not found,,,,(empty or not found)
+crash-cutoff,manual,info,,,,2026-11-01T14:16:40Z
+navdata.cycle,graphql-airac,not found,,,,(empty or not found)
+smoke-test,manual,info,,,,"CROSSCHECK_SIM_SMOKE=1 dotnet test bridge/Crosscheck.Bridge.SimSmoke.Tests: passed (1 test, connects, reads profile vars, writes S_FCU_EFIS1_ND_MODE and restores it, refuses an out-of-range write)"
+softwareVersion,graphql,info,,,,3.0.0.7613
+surprise-asp-send,manual,info,,,,Audio panel transmit keys (S_ASP*_SEND) are a radio group: pressing CAB SEND on ASP2 deselected VHF 1 SEND. One var cannot restore the group; the pilot pressed VHF 1 SEND again. For sync: the SEND keys of a panel must be treated as one group (and the lamp I_ASP*_SEND of every key watched).
+surprise-bustie,manual,info,,,,"S_OH_ELEC_BUSTIE OFF disconnects EXT PWR and Fenix does not reconnect it when BUS TIE returns to AUTO; the pilot must press EXT PWR again. For sync this means a BUS TIE write on one side can drop ground power there, and a restore is not enough."
+surprise-clock,manual,info,,,,"S_MIP_CLOCK_CHR: CHR starts and stops the chrono, RST resets it (pilot correction). The key is a press counter (it read 8 after the pilot's clicks). One key cannot restore the clock, so clock keys are skipped."
+surprise-cockpit-door,manual,info,,,,"S_COCKPIT_DOOR (positions 0,1,2 found): after stepping and restoring the switch, I_OH_DOOR_CTL_U and I_PED_COCKPIT_DOOR_U went from lit to off, but the pilot confirms the door never closed. Those lamps show lock/fault state, not door open. Restore check could not pass; the pilot accepted the state. Both cockpit door switches skipped afterwards."
+surprise-efis-sync,manual,info,,,,The pilot's Fenix option that links the captain and FO EFIS (single-pilot use) was on for the first part of the buttons phase: S_FCU_EFIS1_BARO_MODE/BARO_STD and FD acted on both sides. The option was switched off; the BARO keys were re-tested. For Crosscheck this per-pilot option changes what a key does and must be checked at session start.
+surprise-fd,manual,info,,,,"S_FCU_EFIS1_FD: one probe press switched both FDs off (EFIS sync was on); the restore press did not bring them back, and afterwards a pilot click shows FD on only while pressed (the FD keys read 2 after one click: press counters). Fenix's FD state looks out of step after the probe's 1/0 writes. FDs left off for the rest of the run, to be fixed by the pilot afterwards. FD keys skipped."
+surprise-gpu-plug,manual,info,,,,S_EXT_GPU_PLUG is a click var: writing 1 pulled the GPU plug and the aircraft lost ground power; it reads 0 both plugged and unplugged. Must never be synced as a state. S_OH_ELEC_EXT_PWR is a press counter too (a pilot press moved it 2 -> 4).
+surprise-late-faults,manual,info,,,,"BLOWER and EXTRACT FAULT lights (I_OH_PNEUMATIC_BLOWER_U, I_OH_PNEUMATIC_EXTRACT_U) came on when ground power dropped (BUS TIE test) and went out by themselves about 10 minutes later, during the cargo FWD ISOL VALVE test. Recorded as a delayed recovery, not a valve effect."
+surprise-nd-mode-counter-bug,manual,info,,,,"Probe bug found and fixed: in the buttons phase S_FCU_EFIS2_ND_MODE (rest value 3) took the press-counter path, was written 4 and 5 and wrongly counted as restored (same parity). It stayed at 5 until the supervised ND check noticed; then written back to 3 with the undo command. The buttons test now writes nothing to a var resting above 1 unless it is MASTER CAUTION/WARNING."
+surprise-wasm-crash,manual,info,,,,"Fenix WASM crash during the probe. Last real reaction: S_PED_RMP3_XFER at 14:16:39 UTC. The next test stepped S_COCKPIT_DOOR through 0..7 (3..7 are not positions); its lamps went dark and did not come back, while the pilot saw the door unchanged. Every later write was stored but nothing reacted and GraphQL returned nothing for switches. Most likely cause: writing a non-existent position to S_COCKPIT_DOOR (the earlier write of 5 to S_FCU_EFIS2_ND_MODE at 14:13:35 was followed by normal reactions, so it is less likely). All results after 14:16:40 UTC are marked invalid: the remaining positions, all encoders, all breakers and the takeover checks. Strong support for the rule: never write a value outside the profile's allowed set, also in test tools."
+surprise-yellow-pump,manual,info,,,,"S_OH_HYD_YELLOW_ELEC_PUMP is a press counter (a hand click moves it 0 -> 2), not a 0/1 switch. Absolute writes do not undo a press. Any Fenix pushbutton may be like this; the probe now restores with one more press when writing the old value back does not undo the effect, and marks such vars counter-suspected."
+system.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
+S_ENG_MASTER_1,verified,skipped,,,,deny list: ENG MASTER
+S_ENG_MASTER_2,verified,skipped,,,,deny list: ENG MASTER
+S_EXT_CARGO_DOOR_OPEN_AFT,verified-binary,confirmed,yes,yes,31.0,lamp I_EXT_CARGO_DOOR_OPEN_AFT in 123.348 ms; 2 is stored but changes nothing else
+S_EXT_CARGO_DOOR_OPEN_FWD,verified-binary,confirmed,yes,yes,17.4,lamp I_EXT_CARGO_DOOR_OPEN_FWD in 95.81 ms; 2 is stored but changes nothing else
+S_EXT_GPU_PLUG,verified-binary,invalid-crash,,,,"not tested: probed after the Fenix WASM crash, nothing could react; writing 1 pulled the ground power plug (B_CONFIG_GPU 1 -> 0, buses unpowered); writing 0 back did not plug it in; the pilot reconnected ground power and pressed EXT PWR. The var reads 0 with the plug in and with it out: it is a click/press var, not a state. [0,1] is wrong; now skipped by the probe"
+S_EXT_GPU_PLUG,verified,skipped,,,,extra skip: ground power unit (pulled the GPU plug in the first run)
+S_EXT_HYD_ACCESS_DOOR_LEFT,verified-binary,unresolved,yes,no,38.1,"no effect visible at the gate, only the L: echo; GraphQL has no mirror"
+S_EXT_HYD_ACCESS_DOOR_RIGHT,verified-binary,unresolved,yes,no,20.6,"no effect visible at the gate, only the L: echo; GraphQL has no mirror"
+S_EXT_HYD_GEAR_DOOR_LEFT,verified-binary,confirmed,yes,yes,36.9,GraphQL followed; 2 is stored but changes nothing else
+S_EXT_HYD_GEAR_DOOR_NOSE,verified-binary,confirmed,yes,yes,19.0,GraphQL followed; 2 is stored but changes nothing else
+S_EXT_HYD_GEAR_DOOR_RIGHT,verified-binary,confirmed,yes,yes,34.7,GraphQL followed; 2 is stored but changes nothing else
+S_EXT_MAINT_BUS,verified-binary,confirmed,yes,yes,21.1,GraphQL followed; 2 is stored but changes nothing else
+S_EXT_REFUELINGL_VALVE_CENTER,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_ACT_VALVE_1,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_ACT_VALVE_2,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_BATTERY,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_DOOR,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_VALVE_LEFT,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_VALVE_RIGHT,verified,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_WASTE_SERVICE_DOOR,verified-binary,confirmed,yes,yes,28.9,GraphQL followed; 2 is stored but changes nothing else
+S_EXT_WATER_SERVICE_DOOR,verified-binary,confirmed,yes,yes,28.4,GraphQL followed; 2 is stored but changes nothing else
+S_GALLEY_AFT_BREAKERS_COVER,verified-binary,unresolved,yes,no,28.4,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_GALLEY_FWD_BREAKERS_COVER,verified-binary,unresolved,yes,no,15.1,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_MIP_GEAR,verified,skipped,,,,deny list: gear lever
+S_MIP_PARKING_BRAKE,verified,skipped,,,,deny list: parking brake
+S_OH_AFT_FADEC_GND_1,verified,skipped,,,,"deny list: FADEC ground power (extra, beyond the brief)"
+S_OH_AFT_FADEC_GND_2,verified,skipped,,,,"deny list: FADEC ground power (extra, beyond the brief)"
+S_OH_CARGO_DISC_1_OLD_LAYOUT,verified,skipped,,,,"deny list: disconnect (IDG, sidestick takeover, cargo): when in doubt deny"
+S_OH_CARGO_DISC_2_OLD_LAYOUT,verified,skipped,,,,"deny list: disconnect (IDG, sidestick takeover, cargo): when in doubt deny"
+S_OH_CARGO_SMOKE_AFT,lamp-half,neither,,no,,"I_OH_CARGO_SMOKE_AFT_L unchanged, I_OH_CARGO_SMOKE_AFT_U unchanged"
+S_OH_CARGO_SMOKE_AFT,verified-binary,confirmed,yes,yes,28.2,GraphQL followed; 2 is stored but changes nothing else
+S_OH_CARGO_SMOKE_FWD,lamp-half,neither,,no,,"I_OH_CARGO_SMOKE_FWD_L unchanged, I_OH_CARGO_SMOKE_FWD_U unchanged"
+S_OH_CARGO_SMOKE_FWD,verified-binary,confirmed,yes,yes,29.8,GraphQL followed; 2 is stored but changes nothing else
+S_OH_COCKPIT_DOOR_VIDEO,verified-binary,confirmed,yes,yes,14.2,lamp I_OH_COCKPIT_DOOR_VIDEO in 124.25 ms; 2 is stored but changes nothing else
+S_OH_ELEC_AC_ESS_FEED,lamp-half,lower,,yes,76.6,"I_OH_ELEC_AC_ESS_FEED_L changed, I_OH_ELEC_AC_ESS_FEED_U unchanged"
+S_OH_ELEC_AC_ESS_FEED,verified-binary,confirmed,yes,yes,15.5,lamp I_OH_ELEC_AC_ESS_FEED_L in 76.605 ms; 2 is stored but changes nothing else
+S_OH_ELEC_APU_GENERATOR,lamp-half,lower,,yes,92.8,"I_OH_ELEC_APU_GENERATOR_L changed, I_OH_ELEC_APU_GENERATOR_U unchanged"
+S_OH_ELEC_APU_GENERATOR,verified-binary,confirmed,yes,yes,15.7,lamp I_OH_ELEC_APU_GENERATOR_L in 92.8 ms; 2 is stored but changes nothing else
+S_OH_ELEC_APU_MASTER,lamp-half,lower,,yes,104.5,"I_OH_ELEC_APU_MASTER_L changed, I_OH_ELEC_APU_MASTER_U unchanged"
+S_OH_ELEC_APU_MASTER,verified-binary,confirmed,yes,yes,27.3,lamp I_OH_ELEC_APU_MASTER_L in 104.482 ms; 2 is stored but changes nothing else
+S_OH_ELEC_BAT1,lamp-half,lower,,yes,78.5,"I_OH_ELEC_BAT1_L changed, I_OH_ELEC_BAT1_U unchanged"
+S_OH_ELEC_BAT1,verified-binary,confirmed,yes,yes,30.0,lamp I_OH_ELEC_BAT1_L in 78.532 ms; 2 is stored but changes nothing else
+S_OH_ELEC_BAT2,lamp-half,lower,,yes,90.3,"I_OH_ELEC_BAT2_L changed, I_OH_ELEC_BAT2_U unchanged"
+S_OH_ELEC_BAT2,verified-binary,confirmed,yes,yes,28.7,lamp I_OH_ELEC_BAT2_L in 90.267 ms; 2 is stored but changes nothing else
+S_OH_ELEC_BUSTIE,verified-binary,unresolved,yes,yes,,"OFF (1) cut ground power from the AC buses (realistic: EXT PWR feeds the buses through the bus tie contactors); back to AUTO (0) Fenix did not reconnect EXT PWR, the pilot had to press EXT PWR. Lamp I_OH_ELEC_BUSTIE_L followed; GraphQL 0->1->0 for 0->1->2, so 2 is not a position. The run stopped as designed and nothing was left unrestored. [0,1] looks right, but not confirmed by a clean probe; now skipped by the probe"
+S_OH_ELEC_BUSTIE,verified,skipped,,,,extra skip: OFF cuts ground power; EXT PWR does not come back by itself
+S_OH_ELEC_COMMERCIAL,verified-binary,confirmed,yes,yes,17.6,lamp I_OH_ELEC_COMMERCIAL_L in 80.329 ms; 2 is stored but changes nothing else
+S_OH_ELEC_GALY,lamp-half,lower,,yes,78.0,"I_OH_ELEC_GALY_L changed, I_OH_ELEC_GALY_U unchanged"
+S_OH_ELEC_GALY,verified-binary,confirmed,yes,yes,12.6,lamp I_OH_ELEC_GALY_L in 78.007 ms; 2 is stored but changes nothing else
+S_OH_ELEC_GEN1,lamp-half,both,,yes,121.8,"I_OH_ELEC_GEN1_L changed, I_OH_ELEC_GEN1_U changed"
+S_OH_ELEC_GEN1,verified-binary,confirmed,yes,yes,10.8,lamp I_OH_ELEC_GEN1_L I_OH_ELEC_GEN1_U in 121.776 ms; 2 is stored but changes nothing else
+S_OH_ELEC_GEN1_LINE,lamp-half,lower,,yes,95.9,"I_OH_ELEC_GEN1_LINE_L changed, I_OH_ELEC_GEN1_LINE_U unchanged"
+S_OH_ELEC_GEN1_LINE,verified-binary,confirmed,yes,yes,17.6,lamp I_OH_ELEC_GEN1_LINE_L in 95.885 ms; 2 is stored but changes nothing else
+S_OH_ELEC_GEN2,lamp-half,both,,yes,109.1,"I_OH_ELEC_GEN2_L changed, I_OH_ELEC_GEN2_U changed"
+S_OH_ELEC_GEN2,verified-binary,confirmed,yes,yes,30.5,lamp I_OH_ELEC_GEN2_L I_OH_ELEC_GEN2_U in 109.1 ms; 2 is stored but changes nothing else
+S_OH_ELEC_IDG1,verified,skipped,,,,deny list: IDG disconnect; only the cover may be probed (cover tested in phase 0)
+S_OH_ELEC_IDG2,verified,skipped,,,,deny list: IDG disconnect; only the cover may be probed (cover tested in phase 0)
+S_OH_ELT,verified-binary,unresolved,yes,no,32.1,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_OH_ELT,verified,skipped,,,,extra skip: ELT switch (the deny pattern S_OH_ELT_* misses the switch itself)
+S_OH_ENG_DUAL_COOLING,verified-binary,confirmed,yes,yes,19.9,lamp I_OH_ENG_DUAL_COOLING_L in 129.116 ms; 2 is stored but changes nothing else
+S_OH_ENG_MANSTART_1,verified,skipped,,,,deny list: ENG MAN START (covers too)
+S_OH_ENG_MANSTART_1_L,verified,skipped,,,,deny list: ENG MAN START (covers too)
+S_OH_ENG_MANSTART_2,verified,skipped,,,,deny list: ENG MAN START (covers too)
+S_OH_ENG_MANSTART_2_L,verified,skipped,,,,deny list: ENG MAN START (covers too)
+S_OH_EVAC_CAPT_PURSER,verified,skipped,,,,"deny list: EVAC, evacuation horn and captain/purser (covers too)"
+S_OH_EVAC_COMMAND,verified,skipped,,,,"deny list: EVAC, evacuation horn and captain/purser (covers too)"
+S_OH_FLT_CTL_ELAC_1,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FLT_CTL_ELAC_2,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FLT_CTL_FAC_1,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FLT_CTL_FAC_2,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FLT_CTL_SEC_1,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FLT_CTL_SEC_2,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FLT_CTL_SEC_3,verified,skipped,,,,"deny list: flight control computers ELAC/SEC/FAC (extra, beyond the brief)"
+S_OH_FUEL_ACT,lamp-half,lower,,yes,119.8,"I_OH_FUEL_ACT_L changed, I_OH_FUEL_ACT_U unchanged"
+S_OH_FUEL_ACT,verified-binary,confirmed,yes,yes,10.1,lamp I_OH_FUEL_ACT_L in 119.834 ms; 2 is stored but changes nothing else
+S_OH_FUEL_CENTER_1,lamp-half,lower,,yes,75.3,"I_OH_FUEL_CENTER_1_L changed, I_OH_FUEL_CENTER_1_U unchanged"
+S_OH_FUEL_CENTER_1,verified-binary,confirmed,yes,yes,28.7,lamp I_OH_FUEL_CENTER_1_L in 75.335 ms; 2 is stored but changes nothing else
+S_OH_FUEL_CENTER_2,lamp-half,lower,,yes,91.9,"I_OH_FUEL_CENTER_2_L changed, I_OH_FUEL_CENTER_2_U unchanged"
+S_OH_FUEL_CENTER_2,verified-binary,confirmed,yes,yes,14.5,lamp I_OH_FUEL_CENTER_2_L in 91.86 ms; 2 is stored but changes nothing else
+S_OH_FUEL_LEFT_1,lamp-half,lower,,yes,107.0,"I_OH_FUEL_LEFT_1_L changed, I_OH_FUEL_LEFT_1_U unchanged"
+S_OH_FUEL_LEFT_1,verified-binary,confirmed,yes,yes,14.4,lamp I_OH_FUEL_LEFT_1_L in 107.015 ms; 2 is stored but changes nothing else
+S_OH_FUEL_LEFT_2,lamp-half,lower,,yes,126.6,"I_OH_FUEL_LEFT_2_L changed, I_OH_FUEL_LEFT_2_U unchanged"
+S_OH_FUEL_LEFT_2,verified-binary,confirmed,yes,yes,34.1,lamp I_OH_FUEL_LEFT_2_L in 126.581 ms; 2 is stored but changes nothing else
+S_OH_FUEL_RIGHT_1,lamp-half,lower,,yes,79.6,"I_OH_FUEL_RIGHT_1_L changed, I_OH_FUEL_RIGHT_1_U unchanged"
+S_OH_FUEL_RIGHT_1,verified-binary,confirmed,yes,yes,16.8,lamp I_OH_FUEL_RIGHT_1_L in 79.649 ms; 2 is stored but changes nothing else
+S_OH_FUEL_RIGHT_2,lamp-half,lower,,yes,90.3,"I_OH_FUEL_RIGHT_2_L changed, I_OH_FUEL_RIGHT_2_U unchanged"
+S_OH_FUEL_RIGHT_2,verified-binary,confirmed,yes,yes,11.9,lamp I_OH_FUEL_RIGHT_2_L in 90.298 ms; 2 is stored but changes nothing else
+S_OH_GPWS_LDG_FLAP3,verified-binary,confirmed,yes,yes,18.3,lamp I_OH_GPWS_LDG_FLAP3_L in 112.482 ms; 2 is stored but changes nothing else
+S_OH_GPWS_TERR,lamp-half,lower,,yes,76.5,"I_OH_GPWS_TERR_L changed, I_OH_GPWS_TERR_U unchanged"
+S_OH_GPWS_TERR,verified-binary,confirmed,yes,yes,14.7,lamp I_OH_GPWS_TERR_L in 76.493 ms; 2 is stored but changes nothing else
+S_OH_HYD_BLUE_ELEC_PUMP,lamp-half,lower,,yes,137.8,"I_OH_HYD_BLUE_ELEC_PUMP_L changed, I_OH_HYD_BLUE_ELEC_PUMP_U unchanged"
+S_OH_HYD_BLUE_ELEC_PUMP,verified-binary,confirmed,yes,yes,30.8,lamp I_OH_HYD_BLUE_ELEC_PUMP_L in 137.817 ms; 2 is stored but changes nothing else
+S_OH_HYD_BLUE_PUMP_OVERRIDE,verified-binary,confirmed,yes,yes,20.9,lamp I_OH_HYD_BLUE_PUMP_OVERRIDE_L in 114.564 ms; 2 is stored but changes nothing else
+S_OH_HYD_ENG_1_PUMP,lamp-half,lower,,yes,115.1,"I_OH_HYD_ENG_1_PUMP_L changed, I_OH_HYD_ENG_1_PUMP_U unchanged"
+S_OH_HYD_ENG_1_PUMP,verified-binary,confirmed,yes,yes,20.7,lamp I_OH_HYD_ENG_1_PUMP_L in 115.087 ms; 2 is stored but changes nothing else
+S_OH_HYD_ENG_2_PUMP,lamp-half,lower,,yes,120.7,"I_OH_HYD_ENG_2_PUMP_L changed, I_OH_HYD_ENG_2_PUMP_U unchanged"
+S_OH_HYD_ENG_2_PUMP,verified-binary,confirmed,yes,yes,27.4,lamp I_OH_HYD_ENG_2_PUMP_L in 120.722 ms; 2 is stored but changes nothing else
+S_OH_HYD_LMV_BLUE,verified-binary,confirmed,yes,yes,14.3,lamp I_OH_HYD_LMV_BLUE_L in 76.81 ms; 2 is stored but changes nothing else
+S_OH_HYD_LMV_GREEN,verified-binary,confirmed,yes,yes,8.9,lamp I_OH_HYD_LMV_GREEN_L in 85.51 ms; 2 is stored but changes nothing else
+S_OH_HYD_LMV_YELLOW,verified-binary,confirmed,yes,yes,11.9,lamp I_OH_HYD_LMV_YELLOW_L in 120.875 ms; 2 is stored but changes nothing else
+S_OH_HYD_PTU,lamp-half,lower,,yes,75.5,"I_OH_HYD_PTU_L changed, I_OH_HYD_PTU_U unchanged"
+S_OH_HYD_PTU,verified-binary,confirmed,yes,yes,12.8,lamp I_OH_HYD_PTU_L in 75.504 ms; 2 is stored but changes nothing else
+S_OH_HYD_YELLOW_ELEC_PUMP,lamp-half,lower,,yes,110.5,"I_OH_HYD_YELLOW_ELEC_PUMP_L changed, I_OH_HYD_YELLOW_ELEC_PUMP_U unchanged"
+S_OH_HYD_YELLOW_ELEC_PUMP,verified-binary,counter-suspected,yes,yes,110.5,"press counter: writing 1 (a press) switched the pump on (lamp I_OH_HYD_YELLOW_ELEC_PUMP_L in 110 ms), 2 and then 0 did not switch it off; the pilot switched it off by hand and the var then read 2 (one click = +1 press, +1 release, like MASTER CAUTION). [0,1] is wrong; probably pulse with press: counter. Elevator trim N_FC_ELEVATOR_TRIM moved 0.0078 -> 0 while yellow hydraulics were pressurised"
+S_OH_OXYGEN_CREW_OXYGEN,verified-binary,confirmed,yes,yes,44.3,lamp I_OH_OXYGEN_CREW_OXYGEN_L in 122.854 ms; 2 is stored but changes nothing else
+S_OH_OXYGEN_HIGH_ALT,verified-binary,confirmed,yes,yes,19.6,lamp I_OH_OXYGEN_HIGH_ALT_L in 96.712 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_APU_BLEED,lamp-half,lower,,yes,156.4,"I_OH_PNEUMATIC_APU_BLEED_L changed, I_OH_PNEUMATIC_APU_BLEED_U unchanged"
+S_OH_PNEUMATIC_APU_BLEED,verified-binary,confirmed,yes,yes,47.2,lamp I_OH_PNEUMATIC_APU_BLEED_L in 156.415 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_BLOWER,lamp-half,lower,,yes,78.5,"I_OH_PNEUMATIC_BLOWER_L changed, I_OH_PNEUMATIC_BLOWER_U unchanged"
+S_OH_PNEUMATIC_BLOWER,verified-binary,confirmed,yes,yes,15.9,lamp I_OH_PNEUMATIC_BLOWER_L in 78.452 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_CAB_FANS,lamp-half,lower,,yes,97.2,"I_OH_PNEUMATIC_CAB_FANS_L changed, I_OH_PNEUMATIC_CAB_FANS_U unchanged"
+S_OH_PNEUMATIC_CAB_FANS,verified-binary,confirmed,yes,yes,17.6,lamp I_OH_PNEUMATIC_CAB_FANS_L in 97.205 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE,lamp-half,lower,,yes,79.0,"I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_L changed, I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_U unchanged"
+S_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE,verified-binary,confirmed,yes,yes,16.7,lamp I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_L in 79.034 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE,lamp-half,neither,,no,,"I_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE_L unchanged, I_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE_U unchanged"
+S_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE,verified-binary,unresolved,yes,no,35.8,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_OH_PNEUMATIC_DITCHING,verified,skipped,,,,deny list: DITCHING (cover too)
+S_OH_PNEUMATIC_ECON_FLOW,verified-binary,confirmed,yes,yes,34.3,lamp I_OH_PNEUMATIC_ECON_FLOW_L in 96.379 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_ENG1_ANTI_ICE,lamp-half,both,,yes,123.1,"I_OH_PNEUMATIC_ENG1_ANTI_ICE_L changed, I_OH_PNEUMATIC_ENG1_ANTI_ICE_U changed"
+S_OH_PNEUMATIC_ENG1_ANTI_ICE,verified-binary,confirmed,yes,yes,13.8,lamp I_OH_PNEUMATIC_ENG1_ANTI_ICE_L I_OH_PNEUMATIC_ENG1_ANTI_ICE_U in 123.127 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_ENG1_BLEED,lamp-half,lower,,yes,82.4,"I_OH_PNEUMATIC_ENG1_BLEED_L changed, I_OH_PNEUMATIC_ENG1_BLEED_U unchanged"
+S_OH_PNEUMATIC_ENG1_BLEED,verified-binary,confirmed,yes,yes,20.5,lamp I_OH_PNEUMATIC_ENG1_BLEED_L in 82.446 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_ENG2_ANTI_ICE,lamp-half,both,,yes,93.8,"I_OH_PNEUMATIC_ENG2_ANTI_ICE_L changed, I_OH_PNEUMATIC_ENG2_ANTI_ICE_U changed"
+S_OH_PNEUMATIC_ENG2_ANTI_ICE,verified-binary,confirmed,yes,yes,16.0,lamp I_OH_PNEUMATIC_ENG2_ANTI_ICE_L I_OH_PNEUMATIC_ENG2_ANTI_ICE_U in 93.791 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_ENG2_BLEED,lamp-half,lower,,yes,109.6,"I_OH_PNEUMATIC_ENG2_BLEED_L changed, I_OH_PNEUMATIC_ENG2_BLEED_U unchanged"
+S_OH_PNEUMATIC_ENG2_BLEED,verified-binary,confirmed,yes,yes,31.5,lamp I_OH_PNEUMATIC_ENG2_BLEED_L in 109.563 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_EXTRACT,lamp-half,lower,,yes,97.6,"I_OH_PNEUMATIC_EXTRACT_L changed, I_OH_PNEUMATIC_EXTRACT_U unchanged"
+S_OH_PNEUMATIC_EXTRACT,verified-binary,confirmed,yes,yes,18.1,lamp I_OH_PNEUMATIC_EXTRACT_L in 97.612 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_PACK_1,lamp-half,both,,yes,63.4,"I_OH_PNEUMATIC_PACK_1_L changed, I_OH_PNEUMATIC_PACK_1_U changed"
+S_OH_PNEUMATIC_PACK_1,verified-binary,confirmed,yes,yes,16.8,lamp I_OH_PNEUMATIC_PACK_1_L I_OH_PNEUMATIC_PACK_1_U in 63.368 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_PACK_2,lamp-half,both,,yes,92.2,"I_OH_PNEUMATIC_PACK_2_L changed, I_OH_PNEUMATIC_PACK_2_U changed"
+S_OH_PNEUMATIC_PACK_2,verified-binary,confirmed,yes,yes,14.3,lamp I_OH_PNEUMATIC_PACK_2_L I_OH_PNEUMATIC_PACK_2_U in 92.243 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_PRESS_MAN,verified-binary,rejected,yes,yes,21.2,2 is a distinct state (GraphQL 1); goes to the position test
+S_OH_PNEUMATIC_RAM_AIR,verified-binary,confirmed,yes,yes,22.4,lamp I_OH_PNEUMATIC_RAM_AIR_L in 84.199 ms; 2 is stored but changes nothing else
+S_OH_PNEUMATIC_WING_ANTI_ICE,lamp-half,both,,yes,93.1,"I_OH_PNEUMATIC_WING_ANTI_ICE_L changed, I_OH_PNEUMATIC_WING_ANTI_ICE_U changed"
+S_OH_PNEUMATIC_WING_ANTI_ICE,verified-binary,confirmed,yes,yes,15.7,lamp I_OH_PNEUMATIC_WING_ANTI_ICE_L I_OH_PNEUMATIC_WING_ANTI_ICE_U in 93.08 ms; 2 is stored but changes nothing else
+S_OH_PROBE_HEAT,lamp-half,lower,,yes,89.0,"I_OH_PROBE_HEAT_L changed, I_OH_PROBE_HEAT_U unchanged"
+S_OH_PROBE_HEAT,verified-binary,confirmed,yes,yes,27.8,lamp I_OH_PROBE_HEAT_L in 88.984 ms; 2 is stored but changes nothing else
+S_PED_COCKPIT_DOOR_VIDEO,verified-binary,unresolved,yes,no,31.0,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_STAIRS_BLOCKER,verified-binary,unresolved,yes,no,18.5,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_WINDOW_CAPT_LATCH,verified-binary,unresolved,yes,no,13.4,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_WINDOW_FO_LATCH,verified-binary,unresolved,yes,no,29.3,"only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; other vars changed (A320_Engine_Blades_Left_Anim A320_Engine_Blades_Right_Anim); 2 is stored but changes nothing else"
+S_XPDR_ALTREPORTING,verified-binary,confirmed,yes,yes,14.4,GraphQL followed; 2 is stored but changes nothing else
+S_ASP2_ADF_1_REC,momentary-or-latching,pulse,yes,yes,19.4,edge-triggered: the press toggled I_ASP2_ADF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_ADF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,27.9,"effect follows the value (I_ASP2_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_ADF_2_REC,momentary-or-latching,pulse,yes,yes,14.6,edge-triggered: the press toggled I_ASP2_ADF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_ADF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,13.5,"effect follows the value (I_ASP2_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_CAB_REC,momentary-or-latching,pulse,yes,yes,13.8,edge-triggered: the press toggled I_ASP2_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_CAB_REC_LATCH,momentary-or-latching,follows-value,yes,yes,15.9,"effect follows the value (I_ASP2_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_CAB_SEND,momentary-or-latching,pulse,yes,yes,13.3,edge-triggered: the press toggled I_ASP2_CAB_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0
+S_ASP2_CAB_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_HF_1_REC,momentary-or-latching,pulse,yes,yes,22.9,edge-triggered: the press toggled I_ASP2_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_HF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,16.3,"effect follows the value (I_ASP2_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_HF_1_SEND,momentary-or-latching,pulse,yes,yes,17.6,edge-triggered: the press toggled I_ASP2_HF_1_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0
+S_ASP2_HF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_HF_2_REC,momentary-or-latching,pulse,yes,yes,10.7,edge-triggered: the press toggled I_ASP2_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_HF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,13.9,"effect follows the value (I_ASP2_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_HF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_ILS_REC,momentary-or-latching,pulse,yes,yes,18.7,edge-triggered: the press toggled I_ASP2_ILS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_ILS_REC_LATCH,momentary-or-latching,follows-value,yes,yes,32.5,"effect follows the value (I_ASP2_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_INT,momentary-or-latching,unresolved,yes,no,34.8,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP2_INTRAD,momentary-or-latching,unresolved,yes,no,31.9,no visible effect at the gate; GraphQL 1 -> 0 -> 1; Fenix kept the value (not self-resetting)
+S_ASP2_INT_REC,momentary-or-latching,pulse,yes,yes,22.4,edge-triggered: the press toggled I_ASP2_INT_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_INT_REC_LATCH,momentary-or-latching,follows-value,yes,yes,22.2,"effect follows the value (I_ASP2_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_ASP2_INT_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_MARKER_REC,momentary-or-latching,pulse,yes,yes,28.8,edge-triggered: the press toggled I_ASP2_MARKER_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_MARKER_REC_LATCH,momentary-or-latching,follows-value,yes,yes,31.6,"effect follows the value (I_ASP2_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_MASK,momentary-or-latching,unresolved,yes,no,18.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP2_MLS_REC,momentary-or-latching,pulse,yes,yes,8.6,edge-triggered: the press toggled I_ASP2_MLS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_MLS_REC_LATCH,momentary-or-latching,follows-value,yes,yes,7.4,"effect follows the value (I_ASP2_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_PA_REC,momentary-or-latching,pulse,yes,yes,8.2,edge-triggered: the press toggled I_ASP2_PA_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_PA_REC_LATCH,momentary-or-latching,follows-value,yes,yes,30.5,"effect follows the value (I_ASP2_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_PA_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_RAD,momentary-or-latching,unresolved,yes,no,22.6,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP2_SPKR_REC,momentary-or-latching,unresolved,yes,no,17.2,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP2_SPKR_REC_LATCH,momentary-or-latching,unresolved,yes,no,16.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP2_VHF_1_REC,momentary-or-latching,pulse,yes,yes,34.2,edge-triggered: the press toggled I_ASP2_VHF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_VHF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,17.5,"effect follows the value (I_ASP2_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_ASP2_VHF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_VHF_2_REC,momentary-or-latching,pulse,yes,yes,29.8,edge-triggered: the press toggled I_ASP2_VHF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_VHF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,12.0,"effect follows the value (I_ASP2_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_VHF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_VHF_3_REC,momentary-or-latching,pulse,yes,yes,30.3,edge-triggered: the press toggled I_ASP2_VHF_3_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_VHF_3_REC_LATCH,momentary-or-latching,follows-value,yes,yes,13.0,"effect follows the value (I_ASP2_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_VHF_3_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP2_VOICE,momentary-or-latching,pulse,yes,yes,27.0,edge-triggered: the press toggled I_ASP2_VOICE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_VOICE_LATCH,momentary-or-latching,follows-value,yes,yes,19.6,"effect follows the value (I_ASP2_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_VOR_1_REC,momentary-or-latching,pulse,yes,yes,32.6,edge-triggered: the press toggled I_ASP2_NAV_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_VOR_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,18.0,"effect follows the value (I_ASP2_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP2_VOR_2_REC,momentary-or-latching,pulse,yes,yes,31.8,edge-triggered: the press toggled I_ASP2_NAV_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP2_VOR_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,13.0,"effect follows the value (I_ASP2_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_ADF_1_REC,momentary-or-latching,pulse,yes,yes,15.9,edge-triggered: the press toggled I_ASP3_ADF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_ADF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,14.8,"effect follows the value (I_ASP3_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_ADF_2_REC,momentary-or-latching,pulse,yes,yes,15.4,edge-triggered: the press toggled I_ASP3_ADF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_ADF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,12.5,"effect follows the value (I_ASP3_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_CAB_REC,momentary-or-latching,pulse,yes,yes,8.0,edge-triggered: the press toggled I_ASP3_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_CAB_REC_LATCH,momentary-or-latching,follows-value,yes,yes,24.8,"effect follows the value (I_ASP3_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_CAB_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_HF_1_REC,momentary-or-latching,pulse,yes,yes,26.6,edge-triggered: the press toggled I_ASP3_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_HF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,27.1,"effect follows the value (I_ASP3_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_HF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_HF_2_REC,momentary-or-latching,pulse,yes,yes,14.9,edge-triggered: the press toggled I_ASP3_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_HF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,10.7,"effect follows the value (I_ASP3_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_HF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_ILS_REC,momentary-or-latching,pulse,yes,yes,10.5,edge-triggered: the press toggled I_ASP3_ILS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_ILS_REC_LATCH,momentary-or-latching,follows-value,yes,yes,16.3,"effect follows the value (I_ASP3_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_INT,momentary-or-latching,unresolved,yes,no,21.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP3_INTRAD,momentary-or-latching,unresolved,yes,no,19.7,no visible effect at the gate; GraphQL 1 -> 0 -> 1; Fenix kept the value (not self-resetting)
+S_ASP3_INT_REC,momentary-or-latching,pulse,yes,yes,17.4,edge-triggered: the press toggled I_ASP3_INT_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_INT_REC_LATCH,momentary-or-latching,follows-value,yes,yes,35.3,"effect follows the value (I_ASP3_INT_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_INT_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_MARKER_REC,momentary-or-latching,pulse,yes,yes,16.9,edge-triggered: the press toggled I_ASP3_MARKER_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_MARKER_REC_LATCH,momentary-or-latching,follows-value,yes,yes,27.3,"effect follows the value (I_ASP3_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_MASK,momentary-or-latching,unresolved,yes,no,17.8,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP3_MLS_REC,momentary-or-latching,pulse,yes,yes,34.2,edge-triggered: the press toggled I_ASP3_MLS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_MLS_REC_LATCH,momentary-or-latching,follows-value,yes,yes,19.5,"effect follows the value (I_ASP3_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_PA_REC,momentary-or-latching,pulse,yes,yes,15.8,edge-triggered: the press toggled I_ASP3_PA_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_PA_REC_LATCH,momentary-or-latching,follows-value,yes,yes,14.4,"effect follows the value (I_ASP3_PA_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_ASP3_PA_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_RAD,momentary-or-latching,unresolved,yes,no,16.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP3_SIGNAL_FILTER,momentary-or-latching,unresolved,yes,no,16.2,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP3_SPKR_REC,momentary-or-latching,unresolved,yes,no,29.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP3_SPKR_REC_LATCH,momentary-or-latching,unresolved,yes,no,18.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP3_VHF_1_REC,momentary-or-latching,pulse,yes,yes,19.8,edge-triggered: the press toggled I_ASP3_VHF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_VHF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,15.0,"effect follows the value (I_ASP3_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_VHF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_VHF_2_REC,momentary-or-latching,pulse,yes,yes,31.6,edge-triggered: the press toggled I_ASP3_VHF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_VHF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,30.1,"effect follows the value (I_ASP3_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_VHF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_VHF_3_REC,momentary-or-latching,pulse,yes,yes,17.5,edge-triggered: the press toggled I_ASP3_VHF_3_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_VHF_3_REC_LATCH,momentary-or-latching,follows-value,yes,yes,25.8,"effect follows the value (I_ASP3_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_VHF_3_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP3_VOICE,momentary-or-latching,pulse,yes,yes,32.9,edge-triggered: the press toggled I_ASP3_VOICE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_VOICE_LATCH,momentary-or-latching,follows-value,yes,yes,17.4,"effect follows the value (I_ASP3_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_VOR_1_REC,momentary-or-latching,pulse,yes,yes,12.9,edge-triggered: the press toggled I_ASP3_NAV_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_VOR_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,26.4,"effect follows the value (I_ASP3_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP3_VOR_2_REC,momentary-or-latching,pulse,yes,yes,27.4,edge-triggered: the press toggled I_ASP3_NAV_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP3_VOR_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,19.7,"effect follows the value (I_ASP3_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP4_ADF_1_REC,momentary-or-latching,unresolved,yes,no,19.8,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_ADF_1_REC_LATCH,momentary-or-latching,unresolved,yes,no,26.8,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_ADF_2_REC,momentary-or-latching,unresolved,yes,no,30.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_ADF_2_REC_LATCH,momentary-or-latching,unresolved,yes,no,18.0,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_CAB_REC,momentary-or-latching,unresolved,yes,no,18.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_CAB_REC_LATCH,momentary-or-latching,unresolved,yes,no,18.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_CAB_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_HF_1_REC,momentary-or-latching,unresolved,yes,no,31.2,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_HF_1_REC_LATCH,momentary-or-latching,unresolved,yes,no,19.9,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_HF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_HF_2_REC,momentary-or-latching,unresolved,yes,no,18.6,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_HF_2_REC_LATCH,momentary-or-latching,unresolved,yes,no,19.5,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_HF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_ILS_REC,momentary-or-latching,unresolved,yes,no,30.6,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_ILS_REC_LATCH,momentary-or-latching,unresolved,yes,no,36.7,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_INT,momentary-or-latching,unresolved,yes,no,18.9,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_INTRAD,momentary-or-latching,unresolved,yes,no,19.5,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_INT_REC,momentary-or-latching,unresolved,yes,no,14.7,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_INT_REC_LATCH,momentary-or-latching,unresolved,yes,no,17.0,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_INT_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_MARKER_REC,momentary-or-latching,unresolved,yes,no,31.2,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_MARKER_REC_LATCH,momentary-or-latching,unresolved,yes,no,29.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_MASK,momentary-or-latching,unresolved,yes,no,25.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_MLS_REC,momentary-or-latching,unresolved,yes,no,28.5,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_MLS_REC_LATCH,momentary-or-latching,unresolved,yes,no,31.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_PA_REC,momentary-or-latching,unresolved,yes,no,28.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_PA_REC_LATCH,momentary-or-latching,unresolved,yes,no,15.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_PA_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_RAD,momentary-or-latching,unresolved,yes,no,19.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_SPKR_REC,momentary-or-latching,unresolved,yes,no,25.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_SPKR_REC_LATCH,momentary-or-latching,unresolved,yes,no,22.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_1_REC,momentary-or-latching,unresolved,yes,no,21.9,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_1_REC_LATCH,momentary-or-latching,unresolved,yes,no,26.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_VHF_2_REC,momentary-or-latching,unresolved,yes,no,13.7,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_2_REC_LATCH,momentary-or-latching,unresolved,yes,no,20.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_VHF_3_REC,momentary-or-latching,unresolved,yes,no,30.9,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_3_REC_LATCH,momentary-or-latching,unresolved,yes,no,32.5,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VHF_3_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP4_VOICE,momentary-or-latching,unresolved,yes,no,18.5,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VOICE_LATCH,momentary-or-latching,unresolved,yes,no,17.9,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VOR_1_REC,momentary-or-latching,unresolved,yes,no,15.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VOR_1_REC_LATCH,momentary-or-latching,unresolved,yes,no,6.6,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VOR_2_REC,momentary-or-latching,unresolved,yes,no,20.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP4_VOR_2_REC_LATCH,momentary-or-latching,unresolved,yes,no,31.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP_ADF_1_REC,momentary-or-latching,pulse,yes,yes,27.1,edge-triggered: the press toggled I_ASP_ADF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_ADF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,29.1,"effect follows the value (I_ASP_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_ADF_2_REC,buttons,counter-suspected,,,,"press counter: writing 0 back did not undo the effect, one more press (+1, +1) did; the var now reads 2; Access to the path is denied."
+S_ASP_ADF_2_REC,momentary-or-latching,pulse,yes,yes,,"edge-triggered: the press toggled I_ASP_ADF_2_REC; writing 0 back did not undo it, one more press did (the var now reads 2), like the other ASP receive keys. The run stopped right after (checkpoint file briefly locked by a monitor), so this result is from an interrupted test"
+S_ASP_ADF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,44.8,"effect follows the value (I_ASP_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_CAB_REC,momentary-or-latching,pulse,yes,yes,9.7,edge-triggered: the press toggled I_ASP_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_CAB_REC_LATCH,momentary-or-latching,follows-value,yes,yes,37.8,"effect follows the value (I_ASP_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_CAB_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_HF_1_REC,momentary-or-latching,pulse,yes,yes,14.4,edge-triggered: the press toggled I_ASP_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_HF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,8.9,"effect follows the value (I_ASP_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_HF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_HF_2_REC,momentary-or-latching,pulse,yes,yes,26.1,edge-triggered: the press toggled I_ASP_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_HF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,30.4,"effect follows the value (I_ASP_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_HF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_ILS_REC,momentary-or-latching,pulse,yes,yes,16.9,edge-triggered: the press toggled I_ASP_ILS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_ILS_REC_LATCH,momentary-or-latching,follows-value,yes,yes,22.4,"effect follows the value (I_ASP_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_INT,momentary-or-latching,unresolved,yes,no,33.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP_INTRAD,momentary-or-latching,unresolved,yes,no,18.1,no visible effect at the gate; GraphQL 1 -> 0 -> 1; Fenix kept the value (not self-resetting)
+S_ASP_INT_REC,momentary-or-latching,pulse,yes,yes,16.1,edge-triggered: the press toggled I_ASP_INT_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_INT_REC_LATCH,momentary-or-latching,follows-value,yes,yes,17.5,"effect follows the value (I_ASP_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_ASP_INT_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_MARKER_REC,momentary-or-latching,pulse,yes,yes,22.7,edge-triggered: the press toggled I_ASP_MARKER_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_MARKER_REC_LATCH,momentary-or-latching,follows-value,yes,yes,11.4,"effect follows the value (I_ASP_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_MASK,momentary-or-latching,unresolved,yes,no,17.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP_MLS_REC,momentary-or-latching,pulse,yes,yes,19.4,edge-triggered: the press toggled I_ASP_MLS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_MLS_REC_LATCH,momentary-or-latching,follows-value,yes,yes,8.2,"effect follows the value (I_ASP_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_PA_REC,momentary-or-latching,pulse,yes,yes,15.8,edge-triggered: the press toggled I_ASP_PA_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_PA_REC_LATCH,momentary-or-latching,follows-value,yes,yes,31.1,"effect follows the value (I_ASP_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_PA_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_RAD,momentary-or-latching,unresolved,yes,no,33.9,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_ASP_SPKR_REC,momentary-or-latching,unresolved,yes,no,17.3,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP_SPKR_REC_LATCH,momentary-or-latching,unresolved,yes,no,20.5,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_ASP_VHF_1_REC,momentary-or-latching,pulse,yes,yes,28.7,edge-triggered: the press toggled I_ASP_VHF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_VHF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,30.0,"effect follows the value (I_ASP_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_ASP_VHF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_VHF_2_REC,momentary-or-latching,pulse,yes,yes,20.3,edge-triggered: the press toggled I_ASP_VHF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_VHF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,18.6,"effect follows the value (I_ASP_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_VHF_2_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_VHF_3_REC,momentary-or-latching,pulse,yes,yes,23.0,edge-triggered: the press toggled I_ASP_VHF_3_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_VHF_3_REC_LATCH,momentary-or-latching,follows-value,yes,yes,17.8,"effect follows the value (I_ASP_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_VHF_3_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
+S_ASP_VOICE,momentary-or-latching,pulse,yes,yes,18.6,edge-triggered: the press toggled I_ASP_VOICE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_VOICE_LATCH,momentary-or-latching,follows-value,yes,yes,14.4,"effect follows the value (I_ASP_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_VOR_1_REC,momentary-or-latching,pulse,yes,yes,20.2,edge-triggered: the press toggled I_ASP_NAV_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_VOR_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,20.2,"effect follows the value (I_ASP_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_ASP_VOR_2_REC,momentary-or-latching,pulse,yes,yes,30.3,edge-triggered: the press toggled I_ASP_NAV_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_ASP_VOR_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,28.5,"effect follows the value (I_ASP_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_CDU1_BRIGHTNESS_DOWN,momentary-or-latching,pulse,yes,yes,18.4,edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_CDU1_BRIGHTNESS_UP,momentary-or-latching,pulse,yes,yes,24.4,edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_CDU2_BRIGHTNESS_DOWN,momentary-or-latching,pulse,yes,yes,21.0,edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_CDU2_BRIGHTNESS_UP,momentary-or-latching,pulse,yes,yes,21.5,edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_DCDU1_BRT,momentary-or-latching,pulse,yes,yes,25.1,edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_DCDU1_DIM,momentary-or-latching,pulse,yes,yes,24.1,edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_DCDU1_DIM_BRT,momentary-or-latching,unresolved,yes,yes,28.0,"mixed: N_DCDU1_BRIGHTNESS stayed, none went back"
+S_DCDU2_BRT,momentary-or-latching,pulse,yes,yes,28.1,edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_DCDU2_DIM,momentary-or-latching,pulse,yes,yes,18.7,edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_DCDU2_DIM_BRT,momentary-or-latching,unresolved,yes,yes,20.1,"mixed: N_DCDU2_BRIGHTNESS stayed, none went back"
+S_EXT_CARGO_DOOR_AFT_HANDLE,momentary-or-latching,unresolved,yes,no,27.0,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_EXT_CARGO_DOOR_AFT_HANDLE_FLAP,momentary-or-latching,unresolved,yes,no,15.2,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_EXT_CARGO_DOOR_BULK_HANDLE,momentary-or-latching,unresolved,yes,no,17.7,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_EXT_CARGO_DOOR_FWD_HANDLE,momentary-or-latching,unresolved,yes,no,16.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_EXT_CARGO_DOOR_FWD_HANDLE_FLAP,momentary-or-latching,unresolved,yes,no,16.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_EXT_DOOR_L1_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L1_HANDLE_FLAP,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L1_INSIDE_GUST_BUTTON,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L1_INSIDE_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2_HANDLE_FLAP,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2_INSIDE_GUST_BUTTON,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2_INSIDE_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R1_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R1_HANDLE_FLAP,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R1_INSIDE_GUST_BUTTON,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R1_INSIDE_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2_HANDLE_FLAP,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2_INSIDE_GUST_BUTTON,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2_INSIDE_HANDLE,buttons,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_GPU_APU_SHUTOFF,buttons,skipped,,,,extra skip: ground power unit (pulled the GPU plug in the first run)
+S_EXT_REFUELING_AMOUNT,buttons,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_FCU_ALTITUDE,buttons,skipped,,,,extra skip: FCU push/pull knob: managed vs selected is not undone by the same press
+S_FCU_ALTITUDE_SCALE,momentary-or-latching,unresolved,yes,no,16.4,no visible effect at the gate; GraphQL 1 -> 0 -> 1; Fenix kept the value (not self-resetting)
+S_FCU_AP1,momentary-or-latching,unresolved,yes,no,24.1,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_AP2,momentary-or-latching,unresolved,yes,no,12.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_APPR,momentary-or-latching,unresolved,yes,no,29.1,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_ATHR,momentary-or-latching,unresolved,yes,no,31.8,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_EFIS1_ARPT,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS1_BARO_MODE,momentary-or-latching,follows-value,yes,yes,33.0,"effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_FCU_EFIS1_BARO_STD,momentary-or-latching,follows-value,yes,yes,14.9,"effect follows the value (B_FCU_EFIS1_BARO_STD I_FCU_EFIS1_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+S_FCU_EFIS1_CSTR,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS1_FD,momentary-or-latching,pulse,yes,yes,19.7,"edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_FCU_EFIS1_FD 1 -> 0, I_FCU_EFIS2_FD 1 -> 0"
+S_FCU_EFIS1_FD,buttons,skipped,,,,extra skip: FD key: a press switched both FDs off and a second press did not bring them back
+S_FCU_EFIS1_LS,momentary-or-latching,pulse,yes,yes,26.6,edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_FCU_EFIS1_NAV1,momentary-or-latching,unresolved,yes,no,33.4,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_EFIS1_NAV2,momentary-or-latching,unresolved,yes,no,12.9,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_EFIS1_NDB,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS1_VORD,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS1_WPT,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS2_ARPT,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS2_BARO_MODE,momentary-or-latching,follows-value,yes,yes,20.3,"effect follows the value (B_FCU_EFIS2_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+S_FCU_EFIS2_BARO_STD,momentary-or-latching,follows-value,yes,yes,22.0,"effect follows the value (B_FCU_EFIS2_BARO_STD I_FCU_EFIS2_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+S_FCU_EFIS2_CSTR,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS2_FD,buttons,skipped,,,,extra skip: FD key: a press switched both FDs off and a second press did not bring them back
+S_FCU_EFIS2_LS,momentary-or-latching,pulse,yes,yes,18.6,edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_FCU_EFIS2_NAV1,momentary-or-latching,unresolved,yes,no,13.6,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_EFIS2_NAV2,momentary-or-latching,unresolved,yes,no,6.1,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_EFIS2_NDB,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS2_ND_MODE,momentary-or-latching,unresolved,,,,"probe bug: rest value 3 was taken for a press counter, the var was written 4 and 5 and left at 5 (written back to 3 later with undo). It is a rotary, not a button; position count still to be probed (EFIS1 ND MODE has 0..4, 3 = ARC)"
+S_FCU_EFIS2_ND_ZOOM,momentary-or-latching,unresolved,yes,no,32.1,no visible effect at the gate; GraphQL 1 -> 0 -> 1; Fenix kept the value (not self-resetting)
+S_FCU_EFIS2_VORD,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EFIS2_WPT,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
+S_FCU_EXPED,momentary-or-latching,unresolved,yes,no,24.6,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_HDGVS_TRKFPA,momentary-or-latching,pulse,yes,yes,17.6,edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_FCU_HEADING,buttons,skipped,,,,extra skip: FCU push/pull knob: managed vs selected is not undone by the same press
+S_FCU_LOC,momentary-or-latching,unresolved,yes,no,32.1,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_METRIC_ALT,momentary-or-latching,unresolved,yes,no,21.3,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_FCU_SPD_MACH,momentary-or-latching,pulse,yes,yes,31.7,edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_FCU_SPEED,buttons,skipped,,,,extra skip: FCU push/pull knob: managed vs selected is not undone by the same press
+S_FCU_VERTICAL_SPEED,buttons,skipped,,,,extra skip: FCU push/pull knob: managed vs selected is not undone by the same press
+S_FC_CAPT_PRIORITY,momentary-or-latching,unresolved,yes,no,33.4,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_FC_CAPT_TILLER_PEDAL_DISCONNECT,buttons,skipped,,,,"deny list: disconnect (IDG, sidestick takeover, cargo): when in doubt deny"
+S_FC_FLAPS_LATCH,momentary-or-latching,unresolved,yes,no,8.1,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_FC_FO_PRIORITY,momentary-or-latching,unresolved,yes,no,26.0,no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)
+S_FC_FO_TILLER_PEDAL_DISCONNECT,buttons,skipped,,,,"deny list: disconnect (IDG, sidestick takeover, cargo): when in doubt deny"
+S_FC_MIP_ANTI_SKID,momentary-or-latching,unresolved,yes,yes,14.8,effect only on release (I_ECAM_CLR_LEFT I_ECAM_CLR_RIGHT I_MIP_MASTER_CAUTION_CAPT I_MIP_MASTER_CAUTION_CAPT_L (+2)); needs a look
+S_FC_RUDDER_TRIM,buttons,skipped,,,,extra skip: moves the rudder trim while held; writing the switch back does not move the trim back
+S_FC_THROTTLE_LEFT_MAX_REVERSE,buttons,skipped,,,,extra skip: thrust lever
+S_FC_THROTTLE_RIGHT_MAX_REVERSE,buttons,skipped,,,,extra skip: thrust lever
+S_FC_THR_INST_DISCONNECT1,buttons,skipped,,,,"deny list: disconnect (IDG, sidestick takeover, cargo): when in doubt deny"
+S_FC_THR_INST_DISCONNECT2,buttons,skipped,,,,"deny list: disconnect (IDG, sidestick takeover, cargo): when in doubt deny"
+S_HYD_GRAVITY_GEAR_HANDLE,momentary-or-latching,invalid-crash,,,18.7,"not tested: probed after the Fenix WASM crash, nothing could react; no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)"
+S_MIP_ATC_MSG_CAPT,momentary-or-latching,unresolved,yes,no,34.8,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_ATC_MSG_FO,momentary-or-latching,unresolved,yes,no,11.6,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_AUTOBRAKE_LO,momentary-or-latching,unresolved,yes,no,18.3,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_AUTOBRAKE_MAX,momentary-or-latching,unresolved,yes,no,17.5,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_AUTOBRAKE_MED,momentary-or-latching,unresolved,yes,no,19.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_AUTOLAND_CAPT,momentary-or-latching,unresolved,yes,yes,22.1,effect only on release (I_MIP_AUTOLAND_CAPT I_MIP_AUTOLAND_CAPT_L I_MIP_AUTOLAND_CAPT_U I_MIP_AUTOLAND_FO (+2)); needs a look
+S_MIP_AUTOLAND_FO,momentary-or-latching,follows-value,yes,yes,18.8,"effect follows the value (I_MIP_AUTOLAND_CAPT I_MIP_AUTOLAND_CAPT_L I_MIP_AUTOLAND_CAPT_U I_MIP_AUTOLAND_FO (+2)): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_MIP_BKUP_SPD_ALT_CAPT,momentary-or-latching,follows-value,yes,yes,13.2,"effect follows the value (I_MIP_AUTOLAND_CAPT I_MIP_AUTOLAND_CAPT_L I_MIP_AUTOLAND_CAPT_U I_MIP_AUTOLAND_FO (+2)): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_MIP_BKUP_SPD_ALT_FO,momentary-or-latching,follows-value,yes,yes,30.4,"effect follows the value (I_MIP_AUTOLAND_CAPT I_MIP_AUTOLAND_CAPT_L I_MIP_AUTOLAND_CAPT_U I_MIP_AUTOLAND_FO (+2)): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_MIP_BRAKE_FAN,momentary-or-latching,follows-value,yes,yes,18.4,"effect follows the value (I_MIP_BRAKE_FAN_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_MIP_CHRONO_CAPT,momentary-or-latching,unresolved,yes,no,25.5,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_CHRONO_FO,momentary-or-latching,unresolved,yes,no,32.2,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_CLOCK_CHR,momentary-or-latching,pulse,yes,yes,24.5,edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: N_MIP_CLOCK_CHRONO -1 -> 1
+S_MIP_CLOCK_CHR,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
+S_MIP_CLOCK_ET,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
+S_MIP_CLOCK_RST,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
+S_MIP_CLOCK_SET,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
+S_MIP_CLOCK_UTC,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
+S_MIP_GPWS_TERRAIN_ON_ND_CAPT,momentary-or-latching,unresolved,yes,no,13.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_GPWS_TERRAIN_ON_ND_FO,momentary-or-latching,unresolved,yes,no,13.0,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_GPWS_VISUAL_ALERT_CAPT,momentary-or-latching,unresolved,yes,no,9.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_GPWS_VISUAL_ALERT_FO,momentary-or-latching,unresolved,yes,no,31.4,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_ISFD_BARO_BUTTON,momentary-or-latching,pulse,yes,yes,31.8,edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_MIP_ISFD_BUGS,momentary-or-latching,unresolved,yes,no,14.9,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_ISFD_LS,momentary-or-latching,unresolved,yes,no,17.1,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_ISFD_MINUS,momentary-or-latching,unresolved,yes,no,18.3,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_ISFD_PLUS,momentary-or-latching,unresolved,yes,no,17.2,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_ISFD_RST,momentary-or-latching,unresolved,yes,no,8.4,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_LIGHT_CONSOLEFLOOR_CAPT,momentary-or-latching,follows-value,yes,yes,20.0,"effect follows the value (B_LT_CONSOLE_CAPT): latching, or momentary with an effect only while held; GraphQL 0 -> 2 -> 0"
+S_MIP_LIGHT_CONSOLEFLOOR_FO,momentary-or-latching,follows-value,yes,yes,24.3,"effect follows the value (B_LT_CONSOLE_FO): latching, or momentary with an effect only while held; GraphQL 0 -> 2 -> 0"
+S_MIP_NORTH_REF,momentary-or-latching,follows-value,yes,yes,33.9,"effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_MIP_RDME_NEEDLE_1,momentary-or-latching,unresolved,yes,no,17.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_RDME_NEEDLE_2,momentary-or-latching,unresolved,yes,no,30.6,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_TRAFFIC_CAPT,momentary-or-latching,unresolved,yes,no,18.4,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_MIP_TRAFFIC_FO,momentary-or-latching,unresolved,yes,no,30.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_OH_ELEC_APU_START,buttons,skipped,,,,extra skip: would start the APU
+S_OH_ELEC_EMER_GEN_MAN_ON,buttons,skipped,,,,deny list: emergency generator test and MAN ON (covers too)
+S_OH_EVAC_HORN_SHUTOFF,buttons,skipped,,,,"deny list: EVAC, evacuation horn and captain/purser (covers too)"
+S_OH_FIRE_APU_AGENT,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_APU_BUTTON,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_ENG1_AGENT1,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_ENG1_AGENT2,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_ENG1_BUTTON,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_ENG2_AGENT1,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_ENG2_AGENT2,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_FIRE_ENG2_BUTTON,buttons,skipped,,,,"deny list: fire buttons, extinguisher agents and fire tests (covers too)"
+S_OH_HYD_RAT_MAN_ON,buttons,skipped,,,,"deny list: RAT MAN ON; the cover is not matched, so it stays probeable"
+S_OH_OXYGEN_MASK_MAN_ON,buttons,skipped,,,,deny list: oxygen MAN ON (cover too)
+S_OH_RCRD_ERASE,momentary-or-latching,unresolved,yes,no,9.3,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_OH_RCRD_GND_CTL,momentary-or-latching,unresolved,yes,no,18.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_OH_SVCE_INT_OVRD,momentary-or-latching,follows-value,yes,yes,8.9,"effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+S_PED_AIDS_PRINT,momentary-or-latching,unresolved,yes,no,24.7,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_PED_DFDR_EVENT,momentary-or-latching,unresolved,yes,no,10.4,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
+S_PED_RMP1_ADF,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_AM,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_BFO,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_HF1,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_HF2,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_ILS,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_MLS,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_NAV,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_POWER,momentary-or-latching,follows-value,yes,yes,18.0,"effect follows the value (I_PED_RMP1_VHF1 N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+S_PED_RMP1_VHF1,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_VHF2,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_VHF3,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_VOR,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP1_XFER,momentary-or-latching,pulse,yes,yes,14.9,edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_PED_RMP2_ADF,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_AM,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_BFO,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_HF1,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_HF2,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_ILS,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_MLS,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_NAV,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_POWER,momentary-or-latching,follows-value,yes,yes,21.6,"effect follows the value (I_PED_RMP2_VHF2 N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+S_PED_RMP2_VHF1,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_VHF2,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_VHF3,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_VOR,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP2_XFER,momentary-or-latching,pulse,yes,yes,17.2,edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_PED_RMP3_ADF,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_AM,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_BFO,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_HF1,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_HF2,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_ILS,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_MLS,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_NAV,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_POWER,momentary-or-latching,follows-value,yes,yes,16.4,"effect follows the value (B_PED_RMP3_DATA_DISPLAYED_ACT I_PED_RMP3_VHF3 N_PED_RMP3_ACTIVE N_PED_RMP3_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+S_PED_RMP3_VHF1,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_VHF2,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_VHF3,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_VOR,buttons,skipped,,,,extra skip: RMP radio selection keys are a group
+S_PED_RMP3_XFER,momentary-or-latching,pulse,yes,yes,18.6,edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
+S_WINDOW_CAPT_LEVER_BUTTON,momentary-or-latching,invalid-crash,,,18.2,"not tested: probed after the Fenix WASM crash, nothing could react; no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)"
+S_WINDOW_FO_LEVER_BUTTON,momentary-or-latching,invalid-crash,,,10.1,"not tested: probed after the Fenix WASM crash, nothing could react; no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)"
+S_AUDIO_SWITCHING,positions,invalid-crash,,,23.5,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_CHART_LIGHT_TEMP_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_CHART_LIGHT_TEMP_FO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_COCKPIT_DOOR,positions,invalid-crash,,,29.9,"not tested: probed after the Fenix WASM crash, nothing could react; positions 0,1,2; source: effect/animation vars (I_OH_DOOR_CTL_U I_PED_COCKPIT_DOOR_U) stop changing after 2; NOT RESTORED: effect vars differ (also after one more press): I_OH_DOOR_CTL_U 1 -> 0, I_PED_COCKPIT_DOOR_U 1 -> 0"
+S_EFB_CHARGING_CABLE_CAPT_TEMP,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EFB_CHARGING_CABLE_FO_TEMP,positions,invalid-crash,,,1.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_ENG_MODE,positions,skipped,,,,deny list: engine mode selector
+S_EXT_CARGO_BAY_AFT_LT,positions,invalid-crash,,,6.4,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_BAY_FWD_LT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_AFT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_FWD,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT,positions,invalid-crash,,,24.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD,positions,invalid-crash,,,35.7,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_DOOR_L1_INSIDE_GUST_STATE,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L1_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2E_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2_INSIDE_GUST_STATE,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L2_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_L3E_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R1_INSIDE_GUST_STATE,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R1_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2E_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2_INSIDE_GUST_STATE,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R2_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_DOOR_R3E_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
+S_EXT_REFUELING_ACT_FQI,positions,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_EXT_REFUELING_MODE,positions,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
+S_FC_FLAPS,positions,skipped,,,,hydraulics pressurised or unknown: lever not moved
+S_MISC_WIPER_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_FO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_REPELLENT_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_REPELLENT_FO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_ELEC_EXT_PWR,positions,skipped,,,,extra skip: would cut ground power (test setup)
+S_OH_ENG_N1_MODE_1,positions,skipped,,,,"deny list: engine N1 mode (extra, beyond the brief)"
+S_OH_ENG_N1_MODE_2,positions,skipped,,,,"deny list: engine N1 mode (extra, beyond the brief)"
+S_OH_EXT_LT_BEACON,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_LANDING_BOTH,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_LANDING_L,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_LANDING_R,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_NAV_LOGO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_NOSE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_RWY_TURNOFF,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_STROBE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_WING,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_FUEL_MODE_SEL,positions,invalid-crash,,,24.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_FUEL_XFEED,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_GPWS_FLAP_MODE,positions,invalid-crash,,,22.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_GPWS_GS_MODE,positions,invalid-crash,,,35.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_GPWS_SYS,positions,invalid-crash,,,24.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_INT_LT_EMER,positions,skipped,,,,deny list: emergency: when in doubt deny
+S_OH_IN_LT_ANN_LT,positions,invalid-crash,,,25.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_IN_LT_ICE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_LIGHTING_AVIONICS_COMPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_ADR1,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_ADR2,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; positions 0,1,2; source: effect/animation vars (A32X_LOD) stop changing after 2"
+S_OH_NAV_ADR3,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_DATA_DISP,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_IR1_MODE,positions,skipped,,,,extra skip: IRS mode: would stop or restart alignment
+S_OH_NAV_IR1_SWITCH,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_IR2_MODE,positions,skipped,,,,extra skip: IRS mode: would stop or restart alignment
+S_OH_NAV_IR2_SWITCH,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_IR3_MODE,positions,skipped,,,,extra skip: IRS mode: would stop or restart alignment
+S_OH_NAV_IR3_SWITCH,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_SYS_DISP,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_HOT_AIR,positions,invalid-crash,,,6.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO,positions,invalid-crash,,,20.5,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_PRESS_MAN,positions,invalid-crash,,,25.7,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_PRESS_MODE,positions,invalid-crash,,,11.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_XBLEED_SELECTOR,positions,invalid-crash,,,19.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_SIGNS,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_SIGNS_SMOKING,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_0,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_1,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_2,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_3,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_4,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_5,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_6,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_7,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_COCKPIT_DOOR,positions,skipped,,,,extra skip: cockpit door switch: its lights did not come back after the switch was restored
+S_TCAS_HORIZONTAL_RANGE,positions,invalid-crash,,,23.4,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_TCAS_RANGE,positions,invalid-crash,,,30.5,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_FO,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_REAR_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_REAR_FO,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_CAPT_LEVER,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_FO_LEVER,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_GAIN,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_GCS,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_MODE,positions,invalid-crash,,,20.7,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_MULTISCAN,positions,invalid-crash,,,23.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_PRED_WS,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_SYS,positions,invalid-crash,,,24.0,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_XPDR_ATC,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_XPDR_MODE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_XPDR_OPERATION,positions,invalid-crash,,,38.6,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+E_FCU_EFIS1_BARO,encoder-display,invalid-crash,,,7.4,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_FCU_EFIS2_BARO,encoder-display,invalid-crash,,,24.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_MIP_CLOCK_SET,encoder-display,invalid-crash,,,23.1,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_MIP_ISFD_BARO,encoder-display,invalid-crash,,,13.5,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_MIP_TRAFFIC_CAPT,encoder-display,invalid-crash,,,32.0,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_MIP_TRAFFIC_FO,encoder-display,invalid-crash,,,22.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP1_INNER,encoder-display,invalid-crash,,,24.0,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP1_OUTER,encoder-display,invalid-crash,,,22.8,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP2_INNER,encoder-display,invalid-crash,,,24.5,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP2_OUTER,encoder-display,invalid-crash,,,26.8,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP3_INNER,encoder-display,invalid-crash,,,21.0,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP3_OUTER,encoder-display,invalid-crash,,,23.2,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_STANDBY_ALT_IMPERIAL_BARO,encoder-display,invalid-crash,,,34.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_STANDBY_ALT_METRIC_BARO,encoder-display,invalid-crash,,,17.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_CB_105VU_A01,breaker,invalid-crash,,,27.6,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_106VU_B03,breaker,invalid-crash,,,15.0,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_121VU_M19,breaker,invalid-crash,,,26.0,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_121VU_P20,breaker,invalid-crash,,,14.7,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_122VU_W02,breaker,invalid-crash,,,29.5,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_122VU_Y06,breaker,invalid-crash,,,31.4,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_123VU_AB09,breaker,invalid-crash,,,14.5,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_2000VU_J06,breaker,invalid-crash,,,31.1,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_2001VU_A03,breaker,invalid-crash,,,13.7,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_49VU_D02,breaker,invalid-crash,,,26.7,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+E_CB_49VU_G02,breaker,invalid-crash,,,15.5,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+S_FC_CAPT_INST_DISCONNECT,takeover-hold-1s,invalid-crash,,,31.9,"not tested: probed after the Fenix WASM crash, nothing could react; read 1 while held, 0 after; side effects while held: none; after release: none"
+S_FC_FO_INST_DISCONNECT,takeover-hold-1s,invalid-crash,,,16.4,"not tested: probed after the Fenix WASM crash, nothing could react; read 1 while held, 0 after; side effects while held: none; after release: none"
+S_FCU_EFIS1_ND_MODE,label-3,label,,,,pilot read the ND: 3 = ARC
+S_FCU_EFIS1_ND_ZOOM,label-1,label,,,,pilot read the ND: 1 = 20

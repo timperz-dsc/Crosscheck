@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- CRO-8 step 2: probes the draft profile in the running sim, one var at a time, and writes
+       proposals only. Needs the MSFS 2024 SDK (through Crosscheck.Bridge.SimConnect). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ProfileProbe</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!-- SimvarReader.cs (read-only safety simvars) uses SimConnect directly, like the adapter. -->
+  <ItemGroup>
+    <Reference Include="Microsoft.FlightSimulator.SimConnect">
+      <HintPath>$([MSBuild]::EnsureTrailingSlash('$(MSFS2024_SDK)'))SimConnect SDK\lib\managed\Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\bridge\Crosscheck.Bridge.SimConnect\Crosscheck.Bridge.SimConnect.csproj" />
+    <ProjectReference Include="..\..\bridge\Crosscheck.Bridge.Core\Crosscheck.Bridge.Core.csproj" />
+    <ProjectReference Include="..\..\bridge\Crosscheck.Profiles\Crosscheck.Profiles.csproj" />
+    <!-- Reuses the step 1 naming rules (groups, labels) and the scan reader. -->
+    <ProjectReference Include="..\profile-gen\ProfileGen.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProfileProbe.Tests" />
+  </ItemGroup>
+
+</Project>
