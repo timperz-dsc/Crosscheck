@@ -75,8 +75,8 @@ export function preflightExplanation(row: PreflightRow, other: string): string |
   switch (row.field) {
     case 'airac':
       return row.you === 'unknown' || row.other === 'unknown'
-        ? `The AIRAC cycle is not known ${whereUnknown(row, other)}, so the navigation data cannot be compared. You can join, but check that you both load the same AIRAC before you build the flight plan.`
-        : 'The navigation data differs, so SIDs, STARs and approaches may not match in the MCDU. You can join, but load the same AIRAC before you build the flight plan.';
+        ? `The AIRAC cycle is entered by hand and was not entered ${whereUnknown(row, other)}, so it cannot be compared. You can join. Check that both pilots use the same AIRAC before you build the flight plan.`
+        : 'The navigation data differs, so SIDs, STARs and approaches may not match in the MCDU. You can join. Check that both pilots use the same AIRAC before you build the flight plan.';
     case 'aircraft.app_version':
     case 'aircraft.package_version': {
       const what = row.field === 'aircraft.app_version' ? 'app' : 'package';

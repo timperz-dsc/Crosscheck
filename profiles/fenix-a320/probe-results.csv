@@ -7,25 +7,7 @@ N_STANDBY_ATTITUDE_BANK,noise-30s,noisy,,,,"278 changes, 21.9714..21.9714; chang
 N_STANDBY_ATTITUDE_PITCH,noise-30s,noisy,,,,"278 changes, 3.3116..3.312; changes with no input: ignore (an observe would raise false alarms)"
 N_STANDBY_COMPASS,noise-30s,noisy,,,,"240 changes, 190.7515..190.7515; changes with no input: ignore (an observe would raise false alarms)"
 TITLE,simvar,info,,,,FenixA320 IAE WF
-airac,manual,info,,,,"AIRAC: none of 25 GraphQL candidate names answered (aircraft.fms.navdata*, aircraft.navdata.*, aircraft.airac*, ...). The file search in the Fenix data folders was not done (owner decision). The MCDU route (DATA > A/C STATUS shows the active nav database) was not tried because the displays were frozen. Unresolved."
-airac.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.airac,graphql-airac,not found,,,,(empty or not found)
-aircraft.airac.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.efb.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.fmgc.airac,graphql-airac,not found,,,,(empty or not found)
-aircraft.fmgc.navdata,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.activeNavDatabase,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.airac,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.database,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.database.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navData,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navData.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navDataCycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navDatabase,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navdata,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.fms.navdb,graphql-airac,not found,,,,(empty or not found)
+airac,manual,info,,,,"AIRAC: the automatic check is dropped for now (no GraphQL name answered in the first run). Preflight keeps AIRAC as a manual field (bridge --airac, typed by the pilot) with the reminder: Check that both pilots use the same AIRAC."
 aircraft.fuel.ACT1.amount.kg,graphql-fuel,info,,,,0
 aircraft.fuel.ACT2.amount.kg,graphql-fuel,info,,,,0
 aircraft.fuel.center.amount.kg,graphql-fuel,info,,,,0
@@ -34,13 +16,9 @@ aircraft.fuel.left.amount.kg,graphql-fuel,info,,,,1500
 aircraft.fuel.left.capacity,graphql-fuel,info,,,,6264
 aircraft.fuel.right.amount.kg,graphql-fuel,info,,,,1500
 aircraft.fuel.total.amount.kg,graphql-fuel,info,,,,3000
-aircraft.navdata,graphql-airac,not found,,,,(empty or not found)
-aircraft.navdata.airac,graphql-airac,not found,,,,(empty or not found)
-aircraft.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
-aircraft.navigraph.airac,graphql-airac,not found,,,,(empty or not found)
-aircraft.navigraph.cycle,graphql-airac,not found,,,,(empty or not found)
 crash-cutoff,manual,info,,,,2026-11-01T14:16:40Z
-navdata.cycle,graphql-airac,not found,,,,(empty or not found)
+crash-end,manual,info,,,,2026-11-01T16:28:04Z
+pilot-ok-E_CB_121VU_P20,manual,info,,,,"E_CB_121VU_P20 is back at 1; effect vars still differ (I_ECAM_CLR_LEFT 1 -> 0, I_ECAM_CLR_RIGHT 1 -> 0); the pilot checked the cockpit and confirmed it is as before"
 smoke-test,manual,info,,,,"CROSSCHECK_SIM_SMOKE=1 dotnet test bridge/Crosscheck.Bridge.SimSmoke.Tests: passed (1 test, connects, reads profile vars, writes S_FCU_EFIS1_ND_MODE and restores it, refuses an out-of-range write)"
 softwareVersion,graphql,info,,,,3.0.0.7613
 surprise-asp-send,manual,info,,,,Audio panel transmit keys (S_ASP*_SEND) are a radio group: pressing CAB SEND on ASP2 deselected VHF 1 SEND. One var cannot restore the group; the pilot pressed VHF 1 SEND again. For sync: the SEND keys of a panel must be treated as one group (and the lamp I_ASP*_SEND of every key watched).
@@ -52,9 +30,9 @@ surprise-fd,manual,info,,,,"S_FCU_EFIS1_FD: one probe press switched both FDs of
 surprise-gpu-plug,manual,info,,,,S_EXT_GPU_PLUG is a click var: writing 1 pulled the GPU plug and the aircraft lost ground power; it reads 0 both plugged and unplugged. Must never be synced as a state. S_OH_ELEC_EXT_PWR is a press counter too (a pilot press moved it 2 -> 4).
 surprise-late-faults,manual,info,,,,"BLOWER and EXTRACT FAULT lights (I_OH_PNEUMATIC_BLOWER_U, I_OH_PNEUMATIC_EXTRACT_U) came on when ground power dropped (BUS TIE test) and went out by themselves about 10 minutes later, during the cargo FWD ISOL VALVE test. Recorded as a delayed recovery, not a valve effect."
 surprise-nd-mode-counter-bug,manual,info,,,,"Probe bug found and fixed: in the buttons phase S_FCU_EFIS2_ND_MODE (rest value 3) took the press-counter path, was written 4 and 5 and wrongly counted as restored (same parity). It stayed at 5 until the supervised ND check noticed; then written back to 3 with the undo command. The buttons test now writes nothing to a var resting above 1 unless it is MASTER CAUTION/WARNING."
+surprise-rmp3-outer,manual,info,,,,"Rerun: E_PED_RMP3_OUTER +1 moved RMP 3 standby 118.000 -> 119.000, but Fenix did not take the -1 step (writing -1 below 0). The restore then applied the push-button 'one more press' fallback to the knob, which turned it further (up to 121.000). Fixed: that fallback never runs for encoders. The pilot set RMP 3 standby back to 118.000 by hand. Encoder steps below 0 may not register in Fenix; a delta writer must check this (CRO-8 step 3)."
 surprise-wasm-crash,manual,info,,,,"Fenix WASM crash during the probe. Last real reaction: S_PED_RMP3_XFER at 14:16:39 UTC. The next test stepped S_COCKPIT_DOOR through 0..7 (3..7 are not positions); its lamps went dark and did not come back, while the pilot saw the door unchanged. Every later write was stored but nothing reacted and GraphQL returned nothing for switches. Most likely cause: writing a non-existent position to S_COCKPIT_DOOR (the earlier write of 5 to S_FCU_EFIS2_ND_MODE at 14:13:35 was followed by normal reactions, so it is less likely). All results after 14:16:40 UTC are marked invalid: the remaining positions, all encoders, all breakers and the takeover checks. Strong support for the rule: never write a value outside the profile's allowed set, also in test tools."
 surprise-yellow-pump,manual,info,,,,"S_OH_HYD_YELLOW_ELEC_PUMP is a press counter (a hand click moves it 0 -> 2), not a 0/1 switch. Absolute writes do not undo a press. Any Fenix pushbutton may be like this; the probe now restores with one more press when writing the old value back does not undo the effect, and marks such vars counter-suspected."
-system.navdata.cycle,graphql-airac,not found,,,,(empty or not found)
 S_ENG_MASTER_1,verified,skipped,,,,deny list: ENG MASTER
 S_ENG_MASTER_2,verified,skipped,,,,deny list: ENG MASTER
 S_EXT_CARGO_DOOR_OPEN_AFT,verified-binary,confirmed,yes,yes,31.0,lamp I_EXT_CARGO_DOOR_OPEN_AFT in 123.348 ms; 2 is stored but changes nothing else
@@ -204,11 +182,11 @@ S_ASP2_ADF_2_REC,momentary-or-latching,pulse,yes,yes,14.6,edge-triggered: the pr
 S_ASP2_ADF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,13.5,"effect follows the value (I_ASP2_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
 S_ASP2_CAB_REC,momentary-or-latching,pulse,yes,yes,13.8,edge-triggered: the press toggled I_ASP2_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
 S_ASP2_CAB_REC_LATCH,momentary-or-latching,follows-value,yes,yes,15.9,"effect follows the value (I_ASP2_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
-S_ASP2_CAB_SEND,momentary-or-latching,pulse,yes,yes,13.3,edge-triggered: the press toggled I_ASP2_CAB_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0
+S_ASP2_CAB_SEND,momentary-or-latching,pulse,yes,yes,13.3,"edge-triggered: the press toggled I_ASP2_CAB_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0"
 S_ASP2_CAB_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
 S_ASP2_HF_1_REC,momentary-or-latching,pulse,yes,yes,22.9,edge-triggered: the press toggled I_ASP2_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
 S_ASP2_HF_1_REC_LATCH,momentary-or-latching,follows-value,yes,yes,16.3,"effect follows the value (I_ASP2_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
-S_ASP2_HF_1_SEND,momentary-or-latching,pulse,yes,yes,17.6,edge-triggered: the press toggled I_ASP2_HF_1_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0
+S_ASP2_HF_1_SEND,momentary-or-latching,pulse,yes,yes,17.6,"edge-triggered: the press toggled I_ASP2_HF_1_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0"
 S_ASP2_HF_1_SEND,buttons,skipped,,,,extra skip: audio transmit keys are a group: restoring needs a second key
 S_ASP2_HF_2_REC,momentary-or-latching,pulse,yes,yes,10.7,edge-triggered: the press toggled I_ASP2_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
 S_ASP2_HF_2_REC_LATCH,momentary-or-latching,follows-value,yes,yes,13.9,"effect follows the value (I_ASP2_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
@@ -429,7 +407,7 @@ S_FCU_EFIS1_ARPT,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
 S_FCU_EFIS1_BARO_MODE,momentary-or-latching,follows-value,yes,yes,33.0,"effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
 S_FCU_EFIS1_BARO_STD,momentary-or-latching,follows-value,yes,yes,14.9,"effect follows the value (B_FCU_EFIS1_BARO_STD I_FCU_EFIS1_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
 S_FCU_EFIS1_CSTR,buttons,skipped,,,,extra skip: EFIS ND option keys are a group
-S_FCU_EFIS1_FD,momentary-or-latching,pulse,yes,yes,19.7,"edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_FCU_EFIS1_FD 1 -> 0, I_FCU_EFIS2_FD 1 -> 0"
+S_FCU_EFIS1_FD,momentary-or-latching,pulse,yes,yes,19.7,"edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_FCU_EFIS1_FD 1 -> 0, I_FCU_EFIS2_FD 1 -> 0"
 S_FCU_EFIS1_FD,buttons,skipped,,,,extra skip: FD key: a press switched both FDs off and a second press did not bring them back
 S_FCU_EFIS1_LS,momentary-or-latching,pulse,yes,yes,26.6,edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
 S_FCU_EFIS1_NAV1,momentary-or-latching,unresolved,yes,no,33.4,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
@@ -482,7 +460,7 @@ S_MIP_BKUP_SPD_ALT_FO,momentary-or-latching,follows-value,yes,yes,30.4,"effect f
 S_MIP_BRAKE_FAN,momentary-or-latching,follows-value,yes,yes,18.4,"effect follows the value (I_MIP_BRAKE_FAN_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
 S_MIP_CHRONO_CAPT,momentary-or-latching,unresolved,yes,no,25.5,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
 S_MIP_CHRONO_FO,momentary-or-latching,unresolved,yes,no,32.2,no visible effect at the gate; GraphQL 0 -> 1 -> 0; Fenix kept the value (not self-resetting)
-S_MIP_CLOCK_CHR,momentary-or-latching,pulse,yes,yes,24.5,edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: N_MIP_CLOCK_CHRONO -1 -> 1
+S_MIP_CLOCK_CHR,momentary-or-latching,pulse,yes,yes,24.5,"edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: N_MIP_CLOCK_CHRONO -1 -> 1"
 S_MIP_CLOCK_CHR,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
 S_MIP_CLOCK_ET,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
 S_MIP_CLOCK_RST,buttons,skipped,,,,"extra skip: clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"
@@ -567,21 +545,21 @@ S_PED_RMP3_VOR,buttons,skipped,,,,extra skip: RMP radio selection keys are a gro
 S_PED_RMP3_XFER,momentary-or-latching,pulse,yes,yes,18.6,edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0
 S_WINDOW_CAPT_LEVER_BUTTON,momentary-or-latching,invalid-crash,,,18.2,"not tested: probed after the Fenix WASM crash, nothing could react; no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)"
 S_WINDOW_FO_LEVER_BUTTON,momentary-or-latching,invalid-crash,,,10.1,"not tested: probed after the Fenix WASM crash, nothing could react; no visible effect at the gate; no GraphQL mirror; Fenix kept the value (not self-resetting)"
-S_AUDIO_SWITCHING,positions,invalid-crash,,,23.5,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_CHART_LIGHT_TEMP_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_CHART_LIGHT_TEMP_FO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_COCKPIT_DOOR,positions,invalid-crash,,,29.9,"not tested: probed after the Fenix WASM crash, nothing could react; positions 0,1,2; source: effect/animation vars (I_OH_DOOR_CTL_U I_PED_COCKPIT_DOOR_U) stop changing after 2; NOT RESTORED: effect vars differ (also after one more press): I_OH_DOOR_CTL_U 1 -> 0, I_PED_COCKPIT_DOOR_U 1 -> 0"
-S_EFB_CHARGING_CABLE_CAPT_TEMP,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EFB_CHARGING_CABLE_FO_TEMP,positions,invalid-crash,,,1.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_AUDIO_SWITCHING,positions,position-unknown,,,23.5,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_CHART_LIGHT_TEMP_CAPT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_CHART_LIGHT_TEMP_FO,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_COCKPIT_DOOR,positions,position-unknown,,,29.9,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; positions 0,1,2; source: effect/animation vars (I_OH_DOOR_CTL_U I_PED_COCKPIT_DOOR_U) stop changing after 2; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ (also after one more press): I_OH_DOOR_CTL_U 1 -> 0, I_PED_COCKPIT_DOOR_U 1 -> 0"
+S_EFB_CHARGING_CABLE_CAPT_TEMP,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EFB_CHARGING_CABLE_FO_TEMP,positions,position-unknown,,,1.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_ENG_MODE,positions,skipped,,,,deny list: engine mode selector
-S_EXT_CARGO_BAY_AFT_LT,positions,invalid-crash,,,6.4,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_BAY_FWD_LT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_DOOR_SELECTOR_AFT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_DOOR_SELECTOR_FWD,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT,positions,invalid-crash,,,24.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD,positions,invalid-crash,,,35.7,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_BAY_AFT_LT,positions,position-unknown,,,6.4,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_BAY_FWD_LT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_AFT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_FWD,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT,positions,position-unknown,,,24.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD,positions,position-unknown,,,35.7,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_EXT_DOOR_L1_INSIDE_GUST_STATE,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
 S_EXT_DOOR_L1_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
 S_EXT_DOOR_L2E_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/handle: slide risk
@@ -597,101 +575,123 @@ S_EXT_DOOR_R3E_INSIDE_LOCK,positions,skipped,,,,extra skip: passenger door lock/
 S_EXT_REFUELING_ACT_FQI,positions,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
 S_EXT_REFUELING_MODE,positions,skipped,,,,extra skip: refuel panel: could change fuel (owned state)
 S_FC_FLAPS,positions,skipped,,,,hydraulics pressurised or unknown: lever not moved
-S_MISC_WIPER_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_MISC_WIPER_FO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_MISC_WIPER_REPELLENT_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_MISC_WIPER_REPELLENT_FO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_CAPT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_FO,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_REPELLENT_CAPT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_MISC_WIPER_REPELLENT_FO,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_OH_ELEC_EXT_PWR,positions,skipped,,,,extra skip: would cut ground power (test setup)
 S_OH_ENG_N1_MODE_1,positions,skipped,,,,"deny list: engine N1 mode (extra, beyond the brief)"
 S_OH_ENG_N1_MODE_2,positions,skipped,,,,"deny list: engine N1 mode (extra, beyond the brief)"
-S_OH_EXT_LT_BEACON,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_LANDING_BOTH,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_LANDING_L,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_LANDING_R,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_NAV_LOGO,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_NOSE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_RWY_TURNOFF,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_STROBE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_EXT_LT_WING,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_FUEL_MODE_SEL,positions,invalid-crash,,,24.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_FUEL_XFEED,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_GPWS_FLAP_MODE,positions,invalid-crash,,,22.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_GPWS_GS_MODE,positions,invalid-crash,,,35.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_GPWS_SYS,positions,invalid-crash,,,24.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_BEACON,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_LANDING_BOTH,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_LANDING_L,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_LANDING_R,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_NAV_LOGO,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_NOSE,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_RWY_TURNOFF,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_STROBE,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_EXT_LT_WING,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_FUEL_MODE_SEL,positions,position-unknown,,,24.9,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_FUEL_XFEED,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_GPWS_FLAP_MODE,positions,position-unknown,,,22.9,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_GPWS_GS_MODE,positions,position-unknown,,,35.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_GPWS_SYS,positions,position-unknown,,,24.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_OH_INT_LT_EMER,positions,skipped,,,,deny list: emergency: when in doubt deny
-S_OH_IN_LT_ANN_LT,positions,invalid-crash,,,25.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_IN_LT_ICE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_LIGHTING_AVIONICS_COMPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_NAV_ADR1,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_NAV_ADR2,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; positions 0,1,2; source: effect/animation vars (A32X_LOD) stop changing after 2"
-S_OH_NAV_ADR3,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_NAV_DATA_DISP,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_IN_LT_ANN_LT,positions,position-unknown,,,25.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_IN_LT_ICE,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_LIGHTING_AVIONICS_COMPT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_ADR1,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_ADR2,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; only model animation vars (A320_*) moved, no lamp, GraphQL or system var: no evidence; positions 0,1,2; source: effect/animation vars (A32X_LOD) stop changing after 2"
+S_OH_NAV_ADR3,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_DATA_DISP,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_OH_NAV_IR1_MODE,positions,skipped,,,,extra skip: IRS mode: would stop or restart alignment
-S_OH_NAV_IR1_SWITCH,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_IR1_SWITCH,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_OH_NAV_IR2_MODE,positions,skipped,,,,extra skip: IRS mode: would stop or restart alignment
-S_OH_NAV_IR2_SWITCH,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_IR2_SWITCH,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_OH_NAV_IR3_MODE,positions,skipped,,,,extra skip: IRS mode: would stop or restart alignment
-S_OH_NAV_IR3_SWITCH,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_NAV_SYS_DISP,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_PNEUMATIC_HOT_AIR,positions,invalid-crash,,,6.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO,positions,invalid-crash,,,20.5,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_PNEUMATIC_PRESS_MAN,positions,invalid-crash,,,25.7,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_PNEUMATIC_PRESS_MODE,positions,invalid-crash,,,11.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_PNEUMATIC_XBLEED_SELECTOR,positions,invalid-crash,,,19.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_SIGNS,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_OH_SIGNS_SMOKING,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_0,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_1,positions,invalid-crash,,,0.2,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_2,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_3,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_4,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_5,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_6,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_PED_ATC_7,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_IR3_SWITCH,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_NAV_SYS_DISP,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_HOT_AIR,positions,position-unknown,,,6.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO,positions,position-unknown,,,20.5,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_PRESS_MAN,positions,position-unknown,,,25.7,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_PRESS_MODE,positions,position-unknown,,,11.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_PNEUMATIC_XBLEED_SELECTOR,positions,position-unknown,,,19.9,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_SIGNS,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_OH_SIGNS_SMOKING,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_0,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_1,positions,position-unknown,,,0.2,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_2,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_3,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_4,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_5,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_6,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_PED_ATC_7,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
 S_PED_COCKPIT_DOOR,positions,skipped,,,,extra skip: cockpit door switch: its lights did not come back after the switch was restored
-S_TCAS_HORIZONTAL_RANGE,positions,invalid-crash,,,23.4,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_TCAS_RANGE,positions,invalid-crash,,,30.5,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WINDOW_BLINDS_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WINDOW_BLINDS_FO,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WINDOW_BLINDS_REAR_CAPT,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WINDOW_BLINDS_REAR_FO,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WINDOW_CAPT_LEVER,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WINDOW_FO_LEVER,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WR_GAIN,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WR_GCS,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WR_MODE,positions,invalid-crash,,,20.7,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WR_MULTISCAN,positions,invalid-crash,,,23.9,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WR_PRED_WS,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_WR_SYS,positions,invalid-crash,,,24.0,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_XPDR_ATC,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_XPDR_MODE,positions,invalid-crash,,,0.1,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-S_XPDR_OPERATION,positions,invalid-crash,,,38.6,"not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
-E_FCU_EFIS1_BARO,encoder-display,invalid-crash,,,7.4,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_FCU_EFIS2_BARO,encoder-display,invalid-crash,,,24.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_MIP_CLOCK_SET,encoder-display,invalid-crash,,,23.1,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_MIP_ISFD_BARO,encoder-display,invalid-crash,,,13.5,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_MIP_TRAFFIC_CAPT,encoder-display,invalid-crash,,,32.0,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_MIP_TRAFFIC_FO,encoder-display,invalid-crash,,,22.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_PED_RMP1_INNER,encoder-display,invalid-crash,,,24.0,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_PED_RMP1_OUTER,encoder-display,invalid-crash,,,22.8,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_PED_RMP2_INNER,encoder-display,invalid-crash,,,24.5,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_PED_RMP2_OUTER,encoder-display,invalid-crash,,,26.8,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_PED_RMP3_INNER,encoder-display,invalid-crash,,,21.0,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_PED_RMP3_OUTER,encoder-display,invalid-crash,,,23.2,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_STANDBY_ALT_IMPERIAL_BARO,encoder-display,invalid-crash,,,34.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_STANDBY_ALT_METRIC_BARO,encoder-display,invalid-crash,,,17.3,"not tested: probed after the Fenix WASM crash, nothing could react; no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
-E_CB_105VU_A01,breaker,invalid-crash,,,27.6,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_106VU_B03,breaker,invalid-crash,,,15.0,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_121VU_M19,breaker,invalid-crash,,,26.0,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_121VU_P20,breaker,invalid-crash,,,14.7,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_122VU_W02,breaker,invalid-crash,,,29.5,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_122VU_Y06,breaker,invalid-crash,,,31.4,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_123VU_AB09,breaker,invalid-crash,,,14.5,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_2000VU_J06,breaker,invalid-crash,,,31.1,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_2001VU_A03,breaker,invalid-crash,,,13.7,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_49VU_D02,breaker,invalid-crash,,,26.7,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-E_CB_49VU_G02,breaker,invalid-crash,,,15.5,"not tested: probed after the Fenix WASM crash, nothing could react; neither 0 nor +1 changed any watched var; GraphQL switches:- gates:- numerical:- breakers:- cb:- circuitBreakers:-"
-S_FC_CAPT_INST_DISCONNECT,takeover-hold-1s,invalid-crash,,,31.9,"not tested: probed after the Fenix WASM crash, nothing could react; read 1 while held, 0 after; side effects while held: none; after release: none"
-S_FC_FO_INST_DISCONNECT,takeover-hold-1s,invalid-crash,,,16.4,"not tested: probed after the Fenix WASM crash, nothing could react; read 1 while held, 0 after; side effects while held: none; after release: none"
+S_TCAS_HORIZONTAL_RANGE,positions,position-unknown,,,23.4,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_TCAS_RANGE,positions,position-unknown,,,30.5,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_CAPT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_FO,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_REAR_CAPT,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_BLINDS_REAR_FO,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_CAPT_LEVER,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WINDOW_FO_LEVER,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_GAIN,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_GCS,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_MODE,positions,position-unknown,,,20.7,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_MULTISCAN,positions,position-unknown,,,23.9,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_PRED_WS,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_WR_SYS,positions,position-unknown,,,24.0,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_XPDR_ATC,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_XPDR_MODE,positions,position-unknown,,,0.1,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+S_XPDR_OPERATION,positions,position-unknown,,,38.6,"position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value"
+E_FCU_EFIS1_BARO,encoder-display,display,yes,yes,13.8,N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH
+E_FCU_EFIS2_BARO,encoder-display,display,yes,yes,33.0,N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH
+E_MIP_CLOCK_SET,encoder-display,unresolved,yes,no,7.9,"no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_MIP_ISFD_BARO,encoder-display,display,yes,yes,8.5,N_MIP_ISFD_BARO_HPA chosen; also changed: N_MIP_ISFD_BARO_INCH
+E_MIP_TRAFFIC_CAPT,encoder-display,unresolved,yes,no,26.4,"no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_MIP_TRAFFIC_FO,encoder-display,unresolved,yes,no,22.9,"no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_PED_RMP1_INNER,encoder-display,display,yes,yes,40.4,N_PED_RMP1_STDBY follows +1/-1
+E_PED_RMP1_OUTER,encoder-display,display,yes,yes,25.2,N_PED_RMP1_STDBY follows +1/-1
+E_PED_RMP2_INNER,encoder-display,display,yes,yes,12.6,N_PED_RMP2_STDBY follows +1/-1
+E_PED_RMP2_OUTER,encoder-display,display,yes,yes,26.2,N_PED_RMP2_STDBY follows +1/-1
+E_PED_RMP3_INNER,encoder-display,display,yes,yes,23.5,N_PED_RMP3_STDBY follows +1/-1
+E_PED_RMP3_OUTER,encoder-display,unresolved,yes,no,20.2,"no N_ var followed +1 and -1 (display off, STD baro, or no display var); the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ (also after one more press): N_PED_RMP3_STDBY 118000 -> 121000"
+E_STANDBY_ALT_IMPERIAL_BARO,encoder-display,unresolved,yes,no,19.2,"no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_STANDBY_ALT_METRIC_BARO,encoder-display,unresolved,yes,no,34.8,"no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+E_CB_105VU_A01,breaker,no-effect,yes,no,14.8,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_106VU_B03,breaker,breaker-01,yes,yes,15.9,"0 = pulled: 2 vars reacted (I_ECAM_CLR_LEFT I_ECAM_CLR_RIGHT), back after 1"
+E_CB_121VU_M19,breaker,no-effect,yes,no,24.9,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_121VU_P20,breaker,breaker-01,yes,yes,18.6,"0 = pulled: 2 vars reacted (I_ECAM_CLR_LEFT I_ECAM_CLR_RIGHT), back after 1; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_ECAM_CLR_LEFT 1 -> 0, I_ECAM_CLR_RIGHT 1 -> 0"
+E_CB_122VU_W02,breaker,no-effect,yes,no,16.1,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_122VU_Y06,breaker,no-effect,yes,no,28.0,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_123VU_AB09,breaker,no-effect,yes,no,25.9,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_2000VU_J06,breaker,no-effect,yes,no,28.9,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_2001VU_A03,breaker,no-effect,yes,no,16.9,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_49VU_D02,breaker,no-effect,yes,no,27.7,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+E_CB_49VU_G02,breaker,no-effect,yes,no,18.8,0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-
+S_FC_CAPT_INST_DISCONNECT,takeover-hold-1s,momentary-held,yes,yes,18.3,"read 1 while held, 0 after; side effects while held: none; after release: none"
+S_FC_FO_INST_DISCONNECT,takeover-hold-1s,momentary-held,yes,yes,24.4,"read 1 while held, 0 after; side effects while held: none; after release: none"
 S_FCU_EFIS1_ND_MODE,label-3,label,,,,pilot read the ND: 3 = ARC
 S_FCU_EFIS1_ND_ZOOM,label-1,label,,,,pilot read the ND: 1 = 20
+S_FCU_EFIS2_ND_MODE,hold-0,held,yes,,28.4,held 52 s; GraphQL 3
+S_FCU_EFIS2_ND_MODE,label-0,label,,,,pilot read the ND: 0 = ROSE ILS
+S_FCU_EFIS2_ND_MODE,hold-1,held,yes,,33.7,held 13 s; GraphQL 1
+S_FCU_EFIS2_ND_MODE,label-1,label,,,,pilot read the ND: 1 = ROSE VOR
+S_FCU_EFIS2_ND_MODE,hold-2,held,yes,,22.5,held 17 s; GraphQL 3
+S_FCU_EFIS2_ND_MODE,label-2,label,,,,pilot read the ND: 2 = ROSE NAV
+S_FCU_EFIS2_ND_MODE,hold-3,held,yes,,3.3,held 15 s; GraphQL 3
+S_FCU_EFIS2_ND_MODE,label-3,label,,,,pilot read the ND: 3 = ARC
+S_FCU_EFIS2_ND_MODE,hold-4,held,yes,,22.8,held 15 s; GraphQL 3
+S_FCU_EFIS2_ND_MODE,label-4,label,,,,pilot read the ND: 4 = PLAN
+S_FCU_EFIS2_ND_ZOOM,hold-0,held,yes,,20.1,held 18 s; GraphQL 1
+S_FCU_EFIS2_ND_ZOOM,label-0,label,,,,pilot read the ND: 0 = 10
+S_FCU_EFIS2_ND_ZOOM,hold-1,held,yes,,3.6,held 16 s; GraphQL 1
+S_FCU_EFIS2_ND_ZOOM,label-1,label,,,,pilot read the ND: 1 = 20
+S_FCU_EFIS2_ND_ZOOM,hold-2,held,yes,,21.7,held 13 s; GraphQL 1
+S_FCU_EFIS2_ND_ZOOM,label-2,label,,,,pilot read the ND: 2 = 40
+S_FCU_EFIS2_ND_ZOOM,hold-3,held,yes,,28.7,held 11 s; GraphQL 1
+S_FCU_EFIS2_ND_ZOOM,label-3,label,,,,pilot read the ND: 3 = 80
+S_FCU_EFIS2_ND_ZOOM,hold-4,held,yes,,37.7,held 13 s; GraphQL 1
+S_FCU_EFIS2_ND_ZOOM,label-4,label,,,,pilot read the ND: 4 = 160
+S_FCU_EFIS2_ND_ZOOM,hold-5,held,yes,,30.4,held 12 s; GraphQL 1
+S_FCU_EFIS2_ND_ZOOM,label-5,label,,,,pilot read the ND: 5 = 320

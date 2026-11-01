@@ -41,13 +41,20 @@ static class Proposer
     {
         var inputs = Inputs.Load(paths);
         var results = new ResultLog(paths.Details).ReadLatest();
-        results = results.Select(DropNoiseEvidence).Select(r => AfterCrash(r, CrashCutoff(results))).ToList();
+        var window = CrashWindowOf(results);
+        // AIRAC is no longer read automatically (dropped after the first run); its old rows go.
+        results = results.Where(r => r.Test != "graphql-airac").Select(DropNoiseEvidence).Select(r => AfterCrash(r, window)).Select(PositionUnknown).ToList();
         var checkpoint = File.Exists(paths.Checkpoint) ? new Checkpoint(paths.Checkpoint) : null;
+        // The probe could not restore these, but they are no longer listed as not restored: the
+        // pilot put them back by hand or checked the cockpit (see the manual rows).
+        results = results.Select(r => !r.Restored && checkpoint is not null && !checkpoint.Data.NotRestored.Contains(r.Var)
+            ? r with { Notes = r.Notes.Replace("NOT RESTORED: ", "the probe could not restore it, the pilot did or confirmed the cockpit afterwards: ") }
+            : r).ToList();
         WriteCsv(paths.ResultsCsv, results);
         var (text, changes, unresolved) = Propose(inputs, results);
         File.WriteAllText(paths.Proposed, text);
         var check = ProfileLoader.LoadText(text, "profile.proposed.yaml");
-        File.WriteAllText(paths.Report, Report(inputs, results, changes, unresolved, check, checkpoint?.Data.NotRestored ?? []));
+        File.WriteAllText(paths.Report, Report(inputs, results, changes, unresolved, check, checkpoint?.Data.NotRestored ?? [], window));
         output.WriteLine($"{results.Count} results, {changes.Count} proposed changes, {unresolved.Count} unresolved");
         output.WriteLine(check.IsValid ? "profile.proposed.yaml validates" : "profile.proposed.yaml has validation issues:\n" + string.Join("\n", check.FormatIssues()));
         return check.IsValid ? 0 : 1;
@@ -140,7 +147,9 @@ static class Proposer
 
     public static (string Text, List<Change> Changes, List<(string Var, string Phase, string Why)> Unresolved) Propose(Inputs inputs, List<ProbeResult> results)
     {
-        results = results.Select(DropNoiseEvidence).Select(r => AfterCrash(r, CrashCutoff(results))).ToList();
+        var known = KnownValues.Build(inputs, results);
+        var window = CrashWindowOf(results);
+        results = results.Select(DropNoiseEvidence).Select(r => AfterCrash(r, window)).Select(PositionUnknown).ToList();
         var doc = new Doc(inputs.ProfileText);
         var changes = new List<Change>();
         var unresolved = new List<(string, string, string)>();
@@ -195,8 +204,13 @@ static class Proposer
                         }
                         else
                         {
-                            doc.Note(r.Var, "step 2: 2 is a distinct state, positions unresolved", "values [0,1] from name and scan value, confirm in step 2");
-                            unresolved.Add((r.Var, "Verified", "[0,1] rejected (" + r.Notes + "), position count not found: " + (pos?.Notes ?? "position test not run")));
+                            // Range rule: only the values actually seen, never a guessed range.
+                            var seen = known.Seen(r.Var);
+                            doc.Set(r.Var, "values", ListText(seen));
+                            doc.Note(r.Var, $"step 2: 2 is a distinct state; values {ListText(seen)} are only those seen; {Targets.PositionsOff}",
+                                "values [0,1] from name and scan value, confirm in step 2");
+                            changes.Add(new Change("values seen (position count unknown)", r.Var, "values [0, 1] (guess)", "values " + ListText(seen), r.Notes));
+                            unresolved.Add((r.Var, "Positions", $"{Targets.PositionsOff}; [0,1] rejected ({r.Notes}); values seen: {ListText(seen)}"));
                         }
                     }
                     else if (r.Result == "counter-suspected")
@@ -233,16 +247,9 @@ static class Proposer
                     else if (r.Result != "skipped") unresolved.Add((r.Var, "Buttons", r.Notes));
                     break;
 
-                // 3: positions (review vars; [0,1] rejects are handled above)
+                // 3: positions. The stepping test is switched off (it most likely crashed the
+                // Fenix WASM); these switches are handled after the loop.
                 case (Phase.Positions, "positions"):
-                    if (InProfile(r.Var)) break;
-                    if (r.Result == "positions" && r.ProposedValues is { } values)
-                        Promote(r, new NewEntry
-                        {
-                            Name = r.Var, Class = "verified", Group = Rules.GroupOf(r.Var) ?? "", Values = values,
-                            Verify = r.ProposedVerifyGraphql is { } g ? GqlVerify(g) : null, Note = "positions from step 2: " + r.Notes,
-                        }, "position count");
-                    else if (r.Result != "skipped") unresolved.Add((r.Var, "Positions", r.Notes));
                     break;
 
                 // 5: encoders
@@ -287,6 +294,31 @@ static class Proposer
             }
         }
 
+        // 3: switches with an unknown position count. Range rule: each gets only the values seen
+        // in the scan and in valid probe results, never a guessed range, until real pilot input
+        // shows the positions (CRO-24).
+        var rejected = results.Where(r => r.Test == "verified-binary" && r.Result == "rejected").Select(r => r.Var).ToHashSet();
+        // Only the switches the first run actually stepped; the ones never probed (deny list,
+        // safety skips) keep their skip reason.
+        foreach (var name in results.Where(r => r.Result == "position-unknown").Select(r => r.Var).Distinct())
+        {
+            if (InProfile(name) || rejected.Contains(name)) continue;
+            var seen = known.Seen(name);
+            var why = Targets.PositionsOff;
+            if (seen.Count == 0 || Rules.GroupOf(name) is not { } group)
+            {
+                unresolved.Add((name, "Positions", why + (seen.Count == 0 ? "; no value seen" : "; panel group unclear, stays on the review list")));
+                continue;
+            }
+            added[name] = new NewEntry
+            {
+                Name = name, Class = "verified", Group = group, Label = Rules.LabelOf(name).Short, Values = seen.ToArray(),
+                Note = $"values {ListText(seen)} are only those seen in the scan and probe; {Targets.PositionsOff}",
+            };
+            changes.Add(new Change("values seen (position count unknown)", name, "review list", "verified " + ListText(seen), "seen in the scan and probe results"));
+            unresolved.Add((name, "Positions", $"{why}; values seen: {ListText(seen)}"));
+        }
+
         // supervised a: takeover buttons
         var takeover = Targets.TakeoverVars.Select(v => Find(v, "takeover-hold-1s")).ToList();
         if (takeover.All(t => t?.Result == "momentary-held"))
@@ -312,8 +344,23 @@ static class Proposer
             var labels = g.SelectMany(r => r.ProposedValueLabels!).GroupBy(kv => kv.Key).ToDictionary(x => x.Key, x => x.Last().Value);
             var ordered = labels.OrderBy(kv => double.Parse(kv.Key, CultureInfo.InvariantCulture)).ToList();
             var text = "{ " + string.Join(", ", ordered.Select(kv => $"\"{kv.Key}\": {Q(kv.Value)}")) + " }";
-            if (added.TryGetValue(g.Key, out var ne)) ne.ValueLabels = ordered.ToDictionary(kv => kv.Key, kv => kv.Value);
+            if (added.TryGetValue(g.Key, out var ne))
+            {
+                ne.ValueLabels = ordered.ToDictionary(kv => kv.Key, kv => kv.Value);
+                ne.Values = known.For(g.Key).ToArray();
+            }
             else if (InProfile(g.Key)) doc.Set(g.Key, "value_labels", text);
+            else if (inputs.Review.Any(r => r.Name == g.Key) && Rules.GroupOf(g.Key) is { } lg)
+            {
+                // A review var (FO ND MODE/RANGE): the pilot read every value on the ND.
+                added[g.Key] = new NewEntry
+                {
+                    Name = g.Key, Class = "verified", Group = lg, Label = Rules.LabelOf(g.Key).Short, Values = known.For(g.Key).ToArray(),
+                    ValueLabels = ordered.ToDictionary(kv => kv.Key, kv => kv.Value),
+                    Note = "values and labels read from the ND by the pilot in step 2",
+                };
+                unresolved.RemoveAll(u => u.Item1 == g.Key);
+            }
             else continue;
             changes.Add(new Change("value labels", g.Key, "none", text, "read from the ND by the pilot"));
         }
@@ -333,14 +380,41 @@ static class Proposer
     /// &lt;UTC time&gt;`). In the first run the Fenix WASM crashed; afterwards writes were stored but
     /// nothing reacted and GraphQL answered nothing, so those results say nothing about Fenix.
     /// </summary>
-    internal static DateTime? CrashCutoff(IEnumerable<ProbeResult> results) =>
-        results.LastOrDefault(r => r.Var == "crash-cutoff") is { } c
+    internal static DateTime? CrashCutoff(IEnumerable<ProbeResult> results) => Time(results, "crash-cutoff");
+
+    /// <summary>
+    /// When the aircraft was reloaded after the crash (`info --var crash-end --text &lt;UTC time&gt;`).
+    /// Results after it are valid again.
+    /// </summary>
+    internal static DateTime? CrashEnd(IEnumerable<ProbeResult> results) => Time(results, "crash-end");
+
+    internal static (DateTime Start, DateTime? End)? CrashWindowOf(IEnumerable<ProbeResult> results)
+    {
+        var list = results as IList<ProbeResult> ?? results.ToList();
+        return CrashCutoff(list) is { } start ? (start, CrashEnd(list)) : null;
+    }
+
+    static DateTime? Time(IEnumerable<ProbeResult> results, string var) =>
+        results.LastOrDefault(r => r.Var == var) is { } c
         && DateTime.TryParse(c.Notes, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var t) ? t : null;
 
-    internal static ProbeResult AfterCrash(ProbeResult r, DateTime? cutoff) =>
-        cutoff is { } c && r.At.ToUniversalTime() > c
+    /// <summary>
+    /// The first run's position results (all after the crash) become "position-unknown": the test
+    /// is switched off and the positions are learned from pilot input instead.
+    /// </summary>
+    internal static ProbeResult PositionUnknown(ProbeResult r) =>
+        r is { Phase: Phase.Positions, Test: "positions" } && r.Result is not ("skipped" or "position-unknown")
+            ? r with
+            {
+                Result = "position-unknown", ProposedClass = null, ProposedValues = null, ProposedVerifyGraphql = null,
+                Notes = Targets.PositionsOff + "; first run: " + r.Notes,
+            }
+            : r;
+
+    internal static ProbeResult AfterCrash(ProbeResult r, (DateTime Start, DateTime? End)? window) =>
+        window is { } w && r.At.ToUniversalTime() > w.Start && (w.End is null || r.At.ToUniversalTime() < w.End)
         && r.Phase is Phase.Verified or Phase.Buttons or Phase.Positions or Phase.Encoders or Phase.Breakers or Phase.Takeover
-        && r.Result is not ("skipped" or "info" or "invalid-crash")
+        && r.Result is not ("skipped" or "info" or "invalid-crash" or "position-unknown")
             ? r with
             {
                 Result = "invalid-crash", StoredOk = null, EffectOk = null, ProposedClass = null, ProposedValues = null,
@@ -406,7 +480,7 @@ static class Proposer
     // ------------------------------------------------------------------ report
 
     static string Report(Inputs inputs, List<ProbeResult> results, List<Change> changes, List<(string Var, string Phase, string Why)> unresolved,
-        ProfileLoadResult check, List<string> notRestored)
+        ProfileLoadResult check, List<string> notRestored, (DateTime Start, DateTime? End)? window)
     {
         var sb = new StringBuilder();
         sb.Append("# Fenix A320 profile probe report (CRO-8 step 2)\n\n");
@@ -420,12 +494,19 @@ static class Proposer
         sb.Append($"- not restored: {(notRestored.Count == 0 ? "none" : string.Join(", ", notRestored))}\n");
         sb.Append($"- proposed changes: {changes.Count}; unresolved: {unresolved.Count}\n");
         sb.Append($"- profile.proposed.yaml: {(check.IsValid ? "validates with Crosscheck.Profiles" : "**does not validate**")}\n\n");
-        if (CrashCutoff(results) is { } cut) sb.Append($"**Validity:** the Fenix WASM crashed during the run. Results after {cut:u} are marked `invalid-crash` (not tested): Fenix stored the writes but nothing reacted. Everything before that time is valid. See Surprises.\n\n");
+        if (window is { } w)
+            sb.Append($"**Validity:** the Fenix WASM crashed during the first run. Results from {w.Start:u} " +
+                      (w.End is { } end ? $"until the aircraft was reloaded ({end:u})" : "on") +
+                      " are marked `invalid-crash` (not tested): Fenix stored the writes but nothing reacted. Everything else is valid. See Surprises.\n\n");
+        sb.Append("**Range rule:** the probe only writes values already known to exist for a var: its scan value, values seen in valid probe results, " +
+                  "or a range the owner confirmed (ND MODE 0-4, ND ZOOM 0-5, breakers 0/1, takeover 0/1). Counters (encoders, MASTER CAUTION/WARNING) only get +1/-1 steps. " +
+                  "The position test (stepping 0..7) is switched off: a switch with an unknown position count gets only the values seen so far; " +
+                  "its positions are to be learned from real pilot input (CRO-24).\n\n");
         if (!check.IsValid) sb.Append("```\n").Append(string.Join("\n", check.FormatIssues())).Append("\n```\n\n");
 
         sb.Append("| phase | test | result | count |\n|---|---|---|---|\n");
         foreach (var g in results.GroupBy(r => (r.Phase, r.Test, r.Result)).OrderBy(g => g.Key.Phase).ThenBy(g => g.Key.Test))
-            if (g.Key.Test is not ("graphql-airac" or "graphql-fuel"))
+            if (g.Key.Test is not "graphql-fuel")
                 sb.Append($"| {g.Key.Phase} | {g.Key.Test} | {g.Key.Result} | {g.Count()} |\n");
 
         sb.Append("\n## Proposed changes\n\n");
@@ -454,12 +535,8 @@ static class Proposer
         sb.Append("## Supervised checks and lookups\n\n");
         foreach (var r in results.Where(r => r.Phase is Phase.Takeover or Phase.Hold))
             sb.Append($"- `{r.Var}` {r.Test}: {r.Result}. {r.Notes}\n");
-        foreach (var r in results.Where(r => r.Phase == Phase.Readonly && r.Test is "simvar" or "graphql" or "graphql-fuel" or "manual" && !r.Var.StartsWith("surprise", StringComparison.Ordinal) && r.Var != "crash-cutoff"))
+        foreach (var r in results.Where(r => r.Phase == Phase.Readonly && r.Test is "simvar" or "graphql" or "graphql-fuel" or "manual" && !r.Var.StartsWith("surprise", StringComparison.Ordinal) && r.Var is not ("crash-cutoff" or "crash-end")))
             sb.Append($"- `{r.Var}` ({r.Test}): {r.Notes}\n");
-        var airac = results.Where(r => r.Test == "graphql-airac").ToList();
-        if (airac.Count > 0)
-            sb.Append($"- AIRAC GraphQL candidates: {airac.Count(r => r.Result == "found")} of {airac.Count} answered" +
-                      (airac.Any(r => r.Result == "found") ? ": " + string.Join(", ", airac.Where(r => r.Result == "found").Select(r => $"`{r.Var}` = {r.Notes}")) : "") + "\n");
         sb.Append('\n');
 
         sb.Append("## Surprises\n\n");

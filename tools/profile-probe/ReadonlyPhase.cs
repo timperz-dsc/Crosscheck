@@ -1,6 +1,7 @@
-// Item 7 and supervised c/d/e: no writes at all. Samples every watched var for 30 s with no
-// input (vars that change on their own would raise false desync alarms), reads TITLE, the fuel
-// datarefs and AIRAC candidates.
+// Item 7 and supervised d/e: no writes at all. Samples every watched var for 30 s with no
+// input (vars that change on their own would raise false desync alarms), reads TITLE and the
+// fuel datarefs. AIRAC is not read (dropped after the first run: no GraphQL name answered).
+// Preflight keeps AIRAC as a manual field with a reminder instead.
 
 using System.Diagnostics;
 using System.Globalization;
@@ -16,17 +17,6 @@ static class ReadonlyPhase
         "aircraft.fuel.left.amount.kg", "aircraft.fuel.right.amount.kg", "aircraft.fuel.center.amount.kg",
         "aircraft.fuel.ACT1.amount.kg", "aircraft.fuel.ACT2.amount.kg", "aircraft.fuel.total.amount.kg",
         "aircraft.fuel.left.capacity", "aircraft.fuel.left.amount",
-    ];
-
-    /// <summary>Guesses for the nav data cycle. GraphQL has no list API, so names can only be tried.</summary>
-    public static readonly string[] AiracPaths =
-    [
-        "aircraft.fms.navdata", "aircraft.fms.navdata.cycle", "aircraft.fms.navData", "aircraft.fms.navData.cycle",
-        "aircraft.fms.navDatabase", "aircraft.fms.navdb", "aircraft.fms.database", "aircraft.fms.database.cycle",
-        "aircraft.fms.airac", "aircraft.fms.cycle", "aircraft.fms.activeNavDatabase", "aircraft.fms.navDataCycle",
-        "aircraft.navdata.cycle", "aircraft.navdata.airac", "aircraft.navdata", "aircraft.airac", "aircraft.airac.cycle",
-        "aircraft.navigraph.cycle", "aircraft.navigraph.airac", "aircraft.fmgc.navdata", "aircraft.fmgc.airac",
-        "system.navdata.cycle", "navdata.cycle", "airac.cycle", "aircraft.efb.navdata.cycle",
     ];
 
     public static async Task Run(ProbeSession s, Inputs inputs, ISimvarReader simvars, string noisyPath, CancellationToken ct)
@@ -90,12 +80,6 @@ static class ReadonlyPhase
         foreach (var p in FuelPaths)
             Info(s, p, "graphql-fuel", Show(await s.Gql.GetAsync(p, ct)));
 
-        // c: AIRAC candidates
-        foreach (var p in AiracPaths)
-        {
-            var v = await s.Gql.GetAsync(p, ct);
-            Info(s, p, "graphql-airac", Show(v), v is null ? "not found" : "found");
-        }
         Info(s, "softwareVersion", "graphql", await s.Gql.SoftwareVersionAsync(ct) ?? "(none)");
     }
 

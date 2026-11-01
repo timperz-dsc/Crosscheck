@@ -11,7 +11,7 @@ static class Program
 {
     const int ExitError = 1, ExitSafety = 2, ExitNotRestored = 3, ExitCancelled = 4;
 
-    static readonly Phase[] AutoPhases = [Phase.Verified, Phase.Buttons, Phase.Positions, Phase.Encoders, Phase.Breakers];
+    static readonly Phase[] AutoPhases = [Phase.Verified, Phase.Buttons, Phase.Encoders, Phase.Breakers];
 
     static async Task<int> Main(string[] args)
     {
@@ -45,7 +45,7 @@ static class Program
                     return 0;
                 case "restore": return await SimCommand(paths, null, opts, cts.Token);
                 case "undo": return await UndoCommand(paths, opts, cts.Token);
-                case "peek":return await PeekCommand(paths, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray(), args.Contains("--clear"), cts.Token);
+                case "peek":return await PeekCommand(paths, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray(), args.Contains("--clear"), args.Contains("--pilot-ok"), cts.Token);
                 case "readonly": return await SimCommand(paths, Phase.Readonly, opts, cts.Token);
                 case "auto":
                     foreach (var p in AutoPhases)
@@ -56,6 +56,10 @@ static class Program
                     return 0;
                 case "takeover": return await SimCommand(paths, Phase.Takeover, opts, cts.Token);
                 case "hold": return await SimCommand(paths, Phase.Hold, opts, cts.Token);
+                case "positions":
+                    // Switched off: writing positions that do not exist most likely crashed the Fenix WASM.
+                    Console.WriteLine($"the position test is switched off: {Targets.PositionsOff}");
+                    return ExitError;
                 default:
                     if (Enum.TryParse<Phase>(args[0], true, out var phase) && AutoPhases.Contains(phase))
                         return await SimCommand(paths, phase, opts, cts.Token);
@@ -71,17 +75,19 @@ static class Program
     static void Usage() => Console.WriteLine("""
         profile-probe <command> [options]
           plan                      dry run: what each phase would write (no sim)
-          readonly                  item 7 + c/d/e: 30 s noise sample, TITLE, fuel, AIRAC candidates (no writes)
-          verified | buttons | positions | encoders | breakers   items 1+4, 2, 3, 5, 6
-          auto                      verified, buttons, positions, encoders, breakers back to back
+          readonly                  item 7 + d/e: 30 s noise sample, TITLE, fuel (no writes)
+          verified | buttons | encoders | breakers   items 1+4, 2, 5, 6
+          auto                      verified, buttons, encoders, breakers back to back
+          (positions is switched off: position counts are learned from pilot input, CRO-24)
           takeover --side capt|fo   supervised a: press 1 s, release
-          hold --var NAME --value N [--seconds 60]   supervised b: hold an ND value, then restore
+          hold --var NAME --value N [--seconds 60]   supervised b: hold a known ND value, then restore
           release                   ends a running hold
           label --var NAME --value N --text LABEL    record what the ND showed
-          info --var NAME --text TEXT                record a manual finding (smoke test, AIRAC source, surprise...)
+          info --var NAME --text TEXT                record a manual finding (smoke test, surprise, crash-start/crash-end...)
           restore                   restore a var left pending by an interrupted run
           propose                   write probe-results.csv, probe-report.md, profile.proposed.yaml (no sim)
         options: --only NAME (one var), --redo (probe the phase again from the start)
+        range rule: only values known to exist for a var are ever written (KnownValues.cs)
         exit codes: 0 ok, 1 error, 2 safety stop, 3 a var could not be restored, 4 Ctrl+C
         """);
 
@@ -100,13 +106,16 @@ static class Program
         var inputs = Inputs.Load(paths);
         var log = new ResultLog(paths.Details);
         var rejects = Rejects(log);
+        var known = KnownValues.Build(inputs, log.ReadLatest());
         Console.WriteLine($"watched vars: {ProbeProfile.Watched(inputs).Count}");
         var deniedInProfile = inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null);
         Console.WriteLine($"profile vars on the deny list: {deniedInProfile}; breakers in the sample: {inputs.Deny.Breakers.Count}");
-        foreach (var phase in AutoPhases.Append(Phase.Takeover).Append(Phase.Hold))
+        foreach (var phase in AutoPhases.Append(Phase.Positions).Append(Phase.Takeover).Append(Phase.Hold))
         {
-            var (targets, skipped) = Targets.For(phase, inputs, rejects);
+            var (targets, skipped) = Targets.For(phase, inputs, rejects, known);
             Console.WriteLine($"\n{phase}: {targets.Count} to probe, {skipped.Count} skipped");
+            foreach (var t in targets)
+                Console.WriteLine($"  {t.Name}: may write {(t.Values is { } v ? string.Join(",", v) : t.Delta ? "+1/-1 (counter)" : "+1 presses (counter)")}");
             foreach (var g in skipped.GroupBy(s => s.Why))
                 Console.WriteLine($"  skipped ({g.Key}): {string.Join(" ", g.Select(s => s.Name))}");
         }
@@ -144,7 +153,8 @@ static class Program
         var log = new ResultLog(paths.Details);
         if (phase is Phase.Takeover or Phase.Hold || opts.Redo && phase is { } rp) checkpoint.ResetPhase(phase!.Value);
 
-        var (targets, skipped) = phase is { } p ? Targets.For(p, inputs, Rejects(log)) : ([], []);
+        var known = KnownValues.Build(inputs, log.ReadLatest());
+        var (targets, skipped) = phase is { } p ? Targets.For(p, inputs, Rejects(log), known) : ([], []);
         if (phase == Phase.Takeover)
         {
             var side = opts.Side?.ToLowerInvariant() switch { "capt" => "S_FC_CAPT_INST_DISCONNECT", "fo" => "S_FC_FO_INST_DISCONNECT", _ => null };
@@ -153,7 +163,8 @@ static class Program
         }
         if (phase == Phase.Hold)
         {
-            if (opts.Var is null || opts.Value is not { } hv || !Targets.NdValues.Contains(hv)) { Console.WriteLine("hold needs --var (an ND MODE/ZOOM var) and --value 0..5"); return ExitError; }
+            if (opts.Var is null || opts.Value is not { } hv) { Console.WriteLine("hold needs --var (an ND MODE/ZOOM var) and --value"); return ExitError; }
+            if (!known.IsKnown(opts.Var, hv)) { Console.WriteLine($"range rule: {hv} is not known to exist for {opts.Var} (known: {string.Join(",", known.For(opts.Var))}); nothing written"); return ExitError; }
             targets = targets.Where(t => t.Name == opts.Var).ToList();
             if (targets.Count == 0) { Console.WriteLine($"{opts.Var} is not an ND MODE/ZOOM var"); return ExitError; }
         }
@@ -209,7 +220,6 @@ static class Program
         {
             Phase.Verified => Probes.Verified,
             Phase.Buttons => Probes.Button,
-            Phase.Positions => Probes.Positions,
             Phase.Encoders => Probes.Encoder,
             Phase.Breakers => Probes.Breaker,
             Phase.Takeover => Probes.Takeover,
@@ -264,7 +274,9 @@ static class Program
     }
 
     /// <summary>Read only: no var is writable in this profile. Prints the vars and the pending var's effect check.</summary>
-    static async Task<int> PeekCommand(RepoPaths paths, string[] names, bool clear, CancellationToken ct)
+    /// <param name="pilotOk">The pilot checked the cockpit and says it is as before: clear the pending
+    /// entry if the var itself is back at its original value, even if effect vars differ.</param>
+    static async Task<int> PeekCommand(RepoPaths paths, string[] names, bool clear, bool pilotOk, CancellationToken ct)
     {
         var inputs = Inputs.Load(paths);
         var checkpoint = new Checkpoint(paths.Checkpoint);
@@ -288,7 +300,19 @@ static class Program
                 checkpoint.Finish(p.Phase, p.Var, true);
                 Console.WriteLine($"pending {p.Var} cleared: every effect var is back (var reads {V(p.Var)})");
             }
-            else if (clear) Console.WriteLine("not cleared: effect vars still differ");
+            else if (clear && pilotOk && sim.TryGet(p.Var, out var cur) && Math.Abs(cur - p.Original) < 1e-9)
+            {
+                // Nothing is written: the var is back, and the pilot confirmed the cockpit.
+                checkpoint.Finish(p.Phase, p.Var, true);
+                var differs = string.Join(", ", p.EffectStart.Where(kv => !(sim.TryGet(kv.Key, out var now) && Math.Abs(now - kv.Value) < 1e-6)).Select(kv => $"{kv.Key} {kv.Value} -> {V(kv.Key)}"));
+                new ResultLog(paths.Details).Add(new ProbeResult
+                {
+                    Var = "pilot-ok-" + p.Var, Phase = Phase.Readonly, Test = "manual", Result = "info",
+                    Notes = $"{p.Var} is back at {p.Original}; effect vars still differ ({differs}); the pilot checked the cockpit and confirmed it is as before",
+                });
+                Console.WriteLine($"pending {p.Var} cleared on the pilot's confirmation (var reads {V(p.Var)}; still differs: {differs})");
+            }
+            else if (clear) Console.WriteLine("not cleared: effect vars still differ" + (pilotOk ? " and the var is not at its original value" : ""));
         }
         return 0;
     }

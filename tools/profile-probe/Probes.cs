@@ -64,12 +64,17 @@ static class Probes
         var g1 = await run.GqlNumber(SwitchesPath(name), ct);
         var diff1 = s.Diff(s0, s1, name);
 
-        // Is 2 a third position?
-        var latency2 = await run.Write(2, ct);
-        await run.Delay(t.SettleMs, ct);
-        var s2 = s.Snapshot();
-        var g2 = await run.GqlNumber(SwitchesPath(name), ct);
-        var stored2 = ProbeSession.Same(s.Value(name), 2);
+        // Is 2 a third position? Only asked where 2 is known to exist (range rule): writing a
+        // position that does not exist most likely crashed the Fenix WASM in the first run.
+        var tryTwo = s.Sim.Guard.IsAllowedValue(name, 2);
+        if (tryTwo)
+        {
+            await run.Write(2, ct);
+            await run.Delay(t.SettleMs, ct);
+        }
+        var s2 = tryTwo ? s.Snapshot() : s1;
+        var g2 = tryTwo ? await run.GqlNumber(SwitchesPath(name), ct) : g1;
+        var stored2 = tryTwo && ProbeSession.Same(s.Value(name), 2);
         var newIn2 = s.Diff(s1, s2, name).Where(v => s0.TryGetValue(v, out var a) && s1.TryGetValue(v, out var b) && s2.TryGetValue(v, out var c)
                                                      && Math.Abs(c - a) > 1e-6 && Math.Abs(c - b) > 1e-6).ToList();
         TrackAt(run, s0, diff1.Union(s.Diff(s0, s2, name)));
@@ -80,7 +85,7 @@ static class Probes
         {
             ["gql"] = $"{F(g0)} -> {F(g1)} -> {F(g2)} (for {F(run.Original)} -> {other} -> 2)",
             ["changed"] = List(diff1, 12),
-            ["two_stored"] = stored2 ? "yes" : $"no (Fenix set {F(s.Value(name))})",
+            ["two_stored"] = !tryTwo ? "not written (2 not known to exist)" : stored2 ? "yes" : $"no (Fenix set {F(s.Value(name))})",
             ["two_new_state"] = List(newIn2),
         };
         foreach (var l in lamps) data["lamp " + l] = diff1.Contains(l) ? "changed" : "unchanged";
@@ -118,7 +123,7 @@ static class Probes
         var gqlEcho = ProbeSession.Same(g2, 2);
         var gqlSaysNo = g2 is not null && !gqlNew && !gqlEcho;
         var ownNew = newIn2.Intersect(related).ToList();
-        if (stored2 && !gqlSaysNo && (gqlNew || ownNew.Count > 0))
+        if (tryTwo && stored2 && !gqlSaysNo && (gqlNew || ownNew.Count > 0))
             return Base(run, "verified-binary", "rejected") with
             {
                 StoredOk = true, EffectOk = effectSeen, LatencyMs = latency, Data = data,
@@ -131,7 +136,7 @@ static class Probes
                 Notes = "no effect visible at the gate, only the L: echo; GraphQL " + (g0 is null ? "has no mirror" : "did not change"),
             };
         var how = changedLamps.Count > 0 ? $"lamp {List(changedLamps, 3)} in {F(effectLatency)} ms" : gqlFollows ? "GraphQL followed" : $"other vars changed ({List(diff1, 3)})";
-        var twoNote = stored2 ? (g2 is not null && ProbeSession.Same(g2, 2) ? "2 is stored and echoed by GraphQL but changes nothing else" : "2 is stored but changes nothing else") : "Fenix does not keep 2";
+        var twoNote = !tryTwo ? "2 not written (not known to exist)" : stored2 ? (g2 is not null && ProbeSession.Same(g2, 2) ? "2 is stored and echoed by GraphQL but changes nothing else" : "2 is stored but changes nothing else") : "Fenix does not keep 2";
         return Base(run, "verified-binary", "confirmed") with
         {
             StoredOk = true, EffectOk = true, LatencyMs = latency, Data = data,
@@ -267,110 +272,9 @@ static class Probes
         };
     }
 
-    // ------------------------------------------------------------------ 3: position count
-
-    public static async Task<ProbeResult> Positions(VarRun run, CancellationToken ct)
-    {
-        var s = run.Session;
-        var name = run.Target.Name;
-        var t = run.Timing;
-        var path = SwitchesPath(name);
-        if (Targets.NeedsDryHydraulics(name) && await s.Safety.HydraulicsDry(ct) is not true)
-            return Base(run, "positions", "skipped") with { Notes = "hydraulics pressurised or unknown: lever not moved" };
-        run.TrackEffects(Related(s, name));
-
-        var baseSnap = s.Snapshot();
-        var snaps = new Dictionary<int, Dictionary<string, double>>();
-        var gq = new Dictionary<int, double?>();
-        var stored = new Dictionary<int, bool>();
-        var kept = new Dictionary<int, double?>();
-        double? latency = null;
-        var quiet = 0;
-        foreach (var v in Targets.Steps.Select(x => (int)x))
-        {
-            var lat = await run.Write(v, ct);
-            latency ??= lat;
-            await run.Delay(t.StepMs, ct);
-            snaps[v] = s.Snapshot();
-            gq[v] = await run.GqlNumber(path, ct);
-            kept[v] = s.Value(name);
-            stored[v] = ProbeSession.Same(kept[v], v);
-            if (v > 0)
-            {
-                var changed = s.Diff(snaps[v - 1], snaps[v], name).Count > 0 || !ProbeSession.Same(gq[v], gq[v - 1]) && gq[v] is not null;
-                quiet = changed || !stored[v] ? 0 : quiet + 1;
-                if (quiet >= 2 && v > Math.Max(run.Original, 1)) break;
-            }
-        }
-        var steps = snaps.Keys.OrderBy(k => k).ToList();
-        var changedAny = steps.SelectMany(v => s.Diff(baseSnap, snaps[v], name)).Distinct().ToList();
-        TrackAt(run, baseSnap, changedAny);
-        string Sig(int v) => string.Join("|", changedAny.Select(n => snaps[v].TryGetValue(n, out var x) ? F(x) : "?"));
-
-        var data = new Dictionary<string, string>
-        {
-            ["stored"] = string.Join(" ", steps.Select(v => $"{v}:{(stored[v] ? "yes" : "kept " + F(kept[v]))}")),
-            ["gql"] = string.Join(" ", steps.Select(v => $"{v}:{F(gq[v])}")),
-            ["effect_vars"] = List(changedAny, 12),
-        };
-
-        int[] positions;
-        string source;
-        var clamped = steps.Where(v => !stored[v]).ToList();
-        if (clamped.Count > 0 && steps.Any(v => stored[v]))
-        {
-            positions = steps.Where(v => stored[v]).ToArray();
-            source = $"Fenix does not keep {string.Join(",", clamped)} (sets {string.Join(",", clamped.Select(v => F(kept[v])).Distinct())})";
-        }
-        else if (changedAny.Count > 0 && LastDistinct(steps, Sig) is { } k && k > 0)
-        {
-            positions = Enumerable.Range(0, k + 1).ToArray();
-            source = $"effect/animation vars ({List(changedAny, 4)}) stop changing after {k}";
-        }
-        else if (steps.All(v => gq[v] is null))
-            return Base(run, "positions", "unresolved") with
-            {
-                StoredOk = true, LatencyMs = latency, Data = data,
-                Notes = "no source of truth: no GraphQL mirror, no effect or animation var changed, Fenix keeps every value",
-            };
-        else if (steps.All(v => ProbeSession.Same(gq[v], v)))
-            return Base(run, "positions", "unresolved") with
-            {
-                StoredOk = true, LatencyMs = latency, Data = data,
-                Notes = "no source of truth: GraphQL echoes every value 0-7, nothing else changed",
-            };
-        else if (LastDistinct(steps, v => F(gq[v])) is { } kg && kg > 0)
-        {
-            positions = Enumerable.Range(0, kg + 1).ToArray();
-            source = $"GraphQL stops changing after {kg}";
-        }
-        else
-            return Base(run, "positions", "unresolved") with { StoredOk = true, LatencyMs = latency, Data = data, Notes = "no position changed anything visible" };
-
-        var top = positions.Max();
-        var gqlSame = positions.All(v => gq.TryGetValue(v, out var g) && ProbeSession.Same(g, v)) && gq.Keys.Where(v => v > top).All(v => !ProbeSession.Same(gq[v], v));
-        var gqlMapped = positions.All(v => gq.TryGetValue(v, out var g) && g is not null) && !positions.All(v => ProbeSession.Same(gq[v], v));
-        var notes = $"positions {string.Join(",", positions)}; source: {source}";
-        if (gqlMapped) notes += $"; GraphQL uses other numbers ({string.Join(" ", positions.Select(v => $"{v}->{F(gq[v])}"))})";
-        return Base(run, "positions", "positions") with
-        {
-            StoredOk = true, EffectOk = true, LatencyMs = latency, Data = data,
-            ProposedClass = "verified", ProposedValues = positions.Select(p => (double)p).ToArray(),
-            ProposedVerifyGraphql = gqlSame ? path : null,
-            Notes = notes,
-        };
-    }
-
-    /// <summary>Highest step whose signature differs from the step before, if every step up to it differs.</summary>
-    static int? LastDistinct(List<int> steps, Func<int, string> sig)
-    {
-        int? last = null;
-        for (var i = 1; i < steps.Count; i++)
-        {
-            if (sig(steps[i]) != sig(steps[i - 1])) { if (last is null ? i == 1 : last == steps[i - 1]) last = steps[i]; else return null; }
-        }
-        return last;
-    }
+    // 3: position count. The stepping test (0..7) was removed: writing positions that do not
+    // exist most likely crashed the Fenix WASM. Position counts are learned from real pilot
+    // input instead (CRO-24); see Targets.PositionsOff.
 
     // ------------------------------------------------------------------ 5: encoders
 
@@ -462,25 +366,11 @@ static class Probes
             };
         }
 
-        // Nothing reacted to an absolute 0/1: try it as a counter (+1).
-        await run.Write(o + 1, ct);
-        await run.Delay(t.BreakerSettleMs, ct);
-        var s3 = s.Snapshot();
-        await run.Write(o, ct);
-        await run.Delay(t.BreakerSettleMs, ct);
-        var counterEffects = s.Diff(s0, s3, name);
-        TrackAt(run, s0, counterEffects);
-        data["counter_effects"] = List(counterEffects, 20);
-        if (counterEffects.Count > 0)
-            return Base(run, "breaker", "breaker-counter") with
-            {
-                StoredOk = lat is not null, EffectOk = true, LatencyMs = lat, Data = data,
-                Notes = $"0/1 changed nothing, +1 did ({List(counterEffects, 6)}): counter semantics",
-            };
+        // Only 0 and 1 are known to exist for a breaker (range rule): no counter test with +1.
         return Base(run, "breaker", "no-effect") with
         {
             StoredOk = lat is not null, EffectOk = false, LatencyMs = lat, Data = data,
-            Notes = $"neither {F(pulled)} nor +1 changed any watched var; GraphQL {gq0}",
+            Notes = $"{F(pulled)} (pulled) changed no watched var; GraphQL {gq0}",
         };
     }
 

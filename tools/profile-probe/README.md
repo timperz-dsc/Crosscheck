@@ -17,22 +17,35 @@ dotnet run --project tools/profile-probe -- <command>
 | command | what | writes to the sim |
 |---|---|---|
 | `plan` | what each phase would probe and skip | no (no sim) |
-| `readonly` | 30 s noise sample of every watched var, TITLE, fuel datarefs, AIRAC GraphQL candidates | no |
-| `verified` | brief item 1 + 4: `[0,1]` guesses, also tries 2; which lamp half reacts | yes |
+| `readonly` | 30 s noise sample of every watched var, TITLE, fuel datarefs (AIRAC is not read: preflight asks the pilots) | no |
+| `verified` | brief item 1 + 4: `[0,1]` guesses (tries 2 only where 2 is known); which lamp half reacts | yes |
 | `buttons` | item 2: momentary vs latching | yes |
-| `positions` | item 3: steps 0..7, keeps only positions a source of truth confirms | yes |
+| `positions` | item 3: **switched off** (see range rule); position counts come from pilot input (CRO-24) | no |
 | `encoders` | item 5: +1/-1, which `N_` var follows | yes |
-| `breakers` | item 6: the 11 sampled `E_CB_` | yes |
-| `auto` | verified, buttons, positions, encoders, breakers back to back | yes |
+| `breakers` | item 6: the 11 sampled `E_CB_`, 0 and 1 only | yes |
+| `auto` | verified, buttons, encoders, breakers back to back | yes |
 | `takeover --side capt\|fo` | supervised a: press 1 s, release | yes |
-| `hold --var S_FCU_EFIS1_ND_MODE --value 2` | supervised b: hold an ND value (max 120 s), `release` ends it | yes |
-| `label --var V --value N --text LABEL` / `info --var V --text T` | record what the pilot saw / a manual finding | no |
+| `hold --var S_FCU_EFIS1_ND_MODE --value 2` | supervised b: hold a known ND value (MODE 0-4, ZOOM 0-5; max 120 s), `release` ends it | yes |
+| `label --var V --value N --text LABEL` / `info --var V --text T` | record what the pilot saw / a manual finding (`crash-cutoff`, `crash-end` = UTC times of a Fenix crash and the reload) | no |
 | `restore` | restore a var an interrupted run left pending | yes (restore only) |
-| `peek NAME... [--clear]` | read vars and the pending var's effect check; `--clear` drops the pending entry only if every effect var is back | no |
+| `peek NAME... [--clear]` | read vars and the pending var's effect check; `--clear` drops the pending entry only if every effect var is back; `--clear --pilot-ok` also when only effect vars differ and the pilot checked the cockpit (the var itself must be back) | no |
 | `undo --var NAME` | write one var back to the original value the probe recorded for it | yes (restore only) |
 | `propose` | `probe-results.csv`, `probe-report.md`, `profile.proposed.yaml` | no (no sim) |
 
 Options: `--only NAME`, `--redo`. Exit codes: 0 ok, 1 error, 2 safety stop, 3 not restored, 4 Ctrl+C.
+
+## Range rule
+
+A test tool may only write values that are already known to exist for that var (`KnownValues.cs`):
+- its value in the scan,
+- a value seen in a valid probe result: the value it rested at, a value written and confirmed by
+  an effect, or a value the pilot read on a display,
+- a range the owner confirmed: ND MODE 0-4, ND ZOOM 0-5, sampled breakers 0/1, takeover 0/1.
+
+Results from while the Fenix WASM was crashed (`crash-cutoff` to `crash-end`) do not count.
+Counters have no fixed range: encoders and the MASTER CAUTION/WARNING press counters only get
++1/-1 steps from the value just read. A var with too few known values is skipped
+(`range rule: ...`). `plan` prints exactly which values each var may get.
 
 ## Safety
 
@@ -63,6 +76,6 @@ See `profiles/fenix-a320/probe-report.md`, section Surprises. In short:
 - BUS TIE OFF and the GPU plug cut ground power; ground equipment is skipped. Any change of
   AC/DC bus power is a safety stop, also during the waits inside a test.
 - Stepping a switch to a position that does not exist (S_COCKPIT_DOOR 3..7) most likely crashed
-  the Fenix WASM. A future position test must not step beyond what a source of truth allows.
+  the Fenix WASM. The position test is switched off and the range rule above was added.
 - Model animation/render vars (A320_*, A32X_*) move on their own and never count as evidence.
 - The pilot's EFIS sync option (single-pilot use) changes what EFIS keys do: turn it off first.

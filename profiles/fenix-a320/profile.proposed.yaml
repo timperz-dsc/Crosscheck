@@ -106,7 +106,7 @@ vars:
     group: overhead
 
   # Sidestick takeover pushbuttons (see roles.takeover). Momentary: 1 while held.
-  # TODO(CRO-8): confirm names and values in the sim (scan: S_FC_*_INST_DISCONNECT).
+  # Confirmed in CRO-8 step 2: 1 while held, 0 after release.
   - name: S_FC_CAPT_INST_DISCONNECT
     label: "Captain's takeover button"
     value_labels: { "0": released, "1": pressed }
@@ -2009,8 +2009,8 @@ vars:
     label: "PRESS MAN"
     class: verified
     group: overhead
-    values: [0, 1]
-    note: "label generated; step 2: 2 is a distinct state, positions unresolved"
+    values: [0, 1, 2]
+    note: "label generated; step 2: 2 is a distinct state; values [0, 1, 2] are only those seen; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_PNEUMATIC_RAM_AIR
     label: "RAM AIR"
     class: verified
@@ -6265,7 +6265,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_105VU_A02
     label: "CB 105VU A02"
     class: verified
@@ -6277,7 +6277,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: 0/1 breaker, 0 = pulled"
   - name: E_CB_106VU_B04
     label: "CB 106VU B04"
     class: verified
@@ -6607,7 +6607,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_121VU_M20
     label: "CB 121VU M20"
     class: verified
@@ -6931,7 +6931,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: 0/1 breaker, 0 = pulled"
   - name: E_CB_121VU_P23
     label: "CB 121VU P23"
     class: verified
@@ -7399,7 +7399,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_122VU_W03
     label: "CB 122VU W03"
     class: verified
@@ -7543,7 +7543,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_122VU_Y11
     label: "CB 122VU Y11"
     class: verified
@@ -7693,7 +7693,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_123VU_AB12
     label: "CB 123VU AB12"
     class: verified
@@ -7717,7 +7717,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_2000VU_J07
     label: "CB 2000VU J07"
     class: verified
@@ -7747,7 +7747,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_2001VU_A04
     label: "CB 2001VU A04"
     class: verified
@@ -7987,7 +7987,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_49VU_D03
     label: "CB 49VU D03"
     class: verified
@@ -8191,7 +8191,7 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    note: "label generated; step 2: no visible effect when pulled at the gate"
   - name: E_CB_49VU_G03
     label: "CB 49VU G03"
     class: verified
@@ -11109,6 +11109,48 @@ vars:
   # >>> end generated <<<
 
   # >>> proposed by tools/profile-probe (CRO-8 step 2), review in step 3 <<<
+  - name: S_COCKPIT_DOOR
+    label: "COCKPIT DOOR"
+    class: verified
+    group: cabin
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WINDOW_BLINDS_CAPT
+    label: "WINDOW BLINDS CAPT"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WINDOW_BLINDS_FO
+    label: "WINDOW BLINDS FO"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WINDOW_BLINDS_REAR_CAPT
+    label: "WINDOW BLINDS REAR CAPT"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WINDOW_BLINDS_REAR_FO
+    label: "WINDOW BLINDS REAR FO"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WINDOW_CAPT_LEVER
+    label: "WINDOW CAPT LEVER"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WINDOW_FO_LEVER
+    label: "WINDOW FO LEVER"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_CDU1_BRIGHTNESS_DOWN
     label: "CDU 1 BRIGHTNESS DOWN"
     class: pulse
@@ -11133,6 +11175,18 @@ vars:
     group: cdu2
     pulse_ms: 150
     note: "label generated; class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: E_FCU_EFIS1_BARO
+    label: "EFIS1 BARO"
+    class: delta
+    group: efis
+    display: N_FCU_EFIS1_BARO_HPA
+    note: "label generated; display from step 2: N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH"
+  - name: E_FCU_EFIS2_BARO
+    label: "EFIS2 BARO"
+    class: delta
+    group: efis
+    display: N_FCU_EFIS2_BARO_HPA
+    note: "label generated; display from step 2: N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH"
   - name: S_FCU_EFIS1_BARO_MODE
     label: "EFIS1 BARO MODE"
     class: verified
@@ -11151,7 +11205,7 @@ vars:
     group: efis
     pulse_ms: 150
     verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 }
-    note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_FCU_EFIS1_FD 1 -> 0, I_FCU_EFIS2_FD 1 -> 0"
+    note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_FCU_EFIS1_FD 1 -> 0, I_FCU_EFIS2_FD 1 -> 0"
   - name: S_FCU_EFIS1_LS
     label: "EFIS1 LS"
     class: pulse
@@ -11178,6 +11232,20 @@ vars:
     pulse_ms: 150
     verify: { lvar: I_FCU_EFIS2_LS, settle_ms: 150 }
     note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_EFIS2_ND_MODE
+    label: "EFIS2 ND MODE"
+    value_labels: { "0": "ROSE ILS", "1": "ROSE VOR", "2": "ROSE NAV", "3": "ARC", "4": "PLAN" }
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4]
+    note: "label generated; values and labels read from the ND by the pilot in step 2"
+  - name: S_FCU_EFIS2_ND_ZOOM
+    label: "EFIS2 ND ZOOM"
+    value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4, 5]
+    note: "label generated; values and labels read from the ND by the pilot in step 2"
   - name: S_FCU_HDGVS_TRKFPA
     label: "HDGVS TRKFPA"
     class: pulse
@@ -11195,6 +11263,60 @@ vars:
     class: observe
     group: flightcontrols
     note: "label generated; step 2: stable at 0; did not move: observe"
+  - name: S_EXT_CARGO_BAY_AFT_LT
+    label: "EXT CARGO BAY AFT LT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_BAY_FWD_LT
+    label: "EXT CARGO BAY FWD LT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_AFT
+    label: "EXT CARGO DOOR SELECTOR AFT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
+    label: "EXT CARGO DOOR SELECTOR FWD"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT
+    label: "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD
+    label: "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT
+    label: "EXT CARGO DOOR SELECTOR SWITCH AFT"
+    class: verified
+    group: ground
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD
+    label: "EXT CARGO DOOR SELECTOR SWITCH FWD"
+    class: verified
+    group: ground
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: E_MIP_ISFD_BARO
+    label: "ISFD BARO"
+    class: delta
+    group: mip
+    display: N_MIP_ISFD_BARO_HPA
+    note: "label generated; display from step 2: N_MIP_ISFD_BARO_HPA chosen; also changed: N_MIP_ISFD_BARO_INCH"
   - name: N_MIP_CLOCK_UTC
     label: "CLOCK UTC display"
     class: ignore
@@ -11255,7 +11377,7 @@ vars:
     class: pulse
     group: mip
     pulse_ms: 150
-    note: "label generated; class from step 2: edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: N_MIP_CLOCK_CHRONO -1 -> 1"
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: N_MIP_CLOCK_CHRONO -1 -> 1"
   - name: S_MIP_ISFD_BARO_BUTTON
     label: "ISFD BARO BUTTON"
     class: pulse
@@ -11281,6 +11403,192 @@ vars:
     values: [0, 1]
     verify: { lvar: I_MIP_NORTH_REF_L, settle_ms: 150 }
     note: "label generated; class from step 2: effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_OH_EXT_LT_BEACON
+    label: "EXT LT BEACON"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_LANDING_BOTH
+    label: "EXT LT LANDING BOTH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_LANDING_L
+    label: "EXT LT LANDING L"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_LANDING_R
+    label: "EXT LT LANDING R"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_NAV_LOGO
+    label: "EXT LT NAV LOGO"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_NOSE
+    label: "EXT LT NOSE"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_RWY_TURNOFF
+    label: "EXT LT RWY TURNOFF"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_STROBE
+    label: "EXT LT STROBE"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_EXT_LT_WING
+    label: "EXT LT WING"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_FUEL_MODE_SEL
+    label: "MODE SEL"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_FUEL_XFEED
+    label: "XFEED"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_GPWS_FLAP_MODE
+    label: "FLAP MODE"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_GPWS_GS_MODE
+    label: "GS MODE"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_GPWS_SYS
+    label: "SYS"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_IN_LT_ANN_LT
+    label: "IN LT ANN LT"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_IN_LT_ICE
+    label: "IN LT ICE"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_LIGHTING_AVIONICS_COMPT
+    label: "LIGHTING AVIONICS COMPT"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_ADR1
+    label: "ADR1"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_ADR2
+    label: "ADR2"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_ADR3
+    label: "ADR3"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_DATA_DISP
+    label: "DATA DISP"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_IR1_SWITCH
+    label: "IR1 SWITCH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_IR2_SWITCH
+    label: "IR2 SWITCH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_IR3_SWITCH
+    label: "IR3 SWITCH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_NAV_SYS_DISP
+    label: "SYS DISP"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_PNEUMATIC_HOT_AIR
+    label: "HOT AIR"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO
+    label: "HOT AIR AFT CARGO"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_PNEUMATIC_PRESS_MODE
+    label: "PRESS MODE"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_PNEUMATIC_XBLEED_SELECTOR
+    label: "XBLEED SELECTOR"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_SIGNS
+    label: "SIGNS"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_SIGNS_SMOKING
+    label: "SIGNS SMOKING"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_SVCE_INT_OVRD
     label: "SVCE INT OVRD"
     class: verified
@@ -11288,6 +11596,36 @@ vars:
     values: [0, 1]
     verify: { lvar: I_OH_SVCE_INT_OVRD, settle_ms: 150 }
     note: "label generated; class from step 2: effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: E_PED_RMP1_INNER
+    label: "RMP1 INNER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP1_STDBY
+    note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
+  - name: E_PED_RMP1_OUTER
+    label: "RMP1 OUTER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP1_STDBY
+    note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
+  - name: E_PED_RMP2_INNER
+    label: "RMP2 INNER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP2_STDBY
+    note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
+  - name: E_PED_RMP2_OUTER
+    label: "RMP2 OUTER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP2_STDBY
+    note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
+  - name: E_PED_RMP3_INNER
+    label: "RMP3 INNER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP3_STDBY
+    note: "label generated; display from step 2: N_PED_RMP3_STDBY follows +1/-1"
   - name: S_ASP2_ADF_1_REC
     label: "ASP2 ADF 1 REC"
     class: pulse
@@ -11333,7 +11671,7 @@ vars:
     group: pedestal
     pulse_ms: 150
     verify: { lvar: I_ASP2_CAB_SEND, settle_ms: 150 }
-    note: "label generated; class from step 2: edge-triggered: the press toggled I_ASP2_CAB_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0"
+    note: "label generated; class from step 2: edge-triggered: the press toggled I_ASP2_CAB_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0"
   - name: S_ASP2_HF_1_REC
     label: "ASP2 HF 1 REC"
     class: pulse
@@ -11353,7 +11691,7 @@ vars:
     group: pedestal
     pulse_ms: 150
     verify: { lvar: I_ASP2_HF_1_SEND, settle_ms: 150 }
-    note: "label generated; class from step 2: edge-triggered: the press toggled I_ASP2_HF_1_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; NOT RESTORED: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0"
+    note: "label generated; class from step 2: edge-triggered: the press toggled I_ASP2_HF_1_SEND I_ASP2_VHF_1_SEND and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_ASP2_VHF_1_SEND 1 -> 0"
   - name: S_ASP2_HF_2_REC
     label: "ASP2 HF 2 REC"
     class: pulse
@@ -11920,6 +12258,54 @@ vars:
     group: pedestal
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (I_ASP_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_PED_ATC_0
+    label: "ATC 0"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_1
+    label: "ATC 1"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_2
+    label: "ATC 2"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_3
+    label: "ATC 3"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_4
+    label: "ATC 4"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_5
+    label: "ATC 5"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_6
+    label: "ATC 6"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_PED_ATC_7
+    label: "ATC 7"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_PED_RMP1_POWER
     label: "RMP1 POWER"
     class: verified
@@ -11956,6 +12342,72 @@ vars:
     group: pedestal
     pulse_ms: 150
     note: "label generated; class from step 2: edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_TCAS_HORIZONTAL_RANGE
+    label: "TCAS HORIZONTAL RANGE"
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_TCAS_RANGE
+    label: "TCAS RANGE"
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WR_GAIN
+    label: "WR GAIN"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WR_GCS
+    label: "WR GCS"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WR_MODE
+    label: "WR MODE"
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WR_MULTISCAN
+    label: "WR MULTISCAN"
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WR_PRED_WS
+    label: "WR PRED WS"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_WR_SYS
+    label: "WR SYS"
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_XPDR_ATC
+    label: "XPDR ATC"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_XPDR_MODE
+    label: "XPDR MODE"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_XPDR_OPERATION
+    label: "XPDR OPERATION"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: N_HYD_PRESSURE_BRAKE_ACCU
     label: "PRESSURE BRAKE ACCU display"
     class: ignore
@@ -11975,5 +12427,5 @@ datarefs:
 
 roles:
   # A press on the pilot monitoring's own seat = "I have control" (control_request).
-  # TODO(CRO-8): confirm these are the takeover pushbuttons, against the scan and in the sim.
+  # Confirmed in CRO-8 step 2 (1 while held, 0 after release).
   takeover: { captain: S_FC_CAPT_INST_DISCONNECT, fo: S_FC_FO_INST_DISCONNECT }

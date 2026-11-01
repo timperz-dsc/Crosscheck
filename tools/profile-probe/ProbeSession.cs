@@ -168,8 +168,11 @@ sealed class ProbeSession(
             var effectsBack = await run.EffectsBack(timing.EffectRestoreMs);
             // If aircraft power changed, an extra press cannot help and only adds writes.
             var powerChanged = SafetyVars.Power.Any(p => run.EffectStart.TryGetValue(p, out var was) && !Same(Value(p), was));
+            // Never for encoders: on a knob, "one more press" is two more clicks (found in the rerun:
+            // it turned the RMP 3 outer knob further instead of back).
+            var encoder = run.Target.Delta || run.Target.Phase == Phase.Encoders;
             if (!effectsBack && run.Kind == RestoreKind.Absolute
-                && !powerChanged
+                && !powerChanged && !encoder
                 && sim.Guard.IsAllowedValue(name, run.Original + 1) && sim.Guard.IsAllowedValue(name, run.Original + 2))
             {
                 // Found in the first run (yellow ELEC PUMP): some switches are press counters

@@ -84,19 +84,43 @@ static class Targets
     public const string ConfirmNote = "confirm in step 2";
 
     public static readonly double[] Binary = [0, 1];
-    /// <summary>The verified test writes 0, 1 and 2; 3 and 4 only for the press-counter restore.</summary>
-    public static readonly double[] BinaryPlusTwo = [0, 1, 2, 3, 4];
-    public static readonly double[] Steps = [0, 1, 2, 3, 4, 5, 6, 7];
-    public static readonly double[] NdValues = [0, 1, 2, 3, 4, 5];
+    /// <summary>
+    /// The verified test writes the other of 0/1, and 2 to look for a third state. Under the range
+    /// rule (KnownValues) only values known to exist are kept, so 2 is written only where it is known.
+    /// </summary>
+    public static readonly double[] BinaryPlusTwo = [0, 1, 2];
+
+    /// <summary>
+    /// The position test (stepping 0..7) is switched off. Writing positions that do not exist most
+    /// likely crashed the Fenix WASM in the first run (S_COCKPIT_DOOR 3..7).
+    /// </summary>
+    public const string PositionsOff = "position count unknown; to be learned from real pilot input (CRO-24)";
+
+    /// <summary>Review vars whose position count is unknown (what the position test used to step).</summary>
+    public static List<string> PositionCandidates(Inputs inputs, IEnumerable<string>? rejects = null) =>
+        inputs.Review
+            .Where(r => r.Reason.Contains("multi-position") || r.Reason.StartsWith("scan value"))
+            .Select(r => r.Name)
+            .Concat(LeversNotButtons.Where(n => inputs.Review.Any(r => r.Name == n)))
+            .Concat(rejects ?? [])
+            .Distinct().ToList();
+
+    /// <summary>The known counters: no fixed range, only +1 steps from the value just read.</summary>
+    public static bool IsPressCounter(string name) => name.Contains("MASTER_CAUTION") || name.Contains("MASTER_WARNING");
 
     public static string? ExtraSkip(string name) =>
         ExtraSkips.FirstOrDefault(s => new ExcludeFilter([s.Pattern]).IsExcluded(name)).Why;
 
     public static bool NeedsDryHydraulics(string name) => new ExcludeFilter(NeedsNoHydraulics).IsExcluded(name);
 
-    /// <param name="positionExtras">Vars rejected as [0,1] by the verified phase (they move on to positions).</param>
-    public static (List<Target> Targets, List<Skipped> Skipped) For(Phase phase, Inputs inputs, IEnumerable<string>? positionExtras = null)
+    /// <param name="positionExtras">Vars rejected as [0,1] by the verified phase (position count unknown).</param>
+    /// <param name="known">Values known to exist (range rule). Planned values outside it are never written.</param>
+    public static (List<Target> Targets, List<Skipped> Skipped) For(Phase phase, Inputs inputs, IEnumerable<string>? positionExtras = null, KnownValues? known = null)
     {
+        known ??= KnownValues.Build(inputs, []);
+        if (phase == Phase.Positions)
+            return ([], PositionCandidates(inputs, positionExtras).Select(n => new Skipped(n, phase, PositionsOff)).ToList());
+
         var candidates = phase switch
         {
             Phase.Verified => inputs.Profile.Vars
@@ -104,20 +128,13 @@ static class Targets
                 .Select(v => new Target(v.Name, phase, BinaryPlusTwo)),
             Phase.Buttons => inputs.Review
                 .Where(r => r.Reason.Contains("momentary or latching unknown") && !LeversNotButtons.Contains(r.Name))
-                .Select(r => new Target(r.Name, phase, null, Counter: true)),
-            Phase.Positions => inputs.Review
-                .Where(r => r.Reason.Contains("multi-position") || r.Reason.StartsWith("scan value"))
-                .Select(r => r.Name)
-                .Concat(LeversNotButtons.Where(n => inputs.Review.Any(r => r.Name == n)))
-                .Concat(positionExtras ?? [])
-                .Distinct()
-                .Select(n => new Target(n, phase, Steps)),
+                .Select(r => IsPressCounter(r.Name) ? new Target(r.Name, phase, null, Counter: true) : new Target(r.Name, phase, Binary)),
             Phase.Encoders => inputs.Review
                 .Where(r => r.Name.StartsWith("E_", StringComparison.Ordinal) && !r.Name.StartsWith("E_CB_", StringComparison.Ordinal))
                 .Select(r => new Target(r.Name, phase, null, Delta: true)),
-            Phase.Breakers => inputs.Deny.Breakers.Select(b => new Target(b, phase, [0, 1, 2, 3])),
+            Phase.Breakers => inputs.Deny.Breakers.Select(b => new Target(b, phase, Binary)),
             Phase.Takeover => TakeoverVars.Select(n => new Target(n, phase, Binary)),
-            Phase.Hold => HoldVars.Select(n => new Target(n, phase, NdValues)),
+            Phase.Hold => HoldVars.Select(n => new Target(n, phase, known.For(n).ToArray())),
             _ => [],
         };
 
@@ -131,6 +148,20 @@ static class Targets
             { skipped.Add(new(t.Name, phase, "breaker not in the probe sample")); continue; }
             if (!supervised && inputs.Deny.Denies(t.Name) is { } rule) { skipped.Add(new(t.Name, phase, "deny list: " + rule.Reason)); continue; }
             if (!supervised && ExtraSkip(t.Name) is { } why) { skipped.Add(new(t.Name, phase, "extra skip: " + why)); continue; }
+            // Range rule: absolute values only where they are known to exist. Counters (delta,
+            // press counter) have no range and only get +1/-1 steps from the value just read.
+            if (t.Values is { } planned && !t.Delta && !t.Counter)
+            {
+                var ok = known.Filter(t.Name, planned);
+                var need = phase is Phase.Hold ? 1 : 2; // a test needs the rest value and one other
+                if (ok.Count < need)
+                {
+                    skipped.Add(new(t.Name, phase, $"range rule: only {(ok.Count == 0 ? "no value" : string.Join(",", ok))} of {string.Join(",", planned)} known to exist"));
+                    continue;
+                }
+                targets.Add(t with { Values = ok });
+                continue;
+            }
             targets.Add(t);
         }
         return (targets, skipped);

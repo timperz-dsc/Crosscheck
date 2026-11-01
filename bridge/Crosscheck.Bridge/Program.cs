@@ -53,7 +53,7 @@ namespace Crosscheck.Bridge.App
               --api-port <n>        local API and UI port on 127.0.0.1 (default 8790, -1 = off)
               --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
               --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
-              --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
+              --airac <cycle>       AIRAC cycle you loaded, typed by hand (not read from the aircraft), e.g. 2611
               --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
               --ui-dir <dir>        folder with the built UI (default wwwroot next to the program)
               --no-browser          no app window and no browser on start (tests)

@@ -332,32 +332,14 @@ public class ProbeKindTests
     }
 
     [Fact]
-    public async Task Positions_from_an_animation_var()
+    public async Task Verified_never_writes_2_when_2_is_not_known()
     {
-        await using var rig = await Rig.Make([new Target("S_OH_SEL", Phase.Positions, Targets.Steps)], "S_OH_SEL_Anim");
-        rig.Sim.ValueChanged += (n, v) => { if (n == "S_OH_SEL") rig.Sim.Logic("S_OH_SEL_Anim", Math.Min(v, 2)); };
-        var r = await rig.Session.RunVar(rig.Targets[0], Probes.Positions, default);
-        Assert.Equal("positions", r!.Result);
-        Assert.Equal(new double[] { 0, 1, 2 }, r.ProposedValues);
-        Assert.Equal(0, rig.Sim.Get("S_OH_SEL"));
-    }
-
-    [Fact]
-    public async Task Positions_where_GraphQL_only_echoes_stay_unresolved()
-    {
-        await using var rig = await Rig.Make([new Target("S_OH_ECHO", Phase.Positions, Targets.Steps)]);
-        var r = await rig.Session.RunVar(rig.Targets[0], Probes.Positions, default);
-        Assert.Equal("unresolved", r!.Result);
-        Assert.Contains("echoes", r.Notes);
-    }
-
-    [Fact]
-    public async Task Positions_where_Fenix_clamps_the_value()
-    {
-        await using var rig = await Rig.Make([new Target("S_OH_CLAMP", Phase.Positions, Targets.Steps)]);
-        rig.Sim.ValueChanged += (n, v) => { if (n == "S_OH_CLAMP" && v > 2) rig.Sim.Logic("S_OH_CLAMP", 2); };
-        var r = await rig.Session.RunVar(rig.Targets[0], Probes.Positions, default);
-        Assert.Equal(new double[] { 0, 1, 2 }, r!.ProposedValues);
+        await using var rig = await Rig.Make([new Target("S_OH_TWO", Phase.Verified, [0, 1])], "I_OH_TWO_L");
+        rig.Sim.ValueChanged += (n, v) => { if (n == "S_OH_TWO") rig.Sim.Logic("I_OH_TWO_L", v); };
+        var r = await rig.Session.RunVar(rig.Targets[0], Probes.Verified, default);
+        Assert.Equal("confirmed", r!.Result);
+        Assert.DoesNotContain(rig.Sim.Writes, w => w.Name == "S_OH_TWO" && w.Value > 1);
+        Assert.Contains("2 not written", r.Notes);
     }
 
     [Fact]
@@ -378,9 +360,37 @@ public class ProbeKindTests
     }
 
     [Fact]
+    public async Task Encoder_that_does_not_come_back_gets_no_extra_clicks()
+    {
+        // Like E_PED_RMP3_OUTER in the rerun: +1 moved the display, -1 was not taken.
+        await using var rig = await Rig.Make([new Target("E_PED_RMP3_OUTER", Phase.Encoders, null, Delta: true)], "N_PED_RMP3_STDBY");
+        var last = 0.0;
+        rig.Sim.ValueChanged += (n, v) =>
+        {
+            if (n != "E_PED_RMP3_OUTER") return;
+            if (v > last) rig.Sim.Logic("N_PED_RMP3_STDBY", rig.Sim.Get("N_PED_RMP3_STDBY") + 1000);
+            last = v;
+        };
+        await Assert.ThrowsAsync<NotRestoredException>(() => rig.Session.RunVar(rig.Targets[0], Probes.Encoder, default));
+        Assert.All(rig.Sim.Writes.Where(w => w.Name == "E_PED_RMP3_OUTER"), w => Assert.InRange(w.Value, -1, 1));
+        Assert.Equal("E_PED_RMP3_OUTER", rig.Checkpoint.Data.Pending?.Var);
+    }
+
+    [Fact]
+    public async Task Breaker_with_no_effect_is_never_written_above_1()
+    {
+        await using var rig = await Rig.Make([new Target("E_CB_49VU_G02", Phase.Breakers, Targets.Binary)]);
+        rig.Sim.Logic("E_CB_49VU_G02", 1);
+        var r = await rig.Session.RunVar(rig.Targets[0], Probes.Breaker, default);
+        Assert.Equal("no-effect", r!.Result);
+        Assert.All(rig.Sim.Writes.Where(w => w.Name == "E_CB_49VU_G02"), w => Assert.InRange(w.Value, 0, 1));
+        Assert.Equal(1, rig.Sim.Get("E_CB_49VU_G02"));
+    }
+
+    [Fact]
     public async Task Breaker_pulled_with_effect_is_0_1()
     {
-        await using var rig = await Rig.Make([new Target("E_CB_49VU_D02", Phase.Breakers, [0, 1, 2, 3])], "I_SOMETHING");
+        await using var rig = await Rig.Make([new Target("E_CB_49VU_D02", Phase.Breakers, Targets.Binary)], "I_SOMETHING");
         rig.Sim.Logic("E_CB_49VU_D02", 1);
         rig.Sim.Logic("I_SOMETHING", 1);
         rig.Sim.ValueChanged += (n, v) => { if (n == "E_CB_49VU_D02") rig.Sim.Logic("I_SOMETHING", v >= 1 ? 1 : 0); };
@@ -399,20 +409,69 @@ public class RepoInputTests
     public void No_phase_targets_a_denied_var_or_an_unsampled_breaker()
     {
         var inputs = Real.Value;
-        foreach (var phase in new[] { Phase.Verified, Phase.Buttons, Phase.Positions, Phase.Encoders, Phase.Breakers })
+        foreach (var phase in Enum.GetValues<Phase>())
         {
             var (targets, _) = Targets.For(phase, inputs);
-            Assert.NotEmpty(targets);
+            if (phase is Phase.Encoders or Phase.Breakers or Phase.Takeover or Phase.Hold) Assert.NotEmpty(targets);
             foreach (var t in targets)
             {
-                Assert.Null(inputs.Deny.Denies(t.Name));
-                Assert.Null(Targets.ExtraSkip(t.Name));
                 if (t.Name.StartsWith("E_CB_")) Assert.Contains(t.Name, inputs.Deny.Breakers);
                 Assert.True(inputs.Known(t.Name));
+                if (phase is not (Phase.Takeover or Phase.Hold))
+                {
+                    Assert.Null(inputs.Deny.Denies(t.Name));
+                    Assert.Null(Targets.ExtraSkip(t.Name));
+                }
             }
         }
         Assert.Equal(11, Targets.For(Phase.Breakers, inputs).Targets.Count);
         Assert.Equal(65, inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null));
+    }
+
+    [Fact]
+    public void Range_rule_only_plans_values_known_to_exist()
+    {
+        var inputs = Real.Value;
+        var known = KnownValues.Build(inputs, []);
+        foreach (var phase in Enum.GetValues<Phase>())
+            foreach (var t in Targets.For(phase, inputs, null, known).Targets.Where(t => t.Values is not null))
+                Assert.All(t.Values!, v => Assert.True(known.IsKnown(t.Name, v), $"{phase} {t.Name} = {v}"));
+        // the position test is switched off
+        var (positions, skipped) = Targets.For(Phase.Positions, inputs);
+        Assert.Empty(positions);
+        Assert.All(skipped, s => Assert.Equal(Targets.PositionsOff, s.Why));
+        // breakers 0/1 only; ND MODE 0-4, ND ZOOM 0-5
+        Assert.All(Targets.For(Phase.Breakers, inputs).Targets, t => Assert.Equal([0, 1], t.Values!));
+        var hold = Targets.For(Phase.Hold, inputs).Targets.ToDictionary(t => t.Name, t => t.Values!);
+        Assert.Equal([0, 1, 2, 3, 4], hold["S_FCU_EFIS2_ND_MODE"]);
+        Assert.Equal([0, 1, 2, 3, 4, 5], hold["S_FCU_EFIS2_ND_ZOOM"]);
+        Assert.False(known.IsKnown("S_FCU_EFIS2_ND_MODE", 5));
+    }
+
+    [Fact]
+    public void Range_rule_skips_a_switch_with_only_one_known_value()
+    {
+        var inputs = Real.Value;
+        var name = Targets.For(Phase.Verified, inputs, null, KnownValues.Of()).Skipped.Select(s => s.Name)
+            .First(n => inputs.Entry(n) is not null && inputs.Deny.Denies(n) is null && Targets.ExtraSkip(n) is null);
+        var (none, skipped) = Targets.For(Phase.Verified, inputs, null, KnownValues.Of((name, [0])));
+        Assert.DoesNotContain(none, t => t.Name == name);
+        Assert.Contains(skipped, s => s.Name == name && s.Why.StartsWith("range rule"));
+        var (some, _) = Targets.For(Phase.Verified, inputs, null, KnownValues.Of((name, [0, 1])));
+        Assert.Equal([0, 1], some.Single(t => t.Name == name).Values!); // 2 is not known: never planned
+    }
+
+    [Fact]
+    public void Values_seen_count_only_from_valid_results()
+    {
+        var crash = new ProbeResult { Var = "crash-cutoff", Phase = Phase.Readonly, Test = "manual", Result = "info", Notes = "2026-11-01T14:16:40Z" };
+        var ok = new ProbeResult { Var = "S_X", Phase = Phase.Verified, Test = "verified-binary", Result = "confirmed", Original = 0, ProposedValues = [0, 1], At = new DateTime(2026, 11, 1, 14, 0, 0, DateTimeKind.Utc) };
+        var late = new ProbeResult { Var = "S_Y", Phase = Phase.Verified, Test = "verified-binary", Result = "confirmed", Original = 0, ProposedValues = [0, 1], At = new DateTime(2026, 11, 1, 14, 30, 0, DateTimeKind.Utc) };
+        var stored = new ProbeResult { Var = "S_Z", Phase = Phase.Verified, Test = "verified-binary", Result = "unresolved", Original = 0, StoredOk = true, At = new DateTime(2026, 11, 1, 14, 0, 0, DateTimeKind.Utc) };
+        var k = KnownValues.Build(Rig.MinimalInputs([]), [crash, ok, late, stored]);
+        Assert.Equal([0, 1], k.Seen("S_X"));
+        Assert.Empty(k.Seen("S_Y"));          // inside the crash window
+        Assert.Equal([0], k.Seen("S_Z"));     // a stored value with no effect proves nothing
     }
 
     [Fact]
@@ -443,11 +502,18 @@ public class RepoInputTests
         var cutoff = new ProbeResult { Var = "crash-cutoff", Phase = Phase.Readonly, Test = "manual", Result = "info", Notes = "2026-11-01T14:16:40Z" };
         var late = new ProbeResult { Var = "E_PED_RMP1_INNER", Phase = Phase.Encoders, Test = "encoder-display", Result = "display", ProposedDisplay = "N_X", At = new DateTime(2026, 11, 1, 14, 30, 0, DateTimeKind.Utc) };
         var early = late with { At = new DateTime(2026, 11, 1, 14, 0, 0, DateTimeKind.Utc) };
-        var t = Proposer.CrashCutoff([cutoff, late]);
+        var t = Proposer.CrashWindowOf([cutoff, late]);
         Assert.Equal("invalid-crash", Proposer.AfterCrash(late, t).Result);
         Assert.Null(Proposer.AfterCrash(late, t).ProposedDisplay);
         Assert.Equal("display", Proposer.AfterCrash(early, t).Result);
         Assert.Equal("invalid-crash", Proposer.AfterCrash(Proposer.AfterCrash(late, t), t).Result);
+
+        // after the reload (crash-end) results are valid again
+        var end = new ProbeResult { Var = "crash-end", Phase = Phase.Readonly, Test = "manual", Result = "info", Notes = "2026-11-01T16:00:00Z" };
+        var rerun = late with { At = new DateTime(2026, 11, 1, 16, 30, 0, DateTimeKind.Utc) };
+        var w = Proposer.CrashWindowOf([cutoff, end, late, rerun]);
+        Assert.Equal("invalid-crash", Proposer.AfterCrash(late, w).Result);
+        Assert.Equal("display", Proposer.AfterCrash(rerun, w).Result);
     }
 
     [Fact]
@@ -457,6 +523,8 @@ public class RepoInputTests
         var guess = inputs.Profile.Vars.First(v => v.Note?.Contains("lower-half rule") ?? false);
         var stem = guess.Name[2..];
         var button = inputs.Review.First(r => r.Reason == "momentary or latching unknown" && ProfileGen.Rules.GroupOf(r.Name) is not null);
+        var pos = Targets.PositionCandidates(inputs).First(n => inputs.Entry(n) is null && ProfileGen.Rules.GroupOf(n) is not null && inputs.Deny.Denies(n) is null);
+        var neverProbed = Targets.PositionCandidates(inputs).First(n => n != pos && inputs.Entry(n) is null && ProfileGen.Rules.GroupOf(n) is not null);
         List<ProbeResult> results =
         [
             new() { Var = guess.Name, Phase = Phase.Verified, Test = "verified-binary", Result = "confirmed", ProposedValues = [0, 1], Notes = "lamp" },
@@ -464,6 +532,8 @@ public class RepoInputTests
             new() { Var = button.Name, Phase = Phase.Buttons, Test = "momentary-or-latching", Result = "pulse", ProposedClass = "pulse", Notes = "edge" },
             new() { Var = "E_CB_105VU_A01", Phase = Phase.Breakers, Test = "breaker", Result = "breaker-01", Notes = "x" },
             new() { Var = "TITLE", Phase = Phase.Readonly, Test = "simvar", Result = "info", Notes = "FenixA320 Test" },
+            new() { Var = pos, Phase = Phase.Positions, Test = "positions", Result = "positions", ProposedValues = [0, 1, 2, 3], Original = 1, Notes = "stepped" },
+            new() { Var = neverProbed, Phase = Phase.Positions, Test = "positions", Result = "skipped", Notes = "extra skip" },
         ];
         var (text, changes, _) = Proposer.Propose(inputs, results);
         var check = Crosscheck.Profiles.ProfileLoader.LoadText(text, "proposed");
@@ -474,5 +544,13 @@ public class RepoInputTests
         Assert.Contains("0/1 breaker", p.Vars.Single(v => v.Name == "E_CB_105VU_A01").Note);
         Assert.Equal("FenixA320 Test", Assert.Single(p.Aircraft.Match.Titles!));
         Assert.Contains(changes, c => c.Kind == "effect source");
+
+        // a stepped switch with an unknown position count gets only the values seen, never the
+        // stepped range; a switch that was never probed is not added
+        var entry = p.Vars.Single(v => v.Name == pos);
+        var scan = double.Parse(inputs.Scan[pos], System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Equal(new[] { scan, 1.0 }.Distinct().Order(), entry.Values!);
+        Assert.Contains("CRO-24", entry.Note);
+        Assert.DoesNotContain(p.Vars, v => v.Name == neverProbed);
     }
 }

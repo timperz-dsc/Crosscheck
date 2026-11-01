@@ -104,7 +104,7 @@ or `pm` changes with control transfer. The host is PF at the start.
 | `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). |
 | `profile_id`, `profile_hash` | Must match. The hash is compared as an opaque string. |
 | `aircraft.package_version`, `aircraft.app_version` | Must match. |
-| `airac` | Mismatch, or unknown on one side → **warning**, not rejected. MCDU pages may differ. |
+| `airac` | Entered by hand (bridge `--airac`); Crosscheck does not read it from the aircraft. Mismatch, or unknown on one side → **warning**, not rejected, with the reminder "Check that both pilots use the same AIRAC". MCDU pages may differ. |
 
 A rejection lists every difference (`diff: [{field, reference, joining, severity, message}]`),
 warnings included, so the pilots see everything at once.
