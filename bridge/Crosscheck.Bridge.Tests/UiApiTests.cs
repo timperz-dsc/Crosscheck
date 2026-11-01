@@ -26,12 +26,12 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
         try { Directory.Delete(_dir, recursive: true); } catch (IOException) { }
     }
 
-    private async Task<BridgeRuntime> Idle(string name, Action<FakeFenixGraphQl>? tweak = null, string? uiDir = null)
+    private async Task<BridgeRuntime> Idle(string name, Action<FakeFenixGraphQl>? tweak = null, string? uiDir = null, string? settingsPath = null)
     {
         var b = new BridgeRuntime(new BridgeOptions
         {
-            Server = server.Url, ProfilePath = Repo.FenixProfile, Name = name, ApiPort = 0, LogDir = Path.Combine(_dir, name),
-            VersionTimeout = TimeSpan.Zero, StrictValidation = true, UiDir = uiDir ?? Path.Combine(_dir, "no-ui"),
+            Server = server.Url, ProfilePath = Repo.FixtureProfile, Name = name, ApiPort = 0, LogDir = Path.Combine(_dir, name),
+            VersionTimeout = TimeSpan.Zero, StrictValidation = true, UiDir = uiDir ?? Path.Combine(_dir, "no-ui"), SettingsPath = settingsPath,
         }, p =>
         {
             var backends = BridgeBackends.Fake(p);
@@ -302,5 +302,39 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
         foreign.Headers.Add("Origin", "https://example.com");
         Assert.Equal(HttpStatusCode.Forbidden, (await _http.SendAsync(foreign)).StatusCode);
         Assert.Null(b.Engine);
+    }
+
+    [Fact]
+    public async Task Status_shows_where_this_bridges_log_is()
+    {
+        var b = await Idle("logged");
+        var log = (await Status(b))["log"]!;
+        Assert.Equal(Path.Combine(_dir, "logged"), log["folder"]!.GetValue<string>());
+        Assert.True(File.Exists(log["file"]!.GetValue<string>()));
+    }
+
+    [Fact]
+    public async Task Server_address_can_be_changed_between_sessions_and_is_saved()
+    {
+        var settings = Path.Combine(_dir, "settings.json");
+        var b = await Idle("settings", settingsPath: settings);
+        var (code, answer) = await Post(b, "/api/settings/server", new { url = "https://example.up.railway.app" });
+        Assert.Equal(HttpStatusCode.OK, code);
+        Assert.True(answer["ok"]!.GetValue<bool>());
+        Assert.Equal("wss://example.up.railway.app/ws", (await Status(b))["this_computer"]!["server"]!.GetValue<string>());
+        Assert.Equal("wss://example.up.railway.app/ws", UserSettings.Load(settings).Server);
+    }
+
+    [Fact]
+    public async Task Server_address_is_checked_and_locked_during_a_session()
+    {
+        var host = await Idle("host");
+        var bad = await Post(host, "/api/settings/server", new { url = "ftp://nope" });
+        Assert.Equal(HttpStatusCode.Conflict, bad.Code);
+        Assert.Contains("wss://", bad.Body["error"]!.GetValue<string>());
+        Assert.Equal(HttpStatusCode.OK, (await Post(host, "/api/session/create")).Code);
+        var locked = await Post(host, "/api/settings/server", new { url = "wss://other.example/ws" });
+        Assert.Equal(HttpStatusCode.Conflict, locked.Code);
+        Assert.Equal(server.Url.ToString(), (await Status(host))["this_computer"]!["server"]!.GetValue<string>());
     }
 }

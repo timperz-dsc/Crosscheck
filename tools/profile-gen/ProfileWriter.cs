@@ -11,6 +11,11 @@ static class ProfileWriter
     public const string End = "  # >>> end generated <<<";
 
     static string Q(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+    /// <summary>Plain when YAML reads it as text anyway (keeps existing lines unchanged), quoted otherwise ("320", "ON: x").</summary>
+    static string Label(string s) =>
+        System.Text.RegularExpressions.Regex.IsMatch(s, "^[A-Za-z]([A-Za-z0-9 ./_-]*[A-Za-z0-9./_-])?$")
+        && s.ToLowerInvariant() is not ("on" or "off" or "yes" or "no" or "true" or "false" or "null" or "y" or "n")
+            ? s : Q(s);
     static string N(double d) => d.ToString("0.###", CultureInfo.InvariantCulture);
     static string List(double[] a) => "[" + string.Join(", ", a.Select(N)) + "]";
 
@@ -20,10 +25,11 @@ static class ProfileWriter
         sb.Append(Begin).Append('\n');
         foreach (var e in entries)
         {
+            if (e.Comment is { } c) sb.Append("  # ").Append(c).Append('\n');
             sb.Append("  - name: ").Append(e.Name).Append('\n');
             sb.Append("    label: ").Append(Q(e.Label)).Append('\n');
             if (e.ValueLabels is { } vl)
-                sb.Append("    value_labels: { ").Append(string.Join(", ", vl.Select(p => $"\"{p.Key}\": {p.Value}"))).Append(" }\n");
+                sb.Append("    value_labels: { ").Append(string.Join(", ", vl.Select(p => $"\"{p.Key}\": {Label(p.Value)}"))).Append(" }\n");
             sb.Append("    class: ").Append(e.Class).Append('\n');
             sb.Append("    group: ").Append(e.Group).Append('\n');
             if (e.Values is { } v) sb.Append("    values: ").Append(List(v)).Append('\n');

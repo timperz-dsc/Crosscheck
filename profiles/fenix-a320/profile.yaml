@@ -1,13 +1,15 @@
 # yaml-language-server: $schema=../schema/profile.schema.json
-# Fenix A320 profile, format 1. Starter set only: entries taken from what our own
-# spikes proved (spike/VarTypes). CRO-8 fills in the rest from the scan.
+# Fenix A320 profile, format 1. Hand-written entries come from what our own spikes and the
+# CRO-8 step 2 probe proved. The generated block comes from tools/profile-gen (the scan plus
+# overrides.yaml); never edit it by hand.
 format: 1
 
 aircraft:
   id: fenix-a320
   name: Fenix A320
   match:
-    # TODO(CRO-8): add `titles:` once the title the sim reports for the Fenix is recorded.
+    # The sim reported "FenixA320 IAE WF" in CRO-8 step 2; the glob covers other liveries.
+    titles: ["FenixA320*"]
     packages: [fnx-aircraft-320]
   builds: ["3.0.0.7613"]
 
@@ -55,11 +57,13 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_APU_MASTER_L, settle_ms: 150 }
-    note: Effect lamp is not proven yet, confirm in CRO-8.
+    note: Values [0,1] and the effect lamp confirmed in CRO-8 step 2.
 
   # 5-position rotary. GraphQL mirrors it with the same numbers (GRAPHQL.md).
+  # Labels: read on the FO ND for every value in CRO-8 step 2; captain spot-checked MODE 3 = ARC.
   - name: S_FCU_EFIS1_ND_MODE
     label: Captain ND mode
+    value_labels: { "0": ROSE ILS, "1": ROSE VOR, "2": ROSE NAV, "3": ARC, "4": PLAN }
     class: verified
     group: efis
     values: [0, 1, 2, 3, 4]
@@ -105,7 +109,7 @@ vars:
     group: overhead
 
   # Sidestick takeover pushbuttons (see roles.takeover). Momentary: 1 while held.
-  # TODO(CRO-8): confirm names and values in the sim (scan: S_FC_*_INST_DISCONNECT).
+  # Confirmed in CRO-8 step 2: 1 while held, 0 after release, no side effects at the gate.
   - name: S_FC_CAPT_INST_DISCONNECT
     label: "Captain's takeover button"
     value_labels: { "0": released, "1": pressed }
@@ -1165,6 +1169,34 @@ vars:
     class: observe
     group: overhead
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_MISC_WIPER_CAPT
+    label: "MISC WIPER CAPT"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+  # positions to be learned (CRO-24)
+  - name: S_MISC_WIPER_FO
+    label: "MISC WIPER FO"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+  # positions to be learned (CRO-24)
+  - name: S_MISC_WIPER_REPELLENT_CAPT
+    label: "MISC WIPER REPELLENT CAPT"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+  # positions to be learned (CRO-24)
+  - name: S_MISC_WIPER_REPELLENT_FO
+    label: "MISC WIPER REPELLENT FO"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
   - name: S_OH_ADIRS_KEY_0
     label: "ADIRS KEY 0"
     class: pulse
@@ -1358,14 +1390,14 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_CARGO_SMOKE_AFT_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_CARGO_SMOKE_FWD
     label: "SMOKE FWD"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_CARGO_SMOKE_FWD_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_CARGO_SMOKE_TEST
     label: "SMOKE TEST"
     class: pulse
@@ -1378,35 +1410,35 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_COCKPIT_DOOR_VIDEO, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_ELEC_AC_ESS_FEED
     label: "AC ESS FEED"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_AC_ESS_FEED_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_APU_GENERATOR
     label: "APU GENERATOR"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_APU_GENERATOR_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_BAT1
     label: "BAT1"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_BAT1_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_BAT2
     label: "BAT2"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_BAT2_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_BUSTIE
     label: "BUSTIE"
     class: verified
@@ -1420,7 +1452,7 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_COMMERCIAL_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_ELEC_EMER_GEN_MAN_ON_Cover
     label: "EMER GEN MAN ON cover"
     value_labels: { "0": closed, "1": open }
@@ -1447,28 +1479,28 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_GALY_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_GEN1
     label: "GEN1"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_GEN1_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_GEN1_LINE
     label: "GEN1 LINE"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_GEN1_LINE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_GEN2
     label: "GEN2"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ELEC_GEN2_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_IDG1
     label: "IDG1"
     class: verified
@@ -1520,7 +1552,7 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_ENG_DUAL_COOLING_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_ENG_MANSTART_1
     label: "MANSTART 1"
     class: verified
@@ -1597,6 +1629,69 @@ vars:
     group: overhead
     values: [0, 1]
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_BEACON
+    label: "EXT LT BEACON"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_LANDING_BOTH
+    label: "EXT LT LANDING BOTH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_LANDING_L
+    label: "EXT LT LANDING L"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_LANDING_R
+    label: "EXT LT LANDING R"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_NAV_LOGO
+    label: "EXT LT NAV LOGO"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_NOSE
+    label: "EXT LT NOSE"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_RWY_TURNOFF
+    label: "EXT LT RWY TURNOFF"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_STROBE
+    label: "EXT LT STROBE"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_EXT_LT_WING
+    label: "EXT LT WING"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_FIRE_APU_BUTTON_Cover
     label: "APU BUTTON cover"
     value_labels: { "0": closed, "1": open }
@@ -1691,70 +1786,105 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_ACT_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_FUEL_CENTER_1
     label: "CENTER 1"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_CENTER_1_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_FUEL_CENTER_2
     label: "CENTER 2"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_CENTER_2_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_FUEL_LEFT_1
     label: "LEFT 1"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_LEFT_1_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_FUEL_LEFT_2
     label: "LEFT 2"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_LEFT_2_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
+  # positions to be learned (CRO-24)
+  - name: S_OH_FUEL_MODE_SEL
+    label: "MODE SEL"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_FUEL_RIGHT_1
     label: "RIGHT 1"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_RIGHT_1_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_FUEL_RIGHT_2
     label: "RIGHT 2"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_FUEL_RIGHT_2_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
+  # positions to be learned (CRO-24)
+  - name: S_OH_FUEL_XFEED
+    label: "XFEED"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_GPWS_FLAP_MODE
+    label: "FLAP MODE"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_GPWS_GS_MODE
+    label: "GS MODE"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_GPWS_LDG_FLAP3
     label: "LDG FLAP3"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_GPWS_LDG_FLAP3_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_OH_GPWS_SYS
+    label: "SYS"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_GPWS_TERR
     label: "TERR"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_GPWS_TERR_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_BLUE_ELEC_PUMP
     label: "BLUE ELEC PUMP"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_BLUE_ELEC_PUMP_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_BLUE_ELEC_PUMP_Cover
     label: "BLUE ELEC PUMP cover"
     value_labels: { "0": closed, "1": open }
@@ -1768,7 +1898,7 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_BLUE_PUMP_OVERRIDE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_HYD_BLUE_PUMP_OVERRIDE_Cover
     label: "BLUE PUMP OVERRIDE cover"
     value_labels: { "0": closed, "1": open }
@@ -1782,21 +1912,21 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_ENG_1_PUMP_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_ENG_2_PUMP
     label: "ENG 2 PUMP"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_ENG_2_PUMP_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_LMV_BLUE
     label: "LMV BLUE"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_LMV_BLUE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_HYD_LMV_BLUE_Cover
     label: "LMV BLUE cover"
     value_labels: { "0": closed, "1": open }
@@ -1810,7 +1940,7 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_LMV_GREEN_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_HYD_LMV_GREEN_Cover
     label: "LMV GREEN cover"
     value_labels: { "0": closed, "1": open }
@@ -1824,7 +1954,7 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_LMV_YELLOW_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_HYD_LMV_YELLOW_Cover
     label: "LMV YELLOW cover"
     value_labels: { "0": closed, "1": open }
@@ -1838,7 +1968,7 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_HYD_PTU_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_RAT_MAN_ON_Cover
     label: "RAT MAN ON cover"
     value_labels: { "0": closed, "1": open }
@@ -1859,20 +1989,97 @@ vars:
     group: overhead
     values: [0, 1, 2]
     note: "label generated; positions proven in spike/VarTypes"
+  # positions to be learned (CRO-24)
+  - name: S_OH_IN_LT_ANN_LT
+    label: "IN LT ANN LT"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_IN_LT_ICE
+    label: "IN LT ICE"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_LIGHTING_AVIONICS_COMPT
+    label: "LIGHTING AVIONICS COMPT"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_ADR1
+    label: "ADR1"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_ADR2
+    label: "ADR2"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_ADR3
+    label: "ADR3"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_DATA_DISP
+    label: "DATA DISP"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_IR1_SWITCH
+    label: "IR1 SWITCH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_IR2_SWITCH
+    label: "IR2 SWITCH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_IR3_SWITCH
+    label: "IR3 SWITCH"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_NAV_SYS_DISP
+    label: "SYS DISP"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_OXYGEN_CREW_OXYGEN
     label: "CREW OXYGEN"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_OXYGEN_CREW_OXYGEN_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_OXYGEN_HIGH_ALT
     label: "HIGH ALT"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_OXYGEN_HIGH_ALT_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_OXYGEN_HIGH_ALT_Cover
     label: "HIGH ALT cover"
     value_labels: { "0": closed, "1": open }
@@ -1899,28 +2106,28 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_APU_BLEED_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_BLOWER
     label: "BLOWER"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_BLOWER_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_CAB_FANS
     label: "CAB FANS"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_CAB_FANS_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE
     label: "CARGO AFT ISOL VALVE"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE
     label: "CARGO FWD ISOL VALVE"
     class: verified
@@ -1948,75 +2155,97 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_ECON_FLOW_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_PNEUMATIC_ENG1_ANTI_ICE
     label: "ENG1 ANTI ICE"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_ENG1_ANTI_ICE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_ENG1_BLEED
     label: "ENG1 BLEED"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_ENG1_BLEED_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_ENG2_ANTI_ICE
     label: "ENG2 ANTI ICE"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_ENG2_ANTI_ICE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_ENG2_BLEED
     label: "ENG2 BLEED"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_ENG2_BLEED_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_EXTRACT
     label: "EXTRACT"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_EXTRACT_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
+  # positions to be learned (CRO-24)
+  - name: S_OH_PNEUMATIC_HOT_AIR
+    label: "HOT AIR"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO
+    label: "HOT AIR AFT CARGO"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_PNEUMATIC_PACK_1
     label: "PACK 1"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_PACK_1_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_PACK_2
     label: "PACK 2"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_PACK_2_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_PNEUMATIC_PACK_FLOW
     label: "PACK FLOW"
     class: verified
     group: overhead
     values: [0, 1, 2]
     note: "label generated; positions proven in spike/VarTypes"
+  # positions to be learned (CRO-24)
   - name: S_OH_PNEUMATIC_PRESS_MAN
     label: "PRESS MAN"
     class: verified
     group: overhead
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    values: [0, 1, 2]
+    note: "label generated; step 2: 2 is a distinct state; values [0, 1, 2] are only those seen; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_PNEUMATIC_PRESS_MODE
+    label: "PRESS MODE"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_PNEUMATIC_RAM_AIR
     label: "RAM AIR"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_RAM_AIR_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_PNEUMATIC_RAM_AIR_Cover
     label: "RAM AIR cover"
     value_labels: { "0": closed, "1": open }
@@ -2030,20 +2259,48 @@ vars:
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PNEUMATIC_WING_ANTI_ICE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
+  # positions to be learned (CRO-24)
+  - name: S_OH_PNEUMATIC_XBLEED_SELECTOR
+    label: "XBLEED SELECTOR"
+    class: verified
+    group: overhead
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_PROBE_HEAT
     label: "HEAT"
     class: verified
     group: overhead
     values: [0, 1]
     verify: { lvar: I_OH_PROBE_HEAT_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_RCRD_TEST
     label: "RCRD TEST"
     class: pulse
     group: overhead
     pulse_ms: 150
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_OH_SIGNS
+    label: "SIGNS"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_OH_SIGNS_SMOKING
+    label: "SIGNS SMOKING"
+    class: verified
+    group: overhead
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  - name: S_OH_SVCE_INT_OVRD
+    label: "SVCE INT OVRD"
+    class: verified
+    group: overhead
+    values: [0, 1]
+    verify: { lvar: I_OH_SVCE_INT_OVRD, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
   - name: A_FCU_LIGHTING
     label: "LIGHTING"
     class: analog
@@ -2196,6 +2453,18 @@ vars:
     class: observe
     group: fcu
     note: "label generated"
+  - name: S_FCU_HDGVS_TRKFPA
+    label: "HDGVS TRKFPA"
+    class: pulse
+    group: fcu
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_SPD_MACH
+    label: "SPD MACH"
+    class: pulse
+    group: fcu
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: B_FCU_EFIS1_BARO_INCH
     label: "EFIS1 BARO INCH"
     class: observe
@@ -2216,6 +2485,18 @@ vars:
     class: observe
     group: efis
     note: "label generated"
+  - name: E_FCU_EFIS1_BARO
+    label: "EFIS1 BARO"
+    class: delta
+    group: efis
+    display: N_FCU_EFIS1_BARO_HPA
+    note: "label generated; display from step 2: N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH"
+  - name: E_FCU_EFIS2_BARO
+    label: "EFIS2 BARO"
+    class: delta
+    group: efis
+    display: N_FCU_EFIS2_BARO_HPA
+    note: "label generated; display from step 2: N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH"
   - name: I_FCU_EFIS1_ARPT
     label: "EFIS1 ARPT light"
     class: observe
@@ -2316,12 +2597,80 @@ vars:
     class: observe
     group: efis
     note: "label generated"
+  - name: S_FCU_EFIS1_BARO_MODE
+    label: "EFIS1 BARO MODE"
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_FCU_EFIS1_BARO_STD
+    label: "EFIS1 BARO STD switch"
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS1_BARO_STD I_FCU_EFIS1_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+  - name: S_FCU_EFIS1_FD
+    label: "EFIS1 FD"
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    press: counter
+    verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 }
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
+  - name: S_FCU_EFIS1_LS
+    label: "EFIS1 LS"
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    verify: { lvar: I_FCU_EFIS1_LS, settle_ms: 150 }
+    note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_EFIS1_ND_ZOOM
     label: "EFIS1 ND ZOOM"
+    value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
     class: verified
     group: efis
     values: [0, 1, 2, 3, 4, 5]
-    note: "label generated; positions proven in spike/VarTypes"
+    note: "label generated; positions proven in spike/VarTypes; labels: FO mapping, captain spot-checked RANGE 1 = 20 (CRO-8 step 2)"
+  - name: S_FCU_EFIS2_BARO_MODE
+    label: "EFIS2 BARO MODE"
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS2_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_FCU_EFIS2_BARO_STD
+    label: "EFIS2 BARO STD switch"
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS2_BARO_STD I_FCU_EFIS2_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+  - name: S_FCU_EFIS2_FD
+    label: "EFIS2 FD"
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
+  - name: S_FCU_EFIS2_LS
+    label: "EFIS2 LS"
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    verify: { lvar: I_FCU_EFIS2_LS, settle_ms: 150 }
+    note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_EFIS2_ND_MODE
+    label: "EFIS2 ND MODE"
+    value_labels: { "0": ROSE ILS, "1": ROSE VOR, "2": ROSE NAV, "3": ARC, "4": PLAN }
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4]
+    note: "label generated; values and labels read from the ND by the pilot in step 2"
+  - name: S_FCU_EFIS2_ND_ZOOM
+    label: "EFIS2 ND ZOOM"
+    value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4, 5]
+    note: "label generated; values and labels read from the ND by the pilot in step 2"
   - name: A_MIP_AIR_VENT_CAPT_OPEN
     label: "AIR VENT CAPT OPEN"
     class: analog
@@ -2416,6 +2765,37 @@ vars:
     class: observe
     group: mip
     note: "label generated"
+  - name: E_MIP_CLOCK_SET
+    label: "CLOCK SET"
+    class: delta
+    group: mip
+    note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+  - name: E_MIP_ISFD_BARO
+    label: "ISFD BARO"
+    class: delta
+    group: mip
+    display: N_MIP_ISFD_BARO_HPA
+    note: "label generated; display from step 2: N_MIP_ISFD_BARO_HPA chosen; also changed: N_MIP_ISFD_BARO_INCH"
+  - name: E_MIP_TRAFFIC_CAPT
+    label: "TRAFFIC CAPT"
+    class: delta
+    group: mip
+    note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+  - name: E_MIP_TRAFFIC_FO
+    label: "TRAFFIC FO"
+    class: delta
+    group: mip
+    note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+  - name: E_STANDBY_ALT_IMPERIAL_BARO
+    label: "STANDBY ALT IMPERIAL BARO"
+    class: delta
+    group: mip
+    note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+  - name: E_STANDBY_ALT_METRIC_BARO
+    label: "STANDBY ALT METRIC BARO"
+    class: delta
+    group: mip
+    note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
   - name: I_MIP_ATC_MSG_CAPT_L
     label: "ATC MSG CAPT light (lower)"
     class: observe
@@ -2691,6 +3071,32 @@ vars:
     class: observe
     group: mip
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_CHART_LIGHT_TEMP_CAPT
+    label: "CHART LIGHT TEMP CAPT"
+    class: verified
+    group: mip
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+  # positions to be learned (CRO-24)
+  - name: S_CHART_LIGHT_TEMP_FO
+    label: "CHART LIGHT TEMP FO"
+    class: verified
+    group: mip
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+  - name: S_DCDU1_BRT
+    label: "DCDU1 BRT"
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU1_DIM
+    label: "DCDU1 DIM"
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_DCDU1_LSK1L
     label: "DCDU1 LSK1L"
     class: pulse
@@ -2745,6 +3151,18 @@ vars:
     group: mip
     pulse_ms: 150
     note: "label generated"
+  - name: S_DCDU2_BRT
+    label: "DCDU2 BRT"
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU2_DIM
+    label: "DCDU2 DIM"
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_DCDU2_LSK1L
     label: "DCDU2 LSK1L"
     class: pulse
@@ -2799,12 +3217,46 @@ vars:
     group: mip
     pulse_ms: 150
     note: "label generated"
+  - name: S_MIP_BRAKE_FAN
+    label: "BRAKE FAN"
+    class: verified
+    group: mip
+    values: [0, 1]
+    verify: { lvar: I_MIP_BRAKE_FAN_L, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_MIP_BRAKE_FAN_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_MIP_CLOCK_CHR
+    label: "CLOCK CHR"
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
   - name: S_MIP_GEAR
     label: "GEAR"
     class: verified
     group: mip
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  - name: S_MIP_ISFD_BARO_BUTTON
+    label: "ISFD BARO BUTTON"
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  # positions to be learned (CRO-24)
+  - name: S_MIP_LIGHT_CONSOLEFLOOR_CAPT
+    label: "LIGHT CONSOLEFLOOR CAPT"
+    class: verified
+    group: mip
+    values: [0, 1]
+    note: "label generated; values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
+  # positions to be learned (CRO-24)
+  - name: S_MIP_LIGHT_CONSOLEFLOOR_FO
+    label: "LIGHT CONSOLEFLOOR FO"
+    class: verified
+    group: mip
+    values: [0, 1]
+    note: "label generated; values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
   - name: S_MIP_MASTER_CAUTION_CAPT
     label: "MASTER CAUTION CAPT"
     class: pulse
@@ -2833,6 +3285,13 @@ vars:
     pulse_ms: 150
     press: counter
     note: "label generated"
+  - name: S_MIP_NORTH_REF
+    label: "NORTH REF"
+    class: verified
+    group: mip
+    values: [0, 1]
+    verify: { lvar: I_MIP_NORTH_REF_L, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
   - name: S_MIP_PARKING_BRAKE
     label: "PARKING BRAKE"
     class: verified
@@ -3337,7 +3796,7 @@ vars:
     verify: { graphql: system.analog.A_PED_LIGHTING_PEDESTAL, scale: 1024, settle_ms: 100 }
     note: "label generated"
   - name: A_WR_GAIN
-    label: "WR GAIN"
+    label: "WR GAIN knob"
     class: analog
     group: pedestal
     range: [0, 1]
@@ -3415,6 +3874,42 @@ vars:
     class: observe
     group: pedestal
     note: "label generated"
+  - name: E_PED_RMP1_INNER
+    label: "RMP1 INNER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP1_STDBY
+    note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
+  - name: E_PED_RMP1_OUTER
+    label: "RMP1 OUTER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP1_STDBY
+    note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
+  - name: E_PED_RMP2_INNER
+    label: "RMP2 INNER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP2_STDBY
+    note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
+  - name: E_PED_RMP2_OUTER
+    label: "RMP2 OUTER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP2_STDBY
+    note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
+  - name: E_PED_RMP3_INNER
+    label: "RMP3 INNER"
+    class: delta
+    group: pedestal
+    display: N_PED_RMP3_STDBY
+    note: "label generated; display from step 2: N_PED_RMP3_STDBY follows +1/-1"
+  # -1 was not accepted at the gate (CRO-8 step 2 rerun); check in the gate test (CRO-22)
+  - name: E_PED_RMP3_OUTER
+    label: "RMP3 OUTER"
+    class: delta
+    group: pedestal
+    note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
   - name: I_ASP2_ADF_1_REC
     label: "ASP2 ADF 1 REC light"
     class: observe
@@ -4330,30 +4825,373 @@ vars:
     class: observe
     group: pedestal
     note: "label generated"
+  - name: S_ASP2_ADF_1_REC_LATCH
+    label: "ASP2 ADF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_ADF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_ADF_2_REC_LATCH
+    label: "ASP2 ADF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_ADF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_CAB_REC_LATCH
+    label: "ASP2 CAB REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_CAB_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_HF_1_REC_LATCH
+    label: "ASP2 HF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_HF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_HF_2_REC_LATCH
+    label: "ASP2 HF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_HF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_ILS_REC_LATCH
+    label: "ASP2 ILS REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_ILS_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_INT_REC_LATCH
+    label: "ASP2 INT REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_INT_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_MARKER_REC_LATCH
+    label: "ASP2 MARKER REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_MARKER_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_MLS_REC_LATCH
+    label: "ASP2 MLS REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_MLS_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_PA_REC_LATCH
+    label: "ASP2 PA REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_PA_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
   - name: S_ASP2_RESET
     label: "ASP2 RESET"
     class: pulse
     group: pedestal
     pulse_ms: 150
     note: "label generated"
+  - name: S_ASP2_VHF_1_REC_LATCH
+    label: "ASP2 VHF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VHF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_VHF_2_REC_LATCH
+    label: "ASP2 VHF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VHF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_VHF_3_REC_LATCH
+    label: "ASP2 VHF 3 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VHF_3_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_VOICE_LATCH
+    label: "ASP2 VOICE LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VOICE, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_VOR_1_REC_LATCH
+    label: "ASP2 VOR 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_NAV_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_VOR_2_REC_LATCH
+    label: "ASP2 VOR 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_NAV_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP2_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_ADF_1_REC_LATCH
+    label: "ASP3 ADF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_ADF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_ADF_2_REC_LATCH
+    label: "ASP3 ADF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_ADF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_CAB_REC_LATCH
+    label: "ASP3 CAB REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_CAB_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_HF_1_REC_LATCH
+    label: "ASP3 HF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_HF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_HF_2_REC_LATCH
+    label: "ASP3 HF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_HF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_ILS_REC_LATCH
+    label: "ASP3 ILS REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_ILS_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_INT_REC_LATCH
+    label: "ASP3 INT REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_INT_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_INT_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_MARKER_REC_LATCH
+    label: "ASP3 MARKER REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_MARKER_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_MLS_REC_LATCH
+    label: "ASP3 MLS REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_MLS_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_PA_REC_LATCH
+    label: "ASP3 PA REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_PA_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_PA_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
   - name: S_ASP3_RESET
     label: "ASP3 RESET"
     class: pulse
     group: pedestal
     pulse_ms: 150
     note: "label generated"
+  - name: S_ASP3_VHF_1_REC_LATCH
+    label: "ASP3 VHF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VHF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_VHF_2_REC_LATCH
+    label: "ASP3 VHF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VHF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_VHF_3_REC_LATCH
+    label: "ASP3 VHF 3 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VHF_3_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_VOICE_LATCH
+    label: "ASP3 VOICE LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VOICE, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_VOR_1_REC_LATCH
+    label: "ASP3 VOR 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_NAV_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_VOR_2_REC_LATCH
+    label: "ASP3 VOR 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_NAV_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP3_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
   - name: S_ASP4_RESET
     label: "ASP4 RESET"
     class: pulse
     group: pedestal
     pulse_ms: 150
     note: "label generated"
+  - name: S_ASP_ADF_1_REC_LATCH
+    label: "ASP ADF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_ADF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_ADF_2_REC_LATCH
+    label: "ASP ADF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_ADF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_CAB_REC_LATCH
+    label: "ASP CAB REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_CAB_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_HF_1_REC_LATCH
+    label: "ASP HF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_HF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_HF_2_REC_LATCH
+    label: "ASP HF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_HF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_ILS_REC_LATCH
+    label: "ASP ILS REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_ILS_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_INT_REC_LATCH
+    label: "ASP INT REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_INT_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_MARKER_REC_LATCH
+    label: "ASP MARKER REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_MARKER_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_MLS_REC_LATCH
+    label: "ASP MLS REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_MLS_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_PA_REC_LATCH
+    label: "ASP PA REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_PA_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
   - name: S_ASP_RESET
     label: "ASP RESET"
     class: pulse
     group: pedestal
     pulse_ms: 150
     note: "label generated"
+  - name: S_ASP_VHF_1_REC_LATCH
+    label: "ASP VHF 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VHF_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_VHF_2_REC_LATCH
+    label: "ASP VHF 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VHF_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_VHF_3_REC_LATCH
+    label: "ASP VHF 3 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VHF_3_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_VOICE_LATCH
+    label: "ASP VOICE LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VOICE, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_VOR_1_REC_LATCH
+    label: "ASP VOR 1 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_NAV_1_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_VOR_2_REC_LATCH
+    label: "ASP VOR 2 REC LATCH"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_NAV_2_REC, settle_ms: 150 }
+    note: "label generated; class from step 2: effect follows the value (I_ASP_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  # positions to be learned (CRO-24)
+  - name: S_AUDIO_SWITCHING
+    label: "AUDIO SWITCHING"
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; group set in CRO-8 step 3"
   - name: S_ENG_MASTER_1
     label: "MASTER 1"
     class: verified
@@ -4366,6 +5204,62 @@ vars:
     group: pedestal
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_0
+    label: "ATC 0"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_1
+    label: "ATC 1"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_2
+    label: "ATC 2"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_3
+    label: "ATC 3"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_4
+    label: "ATC 4"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_5
+    label: "ATC 5"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_6
+    label: "ATC 6"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_PED_ATC_7
+    label: "ATC 7"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_PED_ATC_CLR
     label: "ATC CLR"
     class: pulse
@@ -4943,6 +5837,18 @@ vars:
     group: pedestal
     values: [0, 1]
     note: "label generated"
+  - name: S_PED_RMP1_POWER
+    label: "RMP1 POWER switch"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (I_PED_RMP1_VHF1 N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+  - name: S_PED_RMP1_XFER
+    label: "RMP1 XFER"
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP2_NAV_Cover
     label: "RMP2 NAV cover"
     value_labels: { "0": closed, "1": open }
@@ -4950,6 +5856,18 @@ vars:
     group: pedestal
     values: [0, 1]
     note: "label generated"
+  - name: S_PED_RMP2_POWER
+    label: "RMP2 POWER switch"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (I_PED_RMP2_VHF2 N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+  - name: S_PED_RMP2_XFER
+    label: "RMP2 XFER"
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP3_NAV_Cover
     label: "RMP3 NAV cover"
     value_labels: { "0": closed, "1": open }
@@ -4957,18 +5875,107 @@ vars:
     group: pedestal
     values: [0, 1]
     note: "label generated"
+  - name: S_PED_RMP3_POWER
+    label: "RMP3 POWER switch"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    note: "label generated; class from step 2: effect follows the value (B_PED_RMP3_DATA_DISPLAYED_ACT I_PED_RMP3_VHF3 N_PED_RMP3_ACTIVE N_PED_RMP3_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+  - name: S_PED_RMP3_XFER
+    label: "RMP3 XFER"
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  # positions to be learned (CRO-24)
+  - name: S_TCAS_HORIZONTAL_RANGE
+    label: "TCAS HORIZONTAL RANGE"
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_TCAS_RANGE
+    label: "TCAS RANGE"
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WR_GAIN
+    label: "WR GAIN switch"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WR_GCS
+    label: "WR GCS"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WR_MODE
+    label: "WR MODE"
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WR_MULTISCAN
+    label: "WR MULTISCAN"
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WR_PRED_WS
+    label: "WR PRED WS"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WR_SYS
+    label: "WR SYS"
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_XPDR_ALTREPORTING
     label: "XPDR ALTREPORTING"
     class: verified
     group: pedestal
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_XPDR_ATC
+    label: "XPDR ATC"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_XPDR_IDENT
     label: "XPDR IDENT"
     class: pulse
     group: pedestal
     pulse_ms: 150
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_XPDR_MODE
+    label: "XPDR MODE"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_XPDR_OPERATION
+    label: "XPDR OPERATION"
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: I_CDU1_DASH
     label: "CDU 1 DASH light"
     class: observe
@@ -5014,6 +6021,18 @@ vars:
     class: observe
     group: cdu1
     note: "label generated"
+  - name: S_CDU1_BRIGHTNESS_DOWN
+    label: "CDU 1 BRIGHTNESS DOWN"
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_CDU1_BRIGHTNESS_UP
+    label: "CDU 1 BRIGHTNESS UP"
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_CDU1_KEY_0
     label: "CDU 1 0"
     class: pulse
@@ -5549,6 +6568,18 @@ vars:
     class: observe
     group: cdu2
     note: "label generated"
+  - name: S_CDU2_BRIGHTNESS_DOWN
+    label: "CDU 2 BRIGHTNESS DOWN"
+    class: pulse
+    group: cdu2
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_CDU2_BRIGHTNESS_UP
+    label: "CDU 2 BRIGHTNESS UP"
+    class: pulse
+    group: cdu2
+    pulse_ms: 150
+    note: "label generated; class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_CDU2_KEY_0
     label: "CDU 2 0"
     class: pulse
@@ -6263,7 +7294,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_105VU_A01, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_105VU_A01 follows it (1 in, 0 pulled)"
   - name: E_CB_105VU_A02
     label: "CB 105VU A02"
     class: verified
@@ -6275,7 +7307,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_106VU_B03, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: 0/1 breaker, 0 = pulled; GraphQL system.switches.E_CB_106VU_B03 follows it (1 in, 0 pulled)"
   - name: E_CB_106VU_B04
     label: "CB 106VU B04"
     class: verified
@@ -6605,7 +7638,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_121VU_M19, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_121VU_M19 follows it (1 in, 0 pulled)"
   - name: E_CB_121VU_M20
     label: "CB 121VU M20"
     class: verified
@@ -6929,7 +7963,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_121VU_P20, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: 0/1 breaker, 0 = pulled; GraphQL system.switches.E_CB_121VU_P20 follows it (1 in, 0 pulled)"
   - name: E_CB_121VU_P23
     label: "CB 121VU P23"
     class: verified
@@ -7397,7 +8432,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_122VU_W02, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_122VU_W02 follows it (1 in, 0 pulled)"
   - name: E_CB_122VU_W03
     label: "CB 122VU W03"
     class: verified
@@ -7541,7 +8577,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_122VU_Y06, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_122VU_Y06 follows it (1 in, 0 pulled)"
   - name: E_CB_122VU_Y11
     label: "CB 122VU Y11"
     class: verified
@@ -7691,7 +8728,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_123VU_AB09, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_123VU_AB09 follows it (1 in, 0 pulled)"
   - name: E_CB_123VU_AB12
     label: "CB 123VU AB12"
     class: verified
@@ -7715,7 +8753,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_2000VU_J06, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_2000VU_J06 follows it (1 in, 0 pulled)"
   - name: E_CB_2000VU_J07
     label: "CB 2000VU J07"
     class: verified
@@ -7745,7 +8784,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_2001VU_A03, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_2001VU_A03 follows it (1 in, 0 pulled)"
   - name: E_CB_2001VU_A04
     label: "CB 2001VU A04"
     class: verified
@@ -7985,7 +9025,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_49VU_D02, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_49VU_D02 follows it (1 in, 0 pulled)"
   - name: E_CB_49VU_D03
     label: "CB 49VU D03"
     class: verified
@@ -8189,7 +9230,8 @@ vars:
     class: verified
     group: cb
     values: [0, 1]
-    note: "label generated; semantics unverified"
+    verify: { graphql: system.switches.E_CB_49VU_G02, scale: 1, settle_ms: 100 }
+    note: "label generated; step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_49VU_G02 follows it (1 in, 0 pulled)"
   - name: E_CB_49VU_G03
     label: "CB 49VU G03"
     class: verified
@@ -8451,11 +9493,6 @@ vars:
     class: observe
     group: flightcontrols
     note: "label generated"
-  - name: B_FC_SPEEDBRAKE
-    label: "FC SPEEDBRAKE"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
   - name: I_FC_SIDESTICK_PRIORITY_CAPT
     label: "FC SIDESTICK PRIORITY CAPT light"
     class: observe
@@ -8562,6 +9599,13 @@ vars:
     class: observe
     group: cabin
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_COCKPIT_DOOR
+    label: "COCKPIT DOOR"
+    class: verified
+    group: cabin
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_GALLEY_AFT_BREAKERS_COVER
     label: "GALLEY AFT BREAKERS COVER"
     class: verified
@@ -8580,18 +9624,60 @@ vars:
     group: cabin
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_WINDOW_BLINDS_CAPT
+    label: "WINDOW BLINDS CAPT"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WINDOW_BLINDS_FO
+    label: "WINDOW BLINDS FO"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WINDOW_BLINDS_REAR_CAPT
+    label: "WINDOW BLINDS REAR CAPT"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_WINDOW_BLINDS_REAR_FO
+    label: "WINDOW BLINDS REAR FO"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_WINDOW_CAPT_LATCH
     label: "WINDOW CAPT LATCH"
     class: verified
     group: cabin
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_WINDOW_CAPT_LEVER
+    label: "WINDOW CAPT LEVER"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_WINDOW_FO_LATCH
     label: "WINDOW FO LATCH"
     class: verified
     group: cabin
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_WINDOW_FO_LEVER
+    label: "WINDOW FO LEVER"
+    class: verified
+    group: cabin
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: B_ELEC_BUS_POWER_AC_1
     label: "BUS POWER AC 1"
     class: observe
@@ -8829,20 +9915,76 @@ vars:
     class: observe
     group: ground
     note: "label generated"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_BAY_AFT_LT
+    label: "EXT CARGO BAY AFT LT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_BAY_FWD_LT
+    label: "EXT CARGO BAY FWD LT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_EXT_CARGO_DOOR_OPEN_AFT
     label: "EXT CARGO DOOR OPEN AFT"
     class: verified
     group: ground
     values: [0, 1]
     verify: { lvar: I_EXT_CARGO_DOOR_OPEN_AFT, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_EXT_CARGO_DOOR_OPEN_FWD
     label: "EXT CARGO DOOR OPEN FWD"
     class: verified
     group: ground
     values: [0, 1]
     verify: { lvar: I_EXT_CARGO_DOOR_OPEN_FWD, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values [0,1] confirmed in step 2"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_DOOR_SELECTOR_AFT
+    label: "EXT CARGO DOOR SELECTOR AFT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
+    label: "EXT CARGO DOOR SELECTOR FWD"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT
+    label: "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD
+    label: "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD"
+    class: verified
+    group: ground
+    values: [0]
+    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT
+    label: "EXT CARGO DOOR SELECTOR SWITCH AFT"
+    class: verified
+    group: ground
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+  # positions to be learned (CRO-24)
+  - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD
+    label: "EXT CARGO DOOR SELECTOR SWITCH FWD"
+    class: verified
+    group: ground
+    values: [1]
+    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_EXT_GPU_APU_SHUTOFF_Cover
     label: "EXT GPU APU SHUTOFF cover"
     value_labels: { "0": closed, "1": open }
@@ -8891,25 +10033,29 @@ vars:
     class: verified
     group: ground
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    verify: { graphql: system.switches.S_EXT_HYD_GEAR_DOOR_LEFT, scale: 1, settle_ms: 100 }
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_EXT_HYD_GEAR_DOOR_NOSE
     label: "EXT HYD GEAR DOOR NOSE"
     class: verified
     group: ground
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    verify: { graphql: system.switches.S_EXT_HYD_GEAR_DOOR_NOSE, scale: 1, settle_ms: 100 }
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_EXT_HYD_GEAR_DOOR_RIGHT
     label: "EXT HYD GEAR DOOR RIGHT"
     class: verified
     group: ground
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    verify: { graphql: system.switches.S_EXT_HYD_GEAR_DOOR_RIGHT, scale: 1, settle_ms: 100 }
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_EXT_MAINT_BUS
     label: "EXT MAINT BUS"
     class: verified
     group: ground
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    verify: { graphql: system.switches.S_EXT_MAINT_BUS, scale: 1, settle_ms: 100 }
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_EXT_REFUELINGL_VALVE_CENTER
     label: "EXT REFUELINGL VALVE CENTER"
     class: verified
@@ -8996,13 +10142,15 @@ vars:
     class: verified
     group: ground
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    verify: { graphql: system.switches.S_EXT_WASTE_SERVICE_DOOR, scale: 1, settle_ms: 100 }
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_EXT_WATER_SERVICE_DOOR
     label: "EXT WATER SERVICE DOOR"
     class: verified
     group: ground
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    verify: { graphql: system.switches.S_EXT_WATER_SERVICE_DOOR, scale: 1, settle_ms: 100 }
+    note: "label generated; values [0,1] confirmed in step 2"
   - name: S_OH_ELEC_APU_GENERATOR_Anim
     label: "APU GENERATOR animation"
     class: ignore
@@ -9243,6 +10391,271 @@ vars:
     class: ignore
     group: overhead
     note: "label generated; animation position written by the model"
+  - name: N_MIP_CLOCK_UTC
+    label: "CLOCK UTC display"
+    class: ignore
+    group: mip
+    note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
+  - name: S_EFB_CHARGING_CABLE_CAPT_TEMP
+    label: "EFB CHARGING CABLE CAPT TEMP"
+    class: ignore
+    group: mip
+    note: "label generated; EFB cosmetics, not synced (CRO-8 step 3)"
+  - name: S_EFB_CHARGING_CABLE_FO_TEMP
+    label: "EFB CHARGING CABLE FO TEMP"
+    class: ignore
+    group: mip
+    note: "label generated; EFB cosmetics, not synced (CRO-8 step 3)"
+  - name: S_ASP2_ADF_1_REC
+    label: "ASP2 ADF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_ADF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_ADF_2_REC
+    label: "ASP2 ADF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_ADF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_CAB_REC
+    label: "ASP2 CAB REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_CAB_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_HF_1_REC
+    label: "ASP2 HF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_HF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_HF_2_REC
+    label: "ASP2 HF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_HF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_ILS_REC
+    label: "ASP2 ILS REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_ILS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_INT_REC
+    label: "ASP2 INT REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_INT_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_MARKER_REC
+    label: "ASP2 MARKER REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_MARKER_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_MLS_REC
+    label: "ASP2 MLS REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_MLS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_PA_REC
+    label: "ASP2 PA REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_PA_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_VHF_1_REC
+    label: "ASP2 VHF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_VHF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_VHF_2_REC
+    label: "ASP2 VHF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_VHF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_VHF_3_REC
+    label: "ASP2 VHF 3 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_VOICE
+    label: "ASP2 VOICE"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_VOR_1_REC
+    label: "ASP2 VOR 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_VOR_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP2_VOR_2_REC
+    label: "ASP2 VOR 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP2_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_ADF_1_REC
+    label: "ASP3 ADF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_ADF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_ADF_2_REC
+    label: "ASP3 ADF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_ADF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_CAB_REC
+    label: "ASP3 CAB REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_CAB_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_HF_1_REC
+    label: "ASP3 HF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_HF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_HF_2_REC
+    label: "ASP3 HF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_HF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_ILS_REC
+    label: "ASP3 ILS REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_ILS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_INT_REC
+    label: "ASP3 INT REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_INT_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_MARKER_REC
+    label: "ASP3 MARKER REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_MARKER_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_MLS_REC
+    label: "ASP3 MLS REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_MLS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_PA_REC
+    label: "ASP3 PA REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_PA_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_VHF_1_REC
+    label: "ASP3 VHF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_VHF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_VHF_2_REC
+    label: "ASP3 VHF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_VHF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_VHF_3_REC
+    label: "ASP3 VHF 3 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_VOICE
+    label: "ASP3 VOICE"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_VOR_1_REC
+    label: "ASP3 VOR 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_VOR_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP3_VOR_2_REC
+    label: "ASP3 VOR 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP3_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_ADF_1_REC
+    label: "ASP ADF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_ADF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_ADF_2_REC
+    label: "ASP ADF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_ADF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_CAB_REC
+    label: "ASP CAB REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_CAB_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_HF_1_REC
+    label: "ASP HF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_HF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_HF_2_REC
+    label: "ASP HF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_HF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_ILS_REC
+    label: "ASP ILS REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_ILS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_INT_REC
+    label: "ASP INT REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_INT_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_MARKER_REC
+    label: "ASP MARKER REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_MARKER_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_MLS_REC
+    label: "ASP MLS REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_MLS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_PA_REC
+    label: "ASP PA REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_PA_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_VHF_1_REC
+    label: "ASP VHF 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_VHF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_VHF_2_REC
+    label: "ASP VHF 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_VHF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_VHF_3_REC
+    label: "ASP VHF 3 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_VOICE
+    label: "ASP VOICE"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_VOR_1_REC
+    label: "ASP VOR 1 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_VOR_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: S_ASP_VOR_2_REC
+    label: "ASP VOR 2 REC"
+    class: ignore
+    group: pedestal
+    note: "label generated; state synced via S_ASP_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: B_FC_SPEEDBRAKE
+    label: "FC SPEEDBRAKE"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
+  - name: N_FC_BRAKE_LEFT
+    label: "FC BRAKE LEFT display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
   - name: N_SEAT_DISTANCE_CAPT
     label: "SEAT DISTANCE CAPT display"
     class: ignore
@@ -11098,6 +12511,11 @@ vars:
     class: ignore
     group: systems
     note: "label generated; aircraft sound/animation/gauge var, not synced"
+  - name: N_HYD_PRESSURE_BRAKE_ACCU
+    label: "PRESSURE BRAKE ACCU display"
+    class: ignore
+    group: systems
+    note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
   # >>> end generated <<<
 
 datarefs:
@@ -11112,5 +12530,5 @@ datarefs:
 
 roles:
   # A press on the pilot monitoring's own seat = "I have control" (control_request).
-  # TODO(CRO-8): confirm these are the takeover pushbuttons, against the scan and in the sim.
+  # Confirmed in CRO-8 step 2 (both sides: 1 while held, 0 after release).
   takeover: { captain: S_FC_CAPT_INST_DISCONNECT, fo: S_FC_FO_INST_DISCONNECT }

@@ -36,7 +36,7 @@ Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels
 | class | write | required | optional |
 |---|---|---|---|
 | verified | absolute value | `values` or `range`, and `verify` where an effect source exists | |
-| delta | the change only | `display` (a var in this profile) | `verify` |
+| delta | the change only | | `display` (a var in this profile), `verify` |
 | pulse | 1, then 0 | `pulse_ms` | `press: counter`, `verify` |
 | analog | absolute value | `range` | `verify` |
 | stream | none (PF streams it) | | `rate_hz` |
@@ -46,7 +46,7 @@ Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels
 
 - `values: [0, 1, 2]` is the allowed set. `range: [0, 1]` is min and max. Give one, not both. Both are hard limits: Crosscheck never writes outside them.
 - `pulse_ms`: time between writing 1 and writing 0 (20 to 2000). `press: counter` is for master caution/warning, where Fenix counts press and release (odd = pressed).
-- `display`: for an encoder (`E_*`), the var that shows the result (`N_*`). A corrective delta is sent when it differs between the sims.
+- `display`: for an encoder (`E_*`), the var that shows the result (`N_*`). A corrective delta is sent when it differs between the sims. Without `display` the encoder is verified by read-back only: the bridge confirms its own L: var took the change, sends no corrective delta, and the encoder is not compared between the sims (its counter values differ per sim).
 - `observe` and `ignore` take no write or verify fields.
 
 ### verify

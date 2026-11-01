@@ -1,0 +1,1692 @@
+# Corrections tools/profile-gen applies on top of its naming rules (see tools/profile-gen/Overrides.cs).
+# Source: CRO-8 step 2 probe results and the owner's step 3 decisions. Range rule: every `values`
+# entry is backed by the scan, the probe or the owner. Edit this file and re-run the generator;
+# never edit the generated block in profile.yaml by hand.
+
+overrides:
+
+  # --- [0,1] confirmed by the probe (a lamp or GraphQL reacted)
+  - name: S_EXT_CARGO_DOOR_OPEN_AFT
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_EXT_CARGO_DOOR_OPEN_AFT in 123.348 ms; 2 is stored but changes nothing else"
+  - name: S_EXT_CARGO_DOOR_OPEN_FWD
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_EXT_CARGO_DOOR_OPEN_FWD in 95.81 ms; 2 is stored but changes nothing else"
+  - name: S_EXT_HYD_GEAR_DOOR_LEFT
+    verify: { graphql: system.switches.S_EXT_HYD_GEAR_DOOR_LEFT, settle_ms: 100 }
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_EXT_HYD_GEAR_DOOR_NOSE
+    verify: { graphql: system.switches.S_EXT_HYD_GEAR_DOOR_NOSE, settle_ms: 100 }
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_EXT_HYD_GEAR_DOOR_RIGHT
+    verify: { graphql: system.switches.S_EXT_HYD_GEAR_DOOR_RIGHT, settle_ms: 100 }
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_EXT_MAINT_BUS
+    verify: { graphql: system.switches.S_EXT_MAINT_BUS, settle_ms: 100 }
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_EXT_WASTE_SERVICE_DOOR
+    verify: { graphql: system.switches.S_EXT_WASTE_SERVICE_DOOR, settle_ms: 100 }
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_EXT_WATER_SERVICE_DOOR
+    verify: { graphql: system.switches.S_EXT_WATER_SERVICE_DOOR, settle_ms: 100 }
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_OH_CARGO_SMOKE_AFT
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_OH_CARGO_SMOKE_FWD
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+  - name: S_OH_COCKPIT_DOOR_VIDEO
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_COCKPIT_DOOR_VIDEO in 124.25 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_AC_ESS_FEED
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_AC_ESS_FEED_L in 76.605 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_APU_GENERATOR
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_APU_GENERATOR_L in 92.8 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_BAT1
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_BAT1_L in 78.532 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_BAT2
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_BAT2_L in 90.267 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_COMMERCIAL
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_COMMERCIAL_L in 80.329 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_GALY
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_GALY_L in 78.007 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_GEN1
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_GEN1_L I_OH_ELEC_GEN1_U in 121.776 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_GEN1_LINE
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_GEN1_LINE_L in 95.885 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ELEC_GEN2
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ELEC_GEN2_L I_OH_ELEC_GEN2_U in 109.1 ms; 2 is stored but changes nothing else"
+  - name: S_OH_ENG_DUAL_COOLING
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_ENG_DUAL_COOLING_L in 129.116 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_ACT
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_ACT_L in 119.834 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_CENTER_1
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_CENTER_1_L in 75.335 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_CENTER_2
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_CENTER_2_L in 91.86 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_LEFT_1
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_LEFT_1_L in 107.015 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_LEFT_2
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_LEFT_2_L in 126.581 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_RIGHT_1
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_RIGHT_1_L in 79.649 ms; 2 is stored but changes nothing else"
+  - name: S_OH_FUEL_RIGHT_2
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_FUEL_RIGHT_2_L in 90.298 ms; 2 is stored but changes nothing else"
+  - name: S_OH_GPWS_LDG_FLAP3
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_GPWS_LDG_FLAP3_L in 112.482 ms; 2 is stored but changes nothing else"
+  - name: S_OH_GPWS_TERR
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_GPWS_TERR_L in 76.493 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_BLUE_ELEC_PUMP
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_BLUE_ELEC_PUMP_L in 137.817 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_BLUE_PUMP_OVERRIDE
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_BLUE_PUMP_OVERRIDE_L in 114.564 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_ENG_1_PUMP
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_ENG_1_PUMP_L in 115.087 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_ENG_2_PUMP
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_ENG_2_PUMP_L in 120.722 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_LMV_BLUE
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_LMV_BLUE_L in 76.81 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_LMV_GREEN
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_LMV_GREEN_L in 85.51 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_LMV_YELLOW
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_LMV_YELLOW_L in 120.875 ms; 2 is stored but changes nothing else"
+  - name: S_OH_HYD_PTU
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_HYD_PTU_L in 75.504 ms; 2 is stored but changes nothing else"
+  - name: S_OH_OXYGEN_CREW_OXYGEN
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_OXYGEN_CREW_OXYGEN_L in 122.854 ms; 2 is stored but changes nothing else"
+  - name: S_OH_OXYGEN_HIGH_ALT
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_OXYGEN_HIGH_ALT_L in 96.712 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_APU_BLEED
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_APU_BLEED_L in 156.415 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_BLOWER
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_BLOWER_L in 78.452 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_CAB_FANS
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_CAB_FANS_L in 97.205 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_L in 79.034 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_ECON_FLOW
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_ECON_FLOW_L in 96.379 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_ENG1_ANTI_ICE
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_ENG1_ANTI_ICE_L I_OH_PNEUMATIC_ENG1_ANTI_ICE_U in 123.127 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_ENG1_BLEED
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_ENG1_BLEED_L in 82.446 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_ENG2_ANTI_ICE
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_ENG2_ANTI_ICE_L I_OH_PNEUMATIC_ENG2_ANTI_ICE_U in 93.791 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_ENG2_BLEED
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_ENG2_BLEED_L in 109.563 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_EXTRACT
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_EXTRACT_L in 97.612 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_PACK_1
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_PACK_1_L I_OH_PNEUMATIC_PACK_1_U in 63.368 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_PACK_2
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_PACK_2_L I_OH_PNEUMATIC_PACK_2_U in 92.243 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_RAM_AIR
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_RAM_AIR_L in 84.199 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PNEUMATIC_WING_ANTI_ICE
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PNEUMATIC_WING_ANTI_ICE_L I_OH_PNEUMATIC_WING_ANTI_ICE_U in 93.08 ms; 2 is stored but changes nothing else"
+  - name: S_OH_PROBE_HEAT
+    note: "values [0,1] confirmed in step 2; lower-half rule"
+    evidence: "probe [0,1] confirmed: lamp I_OH_PROBE_HEAT_L in 88.984 ms; 2 is stored but changes nothing else"
+  - name: S_XPDR_ALTREPORTING
+    note: "values [0,1] confirmed in step 2"
+    evidence: "probe [0,1] confirmed: GraphQL followed; 2 is stored but changes nothing else"
+
+  # --- Better effect lamp found by the probe
+
+  # --- Encoders: the N_ var that followed +1/-1
+  - name: E_FCU_EFIS1_BARO
+    class: delta
+    group: efis
+    display: N_FCU_EFIS1_BARO_HPA
+    note: "display from step 2: N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH"
+    evidence: "probe encoder display: N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH"
+  - name: E_FCU_EFIS2_BARO
+    class: delta
+    group: efis
+    display: N_FCU_EFIS2_BARO_HPA
+    note: "display from step 2: N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH"
+    evidence: "probe encoder display: N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH"
+  - name: E_MIP_ISFD_BARO
+    class: delta
+    group: mip
+    display: N_MIP_ISFD_BARO_HPA
+    note: "display from step 2: N_MIP_ISFD_BARO_HPA chosen; also changed: N_MIP_ISFD_BARO_INCH"
+    evidence: "probe encoder display: N_MIP_ISFD_BARO_HPA chosen; also changed: N_MIP_ISFD_BARO_INCH"
+  - name: E_PED_RMP1_INNER
+    class: delta
+    group: pedestal
+    display: N_PED_RMP1_STDBY
+    note: "display from step 2: N_PED_RMP1_STDBY follows +1/-1"
+    evidence: "probe encoder display: N_PED_RMP1_STDBY follows +1/-1"
+  - name: E_PED_RMP1_OUTER
+    class: delta
+    group: pedestal
+    display: N_PED_RMP1_STDBY
+    note: "display from step 2: N_PED_RMP1_STDBY follows +1/-1"
+    evidence: "probe encoder display: N_PED_RMP1_STDBY follows +1/-1"
+  - name: E_PED_RMP2_INNER
+    class: delta
+    group: pedestal
+    display: N_PED_RMP2_STDBY
+    note: "display from step 2: N_PED_RMP2_STDBY follows +1/-1"
+    evidence: "probe encoder display: N_PED_RMP2_STDBY follows +1/-1"
+  - name: E_PED_RMP2_OUTER
+    class: delta
+    group: pedestal
+    display: N_PED_RMP2_STDBY
+    note: "display from step 2: N_PED_RMP2_STDBY follows +1/-1"
+    evidence: "probe encoder display: N_PED_RMP2_STDBY follows +1/-1"
+  - name: E_PED_RMP3_INNER
+    class: delta
+    group: pedestal
+    display: N_PED_RMP3_STDBY
+    note: "display from step 2: N_PED_RMP3_STDBY follows +1/-1"
+    evidence: "probe encoder display: N_PED_RMP3_STDBY follows +1/-1"
+
+  # --- Encoders with no display var: delta, verified by read-back only (owner rule, step 3)
+  - name: E_MIP_CLOCK_SET
+    class: delta
+    group: mip
+    note: "no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+    evidence: "probe encoder, owner rule: no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+  - name: E_MIP_TRAFFIC_CAPT
+    class: delta
+    group: mip
+    note: "no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+    evidence: "probe encoder, owner rule: no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+  - name: E_MIP_TRAFFIC_FO
+    class: delta
+    group: mip
+    note: "no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+    evidence: "probe encoder, owner rule: no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+  - name: E_STANDBY_ALT_IMPERIAL_BARO
+    class: delta
+    group: mip
+    note: "no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+    evidence: "probe encoder, owner rule: no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+  - name: E_STANDBY_ALT_METRIC_BARO
+    class: delta
+    group: mip
+    note: "no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+    evidence: "probe encoder, owner rule: no N_ var followed +1 and -1 (display off, STD baro, or no display var)"
+  - name: E_PED_RMP3_OUTER
+    class: delta
+    group: pedestal
+    note: "no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
+    comment: "-1 was not accepted at the gate (CRO-8 step 2 rerun); check in the gate test (CRO-22)"
+    evidence: "probe encoder, owner rule: no N_ var followed +1 and -1 (display off, STD baro, or no display var); the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ (also after one more press): N_PED_RMP3_STDBY"
+
+  # --- Sampled breakers: 0/1, GraphQL system.switches mirrors them (1 in, 0 pulled)
+  - name: E_CB_105VU_A01
+    verify: { graphql: system.switches.E_CB_105VU_A01, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_105VU_A01 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_106VU_B03
+    verify: { graphql: system.switches.E_CB_106VU_B03, settle_ms: 100 }
+    note: "step 2: 0/1 breaker, 0 = pulled; GraphQL system.switches.E_CB_106VU_B03 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 = pulled: 2 vars reacted (I_ECAM_CLR_LEFT I_ECAM_CLR_RIGHT), back after 1"
+  - name: E_CB_121VU_M19
+    verify: { graphql: system.switches.E_CB_121VU_M19, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_121VU_M19 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_121VU_P20
+    verify: { graphql: system.switches.E_CB_121VU_P20, settle_ms: 100 }
+    note: "step 2: 0/1 breaker, 0 = pulled; GraphQL system.switches.E_CB_121VU_P20 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 = pulled: 2 vars reacted (I_ECAM_CLR_LEFT I_ECAM_CLR_RIGHT), back after 1; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effect vars differ: I_ECAM_CLR_LEFT 1 -> 0, I_ECAM_CLR_RIGHT"
+  - name: E_CB_122VU_W02
+    verify: { graphql: system.switches.E_CB_122VU_W02, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_122VU_W02 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_122VU_Y06
+    verify: { graphql: system.switches.E_CB_122VU_Y06, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_122VU_Y06 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_123VU_AB09
+    verify: { graphql: system.switches.E_CB_123VU_AB09, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_123VU_AB09 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_2000VU_J06
+    verify: { graphql: system.switches.E_CB_2000VU_J06, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_2000VU_J06 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_2001VU_A03
+    verify: { graphql: system.switches.E_CB_2001VU_A03, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_2001VU_A03 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_49VU_D02
+    verify: { graphql: system.switches.E_CB_49VU_D02, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_49VU_D02 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+  - name: E_CB_49VU_G02
+    verify: { graphql: system.switches.E_CB_49VU_G02, settle_ms: 100 }
+    note: "step 2: no visible effect when pulled at the gate; GraphQL system.switches.E_CB_49VU_G02 follows it (1 in, 0 pulled)"
+    evidence: "probe breaker: 0 (pulled) changed no watched var; GraphQL switches:1 gates:- numerical:- breakers:- cb:- circuitBreakers:-"
+
+  # --- ND labels read on the ND by the pilot (FO every value; captain spot-checked MODE 3, RANGE 1)
+  - name: S_FCU_EFIS2_ND_MODE
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4]
+    value_labels: { "0": "ROSE ILS", "1": "ROSE VOR", "2": "ROSE NAV", "3": "ARC", "4": "PLAN" }
+    note: "values and labels read from the ND by the pilot in step 2"
+    evidence: "pilot read the ND: every value"
+  - name: S_FCU_EFIS2_ND_ZOOM
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4, 5]
+    value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
+    note: "values and labels read from the ND by the pilot in step 2"
+    evidence: "pilot read the ND: every value"
+  - name: S_FCU_EFIS1_ND_ZOOM
+    value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
+    note: "positions proven in spike/VarTypes; labels: FO mapping, captain spot-checked RANGE 1 = 20 (CRO-8 step 2)"
+    evidence: "pilot read the ND: FO mapping, captain spot-checked RANGE 1 = 20"
+
+  # --- Position count unknown: only the values seen in the scan and probe (range rule)
+  - name: S_OH_PNEUMATIC_PRESS_MAN
+    values: [0, 1, 2]
+    note: "step 2: 2 is a distinct state; values [0, 1, 2] are only those seen; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_COCKPIT_DOOR
+    class: verified
+    group: cabin
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; positions 0,1,2; source: effect/animation vars (I_OH_DOOR_CTL_U I_PED_C"
+  - name: S_EXT_CARGO_BAY_AFT_LT
+    class: verified
+    group: ground
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_BAY_FWD_LT
+    class: verified
+    group: ground
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_AFT
+    class: verified
+    group: ground
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
+    class: verified
+    group: ground
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT
+    class: verified
+    group: ground
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD
+    class: verified
+    group: ground
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT
+    class: verified
+    group: ground
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD
+    class: verified
+    group: ground
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_BEACON
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_LANDING_BOTH
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_LANDING_L
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_LANDING_R
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_NAV_LOGO
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_NOSE
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_RWY_TURNOFF
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_STROBE
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_EXT_LT_WING
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_FUEL_MODE_SEL
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_FUEL_XFEED
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_GPWS_FLAP_MODE
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_GPWS_GS_MODE
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_GPWS_SYS
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_IN_LT_ANN_LT
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_IN_LT_ICE
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_LIGHTING_AVIONICS_COMPT
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_ADR1
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_ADR2
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; only model animation vars (A320_*) moved, no lamp, GraphQL or system va"
+  - name: S_OH_NAV_ADR3
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_DATA_DISP
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_IR1_SWITCH
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_IR2_SWITCH
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_IR3_SWITCH
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_NAV_SYS_DISP
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_PNEUMATIC_HOT_AIR
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_PNEUMATIC_PRESS_MODE
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_PNEUMATIC_XBLEED_SELECTOR
+    class: verified
+    group: overhead
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_SIGNS
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_OH_SIGNS_SMOKING
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_0
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_1
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_2
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_3
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_4
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_5
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_6
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_PED_ATC_7
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_TCAS_HORIZONTAL_RANGE
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_TCAS_RANGE
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WINDOW_BLINDS_CAPT
+    class: verified
+    group: cabin
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WINDOW_BLINDS_FO
+    class: verified
+    group: cabin
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WINDOW_BLINDS_REAR_CAPT
+    class: verified
+    group: cabin
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WINDOW_BLINDS_REAR_FO
+    class: verified
+    group: cabin
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WINDOW_CAPT_LEVER
+    class: verified
+    group: cabin
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WINDOW_FO_LEVER
+    class: verified
+    group: cabin
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WR_GAIN
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WR_GCS
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WR_MODE
+    class: verified
+    group: pedestal
+    values: [2]
+    note: "values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WR_MULTISCAN
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WR_PRED_WS
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_WR_SYS
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_XPDR_ATC
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_XPDR_MODE
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_XPDR_OPERATION
+    class: verified
+    group: pedestal
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+  - name: S_MISC_WIPER_CAPT
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_MISC_WIPER_FO
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_MISC_WIPER_REPELLENT_CAPT
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_MISC_WIPER_REPELLENT_FO
+    class: verified
+    group: overhead
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_CHART_LIGHT_TEMP_CAPT
+    class: verified
+    group: mip
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_CHART_LIGHT_TEMP_FO
+    class: verified
+    group: mip
+    values: [0]
+    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_AUDIO_SWITCHING
+    class: verified
+    group: pedestal
+    values: [1]
+    note: "values [1] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 7 (group), values seen in the scan"
+  - name: S_MIP_LIGHT_CONSOLEFLOOR_CAPT
+    class: verified
+    group: mip
+    values: [0, 1]
+    note: "values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 3 (console light): effect follows the value (B_LT_CONSOLE_CAPT): latching, or momentary with an effect only while held; GraphQL 0 -> 2 -> 0"
+  - name: S_MIP_LIGHT_CONSOLEFLOOR_FO
+    class: verified
+    group: mip
+    values: [0, 1]
+    note: "values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
+    comment: "positions to be learned (CRO-24)"
+    evidence: "owner decision 3 (console light): effect follows the value (B_LT_CONSOLE_FO): latching, or momentary with an effect only while held; GraphQL 0 -> 2 -> 0"
+
+  # --- Momentary buttons (probe: edge-triggered or self-resetting)
+  - name: S_CDU1_BRIGHTNESS_DOWN
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_CDU1_BRIGHTNESS_UP
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_CDU2_BRIGHTNESS_DOWN
+    class: pulse
+    group: cdu2
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_CDU2_BRIGHTNESS_UP
+    class: pulse
+    group: cdu2
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU1_BRT
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU1_DIM
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU2_BRT
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU2_DIM
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_EFIS1_LS
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    verify: { lvar: I_FCU_EFIS1_LS, settle_ms: 150 }
+    note: "class from step 2: edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_EFIS2_LS
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    verify: { lvar: I_FCU_EFIS2_LS, settle_ms: 150 }
+    note: "class from step 2: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_HDGVS_TRKFPA
+    class: pulse
+    group: fcu
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_SPD_MACH
+    class: pulse
+    group: fcu
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_MIP_ISFD_BARO_BUTTON
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_PED_RMP1_XFER
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_PED_RMP2_XFER
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_PED_RMP3_XFER
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    note: "class from step 2: edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+    evidence: "probe momentary: edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+
+  # --- Owner decision 1: audio panels. The _LATCH holds the state and is synced; the key is ignore
+  - name: S_ASP2_ADF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_ADF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_ADF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_ADF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_CAB_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_CAB_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_HF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_HF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_HF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_HF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_ILS_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_ILS_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_INT_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_INT_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_ASP2_MARKER_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_MARKER_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_MLS_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_MLS_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_PA_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_PA_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VHF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VHF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_ASP2_VHF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VHF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VHF_3_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VHF_3_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VOICE_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_VOICE, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VOR_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_NAV_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VOR_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP2_NAV_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP2_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP2_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_ADF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_ADF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_ADF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_ADF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_CAB_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_CAB_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_HF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_HF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_HF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_HF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_ILS_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_ILS_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_INT_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_INT_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_INT_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_INT_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_MARKER_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_MARKER_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_MLS_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_MLS_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_PA_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_PA_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_PA_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_PA_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_ASP3_VHF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VHF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VHF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VHF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VHF_3_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VHF_3_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VOICE_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_VOICE, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VOR_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_NAV_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VOR_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP3_NAV_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP3_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP3_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_ADF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_ADF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_ADF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_ADF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_ADF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_ADF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_CAB_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_CAB_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_CAB_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_HF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_HF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_HF_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_HF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_HF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_HF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_ILS_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_ILS_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_ILS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_INT_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_INT_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_INT_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_ASP_MARKER_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_MARKER_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_MARKER_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_MLS_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_MLS_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_MLS_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_PA_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_PA_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_PA_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VHF_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VHF_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_VHF_1_REC): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_ASP_VHF_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VHF_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_VHF_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VHF_3_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VHF_3_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VOICE_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_VOICE, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_VOICE): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VOR_1_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_NAV_1_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_NAV_1_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VOR_2_REC_LATCH
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    verify: { lvar: I_ASP_NAV_2_REC, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_ASP_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio latch): effect follows the value (I_ASP_NAV_2_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_ADF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_ADF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_ADF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_ADF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_ADF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_ADF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_CAB_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_CAB_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_HF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_HF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_HF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_HF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_ILS_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_ILS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_ILS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_INT_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_INT_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_INT_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_MARKER_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_MARKER_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_MARKER_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_MLS_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_MLS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_MLS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_PA_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_PA_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_PA_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VHF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_VHF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_VHF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VHF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_VHF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_VHF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VHF_3_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_VHF_3_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VOICE
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_VOICE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VOR_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_VOR_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_NAV_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP2_VOR_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP2_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP2_NAV_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_ADF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_ADF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_ADF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_ADF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_ADF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_ADF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_CAB_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_CAB_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_HF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_HF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_HF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_HF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_ILS_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_ILS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_ILS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_INT_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_INT_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_INT_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_MARKER_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_MARKER_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_MARKER_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_MLS_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_MLS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_MLS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_PA_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_PA_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_PA_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VHF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_VHF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_VHF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VHF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_VHF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_VHF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VHF_3_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_VHF_3_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VOICE
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_VOICE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VOR_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_VOR_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_NAV_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP3_VOR_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP3_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP3_NAV_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_ADF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_ADF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_ADF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_ADF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_ADF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_ADF_2_REC; writing 0 back did not undo it, one more press did (the var now reads 2), like the other ASP receive keys. The run stopped right after (checkpoint file briefly locked by"
+  - name: S_ASP_CAB_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_CAB_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_CAB_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_HF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_HF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_HF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_HF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_HF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_HF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_ILS_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_ILS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_ILS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_INT_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_INT_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_INT_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_MARKER_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_MARKER_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_MARKER_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_MLS_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_MLS_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_MLS_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_PA_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_PA_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_PA_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VHF_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_VHF_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_VHF_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VHF_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_VHF_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_VHF_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VHF_3_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_VHF_3_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VOICE
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_VOICE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VOR_1_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_VOR_1_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_NAV_1_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_ASP_VOR_2_REC
+    class: ignore
+    group: pedestal
+    note: "state synced via S_ASP_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+    evidence: "owner decision 1 (audio key): edge-triggered: the press toggled I_ASP_NAV_2_REC and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+
+  # --- Owner decision 2: press counters. The bridge only writes increments (+1 press, +1 release)
+  - name: S_FCU_EFIS1_FD
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    press: counter
+    verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 }
+    note: "press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
+    evidence: "owner decision 2 (press counter): edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterw"
+  - name: S_MIP_CLOCK_CHR
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    press: counter
+    note: "press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
+    evidence: "owner decision 2 (press counter): edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effec"
+  - name: S_FCU_EFIS2_FD
+    class: pulse
+    group: efis
+    pulse_ms: 150
+    press: counter
+    note: "press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
+    evidence: "owner decision 2 (press counter): same type as EFIS1 FD; a pilot click read 2 in the first run"
+
+  # --- Owner decision 3: latching (effect follows the value)
+  - name: S_FCU_EFIS1_BARO_MODE
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+    evidence: "owner decision 3 (latching): effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_FCU_EFIS1_BARO_STD
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (B_FCU_EFIS1_BARO_STD I_FCU_EFIS1_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+    evidence: "owner decision 3 (latching): effect follows the value (B_FCU_EFIS1_BARO_STD I_FCU_EFIS1_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+  - name: S_FCU_EFIS2_BARO_MODE
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (B_FCU_EFIS2_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+    evidence: "owner decision 3 (latching): effect follows the value (B_FCU_EFIS2_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
+  - name: S_FCU_EFIS2_BARO_STD
+    class: verified
+    group: efis
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (B_FCU_EFIS2_BARO_STD I_FCU_EFIS2_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+    evidence: "owner decision 3 (latching): effect follows the value (B_FCU_EFIS2_BARO_STD I_FCU_EFIS2_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
+  - name: S_MIP_BRAKE_FAN
+    class: verified
+    group: mip
+    values: [0, 1]
+    verify: { lvar: I_MIP_BRAKE_FAN_L, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_MIP_BRAKE_FAN_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+    evidence: "owner decision 3 (latching): effect follows the value (I_MIP_BRAKE_FAN_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_MIP_NORTH_REF
+    class: verified
+    group: mip
+    values: [0, 1]
+    verify: { lvar: I_MIP_NORTH_REF_L, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+    evidence: "owner decision 3 (latching): effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_OH_SVCE_INT_OVRD
+    class: verified
+    group: overhead
+    values: [0, 1]
+    verify: { lvar: I_OH_SVCE_INT_OVRD, settle_ms: 150 }
+    note: "class from step 2: effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+    evidence: "owner decision 3 (latching): effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+  - name: S_PED_RMP1_POWER
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (I_PED_RMP1_VHF1 N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+    evidence: "owner decision 3 (latching): effect follows the value (I_PED_RMP1_VHF1 N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+  - name: S_PED_RMP2_POWER
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (I_PED_RMP2_VHF2 N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+    evidence: "owner decision 3 (latching): effect follows the value (I_PED_RMP2_VHF2 N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+  - name: S_PED_RMP3_POWER
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    note: "class from step 2: effect follows the value (B_PED_RMP3_DATA_DISPLAYED_ACT I_PED_RMP3_VHF3 N_PED_RMP3_ACTIVE N_PED_RMP3_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+    evidence: "owner decision 3 (latching): effect follows the value (B_PED_RMP3_DATA_DISPLAYED_ACT I_PED_RMP3_VHF3 N_PED_RMP3_ACTIVE N_PED_RMP3_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
+
+  # --- Owner decision 6: change with no input (30 s sample), so they cannot be compared
+  - name: B_FC_SPEEDBRAKE
+    class: ignore
+    note: "changes with no input (CRO-8 step 2 noise sample); not compared"
+    evidence: "owner decision 6 (noisy): 146 changes, 0..1; observe var that changes with no input"
+  - name: N_FC_BRAKE_LEFT
+    class: ignore
+    group: flightcontrols
+    note: "changes with no input (CRO-8 step 2 noise sample); not compared"
+    evidence: "owner decision 6 (noisy): stable at 0; did not move: observe"
+  - name: N_HYD_PRESSURE_BRAKE_ACCU
+    class: ignore
+    group: systems
+    note: "changes with no input (CRO-8 step 2 noise sample); not compared"
+    evidence: "owner decision 6 (noisy): 278 changes, 2.6449..2.6449; changes with no input: ignore (an observe would raise false alarms)"
+  - name: N_MIP_CLOCK_UTC
+    class: ignore
+    group: mip
+    note: "changes with no input (CRO-8 step 2 noise sample); not compared"
+    evidence: "owner decision 6 (noisy): 30 changes, 133523..133553; changes with no input: ignore (an observe would raise false alarms)"
+
+  # --- Owner decision 7: EFB cosmetics
+  - name: S_EFB_CHARGING_CABLE_CAPT_TEMP
+    class: ignore
+    group: mip
+    note: "EFB cosmetics, not synced (CRO-8 step 3)"
+    evidence: "owner decision 7 (EFB cosmetics)"
+  - name: S_EFB_CHARGING_CABLE_FO_TEMP
+    class: ignore
+    group: mip
+    note: "EFB cosmetics, not synced (CRO-8 step 3)"
+    evidence: "owner decision 7 (EFB cosmetics)"
+
+# Still open (listed in draft-report.md).
+open:
+  - what: "Audio SEND keys"
+    vars: [S_ASP2_CAB_SEND, S_ASP2_HF_1_SEND]
+    why: "radio group (one deselects another); needs group handling before sync"
+  - what: "AUTOLAND / BKUP SPD ALT"
+    vars: [S_MIP_AUTOLAND_FO, S_MIP_BKUP_SPD_ALT_CAPT, S_MIP_BKUP_SPD_ALT_FO]
+    why: "all lit the same autoland lamps; latching vs momentary unclear (owner decision 3)"
+  - what: "Position counts"
+    why: "switches with `# positions to be learned (CRO-24)` have only the values seen; learn the rest from real pilot input (CRO-24)"
+  - what: "Encoders without display"
+    vars: [E_MIP_CLOCK_SET, E_MIP_TRAFFIC_CAPT, E_MIP_TRAFFIC_FO, E_STANDBY_ALT_IMPERIAL_BARO, E_STANDBY_ALT_METRIC_BARO, E_PED_RMP3_OUTER]
+    why: "verified by read-back only, not compared between the sims"
+  - what: "RMP 3 outer knob"
+    vars: [E_PED_RMP3_OUTER]
+    why: "-1 was not accepted at the gate; check in the gate test (CRO-22)"
+  - what: "Audio latch vs key"
+    why: "whether a real click moves both the key and its _LATCH: gate test (CRO-22)"
+  - what: "345 breakers"
+    why: "semantics unverified; no saved GraphQL data for them. Follow-up: a read-only GraphQL read of all 356 system.switches.E_CB_* fields in the sim (no writes)"
+  - what: "Standby instruments"
+    vars: [N_STANDBY_ATTITUDE_BANK, N_STANDBY_ATTITUDE_PITCH, N_STANDBY_COMPASS]
+    why: "noise sample unclear; stay observe"
+  - what: "Lamp half"
+    vars: [S_OH_CARGO_SMOKE_AFT, S_OH_CARGO_SMOKE_FWD, S_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE]
+    why: "neither lamp half changed at the gate; lower-half rule kept"
+  - what: "Counter-suspected switch"
+    vars: [S_OH_HYD_YELLOW_ELEC_PUMP]
+    why: "press counter suspected (first run); [0,1] kept"
+  - what: "Unconfirmed [0,1] guesses"
+    why: "switches with the note 'confirm in step 2': the probe skipped them (deny list, safety skip) or saw no effect at the gate; see probe-report.md"
+  - what: "Aircraft title"
+    why: "match.titles is the glob FenixA320* from one observed title (FenixA320 IAE WF); confirm with other liveries"

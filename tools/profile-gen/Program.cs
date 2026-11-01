@@ -2,6 +2,8 @@
 //   dotnet run --project tools/profile-gen [-- --scan <csv>] [--profile <yaml>]
 // Adds generated entries to profiles/<aircraft>/profile.yaml between markers, writes probe-deny.yaml,
 // draft-report.md and draft-review.csv next to it, then validates the result.
+// Results from the sim and owner decisions come from overrides.yaml next to the profile
+// (see Overrides.cs): change that file and re-run, never edit the generated block by hand.
 
 using Crosscheck.Profiles;
 using Crosscheck.Profiles.Model;
@@ -69,6 +71,18 @@ foreach (var e in entries.Where(e => e.Class == "delta").ToList())
 // 4. Effect pairing (lamps = observe vars in the final profile).
 var pairings = EffectPairer.Pair(entries, observeNames);
 
+// 4b. overrides.yaml: results from the sim and owner decisions (CRO-8 step 3). They patch
+// generated entries and promote review vars, so they survive every re-run of this tool.
+var overrides = OverrideFile.Load(Path.Combine(outDir, "overrides.yaml"));
+var scanValues = scan.GroupBy(v => v.Name).ToDictionary(g => g.Key, g => g.First().Value, StringComparer.Ordinal);
+var problems = overrides.Apply(entries, reviews, scanValues, handNames, exclude.IsExcluded);
+if (problems.Count > 0)
+{
+    foreach (var p in problems) Console.Error.WriteLine("overrides.yaml: " + p);
+    Console.Error.WriteLine($"{problems.Count} override(s) could not be applied; nothing was written.");
+    return 1;
+}
+
 // 5. Labels: drop the system token unless that makes two labels in a group equal; if they still clash, name the kind.
 var labelled = entries.Select(e => (e, l: Rules.LabelOf(e.Name))).ToList();
 var shortClash = labelled.GroupBy(x => (x.e.Group, x.l.Short)).Where(g => g.Count() > 1).SelectMany(g => g).Select(x => x.e).ToHashSet();
@@ -100,10 +114,10 @@ var sample = DenyList.BreakerSample(breakers);
 File.WriteAllText(Path.Combine(outDir, "probe-deny.yaml"), DenyWriter.Write(sample));
 File.WriteAllText(Path.Combine(outDir, "draft-review.csv"), ReportWriter.ReviewCsv(reviews));
 File.WriteAllText(Path.Combine(outDir, "draft-report.md"),
-    ReportWriter.Report(profile, entries, reviews, pairings, sample, fenixNames, profileNames, scanPath, excluded, alreadyThere));
+    ReportWriter.Report(profile, entries, reviews, pairings, sample, fenixNames, profileNames, scanPath, excluded, alreadyThere, overrides));
 
 var summary = ProfileSummary.Of(profile);
-Console.WriteLine($"OK: {entries.Count} generated, {reviews.Count} on the review list, {excluded} excluded, {alreadyThere} hand-written kept.");
+Console.WriteLine($"OK: {entries.Count} generated ({overrides.Overrides.Count} overrides applied), {reviews.Count} on the review list, {excluded} excluded, {alreadyThere} hand-written kept.");
 Console.WriteLine($"Profile now has {summary.VarCount} vars. Pairings: {pairings.Count}.");
 return 0;
 

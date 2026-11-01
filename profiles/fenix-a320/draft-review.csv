@@ -1,113 +1,37 @@
 name,scan_value,kind,provisional_class,reason
-E_FCU_EFIS1_BARO,0,class,delta,"encoder: 2 possible N_ display vars (N_FCU_EFIS1_BARO_HPA, N_FCU_EFIS1_BARO_INCH)"
-E_FCU_EFIS2_BARO,0,class,delta,"encoder: 2 possible N_ display vars (N_FCU_EFIS2_BARO_HPA, N_FCU_EFIS2_BARO_INCH)"
-E_MIP_ISFD_BARO,0,class,delta,"encoder: 2 possible N_ display vars (N_MIP_ISFD_BARO_HPA, N_MIP_ISFD_BARO_INCH)"
-E_MIP_CLOCK_SET,0,class,delta,encoder: no N_ display var found
-E_MIP_TRAFFIC_CAPT,0,class,delta,encoder: no N_ display var found
-E_MIP_TRAFFIC_FO,0,class,delta,encoder: no N_ display var found
-E_PED_RMP1_INNER,0,class,delta,encoder: no N_ display var found
-E_PED_RMP1_OUTER,0,class,delta,encoder: no N_ display var found
-E_PED_RMP2_INNER,0,class,delta,encoder: no N_ display var found
-E_PED_RMP2_OUTER,0,class,delta,encoder: no N_ display var found
-E_PED_RMP3_INNER,0,class,delta,encoder: no N_ display var found
-E_PED_RMP3_OUTER,0,class,delta,encoder: no N_ display var found
 FNX_FLT_LOADED,2,class,,"FNX_ var, no rule"
 FNX_SELCAL,0,class,,"FNX_ var, no rule"
 FNX_TAIL_HI,28,class,,"FNX_ var, no rule"
 FNX_TAIL_LO,190208217,class,,"FNX_ var, no rule"
-S_ASP2_ADF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP2_ADF_1_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP2_ADF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP2_ADF_2_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP2_CAB_REC,0,class,verified,momentary or latching unknown
-S_ASP2_CAB_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_CAB_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_HF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP2_HF_1_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_HF_1_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_HF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP2_HF_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_HF_2_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_ILS_REC,0,class,verified,momentary or latching unknown
-S_ASP2_ILS_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_INT,0,class,verified,momentary or latching unknown
 S_ASP2_INTRAD,1,class,verified,momentary or latching unknown
-S_ASP2_INT_REC,0,class,verified,momentary or latching unknown
-S_ASP2_INT_REC_LATCH,1,class,verified,momentary or latching unknown
 S_ASP2_INT_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_MARKER_REC,0,class,verified,momentary or latching unknown
-S_ASP2_MARKER_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_MASK,0,class,verified,momentary or latching unknown
-S_ASP2_MLS_REC,0,class,verified,momentary or latching unknown
-S_ASP2_MLS_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP2_PA_REC,0,class,verified,momentary or latching unknown
-S_ASP2_PA_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_PA_SEND,0,class,verified,momentary or latching unknown
 S_ASP2_RAD,0,class,verified,momentary or latching unknown
 S_ASP2_SPKR_REC,0,class,verified,momentary or latching unknown
 S_ASP2_SPKR_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP2_VHF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP2_VHF_1_REC_LATCH,1,class,verified,momentary or latching unknown
 S_ASP2_VHF_1_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_VHF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP2_VHF_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_VHF_2_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_VHF_3_REC,0,class,verified,momentary or latching unknown
-S_ASP2_VHF_3_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP2_VHF_3_SEND,0,class,verified,momentary or latching unknown
-S_ASP2_VOICE,0,class,verified,momentary or latching unknown
-S_ASP2_VOICE_LATCH,0,class,verified,momentary or latching unknown
-S_ASP2_VOR_1_REC,0,class,verified,momentary or latching unknown
-S_ASP2_VOR_1_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP2_VOR_2_REC,0,class,verified,momentary or latching unknown
-S_ASP2_VOR_2_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_ADF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP3_ADF_1_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_ADF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP3_ADF_2_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_CAB_REC,0,class,verified,momentary or latching unknown
-S_ASP3_CAB_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_CAB_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_HF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP3_HF_1_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_HF_1_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_HF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP3_HF_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_HF_2_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_ILS_REC,0,class,verified,momentary or latching unknown
-S_ASP3_ILS_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_INT,0,class,verified,momentary or latching unknown
 S_ASP3_INTRAD,1,class,verified,momentary or latching unknown
-S_ASP3_INT_REC,0,class,verified,momentary or latching unknown
-S_ASP3_INT_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_INT_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_MARKER_REC,0,class,verified,momentary or latching unknown
-S_ASP3_MARKER_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_MASK,0,class,verified,momentary or latching unknown
-S_ASP3_MLS_REC,0,class,verified,momentary or latching unknown
-S_ASP3_MLS_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_PA_REC,0,class,verified,momentary or latching unknown
-S_ASP3_PA_REC_LATCH,1,class,verified,momentary or latching unknown
 S_ASP3_PA_SEND,0,class,verified,momentary or latching unknown
 S_ASP3_RAD,0,class,verified,momentary or latching unknown
 S_ASP3_SIGNAL_FILTER,0,class,verified,momentary or latching unknown
 S_ASP3_SPKR_REC,0,class,verified,momentary or latching unknown
 S_ASP3_SPKR_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_VHF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP3_VHF_1_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_VHF_1_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_VHF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP3_VHF_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_VHF_2_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_VHF_3_REC,0,class,verified,momentary or latching unknown
-S_ASP3_VHF_3_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP3_VHF_3_SEND,0,class,verified,momentary or latching unknown
-S_ASP3_VOICE,0,class,verified,momentary or latching unknown
-S_ASP3_VOICE_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_VOR_1_REC,0,class,verified,momentary or latching unknown
-S_ASP3_VOR_1_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP3_VOR_2_REC,0,class,verified,momentary or latching unknown
-S_ASP3_VOR_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP4_ADF_1_REC,0,class,verified,momentary or latching unknown
 S_ASP4_ADF_1_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP4_ADF_2_REC,0,class,verified,momentary or latching unknown
@@ -154,61 +78,21 @@ S_ASP4_VOR_1_REC,0,class,verified,momentary or latching unknown
 S_ASP4_VOR_1_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP4_VOR_2_REC,0,class,verified,momentary or latching unknown
 S_ASP4_VOR_2_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_ADF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP_ADF_1_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_ADF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP_ADF_2_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_CAB_REC,0,class,verified,momentary or latching unknown
-S_ASP_CAB_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_CAB_SEND,0,class,verified,momentary or latching unknown
-S_ASP_HF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP_HF_1_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_HF_1_SEND,0,class,verified,momentary or latching unknown
-S_ASP_HF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP_HF_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_HF_2_SEND,0,class,verified,momentary or latching unknown
-S_ASP_ILS_REC,0,class,verified,momentary or latching unknown
-S_ASP_ILS_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_INT,0,class,verified,momentary or latching unknown
 S_ASP_INTRAD,1,class,verified,momentary or latching unknown
-S_ASP_INT_REC,0,class,verified,momentary or latching unknown
-S_ASP_INT_REC_LATCH,1,class,verified,momentary or latching unknown
 S_ASP_INT_SEND,0,class,verified,momentary or latching unknown
-S_ASP_MARKER_REC,0,class,verified,momentary or latching unknown
-S_ASP_MARKER_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_MASK,0,class,verified,momentary or latching unknown
-S_ASP_MLS_REC,0,class,verified,momentary or latching unknown
-S_ASP_MLS_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_PA_REC,0,class,verified,momentary or latching unknown
-S_ASP_PA_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_PA_SEND,0,class,verified,momentary or latching unknown
 S_ASP_RAD,0,class,verified,momentary or latching unknown
 S_ASP_SPKR_REC,0,class,verified,momentary or latching unknown
 S_ASP_SPKR_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_VHF_1_REC,0,class,verified,momentary or latching unknown
-S_ASP_VHF_1_REC_LATCH,1,class,verified,momentary or latching unknown
 S_ASP_VHF_1_SEND,0,class,verified,momentary or latching unknown
-S_ASP_VHF_2_REC,0,class,verified,momentary or latching unknown
-S_ASP_VHF_2_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_VHF_2_SEND,0,class,verified,momentary or latching unknown
-S_ASP_VHF_3_REC,0,class,verified,momentary or latching unknown
-S_ASP_VHF_3_REC_LATCH,0,class,verified,momentary or latching unknown
 S_ASP_VHF_3_SEND,0,class,verified,momentary or latching unknown
-S_ASP_VOICE,0,class,verified,momentary or latching unknown
-S_ASP_VOICE_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_VOR_1_REC,0,class,verified,momentary or latching unknown
-S_ASP_VOR_1_REC_LATCH,0,class,verified,momentary or latching unknown
-S_ASP_VOR_2_REC,0,class,verified,momentary or latching unknown
-S_ASP_VOR_2_REC_LATCH,0,class,verified,momentary or latching unknown
-S_CDU1_BRIGHTNESS_DOWN,0,class,verified,momentary or latching unknown
-S_CDU1_BRIGHTNESS_UP,0,class,verified,momentary or latching unknown
-S_CDU2_BRIGHTNESS_DOWN,0,class,verified,momentary or latching unknown
-S_CDU2_BRIGHTNESS_UP,0,class,verified,momentary or latching unknown
-S_DCDU1_BRT,0,class,verified,momentary or latching unknown
-S_DCDU1_DIM,0,class,verified,momentary or latching unknown
 S_DCDU1_DIM_BRT,1,class,verified,momentary or latching unknown
-S_DCDU2_BRT,0,class,verified,momentary or latching unknown
-S_DCDU2_DIM,0,class,verified,momentary or latching unknown
 S_DCDU2_DIM_BRT,1,class,verified,momentary or latching unknown
 S_EXT_CARGO_DOOR_AFT_HANDLE,0,class,verified,momentary or latching unknown
 S_EXT_CARGO_DOOR_AFT_HANDLE_FLAP,0,class,verified,momentary or latching unknown
@@ -240,35 +124,23 @@ S_FCU_AP2,0,class,verified,momentary or latching unknown
 S_FCU_APPR,0,class,verified,momentary or latching unknown
 S_FCU_ATHR,0,class,verified,momentary or latching unknown
 S_FCU_EFIS1_ARPT,0,class,verified,momentary or latching unknown
-S_FCU_EFIS1_BARO_MODE,1,class,verified,momentary or latching unknown
-S_FCU_EFIS1_BARO_STD,0,class,verified,momentary or latching unknown
 S_FCU_EFIS1_CSTR,0,class,verified,momentary or latching unknown
-S_FCU_EFIS1_FD,0,class,verified,momentary or latching unknown
-S_FCU_EFIS1_LS,0,class,verified,momentary or latching unknown
 S_FCU_EFIS1_NAV1,1,class,verified,momentary or latching unknown
 S_FCU_EFIS1_NAV2,1,class,verified,momentary or latching unknown
 S_FCU_EFIS1_NDB,0,class,verified,momentary or latching unknown
 S_FCU_EFIS1_VORD,0,class,verified,momentary or latching unknown
 S_FCU_EFIS1_WPT,0,class,verified,momentary or latching unknown
 S_FCU_EFIS2_ARPT,0,class,verified,momentary or latching unknown
-S_FCU_EFIS2_BARO_MODE,1,class,verified,momentary or latching unknown
-S_FCU_EFIS2_BARO_STD,0,class,verified,momentary or latching unknown
 S_FCU_EFIS2_CSTR,0,class,verified,momentary or latching unknown
-S_FCU_EFIS2_FD,0,class,verified,momentary or latching unknown
-S_FCU_EFIS2_LS,0,class,verified,momentary or latching unknown
 S_FCU_EFIS2_NAV1,1,class,verified,momentary or latching unknown
 S_FCU_EFIS2_NAV2,1,class,verified,momentary or latching unknown
 S_FCU_EFIS2_NDB,0,class,verified,momentary or latching unknown
-S_FCU_EFIS2_ND_MODE,3,class,verified,momentary or latching unknown
-S_FCU_EFIS2_ND_ZOOM,1,class,verified,momentary or latching unknown
 S_FCU_EFIS2_VORD,0,class,verified,momentary or latching unknown
 S_FCU_EFIS2_WPT,0,class,verified,momentary or latching unknown
 S_FCU_EXPED,0,class,verified,momentary or latching unknown
-S_FCU_HDGVS_TRKFPA,0,class,verified,momentary or latching unknown
 S_FCU_HEADING,0,class,verified,momentary or latching unknown
 S_FCU_LOC,0,class,verified,momentary or latching unknown
 S_FCU_METRIC_ALT,0,class,verified,momentary or latching unknown
-S_FCU_SPD_MACH,0,class,verified,momentary or latching unknown
 S_FCU_SPEED,0,class,verified,momentary or latching unknown
 S_FCU_VERTICAL_SPEED,0,class,verified,momentary or latching unknown
 S_FC_CAPT_PRIORITY,0,class,verified,momentary or latching unknown
@@ -292,10 +164,8 @@ S_MIP_AUTOLAND_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_AUTOLAND_FO,0,class,verified,momentary or latching unknown
 S_MIP_BKUP_SPD_ALT_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_BKUP_SPD_ALT_FO,0,class,verified,momentary or latching unknown
-S_MIP_BRAKE_FAN,0,class,verified,momentary or latching unknown
 S_MIP_CHRONO_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_CHRONO_FO,0,class,verified,momentary or latching unknown
-S_MIP_CLOCK_CHR,0,class,verified,momentary or latching unknown
 S_MIP_CLOCK_ET,1,class,verified,momentary or latching unknown
 S_MIP_CLOCK_RST,0,class,verified,momentary or latching unknown
 S_MIP_CLOCK_SET,0,class,verified,momentary or latching unknown
@@ -304,15 +174,11 @@ S_MIP_GPWS_TERRAIN_ON_ND_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_GPWS_TERRAIN_ON_ND_FO,0,class,verified,momentary or latching unknown
 S_MIP_GPWS_VISUAL_ALERT_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_GPWS_VISUAL_ALERT_FO,0,class,verified,momentary or latching unknown
-S_MIP_ISFD_BARO_BUTTON,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_BUGS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_LS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_MINUS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_PLUS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_RST,0,class,verified,momentary or latching unknown
-S_MIP_LIGHT_CONSOLEFLOOR_CAPT,0,class,verified,momentary or latching unknown
-S_MIP_LIGHT_CONSOLEFLOOR_FO,0,class,verified,momentary or latching unknown
-S_MIP_NORTH_REF,0,class,verified,momentary or latching unknown
 S_MIP_RDME_NEEDLE_1,0,class,verified,momentary or latching unknown
 S_MIP_RDME_NEEDLE_2,0,class,verified,momentary or latching unknown
 S_MIP_TRAFFIC_CAPT,0,class,verified,momentary or latching unknown
@@ -332,7 +198,6 @@ S_OH_HYD_RAT_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_OXYGEN_MASK_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_RCRD_ERASE,0,class,verified,momentary or latching unknown
 S_OH_RCRD_GND_CTL,0,class,verified,momentary or latching unknown
-S_OH_SVCE_INT_OVRD,0,class,verified,momentary or latching unknown
 S_PED_AIDS_PRINT,0,class,verified,momentary or latching unknown
 S_PED_DFDR_EVENT,0,class,verified,momentary or latching unknown
 S_PED_RMP1_ADF,0,class,verified,momentary or latching unknown
@@ -343,12 +208,10 @@ S_PED_RMP1_HF2,0,class,verified,momentary or latching unknown
 S_PED_RMP1_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP1_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP1_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP1_POWER,1,class,verified,momentary or latching unknown
 S_PED_RMP1_VHF1,0,class,verified,momentary or latching unknown
 S_PED_RMP1_VHF2,0,class,verified,momentary or latching unknown
 S_PED_RMP1_VHF3,0,class,verified,momentary or latching unknown
 S_PED_RMP1_VOR,0,class,verified,momentary or latching unknown
-S_PED_RMP1_XFER,0,class,verified,momentary or latching unknown
 S_PED_RMP2_ADF,0,class,verified,momentary or latching unknown
 S_PED_RMP2_AM,0,class,verified,momentary or latching unknown
 S_PED_RMP2_BFO,0,class,verified,momentary or latching unknown
@@ -357,12 +220,10 @@ S_PED_RMP2_HF2,0,class,verified,momentary or latching unknown
 S_PED_RMP2_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP2_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP2_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP2_POWER,1,class,verified,momentary or latching unknown
 S_PED_RMP2_VHF1,0,class,verified,momentary or latching unknown
 S_PED_RMP2_VHF2,0,class,verified,momentary or latching unknown
 S_PED_RMP2_VHF3,0,class,verified,momentary or latching unknown
 S_PED_RMP2_VOR,0,class,verified,momentary or latching unknown
-S_PED_RMP2_XFER,0,class,verified,momentary or latching unknown
 S_PED_RMP3_ADF,0,class,verified,momentary or latching unknown
 S_PED_RMP3_AM,0,class,verified,momentary or latching unknown
 S_PED_RMP3_BFO,0,class,verified,momentary or latching unknown
@@ -371,25 +232,14 @@ S_PED_RMP3_HF2,0,class,verified,momentary or latching unknown
 S_PED_RMP3_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP3_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP3_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP3_POWER,1,class,verified,momentary or latching unknown
 S_PED_RMP3_VHF1,0,class,verified,momentary or latching unknown
 S_PED_RMP3_VHF2,0,class,verified,momentary or latching unknown
 S_PED_RMP3_VHF3,0,class,verified,momentary or latching unknown
 S_PED_RMP3_VOR,0,class,verified,momentary or latching unknown
-S_PED_RMP3_XFER,0,class,verified,momentary or latching unknown
 S_WINDOW_CAPT_LEVER_BUTTON,0,class,verified,momentary or latching unknown
 S_WINDOW_FO_LEVER_BUTTON,0,class,verified,momentary or latching unknown
 S_HYD_GRAVITY_GEAR_HANDLE,0,class,verified,momentary or latching unknown; panel group unclear
-S_COCKPIT_DOOR,1,class,verified,"name looks multi-position, position count unknown"
 S_ENG_MODE,1,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_BAY_AFT_LT,0,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_BAY_FWD_LT,0,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_DOOR_SELECTOR_AFT,0,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_DOOR_SELECTOR_FWD,0,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT,0,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD,0,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT,1,class,verified,"name looks multi-position, position count unknown"
-S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L1_INSIDE_GUST_STATE,0,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L1_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L2E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
@@ -405,73 +255,11 @@ S_EXT_DOOR_R3E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position
 S_EXT_REFUELING_MODE,1,class,verified,"name looks multi-position, position count unknown"
 S_OH_ENG_N1_MODE_1,0,class,verified,"name looks multi-position, position count unknown"
 S_OH_ENG_N1_MODE_2,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_BEACON,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_LANDING_BOTH,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_LANDING_L,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_LANDING_R,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_NAV_LOGO,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_NOSE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_RWY_TURNOFF,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_STROBE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_EXT_LT_WING,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_FUEL_MODE_SEL,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_FUEL_XFEED,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_GPWS_FLAP_MODE,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_GPWS_GS_MODE,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_GPWS_SYS,1,class,verified,"name looks multi-position, position count unknown"
 S_OH_INT_LT_EMER,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_IN_LT_ANN_LT,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_IN_LT_ICE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_LIGHTING_AVIONICS_COMPT,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_ADR1,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_ADR2,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_ADR3,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_DATA_DISP,0,class,verified,"name looks multi-position, position count unknown"
 S_OH_NAV_IR1_MODE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_IR1_SWITCH,0,class,verified,"name looks multi-position, position count unknown"
 S_OH_NAV_IR2_MODE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_IR2_SWITCH,0,class,verified,"name looks multi-position, position count unknown"
 S_OH_NAV_IR3_MODE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_IR3_SWITCH,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_SYS_DISP,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_PNEUMATIC_HOT_AIR,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_PNEUMATIC_PRESS_MODE,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_PNEUMATIC_XBLEED_SELECTOR,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_SIGNS,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_SIGNS_SMOKING,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_0,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_1,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_2,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_3,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_4,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_5,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_6,0,class,verified,"name looks multi-position, position count unknown"
-S_PED_ATC_7,0,class,verified,"name looks multi-position, position count unknown"
 S_PED_COCKPIT_DOOR,1,class,verified,"name looks multi-position, position count unknown"
-S_WINDOW_BLINDS_CAPT,0,class,verified,"name looks multi-position, position count unknown"
-S_WINDOW_BLINDS_FO,0,class,verified,"name looks multi-position, position count unknown"
-S_WINDOW_BLINDS_REAR_CAPT,0,class,verified,"name looks multi-position, position count unknown"
-S_WINDOW_BLINDS_REAR_FO,0,class,verified,"name looks multi-position, position count unknown"
-S_WINDOW_CAPT_LEVER,0,class,verified,"name looks multi-position, position count unknown"
-S_WINDOW_FO_LEVER,0,class,verified,"name looks multi-position, position count unknown"
-S_WR_GAIN,0,class,verified,"name looks multi-position, position count unknown"
-S_WR_GCS,0,class,verified,"name looks multi-position, position count unknown"
-S_WR_MULTISCAN,1,class,verified,"name looks multi-position, position count unknown"
-S_WR_PRED_WS,0,class,verified,"name looks multi-position, position count unknown"
-S_WR_SYS,1,class,verified,"name looks multi-position, position count unknown"
-S_XPDR_ATC,0,class,verified,"name looks multi-position, position count unknown"
-S_XPDR_MODE,0,class,verified,"name looks multi-position, position count unknown"
-S_XPDR_OPERATION,0,class,verified,"name looks multi-position, position count unknown"
-S_AUDIO_SWITCHING,1,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_CHART_LIGHT_TEMP_CAPT,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_CHART_LIGHT_TEMP_FO,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_EFB_CHARGING_CABLE_CAPT_TEMP,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_EFB_CHARGING_CABLE_FO_TEMP,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_MISC_WIPER_CAPT,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_MISC_WIPER_FO,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_MISC_WIPER_REPELLENT_CAPT,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
-S_MISC_WIPER_REPELLENT_FO,0,class,verified,"name looks multi-position, position count unknown; panel group unclear"
 B_CONFIG_ADIRS,1,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 B_CONFIG_ASU,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 B_CONFIG_BARO_UNIT,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
@@ -531,12 +319,6 @@ N_CONFIG_WINDOW_PLUGS_RR,0,class,ignore,"per-pilot setup, not cockpit state; pan
 N_CONFIG_WINDOW_PLUG_TYPE,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 S_EXT_REFUELING_ACT_FQI,2,class,verified,"scan value 2, position count unknown"
 S_OH_ELEC_EXT_PWR,2,class,verified,"scan value 2, position count unknown"
-S_TCAS_HORIZONTAL_RANGE,2,class,verified,"scan value 2, position count unknown"
-S_TCAS_RANGE,2,class,verified,"scan value 2, position count unknown"
-S_WR_MODE,2,class,verified,"scan value 2, position count unknown"
-N_FC_BRAKE_LEFT,0.17675781250000003,class,observe,"value changes without input, would raise false alarms"
-N_HYD_PRESSURE_BRAKE_ACCU,2.6450380473781827,class,observe,"value changes without input, would raise false alarms"
-N_MIP_CLOCK_UTC,231902,class,observe,"value changes without input, would raise false alarms"
 N_STANDBY_ATTITUDE_BANK,327.9896013526183,class,observe,"value changes without input, would raise false alarms; panel group unclear"
 N_STANDBY_ATTITUDE_PITCH,1.2283758025480427,class,observe,"value changes without input, would raise false alarms; panel group unclear"
 N_STANDBY_COMPASS,190.7661194138168,class,observe,"value changes without input, would raise false alarms; panel group unclear"
@@ -575,8 +357,6 @@ B_LT_READING_1,1,group,observe,panel group unclear
 B_LT_READING_2,1,group,observe,panel group unclear
 B_REFUEL_PANEL_POWER,0,group,observe,panel group unclear
 B_RUDDER_TOGGLE,0,group,observe,panel group unclear
-E_STANDBY_ALT_IMPERIAL_BARO,0,group,delta,panel group unclear
-E_STANDBY_ALT_METRIC_BARO,0,group,delta,panel group unclear
 I_CAB_FWD_LAV_OCCUPIED,0,group,observe,panel group unclear
 I_CAB_FWD_LAV_UNOCCUPIED,1,group,observe,panel group unclear
 I_CAB_REAR_LEFT_LAV_OCCUPIED,0,group,observe,panel group unclear

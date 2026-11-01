@@ -433,13 +433,13 @@ public class ProfileLoaderTests
     }
 
     [Fact]
-    public void Delta_without_display_var()
+    public void Delta_without_display_var_is_read_back_only_and_valid()
     {
-        var yaml = Valid.Replace("    display: N_DISPLAY\n", "");
-        var issue = Single(Load(yaml));
+        // CRO-8 step 3: encoders with no display var are verified by read-back only.
+        var result = Load(Valid.Replace("    display: N_DISPLAY\n", ""));
 
-        Assert.Equal(LineOf(yaml, "name: E_ENCODER"), issue.Line);
-        Assert.Contains("delta needs 'display'", issue.Message);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        Assert.Null(result.Profile!.Vars.Single(v => v.Name == "E_ENCODER").Display);
     }
 
     [Fact]

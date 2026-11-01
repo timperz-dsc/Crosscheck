@@ -130,6 +130,33 @@ public class ApplyAndEchoTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Remote_press_counter_only_ever_counts_up()
+    {
+        _h.Sim.Logic("S_MIP_MASTER_CAUTION_CAPT", 6); // three earlier presses
+        await Wait.Until(() => _h.Sim.Get("S_MIP_MASTER_CAUTION_CAPT") == 6, "start value");
+        await Task.Delay(50);
+        var before = _h.Commands.Count;
+        var ack = await _h.WaitAck(_h.Remote("S_MIP_MASTER_CAUTION_CAPT", "pulse", 1), 3000);
+        Assert.True(ack["ok"]!.GetValue<bool>());
+        var writes = _h.Sim.Writes.Where(w => w.Name == "S_MIP_MASTER_CAUTION_CAPT").Select(w => w.Value).ToList();
+        Assert.Equal([7.0, 8.0], writes); // press, release: never a decrement
+        Assert.Equal(8, _h.Sim.Get("S_MIP_MASTER_CAUTION_CAPT"));
+        await Task.Delay(100);
+        Assert.Equal(before, _h.Commands.Count);
+    }
+
+    [Fact]
+    public async Task Remote_delta_without_display_is_confirmed_by_read_back_only()
+    {
+        var ack = await _h.WaitAck(_h.Remote("E_MIP_CLOCK_SET", "delta", delta: 2, settleMs: 50));
+        Assert.True(ack["ok"]!.GetValue<bool>());
+        Assert.Equal(2, ack["observed"]!.GetValue<double>()); // its own counter, read back
+        Assert.Equal([2.0], _h.Sim.Writes.Where(w => w.Name == "E_MIP_CLOCK_SET").Select(w => w.Value));
+        await Task.Delay(100);
+        Assert.Empty(_h.Commands);
+    }
+
+    [Fact]
     public async Task A_pilot_click_in_the_same_instant_as_a_remote_delta_is_not_lost()
     {
         _h.Sim.PilotTurn("E_FCU_ALTITUDE", 1); // not reported yet (next frame)
@@ -287,7 +314,7 @@ public class SnapshotTests
         Assert.Contains(fcu, v => v.Var == "E_FCU_ALTITUDE" && v.Class == "delta" && (double)v.Value! == 120);
         Assert.Contains(h.Engine.GroupValues("cdu1"), v => v.Var == "aircraft.mcdu1.display" && v.Value is string);
         Assert.Contains(h.Engine.GroupValues("systems"), v => v.Var == "aircraft.fuel.left.amount.kg" && (double)v.Value! == 1500);
-        Assert.Empty(h.Engine.GroupValues("no_such_group"));
+        Assert.Empty(h.Engine.GroupValues("cabin")); // nothing in that group
     }
 
     [Fact]
@@ -297,7 +324,7 @@ public class SnapshotTests
         await h.StartAsync(pf: true);
         h.Channel.Inject("snapshot_request", new JsonObject { ["request_id"] = "r9", ["groups"] = null, ["reason"] = "join" }, h.Channel.NextSeq());
         var answers = h.Channel.SentOf("snapshot_values");
-        Assert.Equal(["cabin", "cb", "cdu1", "cdu2", "ecam", "efis", "fcu", "flightcontrols", "ground", "mip", "overhead", "pedestal", "systems"], answers.Select(a => a["group"]!.GetValue<string>()).Order());
+        Assert.Equal(["cdu1", "efis", "fcu", "flightcontrols", "mip", "overhead", "systems"], answers.Select(a => a["group"]!.GetValue<string>()).Order());
         Assert.All(answers, a => Assert.Equal("r9", a["request_id"]!.GetValue<string>()));
     }
 }

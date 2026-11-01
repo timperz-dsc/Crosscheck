@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using Crosscheck.Bridge.Api;
 using Crosscheck.Bridge.Fenix;
@@ -34,6 +33,8 @@ public sealed record BridgeOptions
     public string? UiDir { get; init; }
     /// <summary>null = default (%LOCALAPPDATA%\Crosscheck\logs).</summary>
     public string? LogDir { get; init; }
+    /// <summary>Where the server address set in the UI is saved. null = not saved (tests).</summary>
+    public string? SettingsPath { get; init; }
     public string? Airac { get; init; }
     public TimeSpan VersionTimeout { get; init; } = TimeSpan.FromSeconds(30);
     public double StreamHz { get; init; }
@@ -83,12 +84,14 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     private IPackageVersionSource _package = null!;
     private Task<AircraftVersions>? _versions;
     private CancellationTokenSource _life = new();
+    private Uri _server = null!;
     private Timer? _stream;
     private long _frame;
 
     public BridgeRuntime(BridgeOptions options, Func<Profile, BridgeBackends> backends, ILoggerFactory? loggers = null)
     {
         _options = options;
+        _server = options.Server;
         _backends = backends;
         _loggers = loggers ?? NullLoggerFactory.Instance;
     }
@@ -116,7 +119,10 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     /// <summary>The last thing that went wrong with a session request, in words (shown on the start screen).</summary>
     public string? LastError { get; private set; }
     public Labels Labels { get; private set; } = null!;
-    public Uri ServerUrl => _options.Server;
+    public Uri ServerUrl => _server;
+
+    /// <summary>Path of this bridge's own log file (null if logging is off). A pilot can send it after a test.</summary>
+    public string? LogPath => Log.Path;
 
     /// <summary>Loads the profile and starts sim, Fenix backend and local API; in headless mode also creates or joins.</summary>
     public async Task StartAsync(CancellationToken ct)
@@ -125,13 +131,13 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         if (!loaded.IsValid) throw new ProfileInvalidException(loaded.FormatIssues());
         Profile = loaded.Profile!;
         Labels = new Labels(Profile);
-        ProfileHash = "sha256:" + Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(_options.ProfilePath, ct))).ToLowerInvariant();
+        ProfileHash = global::Crosscheck.Bridge.ProfileHash.Of(await File.ReadAllBytesAsync(_options.ProfilePath, ct));
 
         Log = new BridgeLog(_options.LogDir ?? BridgeLog.DefaultDirectory);
         _logger = _loggers.CreateLogger("Crosscheck.Bridge");
         Log.Event("bridge_start", new JsonObject
         {
-            ["version"] = BridgeVersion, ["profile"] = _options.ProfilePath, ["profile_hash"] = ProfileHash, ["server"] = _options.Server.ToString(),
+            ["version"] = BridgeVersion, ["profile"] = _options.ProfilePath, ["profile_hash"] = ProfileHash, ["server"] = ServerUrl.ToString(),
         });
 
         var backends = _backends(Profile);
@@ -196,6 +202,29 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
 
     // ------------------------------------------------------------------ sessions (IBridgeControl)
 
+    /// <summary>Changes the session server (and saves it). Only between sessions.</summary>
+    public ApiResult SetServer(string? address)
+    {
+        if (Client is not null || Preflight is not null || _sessionLock.CurrentCount == 0)
+            return ApiResult.Fail("Leave the session before changing the server.");
+        if (!ServerAddress.TryNormalize(address, out var uri, out var error)) return ApiResult.Fail(error);
+        _server = uri;
+        LastError = null;
+        Log.Event("server_changed", new JsonObject { ["server"] = uri.ToString() });
+        if (_options.SettingsPath is { } path)
+        {
+            try
+            {
+                new UserSettings(uri.ToString()).Save(path);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                return ApiResult.Fail($"Using {uri} for now, but could not save it: {e.Message}");
+            }
+        }
+        return ApiResult.Success;
+    }
+
     public Task<ApiResult> CreateAsync() => CreateAsync(_life.Token);
 
     public async Task<ApiResult> CreateAsync(CancellationToken ct)
@@ -221,7 +250,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         catch (Exception e) when (e is System.Net.WebSockets.WebSocketException or TimeoutException or HttpRequestException)
         {
             await EndSessionAsync(leave: false);
-            return Error($"Could not reach the server at {_options.Server}.");
+            return Error($"Could not reach the server at {ServerUrl}.");
         }
         finally
         {
@@ -236,7 +265,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         {
             if (Engine is not null) return ApiResult.Fail("You are already in a session.");
             var preflight = await PreflightAsync(_life.Token);
-            await using var client = new ProtocolClient(_options.Server, Log, _logger) { StrictValidation = _options.StrictValidation };
+            await using var client = new ProtocolClient(ServerUrl, Log, _logger) { StrictValidation = _options.StrictValidation };
             var answer = await client.CheckAsync(code.Trim().ToUpperInvariant(), preflight, _life.Token);
             var body = answer["body"]!.AsObject();
             switch (answer["type"]!.GetValue<string>())
@@ -256,7 +285,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         }
         catch (Exception e) when (e is System.Net.WebSockets.WebSocketException or TimeoutException or HttpRequestException)
         {
-            return Error($"Could not reach the server at {_options.Server}.");
+            return Error($"Could not reach the server at {ServerUrl}.");
         }
         finally
         {
@@ -295,7 +324,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         catch (Exception e) when (e is System.Net.WebSockets.WebSocketException or TimeoutException or HttpRequestException)
         {
             await EndSessionAsync(leave: false);
-            return Error($"Could not reach the server at {_options.Server}.");
+            return Error($"Could not reach the server at {ServerUrl}.");
         }
         finally
         {
@@ -366,7 +395,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
 
     private (ProtocolClient, SyncEngine) NewSession()
     {
-        var client = new ProtocolClient(_options.Server, Log, _logger) { StrictValidation = _options.StrictValidation };
+        var client = new ProtocolClient(ServerUrl, Log, _logger) { StrictValidation = _options.StrictValidation };
         client.StateChanged += s =>
         {
             Status.Server = s.ToString().ToLowerInvariant();

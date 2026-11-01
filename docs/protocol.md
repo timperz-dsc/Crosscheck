@@ -102,7 +102,7 @@ or `pm` changes with control transfer. The host is PF at the start.
 | Field | Rule |
 |---|---|
 | `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). |
-| `profile_id`, `profile_hash` | Must match. The hash is compared as an opaque string. |
+| `profile_id`, `profile_hash` | Must match. The hash is compared as an opaque string. The bridge computes it as `sha256:` + hex SHA-256 of the profile file with CRLF normalised to LF, so line endings never change it. |
 | `aircraft.package_version`, `aircraft.app_version` | Must match. |
 | `airac` | Entered by hand (bridge `--airac`); Crosscheck does not read it from the aircraft. Mismatch, or unknown on one side → **warning**, not rejected, with the reminder "Check that both pilots use the same AIRAC". MCDU pages may differ. |
 

@@ -1,0 +1,4 @@
+# Profiles are hashed in preflight: keep them LF on every machine.
+profiles/** text eol=lf
+# The bridge test fixture profile is hashed in a test: keep it LF too.
+bridge/Crosscheck.Bridge.Tests/Fixtures/** text eol=lf

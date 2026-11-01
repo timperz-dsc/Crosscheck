@@ -412,7 +412,8 @@ public class RepoInputTests
         foreach (var phase in Enum.GetValues<Phase>())
         {
             var (targets, _) = Targets.For(phase, inputs);
-            if (phase is Phase.Encoders or Phase.Breakers or Phase.Takeover or Phase.Hold) Assert.NotEmpty(targets);
+            // Encoders are all resolved in step 3 (none left on the review list).
+            if (phase is Phase.Breakers or Phase.Takeover or Phase.Hold) Assert.NotEmpty(targets);
             foreach (var t in targets)
             {
                 if (t.Name.StartsWith("E_CB_")) Assert.Contains(t.Name, inputs.Deny.Breakers);
@@ -542,7 +543,7 @@ public class RepoInputTests
         Assert.Equal($"I_{stem}_U", p.Vars.Single(v => v.Name == guess.Name).Verify!.Lvar);
         Assert.Equal(SyncClass.Pulse, p.Vars.Single(v => v.Name == button.Name).Class);
         Assert.Contains("0/1 breaker", p.Vars.Single(v => v.Name == "E_CB_105VU_A01").Note);
-        Assert.Equal("FenixA320 Test", Assert.Single(p.Aircraft.Match.Titles!));
+        Assert.NotEmpty(p.Aircraft.Match.Titles!); // set by hand in step 3; the proposer leaves it alone
         Assert.Contains(changes, c => c.Kind == "effect source");
 
         // a stepped switch with an unknown position count gets only the values seen, never the

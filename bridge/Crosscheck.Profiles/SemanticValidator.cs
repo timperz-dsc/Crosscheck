@@ -134,9 +134,6 @@ internal sealed class SemanticValidator
             case SyncClass.Analog when v.Range is null:
                 Add(at, "class analog needs 'range'");
                 break;
-            case SyncClass.Delta when v.Display is null:
-                Add(at, "class delta needs 'display' (the var that shows the value the encoder changes)");
-                break;
             case SyncClass.Pulse when v.PulseMs is null:
                 Add(at, "class pulse needs 'pulse_ms'");
                 break;

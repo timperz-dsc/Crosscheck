@@ -36,6 +36,8 @@ public sealed class ServerFixture : IAsyncLifetime
         info.Environment["CROSSCHECK_PORT"] = port.ToString();
         info.Environment["CROSSCHECK_HOST"] = "127.0.0.1";
         info.Environment["CROSSCHECK_LOG_DIR"] = LogDir;
+        info.Environment["CROSSCHECK_CREATE_LIMIT"] = "0"; // many sessions from one address
+        info.Environment["CROSSCHECK_JOIN_LIMIT"] = "0";
         _process = Process.Start(info)!;
         var ready = new TaskCompletionSource();
         _process.OutputDataReceived += (_, e) => { if (e.Data?.Contains("Crosscheck session server") == true) ready.TrySetResult(); };
@@ -90,7 +92,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
     {
         var options = new BridgeOptions
         {
-            Server = server.Url, ProfilePath = profile ?? Repo.FenixProfile, Mode = mode, JoinCode = code, Name = name,
+            Server = server.Url, ProfilePath = profile ?? Repo.FixtureProfile, Mode = mode, JoinCode = code, Name = name,
             ApiPort = 0, LogDir = Path.Combine(_logs, name), VersionTimeout = TimeSpan.Zero, StrictValidation = true,
         };
         var b = new BridgeRuntime(options, p =>
@@ -302,7 +304,7 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         var dir = Path.Combine(_logs, "Prøfil åäö");
         Directory.CreateDirectory(dir);
         var profile = Path.Combine(dir, "profile.yaml");
-        File.Copy(Repo.FenixProfile, profile);
+        File.Copy(Repo.FixtureProfile, profile);
         var (host, guest) = await Pair(guestProfile: profile);
         Sim(host).PilotSet("S_OH_ELEC_APU_MASTER", 1);
         await Wait.Until(() => Sim(guest).Get("S_OH_ELEC_APU_MASTER") == 1, "synced");

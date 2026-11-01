@@ -743,7 +743,8 @@ public sealed class SyncEngine : IAsyncDisposable
 
         object? observed = spec.Class switch
         {
-            SyncClass.Delta => spec.Display is { } disp && _sim.TryGet(disp, out var dv) ? dv : null,
+            // An encoder without a display var is verified by read-back only: its own counter.
+            SyncClass.Delta => spec.Display is { } disp ? (_sim.TryGet(disp, out var dv) ? dv : null) : (_sim.TryGet(name, out var cv) ? cv : null),
             SyncClass.Pulse => written.StoredSeen ? (job.Value ?? 1) : null,
             _ => _sim.TryGet(name, out var v) ? v : null,
         };

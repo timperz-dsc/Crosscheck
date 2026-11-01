@@ -21,6 +21,8 @@ sealed class Entry
     public string? Display { get; set; }
     public Verify? Verify { get; set; }
     public Dictionary<string, string>? ValueLabels { get; init; }
+    /// <summary>Written as a comment line above the entry (from overrides.yaml).</summary>
+    public string? Comment { get; init; }
     public List<string> Notes { get; } = ["label generated"];
     public string Value { get; init; } = "";
 }

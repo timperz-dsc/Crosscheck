@@ -1,0 +1,150 @@
+# yaml-language-server: $schema=../../../profiles/schema/profile.schema.json
+# Test fixture for the bridge tests: the Fenix A320 starter profile from before CRO-8
+# (git 0caec65^), plus a press counter and an encoder without display. Test data, not the
+# real profile: changes to profiles/fenix-a320/profile.yaml never break the bridge tests.
+format: 1
+
+aircraft:
+  id: fenix-a320
+  name: Fenix A320
+  match:
+    # TODO(CRO-8): add `titles:` once the title the sim reports for the Fenix is recorded.
+    packages: [fnx-aircraft-320]
+  builds: ["3.0.0.7613"]
+
+groups:
+  [overhead, fcu, efis, mip, pedestal, cdu1, cdu2, ecam, cb, flightcontrols, cabin, systems]
+
+# Names the pilots see in the UI.
+group_labels:
+  overhead: Overhead
+  fcu: FCU
+  efis: EFIS
+  mip: Main panel
+  pedestal: Pedestal
+  cdu1: CDU 1
+  cdu2: CDU 2
+  ecam: ECAM
+  cb: Circuit breakers
+  flightcontrols: Flight controls
+  cabin: Cabin
+  systems: Systems
+
+# Vars that do not belong to the aircraft at all (GSX, Chaseplane, other aircraft,
+# HUES mods, docking guidance). Aircraft-related leftovers (A320_*, ...) are not
+# excluded: CRO-8 classifies them, mostly as `ignore`.
+exclude:
+  - "FSDT_*"
+  - "p42_*"
+  - "A310_*"
+  - "H145_*"
+  - "HUES_*"
+  - "hues_*"
+  - "SAFEGATE_*"
+  - "safegate_*"
+  - "rlg_*"
+  - "agnis_*"
+  - "APIS_*"
+
+vars:
+  # verified: absolute value, read back from the own L: var, effect from another source.
+  - name: S_OH_ELEC_APU_MASTER
+    label: APU MASTER
+    value_labels: { "0": OFF, "1": ON }
+    class: verified
+    group: overhead
+    values: [0, 1]
+    verify: { lvar: I_OH_ELEC_APU_MASTER_L, settle_ms: 150 }
+    note: Effect lamp is not proven yet, confirm in CRO-8.
+
+  # 5-position rotary. GraphQL mirrors it with the same numbers (GRAPHQL.md).
+  - name: S_FCU_EFIS1_ND_MODE
+    label: Captain ND mode
+    class: verified
+    group: efis
+    values: [0, 1, 2, 3, 4]
+    verify: { graphql: system.switches.S_FCU_EFIS1_ND_MODE, settle_ms: 100 }
+
+  # delta: write the change only, never the absolute value. N_FCU_ALTITUDE shows the result.
+  - name: E_FCU_ALTITUDE
+    label: FCU altitude
+    class: delta
+    group: fcu
+    display: N_FCU_ALTITUDE
+
+  # pulse: 1, then 0 after pulse_ms. Key to screen takes ~450 ms inside Fenix.
+  - name: S_CDU1_KEY_FPLN
+    label: CDU 1 F-PLN
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
+    verify: { mcdu: 1, settle_ms: 600 }
+
+  # analog: 0.0 to 1.0 in the L: var; GraphQL shows value x 1024.
+  - name: A_OH_PNEUMATIC_COCKPIT_TEMP
+    label: Cockpit temperature
+    class: analog
+    group: overhead
+    range: [0, 1]
+    verify: { graphql: system.analog.A_OH_PNEUMATIC_COCKPIT_TEMP, scale: 1024, settle_ms: 100 }
+
+  # observe: never written, compared between the sims as a desync alarm.
+  - name: I_MIP_GEAR_1_L
+    label: Gear indicator
+    class: observe
+    group: mip
+
+  - name: N_FCU_ALTITUDE
+    label: FCU altitude display
+    class: observe
+    group: fcu
+
+  - name: I_OH_ELEC_APU_MASTER_L
+    label: APU MASTER light
+    class: observe
+    group: overhead
+
+  # Test data: a press counter (Fenix counts press and release, odd = pressed).
+  - name: S_MIP_MASTER_CAUTION_CAPT
+    label: Master caution
+    class: pulse
+    group: mip
+    pulse_ms: 150
+    press: counter
+
+  # Test data: an encoder with no display var (verified by read-back only).
+  - name: E_MIP_CLOCK_SET
+    label: Clock set
+    class: delta
+    group: mip
+
+  # Sidestick takeover pushbuttons (see roles.takeover). Momentary: 1 while held.
+  # TODO(CRO-8): confirm names and values in the sim (scan: S_FC_*_INST_DISCONNECT).
+  - name: S_FC_CAPT_INST_DISCONNECT
+    label: "Captain's takeover button"
+    value_labels: { "0": released, "1": pressed }
+    class: verified
+    group: flightcontrols
+    values: [0, 1]
+
+  - name: S_FC_FO_INST_DISCONNECT
+    label: "First officer's takeover button"
+    value_labels: { "0": released, "1": pressed }
+    class: verified
+    group: flightcontrols
+    values: [0, 1]
+
+datarefs:
+  # Name confirmed in spike/VarTypes/GRAPHQL.md ("fuel per tank").
+  - path: aircraft.fuel.left.amount.kg
+    label: Left tank fuel
+    unit: kg
+    drift_warn: 100
+    class: owned
+    group: systems
+    poll_hz: 1
+
+roles:
+  # A press on the pilot monitoring's own seat = "I have control" (control_request).
+  # TODO(CRO-8): confirm these are the takeover pushbuttons, against the scan and in the sim.
+  takeover: { captain: S_FC_CAPT_INST_DISCONNECT, fo: S_FC_FO_INST_DISCONNECT }

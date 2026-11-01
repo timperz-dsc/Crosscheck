@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/crosscheck/profile.schema.json",
   "title": "Crosscheck aircraft profile",
-  "description": "One file per aircraft. Structure, types and allowed keys are checked here. Class rules (pulse needs pulse_ms, delta needs display, ...) and cross references are checked by the Crosscheck.Profiles validator, see profiles/SCHEMA.md.",
+  "description": "One file per aircraft. Structure, types and allowed keys are checked here. Class rules (pulse needs pulse_ms, verified needs values or range, ...) and cross references are checked by the Crosscheck.Profiles validator, see profiles/SCHEMA.md.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "aircraft", "groups", "vars"],

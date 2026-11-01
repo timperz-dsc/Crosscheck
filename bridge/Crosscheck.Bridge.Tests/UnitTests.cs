@@ -106,7 +106,7 @@ public class CanonicalHashTests
 
 public class SafetyGuardTests
 {
-    private readonly Crosscheck.Profiles.Model.Profile _profile = Repo.LoadFenix();
+    private readonly Crosscheck.Profiles.Model.Profile _profile = Repo.LoadFixture();
 
     [Theory]
     [InlineData("S_OH_EXT_LT_NAV_LOGO", 1)] // not in the profile
@@ -196,7 +196,7 @@ public class MessageValidatorTests
 
 public class AircraftVersionTests
 {
-    private readonly FakeFenixGraphQl _gql = new(new FakeSimAdapter(Repo.LoadFenix()));
+    private readonly FakeFenixGraphQl _gql = new(new FakeSimAdapter(Repo.LoadFixture()));
 
     [Fact]
     public async Task Reads_both_versions_without_warnings()
@@ -238,7 +238,7 @@ public class NonAsciiPathTests
         try
         {
             var profile = Path.Combine(dir, "profile åäö.yaml");
-            File.Copy(Repo.FenixProfile, profile);
+            File.Copy(Repo.FixtureProfile, profile);
             var loaded = ProfileLoader.LoadFile(profile);
             Assert.True(loaded.IsValid, string.Join("\n", loaded.FormatIssues()));
 
@@ -259,5 +259,19 @@ public class NonAsciiPathTests
         var screen = McduScreen.Parse("<root><title>       MCDU MENU        </title><line>g&lt;FMGCw            CONFIG&gt;</line></root>")!;
         Assert.Equal(["       MCDU MENU        ", "<FMGC            CONFIG>"], screen.Rows);
         Assert.Matches("^[0-9a-f]{16}$", screen.Hash);
+    }
+}
+
+public class ProfileHashTests
+{
+    [Fact]
+    public void Line_endings_do_not_change_the_profile_hash()
+    {
+        var lf = File.ReadAllBytes(Repo.FixtureProfile);
+        Assert.DoesNotContain((byte)'\r', lf); // .gitattributes keeps profiles LF
+        var crlf = System.Text.Encoding.UTF8.GetBytes(System.Text.Encoding.UTF8.GetString(lf).Replace("\n", "\r\n"));
+        Assert.Equal(ProfileHash.Of(lf), ProfileHash.Of(crlf));
+        Assert.StartsWith("sha256:", ProfileHash.Of(lf));
+        Assert.NotEqual(ProfileHash.Of(lf), ProfileHash.Of([.. lf, (byte)' ']));
     }
 }

@@ -15,7 +15,8 @@ namespace Crosscheck.Bridge.Tests;
 public static class Repo
 {
     public static string Root { get; } = Find();
-    public static string FenixProfile => Path.Combine(Root, "profiles", "fenix-a320", "profile.yaml");
+    /// <summary>Test data (Fixtures/profile.yaml), so changes to the real profile never break these tests.</summary>
+    public static string FixtureProfile => Path.Combine(Root, "bridge", "Crosscheck.Bridge.Tests", "Fixtures", "profile.yaml");
 
     private static string Find()
     {
@@ -24,9 +25,9 @@ public static class Repo
         throw new InvalidOperationException("repo root not found");
     }
 
-    public static Profile LoadFenix()
+    public static Profile LoadFixture()
     {
-        var r = ProfileLoader.LoadFile(FenixProfile);
+        var r = ProfileLoader.LoadFile(FixtureProfile);
         Assert.True(r.IsValid, string.Join("\n", r.FormatIssues()));
         return r.Profile!;
     }
@@ -86,7 +87,7 @@ public sealed class MemoryChannel : IProtocolChannel
 public sealed class EngineHarness : IAsyncDisposable
 {
     public const string OtherClient = "c_other0001";
-    public Profile Profile { get; } = Repo.LoadFenix();
+    public Profile Profile { get; } = Repo.LoadFixture();
     public FakeSimAdapter Sim { get; }
     public FakeFenixGraphQl Gql { get; }
     public MemoryChannel Channel { get; } = new();
