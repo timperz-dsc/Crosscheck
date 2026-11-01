@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "type": "notice",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 44,
+  "ts": 1793520000000,
+  "body": {
+    "kind": "overridden",
+    "message": "S_OH_EXT_LT_STROBE overridden by PM (guest).",
+    "id": "h-119",
+    "var": "S_OH_EXT_LT_STROBE",
+    "by_client_id": "c_g4Rt8LpZ",
+    "by_seat": "guest",
+    "by_role": "pm",
+    "by_seq": 45
+  }
+}

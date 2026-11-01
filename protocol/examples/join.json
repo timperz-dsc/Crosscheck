@@ -1,0 +1,20 @@
+{
+  "v": 1,
+  "type": "join",
+  "session": null,
+  "ts": 1793520000000,
+  "body": {
+    "join_code": "k7m3qx",
+    "preflight": {
+      "bridge_version": "0.1.0",
+      "profile_id": "fenix-a320",
+      "profile_hash": "sha256:7f3a9c1e2b4d5f60",
+      "aircraft": {
+        "package_version": "3.0.0.7613",
+        "app_version": "3.0.0.330"
+      },
+      "airac": "2611"
+    },
+    "name": "Tim"
+  }
+}

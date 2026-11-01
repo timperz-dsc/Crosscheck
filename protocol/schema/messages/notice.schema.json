@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/notice.schema.json",
+  "title": "notice",
+  "description": "Information for the pilots. kinds: overridden, corrected, desync_cleared, stream_dropped, control_ack_missing. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "notice"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "overridden",
+            "corrected",
+            "desync_cleared",
+            "stream_dropped",
+            "control_ack_missing"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "by_client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "by_seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "by_role": {
+          "$ref": "../common.schema.json#/$defs/role"
+        },
+        "by_seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target": {
+          "$ref": "../common.schema.json#/$defs/scalar"
+        },
+        "side": {
+          "$ref": "../common.schema.json#/$defs/role"
+        },
+        "client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "reason": {
+          "$ref": "../common.schema.json#/$defs/desyncReason"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

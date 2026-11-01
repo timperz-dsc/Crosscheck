@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "type": "desync",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 57,
+  "ts": 1793520000000,
+  "body": {
+    "var": "S_OH_ELEC_BAT1",
+    "group": "overhead",
+    "reason": "no_ack",
+    "expected": 1,
+    "observed": null,
+    "command_id": "h-118",
+    "client_id": "c_g4Rt8LpZ",
+    "message": "No ack from guest after 3 re-sends."
+  }
+}

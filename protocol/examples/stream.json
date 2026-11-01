@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "type": "stream",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "frame": 1834,
+    "data": {
+      "lat": 47.4612,
+      "lon": 8.5535,
+      "alt_ft": 1416,
+      "pitch_deg": 2.1,
+      "bank_deg": 0,
+      "hdg_deg": 280.4
+    },
+    "from": "c_h7Gm2KxQ"
+  }
+}

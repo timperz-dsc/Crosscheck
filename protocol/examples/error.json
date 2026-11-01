@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "type": "error",
+  "session": null,
+  "ts": 1793520000000,
+  "body": {
+    "code": "invalid_message",
+    "message": "command: body must have required property 'group'",
+    "details": [
+      "/body: must have required property 'group'"
+    ]
+  }
+}

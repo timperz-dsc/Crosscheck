@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "type": "snapshot_diff",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 61,
+  "ts": 1793520000000,
+  "body": {
+    "request_id": "r7",
+    "group": "overhead",
+    "pf_client_id": "c_h7Gm2KxQ",
+    "differences": [
+      {
+        "var": "S_OH_ELEC_BAT2",
+        "class": "verified",
+        "pf": 1,
+        "pm": 0,
+        "action": "correct",
+        "target": 1,
+        "sides": [
+          "pm"
+        ],
+        "source": "pf_reference"
+      }
+    ]
+  }
+}

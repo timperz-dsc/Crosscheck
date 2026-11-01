@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/control_handover.schema.json",
+  "title": "control_handover",
+  "description": "Control is moving. Stream is frozen for freeze_ms (all stream dropped), then control_changed follows. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "control_handover"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "epoch",
+        "new_pf_client_id",
+        "new_pf_seat",
+        "previous_pf_client_id",
+        "freeze_ms"
+      ],
+      "properties": {
+        "epoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "new_pf_client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "new_pf_seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "previous_pf_client_id": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/clientId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "freeze_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

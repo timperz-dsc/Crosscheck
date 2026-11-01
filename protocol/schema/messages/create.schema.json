@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/create.schema.json",
+  "title": "create",
+  "description": "Create a session. The sender becomes host and pilot flying. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "create"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preflight"
+      ],
+      "properties": {
+        "preflight": {
+          "$ref": "../common.schema.json#/$defs/preflight"
+        },
+        "name": {
+          "$ref": "../common.schema.json#/$defs/name"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,22 @@
+{
+  "v": 1,
+  "type": "snapshot_values",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "request_id": "r7",
+    "group": "overhead",
+    "values": [
+      {
+        "var": "S_OH_ELEC_BAT1",
+        "class": "verified",
+        "value": 1
+      },
+      {
+        "var": "I_OH_ELEC_BAT1_FAULT",
+        "class": "observe",
+        "value": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "v": 1,
+  "type": "created",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 1,
+  "ts": 1793520000000,
+  "body": {
+    "session_id": "s_k3J9xQ2mPa",
+    "join_code": "K7M3QX",
+    "client_id": "c_h7Gm2KxQ",
+    "resume_token": "q8Zr1vYc5Ue0bN3hT6wKpL2aD9sF4gJ7",
+    "seat": "host",
+    "role": "pf",
+    "pf_client_id": "c_h7Gm2KxQ",
+    "config": {
+      "heartbeat_ms": 1000,
+      "lost_after_ms": 5000,
+      "session_ttl_ms": 300000,
+      "snapshot_interval_ms": 2000
+    }
+  }
+}

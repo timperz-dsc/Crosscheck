@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/pong.schema.json",
+  "title": "pong",
+  "description": "Answer to ping, echoing nonce and t. (both directions)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "pong"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nonce",
+        "t"
+      ],
+      "properties": {
+        "nonce": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

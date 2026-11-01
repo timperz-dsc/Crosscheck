@@ -1,0 +1,19 @@
+{
+  "v": 1,
+  "type": "join_rejected",
+  "session": null,
+  "ts": 1793520000000,
+  "body": {
+    "reason": "preflight_mismatch",
+    "message": "Preflight mismatch: profile_hash.",
+    "diff": [
+      {
+        "field": "profile_hash",
+        "reference": "sha256:7f3a9c1e2b4d5f60",
+        "joining": "sha256:0d1e2f3a4b5c6d7e",
+        "severity": "reject",
+        "message": "Profile files differ. Both pilots need the same profile."
+      }
+    ]
+  }
+}

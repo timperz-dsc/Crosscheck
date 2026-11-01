@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/correction.schema.json",
+  "title": "correction",
+  "description": "Write target to this var (for delta: send the change that brings the display to target). Acked like a command. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "correction"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "var",
+        "class",
+        "target",
+        "group",
+        "settle_ms",
+        "source",
+        "request_id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "class": {
+          "enum": [
+            "verified",
+            "analog",
+            "owned",
+            "delta"
+          ]
+        },
+        "target": {
+          "type": "number"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "settle_ms": {
+          "$ref": "../common.schema.json#/$defs/settleMs"
+        },
+        "source": {
+          "description": "command_log = value of a logged pilot command (the only source allowed for the PF); pf_reference = PF value, only ever written to the PM.",
+          "enum": [
+            "command_log",
+            "pf_reference"
+          ]
+        },
+        "source_seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "request_id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

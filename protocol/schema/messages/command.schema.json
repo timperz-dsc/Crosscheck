@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/command.schema.json",
+  "title": "command",
+  "description": "A pilot changed something. Client to server: without origin/attempt. Server to receiver: same body plus origin and attempt; envelope seq is the global order of the command. (both directions)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "command"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "var",
+        "class",
+        "group",
+        "settle_ms"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "class": {
+          "$ref": "../common.schema.json#/$defs/commandClass"
+        },
+        "value": {
+          "description": "Absolute value (verified, analog, owned). For pulse the value written first (usually 1).",
+          "type": "number"
+        },
+        "delta": {
+          "description": "Only for class delta: the change. Never an absolute value.",
+          "type": "number",
+          "not": {
+            "const": 0
+          }
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "settle_ms": {
+          "$ref": "../common.schema.json#/$defs/settleMs"
+        },
+        "origin": {
+          "description": "Set by the server when relaying.",
+          "$ref": "../common.schema.json#/$defs/origin"
+        },
+        "attempt": {
+          "description": "Set by the server: 0 for the first send, 1..3 for re-sends.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "class"
+            ],
+            "properties": {
+              "class": {
+                "const": "delta"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "delta"
+            ],
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "value"
+            ],
+            "not": {
+              "required": [
+                "delta"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "unevaluatedProperties": false
+}

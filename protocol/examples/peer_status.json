@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "peer_status",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 3,
+  "ts": 1793520000000,
+  "body": {
+    "client_id": "c_g4Rt8LpZ",
+    "seat": "guest",
+    "role": "pm",
+    "state": "lost",
+    "reason": "no_pong"
+  }
+}

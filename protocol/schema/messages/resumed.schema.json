@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/resumed.schema.json",
+  "title": "resumed",
+  "description": "Answer to resume. Carries no seq. Followed by the replayed messages (replay: true), or by a full snapshot resync when full_resync is true. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "resumed"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "client_id",
+        "seat",
+        "role",
+        "pf_client_id",
+        "replayed",
+        "full_resync",
+        "desyncs",
+        "peer",
+        "config"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "../common.schema.json#/$defs/sessionId"
+        },
+        "client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "role": {
+          "$ref": "../common.schema.json#/$defs/role"
+        },
+        "pf_client_id": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/clientId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "replayed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "full_resync": {
+          "type": "boolean"
+        },
+        "desyncs": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/activeDesync"
+          }
+        },
+        "peer": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/peer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config": {
+          "$ref": "../common.schema.json#/$defs/timing"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

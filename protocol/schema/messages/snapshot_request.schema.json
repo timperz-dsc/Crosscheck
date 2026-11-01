@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/snapshot_request.schema.json",
+  "title": "snapshot_request",
+  "description": "Send the values of these groups (null = all groups). (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "snapshot_request"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "groups",
+        "reason"
+      ],
+      "properties": {
+        "request_id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "groups": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "../common.schema.json#/$defs/group"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "enum": [
+            "mismatch",
+            "resync",
+            "join",
+            "control"
+          ]
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

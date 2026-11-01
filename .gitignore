@@ -25,3 +25,6 @@ tools/lvar-scanner/package/
 
 # Local Claude Code context
 CLAUDE.md
+
+# Session server logs
+server/logs/

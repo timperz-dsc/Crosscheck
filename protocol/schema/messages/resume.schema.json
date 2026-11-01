@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/resume.schema.json",
+  "title": "resume",
+  "description": "Re-attach after a lost connection. envelope.session must be set. last_seq is the highest seq the client has seen. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "resume"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "client_id",
+        "resume_token",
+        "last_seq"
+      ],
+      "properties": {
+        "client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "resume_token": {
+          "$ref": "../common.schema.json#/$defs/resumeToken"
+        },
+        "last_seq": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/control_request.schema.json",
+  "title": "control_request",
+  "description": "\"I have control.\" confirm lists the differences the requester accepts (must equal the current list). (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "control_request"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "confirm": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/controlMarker"
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

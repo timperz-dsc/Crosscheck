@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/snapshot_values.schema.json",
+  "title": "snapshot_values",
+  "description": "Values of one group, answer to snapshot_request. One message per group. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "snapshot_values"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "group",
+        "values"
+      ],
+      "properties": {
+        "request_id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "var",
+              "class",
+              "value"
+            ],
+            "properties": {
+              "var": {
+                "$ref": "../common.schema.json#/$defs/varName"
+              },
+              "class": {
+                "$ref": "../common.schema.json#/$defs/snapshotClass"
+              },
+              "value": {
+                "$ref": "../common.schema.json#/$defs/scalar"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

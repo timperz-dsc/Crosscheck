@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/control_changed.schema.json",
+  "title": "control_changed",
+  "description": "The new pilot flying. Both clients answer with control_ack. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "control_changed"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "epoch",
+        "pf_client_id",
+        "pf_seat",
+        "previous_pf_client_id",
+        "confirmed"
+      ],
+      "properties": {
+        "epoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pf_client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "pf_seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "previous_pf_client_id": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/clientId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirmed": {
+          "description": "Differences the new PF confirmed when taking control (empty when snapshots matched).",
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/controlMarker"
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/control_denied.schema.json",
+  "title": "control_denied",
+  "description": "Control request refused. differences lists groups (or markers) that do not match. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "control_denied"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason",
+        "differences",
+        "desyncs",
+        "message"
+      ],
+      "properties": {
+        "reason": {
+          "enum": [
+            "snapshot_mismatch",
+            "peer_lost",
+            "no_snapshots",
+            "already_pf",
+            "handover_in_progress"
+          ]
+        },
+        "differences": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/controlMarker"
+          }
+        },
+        "desyncs": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/activeDesync"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

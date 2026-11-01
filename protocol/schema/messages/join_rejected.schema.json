@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/join_rejected.schema.json",
+  "title": "join_rejected",
+  "description": "Answer to a join that is refused. diff lists every preflight difference. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "join_rejected"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason",
+        "message",
+        "diff"
+      ],
+      "properties": {
+        "reason": {
+          "enum": [
+            "unknown_code",
+            "session_full",
+            "preflight_mismatch"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "diff": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/diffEntry"
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

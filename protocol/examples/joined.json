@@ -1,0 +1,37 @@
+{
+  "v": 1,
+  "type": "joined",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 2,
+  "ts": 1793520000000,
+  "body": {
+    "session_id": "s_k3J9xQ2mPa",
+    "client_id": "c_g4Rt8LpZ",
+    "resume_token": "Xb7nQ2rT9mV4kL1pZ8sC3dF6gH0jW5yE",
+    "seat": "guest",
+    "role": "pm",
+    "pf_client_id": "c_h7Gm2KxQ",
+    "peer": {
+      "client_id": "c_h7Gm2KxQ",
+      "seat": "host",
+      "role": "pf",
+      "state": "connected",
+      "name": "Sebastian"
+    },
+    "warnings": [
+      {
+        "field": "airac",
+        "reference": "2611",
+        "joining": "2610",
+        "severity": "warn",
+        "message": "AIRAC differs: MCDU pages may legitimately differ."
+      }
+    ],
+    "config": {
+      "heartbeat_ms": 1000,
+      "lost_after_ms": 5000,
+      "session_ttl_ms": 300000,
+      "snapshot_interval_ms": 2000
+    }
+  }
+}

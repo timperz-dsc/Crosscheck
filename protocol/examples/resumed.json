@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "type": "resumed",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "session_id": "s_k3J9xQ2mPa",
+    "client_id": "c_g4Rt8LpZ",
+    "seat": "guest",
+    "role": "pm",
+    "pf_client_id": "c_h7Gm2KxQ",
+    "replayed": 3,
+    "full_resync": false,
+    "desyncs": [],
+    "peer": {
+      "client_id": "c_h7Gm2KxQ",
+      "seat": "host",
+      "role": "pf",
+      "state": "connected"
+    },
+    "config": {
+      "heartbeat_ms": 1000,
+      "lost_after_ms": 5000,
+      "session_ttl_ms": 300000,
+      "snapshot_interval_ms": 2000
+    }
+  }
+}

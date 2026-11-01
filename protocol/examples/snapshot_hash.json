@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "type": "snapshot_hash",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "group": "overhead",
+    "hash": "3f9a1c0e7b2d4a68",
+    "applied_seq": 42
+  }
+}

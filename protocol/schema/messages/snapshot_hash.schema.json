@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/snapshot_hash.schema.json",
+  "title": "snapshot_hash",
+  "description": "Hash of one panel group, sent about every snapshot_interval_ms. applied_seq is the highest pilot-command seq the client has processed (for logs). (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "snapshot_hash"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group",
+        "hash",
+        "applied_seq"
+      ],
+      "properties": {
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8,64}$"
+        },
+        "applied_seq": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

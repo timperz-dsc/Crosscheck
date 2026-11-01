@@ -1,0 +1,21 @@
+{
+  "v": 1,
+  "type": "command",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 42,
+  "ts": 1793520000000,
+  "body": {
+    "id": "h-118",
+    "var": "S_OH_ELEC_BAT1",
+    "class": "verified",
+    "value": 1,
+    "group": "overhead",
+    "settle_ms": 150,
+    "origin": {
+      "client_id": "c_h7Gm2KxQ",
+      "seat": "host",
+      "role": "pf"
+    },
+    "attempt": 0
+  }
+}

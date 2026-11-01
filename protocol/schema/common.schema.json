@@ -1,0 +1,373 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/common.schema.json",
+  "title": "Crosscheck protocol v1 – shared definitions",
+  "description": "Envelope and value types used by every message. See docs/protocol.md.",
+  "$defs": {
+    "envelope": {
+      "description": "Every message is one JSON object with this envelope. The message itself is in body.",
+      "type": "object",
+      "required": [
+        "v",
+        "type",
+        "session",
+        "ts",
+        "body"
+      ],
+      "properties": {
+        "v": {
+          "description": "Protocol version. Always 1.",
+          "const": 1
+        },
+        "type": {
+          "description": "Message type (snake_case).",
+          "type": "string",
+          "pattern": "^[a-z_]{2,32}$"
+        },
+        "session": {
+          "description": "Session id. null before create/join succeeded.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^s_[A-Za-z0-9_-]{6,40}$"
+        },
+        "seq": {
+          "description": "Server-assigned session sequence number. Only on server-to-client messages that belong to the session log. Never sent by clients.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "ts": {
+          "description": "Sender's clock, milliseconds since the Unix epoch.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "replay": {
+          "description": "true when the server re-sends a logged message after a resume.",
+          "type": "boolean"
+        },
+        "body": {
+          "type": "object"
+        }
+      }
+    },
+    "id": {
+      "description": "Message or command id, unique per sender.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,64}$"
+    },
+    "clientId": {
+      "type": "string",
+      "pattern": "^c_[A-Za-z0-9_-]{6,40}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^s_[A-Za-z0-9_-]{6,40}$"
+    },
+    "resumeToken": {
+      "description": "Secret. Only sent in created/joined and resume. Redacted in logs.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{20,128}$"
+    },
+    "varName": {
+      "description": "L: var name without the L: prefix, or a GraphQL path.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]{1,160}$"
+    },
+    "group": {
+      "description": "Panel group from the profile.",
+      "type": "string",
+      "pattern": "^[a-z0-9_]{1,64}$"
+    },
+    "seat": {
+      "description": "host created the session, guest joined it.",
+      "enum": [
+        "host",
+        "guest"
+      ]
+    },
+    "role": {
+      "description": "pf = pilot flying (holds the control token), pm = pilot monitoring.",
+      "enum": [
+        "pf",
+        "pm"
+      ]
+    },
+    "commandClass": {
+      "description": "Sync classes that can be sent as a command.",
+      "enum": [
+        "verified",
+        "analog",
+        "owned",
+        "delta",
+        "pulse"
+      ]
+    },
+    "snapshotClass": {
+      "description": "Sync classes that appear in snapshots. For delta the value is the display value, reported under the encoder name.",
+      "enum": [
+        "verified",
+        "analog",
+        "owned",
+        "delta",
+        "observe"
+      ]
+    },
+    "scalar": {
+      "description": "A var value. Strings are used for screen hashes; null means unknown or unreadable.",
+      "type": [
+        "number",
+        "string",
+        "null"
+      ]
+    },
+    "settleMs": {
+      "description": "How long the receiver waits before it verifies the effect.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "preflight": {
+      "description": "What a client runs. Compared on join.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bridge_version",
+        "profile_id",
+        "profile_hash",
+        "aircraft"
+      ],
+      "properties": {
+        "bridge_version": {
+          "description": "Semantic version of the bridge. A different major version is rejected.",
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+        },
+        "profile_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{1,64}$"
+        },
+        "profile_hash": {
+          "description": "Hash of the profile file. Compared as an opaque string.",
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "aircraft": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "package_version",
+            "app_version"
+          ],
+          "properties": {
+            "package_version": {
+              "description": "Aircraft package version, e.g. 3.0.0.7613.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "app_version": {
+              "description": "Version of the aircraft app (Fenix system), or \"unknown\".",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          }
+        },
+        "airac": {
+          "description": "AIRAC cycle of the nav data, e.g. \"2611\". null if not known.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]{4}$"
+        }
+      }
+    },
+    "diffEntry": {
+      "description": "One preflight difference.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "reference",
+        "joining",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "bridge_version",
+            "profile_id",
+            "profile_hash",
+            "aircraft.package_version",
+            "aircraft.app_version",
+            "airac"
+          ]
+        },
+        "reference": {
+          "description": "Value of the session's reference (the client that created it).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "joining": {
+          "description": "Value of the joining client.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "reject",
+            "warn"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "desyncReason": {
+      "description": "Why a var is out of sync. See docs/protocol.md.",
+      "enum": [
+        "no_ack",
+        "refused",
+        "observe_mismatch",
+        "log_conflict",
+        "missing_value",
+        "correction_failed",
+        "correction_loop",
+        "no_pf"
+      ]
+    },
+    "activeDesync": {
+      "description": "A desync that is still open (visible until it clears).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "group",
+        "reason",
+        "since"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "#/$defs/varName"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/group"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "$ref": "#/$defs/desyncReason"
+        },
+        "since": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "peer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "client_id",
+        "seat",
+        "role",
+        "state"
+      ],
+      "properties": {
+        "client_id": {
+          "$ref": "#/$defs/clientId"
+        },
+        "seat": {
+          "$ref": "#/$defs/seat"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "state": {
+          "enum": [
+            "connected",
+            "lost"
+          ]
+        },
+        "name": {
+          "$ref": "#/$defs/name"
+        }
+      }
+    },
+    "origin": {
+      "description": "Who sent a relayed command.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "client_id",
+        "seat",
+        "role"
+      ],
+      "properties": {
+        "client_id": {
+          "$ref": "#/$defs/clientId"
+        },
+        "seat": {
+          "$ref": "#/$defs/seat"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        }
+      }
+    },
+    "name": {
+      "description": "Display name of a pilot.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "timing": {
+      "description": "Timing the server uses, so the client can match it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "heartbeat_ms",
+        "lost_after_ms",
+        "session_ttl_ms",
+        "snapshot_interval_ms"
+      ],
+      "properties": {
+        "heartbeat_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lost_after_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "session_ttl_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "snapshot_interval_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "controlMarker": {
+      "description": "A group name or a marker: @peer_lost (other pilot not connected), @no_snapshots (no hashes to compare yet).",
+      "type": "string",
+      "pattern": "^([a-z0-9_]{1,64}|@peer_lost|@no_snapshots)$"
+    }
+  }
+}

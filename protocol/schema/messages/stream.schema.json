@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/stream.schema.json",
+  "title": "stream",
+  "description": "Physics frame from the PF (position, attitude, velocity, sidestick), up to 30 Hz. Never logged per frame, never carries seq. Field set inside data is open until the follower spike. (both directions)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "stream"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frame",
+        "data"
+      ],
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "data": {
+          "type": "object",
+          "maxProperties": 64,
+          "propertyNames": {
+            "pattern": "^[a-z0-9_]{1,40}$"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "from": {
+          "description": "Set by the server when relaying.",
+          "$ref": "../common.schema.json#/$defs/clientId"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/peer_status.schema.json",
+  "title": "peer_status",
+  "description": "The other pilot joined, was lost, resumed, left or expired. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "peer_status"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "client_id",
+        "seat",
+        "role",
+        "state"
+      ],
+      "properties": {
+        "client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "role": {
+          "$ref": "../common.schema.json#/$defs/role"
+        },
+        "state": {
+          "enum": [
+            "joined",
+            "lost",
+            "resumed",
+            "left",
+            "expired"
+          ]
+        },
+        "reason": {
+          "description": "For lost: closed, no_messages (nothing received for lost_after_ms), no_pong (our pings not answered).",
+          "type": "string",
+          "maxLength": 64
+        },
+        "name": {
+          "$ref": "../common.schema.json#/$defs/name"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/diffEntry"
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

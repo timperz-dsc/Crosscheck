@@ -1,0 +1,15 @@
+{
+  "v": 1,
+  "type": "control_denied",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 70,
+  "ts": 1793520000000,
+  "body": {
+    "reason": "snapshot_mismatch",
+    "differences": [
+      "overhead"
+    ],
+    "desyncs": [],
+    "message": "Snapshots differ in: overhead. Confirm the differences to take control anyway."
+  }
+}

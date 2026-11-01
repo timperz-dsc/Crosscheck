@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/created.schema.json",
+  "title": "created",
+  "description": "Answer to create. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "created"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "join_code",
+        "client_id",
+        "resume_token",
+        "seat",
+        "role",
+        "pf_client_id",
+        "config"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "../common.schema.json#/$defs/sessionId"
+        },
+        "join_code": {
+          "description": "6 characters, no look-alikes (no 0, O, 1, I, L).",
+          "type": "string",
+          "pattern": "^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$"
+        },
+        "client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "resume_token": {
+          "$ref": "../common.schema.json#/$defs/resumeToken"
+        },
+        "seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "role": {
+          "$ref": "../common.schema.json#/$defs/role"
+        },
+        "pf_client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "config": {
+          "$ref": "../common.schema.json#/$defs/timing"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

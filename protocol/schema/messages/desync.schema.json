@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/desync.schema.json",
+  "title": "desync",
+  "description": "Something is out of sync and could not be fixed. Sent to both pilots; stays open until desync_cleared. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "desync"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "reason",
+        "expected",
+        "observed",
+        "message"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "reason": {
+          "$ref": "../common.schema.json#/$defs/desyncReason"
+        },
+        "expected": {
+          "$ref": "../common.schema.json#/$defs/scalar"
+        },
+        "observed": {
+          "$ref": "../common.schema.json#/$defs/scalar"
+        },
+        "delta": {
+          "description": "For delta commands: the change that was not confirmed.",
+          "type": "number"
+        },
+        "command_id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "client_id": {
+          "description": "The side where it failed, if one side.",
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pf",
+            "pm"
+          ],
+          "properties": {
+            "pf": {
+              "$ref": "../common.schema.json#/$defs/scalar"
+            },
+            "pm": {
+              "$ref": "../common.schema.json#/$defs/scalar"
+            }
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/message.schema.json",
+  "title": "Crosscheck protocol v1 message",
+  "description": "Any protocol v1 message. Validators should pick messages/<type>.schema.json by the type field for clearer errors.",
+  "oneOf": [
+    {
+      "$ref": "messages/create.schema.json"
+    },
+    {
+      "$ref": "messages/created.schema.json"
+    },
+    {
+      "$ref": "messages/join.schema.json"
+    },
+    {
+      "$ref": "messages/joined.schema.json"
+    },
+    {
+      "$ref": "messages/join_rejected.schema.json"
+    },
+    {
+      "$ref": "messages/peer_status.schema.json"
+    },
+    {
+      "$ref": "messages/leave.schema.json"
+    },
+    {
+      "$ref": "messages/resume.schema.json"
+    },
+    {
+      "$ref": "messages/resumed.schema.json"
+    },
+    {
+      "$ref": "messages/command.schema.json"
+    },
+    {
+      "$ref": "messages/accepted.schema.json"
+    },
+    {
+      "$ref": "messages/ack.schema.json"
+    },
+    {
+      "$ref": "messages/desync.schema.json"
+    },
+    {
+      "$ref": "messages/notice.schema.json"
+    },
+    {
+      "$ref": "messages/snapshot_hash.schema.json"
+    },
+    {
+      "$ref": "messages/snapshot_request.schema.json"
+    },
+    {
+      "$ref": "messages/snapshot_values.schema.json"
+    },
+    {
+      "$ref": "messages/snapshot_diff.schema.json"
+    },
+    {
+      "$ref": "messages/correction.schema.json"
+    },
+    {
+      "$ref": "messages/control_request.schema.json"
+    },
+    {
+      "$ref": "messages/control_denied.schema.json"
+    },
+    {
+      "$ref": "messages/control_handover.schema.json"
+    },
+    {
+      "$ref": "messages/control_changed.schema.json"
+    },
+    {
+      "$ref": "messages/control_ack.schema.json"
+    },
+    {
+      "$ref": "messages/stream.schema.json"
+    },
+    {
+      "$ref": "messages/ping.schema.json"
+    },
+    {
+      "$ref": "messages/pong.schema.json"
+    },
+    {
+      "$ref": "messages/error.schema.json"
+    }
+  ]
+}

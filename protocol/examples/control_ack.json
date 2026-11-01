@@ -1,0 +1,9 @@
+{
+  "v": 1,
+  "type": "control_ack",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "epoch": 2
+  }
+}

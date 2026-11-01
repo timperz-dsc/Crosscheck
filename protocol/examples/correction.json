@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "type": "correction",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 62,
+  "ts": 1793520000000,
+  "body": {
+    "id": "corr:62",
+    "var": "S_OH_ELEC_BAT2",
+    "class": "verified",
+    "target": 1,
+    "group": "overhead",
+    "settle_ms": 500,
+    "source": "pf_reference",
+    "request_id": "r7",
+    "attempt": 0
+  }
+}

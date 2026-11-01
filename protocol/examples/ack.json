@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "ack",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 43,
+  "ts": 1793520000000,
+  "body": {
+    "id": "h-118",
+    "ok": true,
+    "observed": 1,
+    "from": "c_g4Rt8LpZ",
+    "attempt": 0
+  }
+}

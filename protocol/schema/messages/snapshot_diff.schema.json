@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/snapshot_diff.schema.json",
+  "title": "snapshot_diff",
+  "description": "Differences found in one group and what the server does about each (see the PF safety rule). (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "snapshot_diff"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "group",
+        "pf_client_id",
+        "differences"
+      ],
+      "properties": {
+        "request_id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "pf_client_id": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/clientId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "differences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "var",
+              "class",
+              "pf",
+              "pm",
+              "action"
+            ],
+            "properties": {
+              "var": {
+                "$ref": "../common.schema.json#/$defs/varName"
+              },
+              "class": {
+                "$ref": "../common.schema.json#/$defs/snapshotClass"
+              },
+              "pf": {
+                "$ref": "../common.schema.json#/$defs/scalar"
+              },
+              "pm": {
+                "$ref": "../common.schema.json#/$defs/scalar"
+              },
+              "action": {
+                "description": "correct = a correction is sent; desync = cannot be fixed; held = open desync, not corrected again; deferred = control handover in progress, decided afterwards.",
+                "enum": [
+                  "correct",
+                  "desync",
+                  "held",
+                  "deferred"
+                ]
+              },
+              "target": {
+                "$ref": "../common.schema.json#/$defs/scalar"
+              },
+              "sides": {
+                "type": "array",
+                "items": {
+                  "$ref": "../common.schema.json#/$defs/role"
+                },
+                "minItems": 1,
+                "maxItems": 2
+              },
+              "source": {
+                "enum": [
+                  "command_log",
+                  "pf_reference"
+                ]
+              },
+              "source_seq": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "reason": {
+                "$ref": "../common.schema.json#/$defs/desyncReason"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

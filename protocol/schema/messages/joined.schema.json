@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/joined.schema.json",
+  "title": "joined",
+  "description": "Answer to a successful join. warnings lists preflight differences that do not block (AIRAC). (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "joined"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "client_id",
+        "resume_token",
+        "seat",
+        "role",
+        "pf_client_id",
+        "peer",
+        "warnings",
+        "config"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "../common.schema.json#/$defs/sessionId"
+        },
+        "client_id": {
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "resume_token": {
+          "$ref": "../common.schema.json#/$defs/resumeToken"
+        },
+        "seat": {
+          "$ref": "../common.schema.json#/$defs/seat"
+        },
+        "role": {
+          "$ref": "../common.schema.json#/$defs/role"
+        },
+        "pf_client_id": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/clientId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "peer": {
+          "anyOf": [
+            {
+              "$ref": "../common.schema.json#/$defs/peer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/diffEntry"
+          }
+        },
+        "config": {
+          "$ref": "../common.schema.json#/$defs/timing"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

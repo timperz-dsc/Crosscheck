@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "snapshot_request",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 60,
+  "ts": 1793520000000,
+  "body": {
+    "request_id": "r7",
+    "groups": [
+      "overhead"
+    ],
+    "reason": "mismatch"
+  }
+}

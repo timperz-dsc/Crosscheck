@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/ack.schema.json",
+  "title": "ack",
+  "description": "Receiver to server: result of applying a command or correction. Server to origin: forwarded with from and attempt. (both directions)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "ack"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ok",
+        "observed"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "ok": {
+          "description": "true when the read-back (and effect, where defined) matches.",
+          "type": "boolean"
+        },
+        "observed": {
+          "$ref": "../common.schema.json#/$defs/scalar"
+        },
+        "superseded": {
+          "description": "Not written because a newer command for the same var is already known (seq order).",
+          "type": "boolean"
+        },
+        "from": {
+          "description": "Set by the server when forwarding.",
+          "$ref": "../common.schema.json#/$defs/clientId"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}
