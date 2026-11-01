@@ -287,7 +287,7 @@ public class SnapshotTests
         Assert.Contains(fcu, v => v.Var == "E_FCU_ALTITUDE" && v.Class == "delta" && (double)v.Value! == 120);
         Assert.Contains(h.Engine.GroupValues("cdu1"), v => v.Var == "aircraft.mcdu1.display" && v.Value is string);
         Assert.Contains(h.Engine.GroupValues("systems"), v => v.Var == "aircraft.fuel.left.amount.kg" && (double)v.Value! == 1500);
-        Assert.Empty(h.Engine.GroupValues("cabin")); // nothing in that group
+        Assert.Empty(h.Engine.GroupValues("no_such_group"));
     }
 
     [Fact]
@@ -297,7 +297,7 @@ public class SnapshotTests
         await h.StartAsync(pf: true);
         h.Channel.Inject("snapshot_request", new JsonObject { ["request_id"] = "r9", ["groups"] = null, ["reason"] = "join" }, h.Channel.NextSeq());
         var answers = h.Channel.SentOf("snapshot_values");
-        Assert.Equal(["cdu1", "efis", "fcu", "flightcontrols", "mip", "overhead", "systems"], answers.Select(a => a["group"]!.GetValue<string>()).Order());
+        Assert.Equal(["cabin", "cb", "cdu1", "cdu2", "ecam", "efis", "fcu", "flightcontrols", "ground", "mip", "overhead", "pedestal", "systems"], answers.Select(a => a["group"]!.GetValue<string>()).Order());
         Assert.All(answers, a => Assert.Equal("r9", a["request_id"]!.GetValue<string>()));
     }
 }

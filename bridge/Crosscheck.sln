@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crosscheck.Bridge.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crosscheck.Bridge.SimSmoke.Tests", "Crosscheck.Bridge.SimSmoke.Tests\Crosscheck.Bridge.SimSmoke.Tests.csproj", "{C2BA96FD-FC67-4142-968F-00F0A6BD773B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileGen", "..\tools\profile-gen\ProfileGen.csproj", "{2F69DEE5-26C0-400A-9538-E84AF61E9A4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{C2BA96FD-FC67-4142-968F-00F0A6BD773B}.Debug|Any CPU.Build.0 = Debug|x64
 		{C2BA96FD-FC67-4142-968F-00F0A6BD773B}.Release|Any CPU.ActiveCfg = Release|x64
 		{C2BA96FD-FC67-4142-968F-00F0A6BD773B}.Release|Any CPU.Build.0 = Release|x64
+		{2F69DEE5-26C0-400A-9538-E84AF61E9A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F69DEE5-26C0-400A-9538-E84AF61E9A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F69DEE5-26C0-400A-9538-E84AF61E9A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F69DEE5-26C0-400A-9538-E84AF61E9A4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
