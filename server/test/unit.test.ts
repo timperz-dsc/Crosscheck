@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, scaleTimings } from '../src/config.js';
 import { CorrectionGuard } from '../src/session/correctionGuard.js';
@@ -152,5 +153,18 @@ describe('canonical snapshot hash (fake bridge, documented in docs/protocol.md)'
     const b = canonicalHash([{ var: 'A', class: 'analog', value: 0.25 }, { var: 'B', class: 'verified', value: 1 }]);
     expect(a).toBe(b);
     expect(a).toMatch(/^[0-9a-f]{16}$/);
+  });
+});
+
+describe('canonical hash test vectors (protocol/test-vectors, also checked by the C# bridge)', () => {
+  it('matches every vector', () => {
+    const file = new URL('../../protocol/test-vectors/canonical-hash.json', import.meta.url);
+    const { cases } = JSON.parse(readFileSync(file, 'utf8')) as { cases: { values: { var: string; value: number | string | null }[]; formatted: string[]; hash: string }[] };
+    expect(cases.length).toBeGreaterThan(5);
+    for (const c of cases) {
+      const values = c.values.map((v) => ({ var: v.var, class: 'verified' as const, value: v.value }));
+      expect(values.map((v) => formatValue(v.value))).toEqual(c.formatted);
+      expect(canonicalHash(values)).toBe(c.hash);
+    }
   });
 });

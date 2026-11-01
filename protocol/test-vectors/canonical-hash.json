@@ -1,0 +1,139 @@
+{
+  "description": "Canonical snapshot hash (docs/protocol.md section 7). Generated from server/test/fake/fakeSim.ts; checked by the server and bridge tests.",
+  "cases": [
+    {
+      "name": "integers and order",
+      "values": [
+        {
+          "var": "S_B",
+          "value": 1
+        },
+        {
+          "var": "S_A",
+          "value": 0
+        },
+        {
+          "var": "N_FCU_ALTITUDE",
+          "value": 35000
+        }
+      ],
+      "formatted": [
+        "1",
+        "0",
+        "35000"
+      ],
+      "hash": "fedd81a79c980d32"
+    },
+    {
+      "name": "decimals",
+      "values": [
+        {
+          "var": "A_KNOB",
+          "value": 0.25
+        },
+        {
+          "var": "A_TEMP",
+          "value": 0.30000000000000004
+        },
+        {
+          "var": "A_SMALL",
+          "value": 4e-7
+        },
+        {
+          "var": "A_ROUND",
+          "value": 0.1234567
+        }
+      ],
+      "formatted": [
+        "0.25",
+        "0.3",
+        "0",
+        "0.123457"
+      ],
+      "hash": "70461c64977c0a77"
+    },
+    {
+      "name": "negative and minus zero",
+      "values": [
+        {
+          "var": "N_VS",
+          "value": -1500
+        },
+        {
+          "var": "N_ZERO",
+          "value": 0
+        },
+        {
+          "var": "N_NEG",
+          "value": -0.5
+        }
+      ],
+      "formatted": [
+        "-1500",
+        "0",
+        "-0.5"
+      ],
+      "hash": "f94d3d9b35b43cff"
+    },
+    {
+      "name": "strings and null",
+      "values": [
+        {
+          "var": "aircraft.mcdu1.display",
+          "value": "3f9a1c0e7b2d4a68"
+        },
+        {
+          "var": "TEXT",
+          "value": "A \"B\"\\ C\n\t\u0001"
+        },
+        {
+          "var": "UNKNOWN",
+          "value": null
+        }
+      ],
+      "formatted": [
+        "\"3f9a1c0e7b2d4a68\"",
+        "\"A \\\"B\\\"\\\\ C\\n\\t\\u0001\"",
+        "null"
+      ],
+      "hash": "5160d77793ac9f6e"
+    },
+    {
+      "name": "unicode",
+      "values": [
+        {
+          "var": "NAME",
+          "value": "Prøfil åäö"
+        }
+      ],
+      "formatted": [
+        "\"Prøfil åäö\""
+      ],
+      "hash": "f69b1cf3c5867f18"
+    },
+    {
+      "name": "large",
+      "values": [
+        {
+          "var": "BIG",
+          "value": 123456789012
+        },
+        {
+          "var": "FUEL",
+          "value": 18234.5
+        }
+      ],
+      "formatted": [
+        "123456789012",
+        "18234.5"
+      ],
+      "hash": "eb479d5b19f93efc"
+    },
+    {
+      "name": "empty",
+      "values": [],
+      "formatted": [],
+      "hash": "e3b0c44298fc1c14"
+    }
+  ]
+}
