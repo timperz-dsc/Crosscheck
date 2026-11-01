@@ -5,11 +5,8 @@
   "seq": 70,
   "ts": 1793520000000,
   "body": {
-    "reason": "snapshot_mismatch",
-    "differences": [
-      "overhead"
-    ],
+    "reason": "peer_lost",
     "desyncs": [],
-    "message": "Snapshots differ in: overhead. Confirm the differences to take control anyway."
+    "message": "The pilot flying is not connected. Confirm @peer_lost to take control anyway."
   }
 }

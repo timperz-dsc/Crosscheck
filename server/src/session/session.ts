@@ -5,7 +5,7 @@ import type { ProtocolValidator } from '../protocol/validate.js';
 import {
   REPLAYABLE, isAbsolute,
   type AckBody, type ActiveDesync, type CommandBody, type CommandClass, type ControlAckBody,
-  type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
+  type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
   type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
   type Seat, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Timing,
 } from '../protocol/types.js';
@@ -74,6 +74,8 @@ interface GroupState {
   quietSince: number;
   /** A decision fell into a control handover freeze; re-evaluate afterwards. */
   deferred: boolean;
+  /** Vars that differed in the last snapshot diff of this group; cleared when the hashes match. */
+  diffVars: string[];
 }
 
 interface SnapshotRequestState {
@@ -110,7 +112,9 @@ export class Session {
   private readonly groups = new Map<string, GroupState>();
   private readonly requests = new Map<string, SnapshotRequestState>();
   private readonly desyncs = new Map<string, OpenDesync>();
-  private handover: { epoch: number; newPf: string; prevPf: string | null; confirmed: string[]; timer: NodeJS.Timeout } | null = null;
+  private handover: { epoch: number; kind: ControlKind; newPf: string; prevPf: string | null; confirmed: ControlConfirm[]; timer: NodeJS.Timeout } | null = null;
+  /** Last stream frame relayed from the PF; handed to the new PF in control_changed. */
+  private lastFrame: { frame: number; data: Record<string, number>; from: string } | null = null;
   private controlAcks: { epoch: number; acked: Set<string>; timer: NodeJS.Timeout } | null = null;
   private epoch = 1;
   private requestCounter = 0;
@@ -242,6 +246,7 @@ export class Session {
       case 'snapshot_hash': return this.onSnapshotHash(slot, body);
       case 'snapshot_values': return this.onSnapshotValues(slot, body);
       case 'control_request': return this.onControlRequest(slot, body);
+      case 'control_give': return this.onControlGive(slot);
       case 'control_ack': return this.onControlAck(slot, body);
       case 'stream': return this.onStream(slot, body);
       case 'ping': return this.onPing(slot, body);
@@ -421,7 +426,7 @@ export class Session {
   private group(name: string): GroupState {
     let g = this.groups.get(name);
     if (!g) {
-      g = { reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false };
+      g = { reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [] };
       this.groups.set(name, g);
     }
     return g;
@@ -446,6 +451,7 @@ export class Session {
     if (a.at < g.quietSince || b.at < g.quietSince) return;
     if (a.hash === b.hash) {
       g.mismatchCount = 0;
+      g.diffVars = [];
       for (const d of [...this.desyncs.values()]) if (d.group === name) this.clearDesync(d.var, 'match');
       return;
     }
@@ -512,6 +518,7 @@ export class Session {
     const other = this.other(ref)!;
     const diffs = diffValues(byClient.get(ref.id)!, byClient.get(other.id)!);
     const differing = new Set(diffs.map((d) => d.var));
+    this.group(group).diffVars = [...differing].sort();
     for (const d of [...this.desyncs.values()]) {
       if (d.group === group && !differing.has(d.var)) this.clearDesync(d.var, 'match');
     }
@@ -591,47 +598,68 @@ export class Session {
 
   // ------------------------------------------------------------------ control token
 
+  private denyControl(slot: ClientSlot, reason: 'peer_lost' | 'already_pf' | 'not_pf' | 'handover_in_progress', message: string): void {
+    this.log.event('control_denied', { client: slot.id, reason });
+    this.emit([slot], 'control_denied', { reason, desyncs: this.openDesyncs(), message });
+  }
+
+  /**
+   * "I have control" from the PM. Granted immediately, like in a real cockpit: open
+   * differences are listed in control_changed but never block. Only a lost PF needs an
+   * explicit confirm.
+   */
   private onControlRequest(slot: ClientSlot, body: ControlRequestBody): void {
-    const deny = (reason: string, differences: string[], message: string): void => {
-      this.emit([slot], 'control_denied', { reason, differences, desyncs: this.openDesyncs(), message });
-    };
-    if (this.handover) return deny('handover_in_progress', [], 'A control handover is already in progress.');
-    if (this.pfClientId === slot.id) return deny('already_pf', [], 'You already have control.');
-
-    const differences = this.controlDifferences(slot);
-    const confirm = [...new Set(body.confirm ?? [])].sort();
-    const confirmed = differences.length > 0 && confirm.length === differences.length && confirm.every((c, i) => c === differences[i]);
-    if (differences.length > 0 && !confirmed) {
-      const reason = differences.includes('@peer_lost') ? 'peer_lost' : differences.includes('@no_snapshots') ? 'no_snapshots' : 'snapshot_mismatch';
-      this.log.event('control_denied', { client: slot.id, differences, confirm });
-      return deny(reason, differences, `Not taking control: ${differences.join(', ')} differ. Confirm these differences to take control anyway.`);
-    }
-    this.grantControl(slot, confirmed ? differences : []);
-  }
-
-  private controlDifferences(slot: ClientSlot): string[] {
+    if (this.handover) return this.denyControl(slot, 'handover_in_progress', 'A control handover is already in progress.');
+    if (this.pfClientId === slot.id) return this.denyControl(slot, 'already_pf', 'You already have control.');
     const peer = this.other(slot);
-    if (!peer || peer.state !== 'connected') return ['@peer_lost'];
-    const known = [...this.groups.entries()].filter(([, g]) => g.reports.size > 0);
-    if (known.length === 0) return ['@no_snapshots'];
-    return known
-      .filter(([, g]) => {
-        const a = g.reports.get(slot.id);
-        const b = g.reports.get(peer.id);
-        return !a || !b || a.hash !== b.hash;
-      })
-      .map(([name]) => name)
-      .sort();
+    const peerLost = !peer || peer.state !== 'connected';
+    const confirmed = peerLost && (body.confirm ?? []).includes('@peer_lost');
+    if (peerLost && !confirmed) {
+      return this.denyControl(slot, 'peer_lost', 'The pilot flying is not connected. Confirm @peer_lost to take control anyway.');
+    }
+    this.grantControl(slot, 'take', confirmed ? ['@peer_lost'] : []);
   }
 
-  private grantControl(slot: ClientSlot, confirmed: string[]): void {
+  /** "You have control" from the PF: the PM gets control with the same handover sequence. */
+  private onControlGive(slot: ClientSlot): void {
+    if (this.handover) return this.denyControl(slot, 'handover_in_progress', 'A control handover is already in progress.');
+    if (this.pfClientId !== slot.id) return this.denyControl(slot, 'not_pf', 'Only the pilot flying can give control.');
+    const peer = this.other(slot);
+    if (!peer || peer.state !== 'connected') {
+      return this.denyControl(slot, 'peer_lost', 'The other pilot is not connected; you keep control.');
+    }
+    this.grantControl(peer, 'give', []);
+  }
+
+  /** Groups and vars that differ right now. Informational only, for the new PF's UI. */
+  private controlDifferences(): { groups: string[]; vars: string[] } {
+    const groups = new Set<string>();
+    const vars = new Set<string>();
+    const [a, b] = this.slots;
+    for (const [name, g] of this.groups) {
+      const ha = a && g.reports.get(a.id);
+      const hb = b && g.reports.get(b.id);
+      if (ha && hb && ha.hash !== hb.hash) groups.add(name);
+      if (g.diffVars.length > 0) {
+        groups.add(name);
+        for (const v of g.diffVars) vars.add(v);
+      }
+    }
+    for (const d of this.desyncs.values()) {
+      vars.add(d.var);
+      if (d.group) groups.add(d.group);
+    }
+    return { groups: [...groups].sort(), vars: [...vars].sort() };
+  }
+
+  private grantControl(slot: ClientSlot, kind: ControlKind, confirmed: ControlConfirm[]): void {
     const epoch = ++this.epoch;
     const prevPf = this.pfClientId;
     const timer = setTimeout(() => this.finishHandover(), this.config.freezeMs);
-    this.handover = { epoch, newPf: slot.id, prevPf, confirmed, timer };
-    this.log.event('control_granted', { client: slot.id, epoch, confirmed });
+    this.handover = { epoch, kind, newPf: slot.id, prevPf, confirmed, timer };
+    this.log.event('control_granted', { client: slot.id, epoch, kind, confirmed });
     this.emit(this.slots, 'control_handover', {
-      epoch, new_pf_client_id: slot.id, new_pf_seat: slot.seat, previous_pf_client_id: prevPf, freeze_ms: this.config.freezeMs,
+      epoch, kind, new_pf_client_id: slot.id, new_pf_seat: slot.seat, previous_pf_client_id: prevPf, freeze_ms: this.config.freezeMs,
     }, { replayable: false });
   }
 
@@ -645,9 +673,14 @@ export class Session {
       return;
     }
     this.pfClientId = next.id;
+    const differences = this.controlDifferences();
     this.emit(this.slots, 'control_changed', {
-      epoch: h.epoch, pf_client_id: next.id, pf_seat: next.seat, previous_pf_client_id: h.prevPf, confirmed: h.confirmed,
+      epoch: h.epoch, kind: h.kind, pf_client_id: next.id, pf_seat: next.seat, previous_pf_client_id: h.prevPf,
+      confirmed: h.confirmed, differences, desyncs: this.openDesyncs(),
+      last_frame: this.lastFrame && this.lastFrame.from === h.prevPf ? this.lastFrame : null,
     });
+    // The previous PF's last position is only meaningful for this handover.
+    this.lastFrame = null;
     if (this.controlAcks) clearTimeout(this.controlAcks.timer);
     this.controlAcks = { epoch: h.epoch, acked: new Set(), timer: setTimeout(() => this.checkControlAcks(), this.config.controlAckTimeoutMs) };
 
@@ -712,6 +745,7 @@ export class Session {
       this.log.event('stream_started', { client: slot.id, frame: body.frame });
     }
     const peer = this.other(slot);
+    this.lastFrame = { frame: body.frame, data: body.data, from: slot.id };
     if (peer?.state === 'connected') this.sendUnsequenced(peer, 'stream', { frame: body.frame, data: body.data, from: slot.id });
   }
 

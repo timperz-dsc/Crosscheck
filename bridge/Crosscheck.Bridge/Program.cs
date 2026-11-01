@@ -3,6 +3,7 @@ using Crosscheck.Bridge.App;
 using Crosscheck.Bridge.Fenix;
 using Crosscheck.Bridge.Sim;
 using Crosscheck.Bridge.SimConnect;
+using Crosscheck.Bridge.Sync;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ namespace Crosscheck.Bridge.App
 {
     public sealed record Cli(
         SessionMode Mode, string? Code, Uri Server, string ProfilePath, bool FakeSim, int ApiPort,
-        string? LogDir, double GqlPollHz, string? Airac, string? Name, bool Verbose)
+        string? LogDir, double GqlPollHz, string? Airac, string? Name, bool Verbose, SeatSide? Side = null)
     {
         public const string Usage = """
             Usage:
@@ -48,6 +49,7 @@ namespace Crosscheck.Bridge.App
               --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
               --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
               --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
+              --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
               --verbose             more console output
             """;
 
@@ -94,7 +96,7 @@ namespace Crosscheck.Bridge.App
                 }
                 opts[key] = args[++i];
             }
-            var known = new[] { "--server", "--profile", "--sim", "--api-port", "--log-dir", "--gql-poll-hz", "--airac", "--name", "--verbose" };
+            var known = new[] { "--server", "--profile", "--sim", "--api-port", "--log-dir", "--gql-poll-hz", "--airac", "--name", "--verbose", "--seat-side" };
             if (opts.Keys.FirstOrDefault(k => !known.Contains(k)) is { } unknown)
             {
                 error = $"Unknown option {unknown}";
@@ -104,6 +106,18 @@ namespace Crosscheck.Bridge.App
             if (sim is not ("simconnect" or "fake"))
             {
                 error = "--sim must be simconnect or fake";
+                return false;
+            }
+            SeatSide? side = opts.GetValueOrDefault("--seat-side") switch
+            {
+                null => null,
+                "captain" => SeatSide.Captain,
+                "fo" => SeatSide.Fo,
+                _ => (SeatSide)(-1),
+            };
+            if (side is (SeatSide)(-1))
+            {
+                error = "--seat-side must be captain or fo";
                 return false;
             }
             if (!Uri.TryCreate(opts.GetValueOrDefault("--server") ?? "ws://127.0.0.1:8787/ws", UriKind.Absolute, out var server))
@@ -116,7 +130,7 @@ namespace Crosscheck.Bridge.App
                 int.Parse(opts.GetValueOrDefault("--api-port") ?? "8790", System.Globalization.CultureInfo.InvariantCulture),
                 opts.GetValueOrDefault("--log-dir"),
                 double.Parse(opts.GetValueOrDefault("--gql-poll-hz") ?? "2", System.Globalization.CultureInfo.InvariantCulture),
-                opts.GetValueOrDefault("--airac"), opts.GetValueOrDefault("--name"), opts.ContainsKey("--verbose"));
+                opts.GetValueOrDefault("--airac"), opts.GetValueOrDefault("--name"), opts.ContainsKey("--verbose"), side);
             return true;
         }
 
@@ -149,6 +163,7 @@ namespace Crosscheck.Bridge.App
             {
                 Server = cli.Server, ProfilePath = cli.ProfilePath, Mode = cli.Mode, JoinCode = cli.Code, Name = cli.Name,
                 ApiPort = cli.ApiPort, LogDir = cli.LogDir, Airac = cli.Airac,
+                Engine = new EngineOptions { SeatSide = cli.Side },
                 VersionTimeout = cli.FakeSim ? TimeSpan.Zero : TimeSpan.FromSeconds(30),
             };
             _runtime = new BridgeRuntime(options, profile => cli.FakeSim
@@ -165,7 +180,7 @@ namespace Crosscheck.Bridge.App
                     log.LogInformation("Joined the session.");
                 if (_runtime.Api is { } api) log.LogInformation("Local API: http://127.0.0.1:{Port}/status", api.Port);
                 log.LogInformation("Bridge log: {Path}", _runtime.Log.Path);
-                log.LogInformation("Commands: control | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");
+                log.LogInformation("Commands: control | control @peer_lost | give | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");
                 await ConsoleLoop(log, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -198,6 +213,7 @@ namespace Crosscheck.Bridge.App
                     {
                         case ["control"]: runtime.Engine.RequestControl(); break;
                         case ["control", .. var confirm]: runtime.Engine.RequestControl(confirm); break;
+                        case ["give"]: runtime.Engine.GiveControl(); break;
                         case ["status"]: log.LogInformation("{Status}", runtime.Status.ToJson(runtime.Engine.Counters).ToJsonString()); break;
                         case ["set", var name, var value] when runtime.Sim is FakeSimAdapter f: f.PilotSet(name, double.Parse(value, System.Globalization.CultureInfo.InvariantCulture)); break;
                         case ["turn", var name, var clicks] when runtime.Sim is FakeSimAdapter f: f.PilotTurn(name, double.Parse(clicks, System.Globalization.CultureInfo.InvariantCulture)); break;

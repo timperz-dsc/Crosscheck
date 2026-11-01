@@ -94,11 +94,11 @@ public sealed class EngineHarness : IAsyncDisposable
     public BridgeStatus Status { get; } = new();
     public SyncEngine Engine { get; }
 
-    public EngineHarness()
+    public EngineHarness(EngineOptions? options = null)
     {
         Sim = new FakeSimAdapter(Profile, new FakeSimOptions { FrameMs = 5, EffectLagMs = 20, McduLagMs = 30 });
         Gql = new FakeFenixGraphQl(Sim);
-        Engine = new SyncEngine(Profile, Sim, Gql, Channel, Hub, new BridgeLog(null), Status, NullLogger.Instance);
+        Engine = new SyncEngine(Profile, Sim, Gql, Channel, Hub, new BridgeLog(null), Status, NullLogger.Instance, options: options);
     }
 
     /// <summary>Starts sim and engine and opens a session in which this side is PF or PM.</summary>

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/crosscheck/protocol/v1/messages/control_denied.schema.json",
   "title": "control_denied",
-  "description": "Control request refused. differences lists groups (or markers) that do not match. (server to client)",
+  "description": "A control_request or control_give was refused. Snapshot differences never refuse a transfer. (server to client)",
   "type": "object",
   "$ref": "../common.schema.json#/$defs/envelope",
   "properties": {
@@ -14,25 +14,18 @@
       "additionalProperties": false,
       "required": [
         "reason",
-        "differences",
         "desyncs",
         "message"
       ],
       "properties": {
         "reason": {
+          "description": "peer_lost: the other pilot is not connected (a take can confirm @peer_lost, a give cannot). already_pf: take while PF. not_pf: give while PM. handover_in_progress: a handover is running.",
           "enum": [
-            "snapshot_mismatch",
             "peer_lost",
-            "no_snapshots",
             "already_pf",
+            "not_pf",
             "handover_in_progress"
           ]
-        },
-        "differences": {
-          "type": "array",
-          "items": {
-            "$ref": "../common.schema.json#/$defs/controlMarker"
-          }
         },
         "desyncs": {
           "type": "array",

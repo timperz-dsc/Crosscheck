@@ -103,7 +103,9 @@ export interface AckBody {
 export interface SnapshotHashBody { group: string; hash: string; applied_seq: number }
 export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar }
 export interface SnapshotValuesBody { request_id: string; group: string; values: SnapshotValue[] }
-export interface ControlRequestBody { confirm?: string[] }
+export type ControlConfirm = '@peer_lost';
+export type ControlKind = 'take' | 'give';
+export interface ControlRequestBody { confirm?: ControlConfirm[] }
 export interface ControlAckBody { epoch: number }
 export interface StreamBody { frame: number; data: Record<string, number>; from?: string }
 export interface PingBody { nonce: number; t: number; rtt_ms: number | null }

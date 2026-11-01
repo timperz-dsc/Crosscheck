@@ -64,10 +64,17 @@ public sealed record DatarefEntry(
     double? PollHz = null,
     string? Note = null);
 
+/// <summary>The sidestick takeover pushbutton of each seat (left = captain, right = first officer).</summary>
+public sealed record TakeoverRole(string Captain, string Fo);
+
+/// <summary>Vars with a special meaning for Crosscheck itself, beyond being synced.</summary>
+public sealed record ProfileRoles(TakeoverRole? Takeover = null);
+
 public sealed record Profile(
     int Format,
     AircraftInfo Aircraft,
     IReadOnlyList<string> Groups,
     IReadOnlyList<VarEntry> Vars,
     IReadOnlyList<string>? Exclude = null,
-    IReadOnlyList<DatarefEntry>? Datarefs = null);
+    IReadOnlyList<DatarefEntry>? Datarefs = null,
+    ProfileRoles? Roles = null);

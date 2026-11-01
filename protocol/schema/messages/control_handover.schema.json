@@ -14,6 +14,7 @@
       "additionalProperties": false,
       "required": [
         "epoch",
+        "kind",
         "new_pf_client_id",
         "new_pf_seat",
         "previous_pf_client_id",
@@ -23,6 +24,9 @@
         "epoch": {
           "type": "integer",
           "minimum": 1
+        },
+        "kind": {
+          "$ref": "../common.schema.json#/$defs/controlKind"
         },
         "new_pf_client_id": {
           "$ref": "../common.schema.json#/$defs/clientId"

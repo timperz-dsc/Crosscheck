@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/control_give.schema.json",
+  "title": "control_give",
+  "description": "\"You have control.\" From the pilot flying; hands control to the pilot monitoring with the same handover sequence. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "control_give"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    }
+  },
+  "unevaluatedProperties": false
+}

@@ -286,6 +286,56 @@ public class ProfileLoaderTests
         Assert.True(Load(yaml).IsValid);
     }
 
+    // --- roles ---
+
+    private static readonly string WithTakeover = Valid.Replace("  - name: I_LAMP\n",
+        "  - name: S_TAKEOVER_L\n    class: verified\n    group: overhead\n    values: [0, 1]\n" +
+        "  - name: S_TAKEOVER_R\n    class: pulse\n    group: overhead\n    pulse_ms: 100\n  - name: I_LAMP\n")
+        + "\nroles:\n  takeover: { captain: S_TAKEOVER_L, fo: S_TAKEOVER_R }\n";
+
+    [Fact]
+    public void Takeover_role_loads()
+    {
+        var result = Load(WithTakeover);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        Assert.Equal(new TakeoverRole("S_TAKEOVER_L", "S_TAKEOVER_R"), result.Profile!.Roles!.Takeover);
+    }
+
+    [Fact]
+    public void Roles_are_optional()
+    {
+        Assert.Null(Load(Valid).Profile!.Roles);
+    }
+
+    [Fact]
+    public void Takeover_var_must_be_in_the_profile()
+    {
+        var yaml = WithTakeover.Replace("fo: S_TAKEOVER_R", "fo: S_NOWHERE");
+        var issue = Single(Load(yaml));
+        Assert.Contains("'S_NOWHERE' is not defined", issue.Message);
+        Assert.Equal(LineOf(yaml, "takeover:"), issue.Line);
+    }
+
+    [Fact]
+    public void Takeover_var_must_be_a_pilot_input()
+    {
+        var issue = Single(Load(WithTakeover.Replace("captain: S_TAKEOVER_L", "captain: I_LAMP")));
+        Assert.Contains("must be a pilot input", issue.Message);
+    }
+
+    [Fact]
+    public void Takeover_needs_both_seats_and_different_vars()
+    {
+        Assert.Contains("fo", Single(Load(WithTakeover.Replace(", fo: S_TAKEOVER_R", ""))).Message);
+        Assert.Contains("different", Single(Load(WithTakeover.Replace("fo: S_TAKEOVER_R", "fo: S_TAKEOVER_L"))).Message);
+    }
+
+    [Fact]
+    public void Unknown_role_is_a_schema_error()
+    {
+        Assert.False(Load(WithTakeover.Replace("  takeover:", "  takeoff:")).IsValid);
+    }
+
     [Fact]
     public void Verify_cannot_point_at_the_var_itself()
     {

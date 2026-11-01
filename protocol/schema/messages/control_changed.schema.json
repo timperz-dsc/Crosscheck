@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/crosscheck/protocol/v1/messages/control_changed.schema.json",
   "title": "control_changed",
-  "description": "The new pilot flying. Both clients answer with control_ack. (server to client)",
+  "description": "The new pilot flying. Open differences are listed for information only; they never block a transfer. Both clients answer with control_ack. (server to client)",
   "type": "object",
   "$ref": "../common.schema.json#/$defs/envelope",
   "properties": {
@@ -14,15 +14,22 @@
       "additionalProperties": false,
       "required": [
         "epoch",
+        "kind",
         "pf_client_id",
         "pf_seat",
         "previous_pf_client_id",
-        "confirmed"
+        "confirmed",
+        "differences",
+        "desyncs",
+        "last_frame"
       ],
       "properties": {
         "epoch": {
           "type": "integer",
           "minimum": 1
+        },
+        "kind": {
+          "$ref": "../common.schema.json#/$defs/controlKind"
         },
         "pf_client_id": {
           "$ref": "../common.schema.json#/$defs/clientId"
@@ -41,11 +48,79 @@
           ]
         },
         "confirmed": {
-          "description": "Differences the new PF confirmed when taking control (empty when snapshots matched).",
+          "description": "What the new PF confirmed when taking control: [\"@peer_lost\"] or empty.",
           "type": "array",
           "items": {
-            "$ref": "../common.schema.json#/$defs/controlMarker"
+            "$ref": "../common.schema.json#/$defs/controlConfirm"
           }
+        },
+        "differences": {
+          "description": "What differs between the two sims right now (informational, for the new PF's UI). groups: panel groups whose latest snapshot hashes differ or that have a known differing var. vars: vars known to differ (last snapshot diff of a still differing group, plus open desyncs).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "groups",
+            "vars"
+          ],
+          "properties": {
+            "groups": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "../common.schema.json#/$defs/group"
+              }
+            },
+            "vars": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "../common.schema.json#/$defs/varName"
+              }
+            }
+          }
+        },
+        "desyncs": {
+          "description": "Open desyncs at the moment of the change.",
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/activeDesync"
+          }
+        },
+        "last_frame": {
+          "description": "The last stream frame the server relayed from the previous PF (position at the handover), or null if it never streamed.",
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "frame",
+                "data",
+                "from"
+              ],
+              "properties": {
+                "frame": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "data": {
+                  "type": "object",
+                  "maxProperties": 64,
+                  "propertyNames": {
+                    "pattern": "^[a-z0-9_]{1,40}$"
+                  },
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                },
+                "from": {
+                  "$ref": "../common.schema.json#/$defs/clientId"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     }

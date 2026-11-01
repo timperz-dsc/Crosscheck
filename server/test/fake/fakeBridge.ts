@@ -177,6 +177,11 @@ export class FakeBridge {
     this.send('control_request', confirm ? { confirm } : {});
   }
 
+  /** "You have control": the PF hands control to the PM. */
+  giveControl(): void {
+    this.send('control_give', {});
+  }
+
   stream(frame: number, data: Record<string, number>): void {
     this.send('stream', { frame, data });
   }

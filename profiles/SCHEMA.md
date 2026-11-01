@@ -23,6 +23,7 @@ groups: [overhead, fcu, ...]    # panel groups: snapshot hashing and ownership
 exclude: ["FSDT_*", "p42_*"]    # scan filter, see below
 vars: [...]                     # L: variables
 datarefs: [...]                 # Fenix GraphQL datarefs
+roles: {...}                    # vars with a special meaning, optional
 ```
 
 `match` needs at least one of `titles` or `packages`. Group names are lowercase (`a-z`, `0-9`, `_`). Every `group:` in `vars` and `datarefs` must be listed in `groups`.
@@ -73,6 +74,17 @@ datarefs:
 ```
 
 `class` is `owned`, `observe` or `ignore`. They are polled over HTTP at `poll_hz`. Group `systems` is meant for these system values (fuel, hydraulics, electrics).
+
+## Roles
+
+Optional. Vars that mean something to Crosscheck itself, on top of being synced. Every var named here must also be listed in `vars`.
+
+```yaml
+roles:
+  takeover: { captain: S_FC_CAPT_INST_DISCONNECT, fo: S_FC_FO_INST_DISCONNECT }
+```
+
+- `takeover`: the sidestick takeover pushbutton of each seat (class `verified` or `pulse`). When the pilot monitoring presses the button on their own seat, the bridge sends "I have control". The press is synced like any other var. Which seat a pilot sits in is set with the bridge option `--seat-side` (default: host = captain, guest = fo).
 
 ## Exclude
 

@@ -65,6 +65,9 @@
       "$ref": "messages/control_request.schema.json"
     },
     {
+      "$ref": "messages/control_give.schema.json"
+    },
+    {
       "$ref": "messages/control_denied.schema.json"
     },
     {

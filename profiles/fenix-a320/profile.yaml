@@ -79,9 +79,26 @@ vars:
     class: observe
     group: overhead
 
+  # Sidestick takeover pushbuttons (see roles.takeover). Momentary: 1 while held.
+  # TODO(CRO-8): confirm names and values in the sim (scan: S_FC_*_INST_DISCONNECT).
+  - name: S_FC_CAPT_INST_DISCONNECT
+    class: verified
+    group: flightcontrols
+    values: [0, 1]
+
+  - name: S_FC_FO_INST_DISCONNECT
+    class: verified
+    group: flightcontrols
+    values: [0, 1]
+
 datarefs:
   # Name confirmed in spike/VarTypes/GRAPHQL.md ("fuel per tank").
   - path: aircraft.fuel.left.amount.kg
     class: owned
     group: systems
     poll_hz: 1
+
+roles:
+  # A press on the pilot monitoring's own seat = "I have control" (control_request).
+  # TODO(CRO-8): confirm these are the takeover pushbuttons, against the scan and in the sim.
+  takeover: { captain: S_FC_CAPT_INST_DISCONNECT, fo: S_FC_FO_INST_DISCONNECT }

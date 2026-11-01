@@ -52,7 +52,9 @@ In fake mode you can act as the pilot by typing into either bridge window:
 | `set S_OH_ELEC_APU_MASTER 1` | flip a switch |
 | `turn E_FCU_ALTITUDE 5` | turn an encoder 5 clicks |
 | `press S_CDU1_KEY_FPLN` | press an MCDU key |
-| `control` | ask for control (become PF) |
+| `control` | "I have control": take control at once (as PM) |
+| `control @peer_lost` | take control although the PF is not connected |
+| `give` | "You have control": hand control to the other pilot (as PF) |
 | `status` | print the status (same as the local API) |
 
 Stop with Ctrl+C; the bridge leaves the session properly.
@@ -74,8 +76,20 @@ crosscheck join <CODE> [options]
 --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
 --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
 --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
+--seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
 --verbose             more console output
 ```
+
+## Control
+
+Control changes at once, like in a real cockpit. Differences between the sims never block
+it; they are shown to the new PF in the `control_changed` event ("Open differences: ...").
+
+- Take control: `control` in the console, or press the **sidestick takeover pushbutton on
+  your own seat** while you are PM (profile `roles.takeover`; your seat is `--seat-side`).
+  The press is also synced to the other sim like any other button.
+- Give control: `give` in the console (as PF).
+- If the PF is not connected, a plain request is refused; `control @peer_lost` takes it anyway.
 
 ## Aircraft build in the preflight
 
@@ -94,10 +108,10 @@ for. In fake mode the package version is the profile's first build.
 
 Only on `127.0.0.1`; requests from web pages of other sites are refused.
 
-- `GET http://127.0.0.1:8790/status`: session, join code, seat and role, server and sim
+- `GET http://127.0.0.1:8790/status`: session, join code, seat, cockpit seat side and role, server and sim
   connection, RTT, aircraft versions, warnings, open desyncs, counters.
 - `ws://127.0.0.1:8790/events`: one JSON object per event (`desync`, `desync_cleared`,
-  `overridden`, `corrected`, `peer_lost`, `peer_resumed`, `control_changed`, `sim_state`,
+  `overridden`, `corrected`, `peer_lost`, `peer_resumed`, `control_changed`, `control_denied`, `takeover_pressed`, `sim_state`,
   `warning`, `correction_refused`, `safety_refused`, …).
 
 ## Log

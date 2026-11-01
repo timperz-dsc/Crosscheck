@@ -48,6 +48,8 @@ public sealed class BridgeStatus
     public string? JoinCode { get; set; }
     public string? ClientId { get; set; }
     public string? Seat { get; set; }
+    /// <summary>Cockpit seat: captain or fo.</summary>
+    public string? SeatSide { get; set; }
     public string? Role { get; set; }
     public string? PfClientId { get; set; }
     public string Server { get; set; } = "disconnected";
@@ -84,6 +86,7 @@ public sealed class BridgeStatus
                 ["join_code"] = JoinCode,
                 ["client_id"] = ClientId,
                 ["seat"] = Seat,
+                ["seat_side"] = SeatSide,
                 ["role"] = Role,
                 ["pf_client_id"] = PfClientId,
                 ["server"] = Server,

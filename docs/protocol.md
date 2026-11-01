@@ -54,8 +54,9 @@ resume.
 | `snapshot_request` / `snapshot_values` | S→C / C→S | Values of groups on mismatch or resync. |
 | `snapshot_diff` | S→C | Differences of one group and the decision per var. |
 | `correction` | S→C | Write this target value (decided by the PF safety rule). |
-| `control_request` | C→S | "I have control". |
-| `control_denied` / `control_handover` / `control_changed` | S→C | Answer, freeze, new PF. |
+| `control_request` | C→S | "I have control" (from the PM). |
+| `control_give` | C→S | "You have control" (from the PF). |
+| `control_denied` / `control_handover` / `control_changed` | S→C | Refused, freeze, new PF (with open differences). |
 | `control_ack` | C→S | Client switched to its new role. |
 | `stream` | both | Physics frame from the PF. |
 | `ping` / `pong` | both | Heartbeat with RTT. |
@@ -204,7 +205,7 @@ and the var is not corrected again until the desync clears.
 as `deferred`; right after `control_changed` the server requests those groups again and
 decides with the new PF as reference.
 
-**Open desyncs.** A desync stays open (listed in `resumed.desyncs` and `control_denied.desyncs`)
+**Open desyncs.** A desync stays open (listed in `resumed.desyncs`, `control_changed.desyncs` and `control_denied.desyncs`)
 and is not repeated while it is open. It clears with `notice desync_cleared` when the values
 match again (equal hashes or equal values), when a pilot sends a command for that var, or when
 a correction for it is confirmed. While `correction_loop`, `correction_failed`,
@@ -214,20 +215,42 @@ the snapshot is how those recover.
 
 ## 8. Control token
 
-One PF at a time. `control_request {confirm?}` from the PM:
+One PF at a time. Control changes in real time, like in a real cockpit: "I have control" and
+"You have control" take effect at once. Differences between the sims never block a transfer;
+they are listed in `control_changed` so the new PF's UI can show them.
 
-- Granted when every group's latest hash exists from both pilots and matches.
-- Otherwise `control_denied {reason, differences, desyncs}`; `differences` lists the
-  groups, or `@peer_lost` / `@no_snapshots`. Sending the request again with `confirm` equal
-  to exactly that list takes control anyway (logged as confirmed).
-- `already_pf`, `handover_in_progress` are refused too.
+- **Taking control:** the PM sends `control_request {}`. Granted immediately.
+- **Giving control:** the PF sends `control_give {}`. The PM gets control immediately, with
+  the same handover sequence. It cannot be given to a pilot who is not connected.
+- **PF lost:** if the PF is lost or left, a plain `control_request` is refused with
+  `peer_lost`; the PM takes control by sending it again with `confirm: ["@peer_lost"]`.
+- `control_denied {reason, desyncs, message}` with `reason` one of `peer_lost`,
+  `already_pf` (take while PF), `not_pf` (give while PM), `handover_in_progress`.
 
-On grant: `control_handover {epoch, new_pf_client_id, freeze_ms: 300}` to both. All stream
-frames are dropped during the freeze. Then `control_changed {epoch, pf_client_id,
-previous_pf_client_id, confirmed}` to both; both answer `control_ack {epoch}`. A missing
-ack after 2 s → `notice control_ack_missing` to both.
+Handover sequence (same for take and give):
 
-If the PF is lost or left, the PM can take control with `confirm: ["@peer_lost"]`.
+1. `control_handover {epoch, kind: take|give, new_pf_client_id, new_pf_seat,
+   previous_pf_client_id, freeze_ms: 300}` to both. All stream frames are dropped during the
+   freeze, and no corrections are sent (section 7).
+2. The token moves. `control_changed {epoch, kind, pf_client_id, pf_seat,
+   previous_pf_client_id, confirmed, differences, desyncs, last_frame}` to both:
+   - `confirmed`: `["@peer_lost"]` when taken from a lost PF, else empty.
+   - `differences {groups, vars}`: groups whose latest snapshot hashes differ or that have a
+     known differing var; vars from the last snapshot diff of those groups plus open desyncs.
+     Informational only (for example fuel, which Fenix simulates on each side and always
+     drifts a few kg).
+   - `desyncs`: open desyncs at that moment.
+   - `last_frame {frame, data, from}`: the last stream frame relayed from the previous PF, so
+     the new PF has its last position; `null` if it never streamed.
+3. Both answer `control_ack {epoch}`. A missing ack after 2 s → `notice control_ack_missing`
+   to both.
+
+The safety rules do not change with the token: corrections never go to the PF's sim without
+a logged pilot command, and the correction loop guard stays.
+
+**Takeover pushbutton.** The bridge treats a press of the sidestick takeover pushbutton on the
+PM's own seat (profile `roles.takeover`) as `control_request`. The press itself is synced
+like any other var, on both sides.
 
 ## 9. Stream
 
@@ -274,6 +297,8 @@ this file to a desync report.
 6. Send `snapshot_hash` per group every `snapshot_interval_ms` using the canonical form;
    answer `snapshot_request` with one `snapshot_values` per group.
 7. Follow `control_changed` (fly or follow) and answer `control_ack`. Stream only while PF.
+   Send `control_request` when the pilot presses the takeover pushbutton on their own seat
+   while PM; show `control_changed.differences` to the new PF.
 8. Ping every `heartbeat_ms`, answer pings, treat 5 s of silence as lost and resume.
 9. If the server is gone, keep flying unsynced and say so; never pause, slew or "fix" the sim.
 
@@ -294,5 +319,4 @@ this file to a desync report.
 
 - Hosting, accounts, rate limits on join attempts (phase 1 runs locally).
 - The stream field set (after the follower spike).
-- Giving control away (only taking it).
 - `pulse` vars with `press: counter` in snapshots (their effect is compared through observe vars).

@@ -364,10 +364,18 @@
         }
       }
     },
-    "controlMarker": {
-      "description": "A group name or a marker: @peer_lost (other pilot not connected), @no_snapshots (no hashes to compare yet).",
-      "type": "string",
-      "pattern": "^([a-z0-9_]{1,64}|@peer_lost|@no_snapshots)$"
+    "controlConfirm": {
+      "description": "What a control_request may confirm: @peer_lost (take control although the pilot flying is not connected).",
+      "enum": [
+        "@peer_lost"
+      ]
+    },
+    "controlKind": {
+      "description": "take = the PM said \"I have control\" (control_request); give = the PF said \"You have control\" (control_give).",
+      "enum": [
+        "take",
+        "give"
+      ]
     }
   }
 }

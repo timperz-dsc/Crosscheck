@@ -242,14 +242,49 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Control_transfer_switches_roles_on_both_bridges()
+    public async Task Control_is_granted_immediately_while_snapshots_differ_and_the_differences_are_listed()
     {
         var (host, guest) = await Pair();
-        await Task.Delay(4500); // two snapshot rounds so the server has matching hashes
+        Sim(guest).Logic("I_MIP_GEAR_1_L", 1); // an observe var differs: a desync on both sides
+        await Wait.Until(() => guest.Status.OpenDesyncs.Contains("I_MIP_GEAR_1_L"), "desync open", 10000);
+
         guest.Engine.RequestControl();
-        await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 8000);
+        await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 3000);
         Assert.True(guest.Sim.Stream.IsPf); // the new PF's stream writer refuses frames
         Assert.False(host.Sim.Stream.IsPf); // the new PM follows
+
+        var changed = guest.Events.Recent.Last(e => e.Type == "control_changed");
+        Assert.Equal("take", changed.Data!["kind"]!.GetValue<string>());
+        Assert.Contains("mip", changed.Data["differences"]!["groups"]!.AsArray().Select(g => g!.GetValue<string>()));
+        Assert.Contains("I_MIP_GEAR_1_L", changed.Data["differences"]!["vars"]!.AsArray().Select(v => v!.GetValue<string>()));
+        Assert.Contains("Open differences", changed.Message);
+        Assert.DoesNotContain(guest.Events.Recent, e => e.Type == "control_denied");
+    }
+
+    [Fact]
+    public async Task The_PF_can_give_control_to_the_PM()
+    {
+        var (host, guest) = await Pair();
+        host.Engine.GiveControl();
+        await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 3000);
+        var changed = host.Events.Recent.Last(e => e.Type == "control_changed");
+        Assert.Equal("give", changed.Data!["kind"]!.GetValue<string>());
+        Assert.StartsWith("You gave control", changed.Message);
+    }
+
+    [Fact]
+    public async Task The_PMs_takeover_pushbutton_takes_control_and_is_synced()
+    {
+        var (host, guest) = await Pair(); // guest sits right (fo) by default
+        Sim(guest).PilotSet("S_FC_FO_INST_DISCONNECT", 1);
+        await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 3000);
+        await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 1, "press synced to the other sim");
+
+        Sim(guest).PilotSet("S_FC_FO_INST_DISCONNECT", 0);
+        await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 0, "release synced");
+        await Task.Delay(300);
+        Assert.Equal("pf", guest.Status.Role); // the release is not a second request, and the host did not take it back
+        Assert.Equal(0, host.Engine.CommandsSent);
     }
 
     [Fact]

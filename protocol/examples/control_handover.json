@@ -6,6 +6,7 @@
   "ts": 1793520000000,
   "body": {
     "epoch": 2,
+    "kind": "take",
     "new_pf_client_id": "c_g4Rt8LpZ",
     "new_pf_seat": "guest",
     "previous_pf_client_id": "c_h7Gm2KxQ",

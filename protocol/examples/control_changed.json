@@ -6,9 +6,20 @@
   "ts": 1793520000000,
   "body": {
     "epoch": 2,
+    "kind": "take",
     "pf_client_id": "c_g4Rt8LpZ",
     "pf_seat": "guest",
     "previous_pf_client_id": "c_h7Gm2KxQ",
-    "confirmed": []
+    "confirmed": [],
+    "differences": {
+      "groups": ["systems"],
+      "vars": ["aircraft.fuel.left.amount.kg"]
+    },
+    "desyncs": [],
+    "last_frame": {
+      "frame": 4711,
+      "data": { "lat": 47.4582, "lon": 8.5555, "alt_ft": 1416, "hdg_deg": 280 },
+      "from": "c_h7Gm2KxQ"
+    }
   }
 }

@@ -297,7 +297,7 @@ public class SnapshotTests
         await h.StartAsync(pf: true);
         h.Channel.Inject("snapshot_request", new JsonObject { ["request_id"] = "r9", ["groups"] = null, ["reason"] = "join" }, h.Channel.NextSeq());
         var answers = h.Channel.SentOf("snapshot_values");
-        Assert.Equal(["cdu1", "efis", "fcu", "mip", "overhead", "systems"], answers.Select(a => a["group"]!.GetValue<string>()).Order());
+        Assert.Equal(["cdu1", "efis", "fcu", "flightcontrols", "mip", "overhead", "systems"], answers.Select(a => a["group"]!.GetValue<string>()).Order());
         Assert.All(answers, a => Assert.Equal("r9", a["request_id"]!.GetValue<string>()));
     }
 }

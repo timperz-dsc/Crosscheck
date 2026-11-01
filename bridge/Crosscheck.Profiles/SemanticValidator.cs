@@ -84,6 +84,22 @@ internal sealed class SemanticValidator
             else if (d.PollHz is not null)
                 Add($"{at}/poll_hz", $"'poll_hz' is not used by class {Lower(d.Class)}");
         }
+
+        if (_profile.Roles?.Takeover is { } takeover) CheckTakeover(takeover, varsByName);
+    }
+
+    private void CheckTakeover(TakeoverRole takeover, Dictionary<string, int> varsByName)
+    {
+        foreach (var (seat, name) in new[] { ("captain", takeover.Captain), ("fo", takeover.Fo) })
+        {
+            var at = $"/roles/takeover/{seat}";
+            if (!varsByName.TryGetValue(name, out var i))
+                Add(at, $"takeover var '{name}' is not defined in this profile");
+            else if (_profile.Vars[i].Class is not (SyncClass.Verified or SyncClass.Pulse))
+                Add(at, $"takeover var '{name}' must be a pilot input (class verified or pulse), it has {Lower(_profile.Vars[i].Class)}");
+        }
+        if (takeover.Captain == takeover.Fo)
+            Add("/roles/takeover/fo", "captain and fo need different takeover vars");
     }
 
     private void CheckClassFields(VarEntry v, string at)

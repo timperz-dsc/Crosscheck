@@ -46,7 +46,7 @@ heartbeat → 50 ms), so the full suite takes about half a minute.
 | 06 | 10 s disconnect → resume → missed commands replayed; log overwritten → full resync; slot expiry |
 | 07 | One-way stalls (socket open) in both directions → detected as lost |
 | 08 | Snapshot mismatch → corrections follow the PF safety rule |
-| 09 | Control refused while snapshots differ, granted when they match or are confirmed |
+| 09 | Control granted immediately (differences listed, never blocking); PF hands over; lost PF needs a confirm |
 | 10 | Preflight rejects profile/build/major-version mismatches, warns on AIRAC |
 | 11 | Correction loop guard: stops after 3 corrections in 60 s, clears correctly |
 | 12 | No corrections during a control handover freeze |

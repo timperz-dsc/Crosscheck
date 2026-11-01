@@ -34,7 +34,8 @@
       "description": "Fenix GraphQL datarefs. Fenix cannot list them, so each one is written down by hand.",
       "type": "array",
       "items": { "$ref": "#/$defs/dataref" }
-    }
+    },
+    "roles": { "$ref": "#/$defs/roles" }
   },
   "$defs": {
     "identifier": {
@@ -164,6 +165,23 @@
           "maximum": 60
         },
         "note": { "type": "string" }
+      }
+    },
+    "roles": {
+      "description": "Vars with a special meaning for Crosscheck beyond being synced. Each one must also be listed in 'vars'.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "takeover": {
+          "description": "Sidestick takeover pushbutton per seat. A press on the pilot monitoring's own seat is a control request; the press itself is synced like any other var.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["captain", "fo"],
+          "properties": {
+            "captain": { "type": "string", "minLength": 1 },
+            "fo": { "type": "string", "minLength": 1 }
+          }
+        }
       }
     },
     "dataref": {

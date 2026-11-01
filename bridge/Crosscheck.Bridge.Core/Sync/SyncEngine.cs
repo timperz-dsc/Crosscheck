@@ -18,6 +18,15 @@ public sealed record EngineOptions
     public int StoredTimeoutMs { get; init; } = 250;
     /// <summary>settle_ms sent with commands whose var has no verify block.</summary>
     public int DefaultSettleMs { get; init; } = 100;
+    /// <summary>Which seat this pilot sits in (whose takeover pushbutton is theirs). null = host is captain, guest is fo.</summary>
+    public SeatSide? SeatSide { get; init; }
+}
+
+/// <summary>Cockpit seat: left (captain) or right (first officer). Not the same as the session seat host/guest.</summary>
+public enum SeatSide
+{
+    Captain,
+    Fo,
 }
 
 /// <summary>
@@ -60,6 +69,8 @@ public sealed class SyncEngine : IAsyncDisposable
     private bool _sessionActive;
     private string? _pfClientId;
     private int _dropIncoming;
+    /// <summary>The takeover pushbutton on this pilot's own seat (profile roles.takeover), once the seat is known.</summary>
+    private string? _takeoverVar;
 
     public SyncEngine(Profile profile, ISimAdapter sim, IFenixGraphQl gql, IProtocolChannel client, EventHub hub,
         BridgeLog log, BridgeStatus status, ILogger logger, IClock? clock = null, EngineOptions? options = null)
@@ -153,6 +164,7 @@ public sealed class SyncEngine : IAsyncDisposable
     {
         if (!_vars.TryGetValue(name, out var spec)) return;
         JsonObject? command = null;
+        var takeover = false;
         lock (_gate)
         {
             var hadPrev = _lastSeen.TryGetValue(name, out var prev);
@@ -161,7 +173,11 @@ public sealed class SyncEngine : IAsyncDisposable
             {
                 case SyncClass.Verified or SyncClass.Analog:
                     if (_echo.TryConsume(name, value)) { LogEcho(name, value); break; }
-                    if (hadPrev && _sessionActive && value != prev) command = NewCommand(spec, value, null);
+                    if (hadPrev && _sessionActive && value != prev)
+                    {
+                        command = NewCommand(spec, value, null);
+                        takeover = name == _takeoverVar && prev == 0;
+                    }
                     break;
                 case SyncClass.Delta:
                     if (!_baseline.TryGetValue(name, out var baseline) || !_sessionActive)
@@ -182,12 +198,24 @@ public sealed class SyncEngine : IAsyncDisposable
                     var pressed = spec.Press == PressMode.Counter
                         ? value > prev && ((long)value & 1) == 1
                         : prev == 0 && value != 0;
-                    if (pressed) command = NewCommand(spec, 1, null);
+                    if (pressed)
+                    {
+                        command = NewCommand(spec, 1, null);
+                        takeover = name == _takeoverVar;
+                    }
                     break;
                 // observe and owned: never sent, only reported in snapshots.
             }
         }
         if (command is not null) _client.Send("command", command);
+        // The press is synced like any other var (above). On the PM's own seat it also means
+        // "I have control". Only pilot presses get here: our own writes are echoes.
+        if (takeover && !IsPf)
+        {
+            _log.Event("takeover_pressed", new JsonObject { ["var"] = name });
+            _hub.Publish("takeover_pressed", "Takeover pushbutton pressed: requesting control.", new JsonObject { ["var"] = name });
+            RequestControl();
+        }
     }
 
     private void LogEcho(string name, double value) =>
@@ -249,7 +277,7 @@ public sealed class SyncEngine : IAsyncDisposable
             case "control_changed":
                 SetPf(body["pf_client_id"]!.GetValue<string>());
                 _client.Send("control_ack", new JsonObject { ["epoch"] = body["epoch"]!.DeepClone() });
-                _hub.Publish("control_changed", IsPf ? "You have control (PF)." : "The other pilot has control (you are PM).", body);
+                _hub.Publish("control_changed", ControlChangedText(body), body);
                 break;
             case "control_handover":
                 _hub.Publish("control_handover", "Control is changing hands.", body);
@@ -297,6 +325,10 @@ public sealed class SyncEngine : IAsyncDisposable
         _status.SessionId = body["session_id"]!.GetValue<string>();
         _status.ClientId = body["client_id"]!.GetValue<string>();
         _status.Seat = body["seat"]!.GetValue<string>();
+        var side = _options.SeatSide ?? (_status.Seat == "guest" ? SeatSide.Fo : SeatSide.Captain);
+        _status.SeatSide = side == SeatSide.Fo ? "fo" : "captain";
+        if (_profile.Roles?.Takeover is { } t)
+            lock (_gate) _takeoverVar = side == SeatSide.Fo ? t.Fo : t.Captain;
         if (body["join_code"] is JsonValue code) _status.JoinCode = code.GetValue<string>();
         if (body["peer"] is JsonObject peer) _status.PeerState = peer["state"]!.GetValue<string>();
         SetPf(body["pf_client_id"]?.GetValue<string>());
@@ -694,11 +726,29 @@ public sealed class SyncEngine : IAsyncDisposable
 
     // ---------------------------------------------------------------- control and stream
 
+    /// <summary>"I have control" (as PM). confirm ["@peer_lost"] only when the PF is not connected.</summary>
     public void RequestControl(IReadOnlyList<string>? confirm = null)
     {
         var body = new JsonObject();
         if (confirm is { Count: > 0 }) body["confirm"] = new JsonArray(confirm.Select(c => (JsonNode)JsonValue.Create(c)!).ToArray());
         _client.Send("control_request", body);
+    }
+
+    /// <summary>"You have control" (as PF): hands control to the other pilot.</summary>
+    public void GiveControl() => _client.Send("control_give", new JsonObject());
+
+    /// <summary>What the pilot reads on a control change; open differences are information, not a blocker.</summary>
+    private string ControlChangedText(JsonObject body)
+    {
+        var given = body["kind"]?.GetValue<string>() == "give";
+        var text = IsPf
+            ? given ? "You have control (PF): the other pilot gave it to you." : "You have control (PF)."
+            : given ? "You gave control; the other pilot is PF (you are PM)." : "The other pilot took control (you are PM).";
+        var groups = (body["differences"]?["groups"] as JsonArray ?? []).Select(g => g!.GetValue<string>()).ToList();
+        var vars = (body["differences"]?["vars"] as JsonArray ?? []).Select(v => v!.GetValue<string>()).ToList();
+        if (groups.Count > 0 || vars.Count > 0)
+            text += $" Open differences: {string.Join(", ", groups)}{(vars.Count > 0 ? $" ({string.Join(", ", vars)})" : "")}.";
+        return text;
     }
 
     /// <summary>Sends one stream frame; only while PF (the field set is a placeholder until CRO-17).</summary>

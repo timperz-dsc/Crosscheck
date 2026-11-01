@@ -16,7 +16,7 @@ describe('12. no corrections during a control handover freeze', () => {
     guest.sendHashes(); // first comparable mismatch
     await sleep(20);
 
-    guest.requestControl(['overhead']);
+    guest.requestControl();
     await host.waitFor('control_handover');
     host.sendHashes();
     await sleep(10);
