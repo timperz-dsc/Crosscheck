@@ -31,3 +31,6 @@ server/logs/
 
 # Profile probe working files (checkpoint, raw results)
 profiles/**/.probe/
+
+# Gate test bridge logs (contain names and paths; never public)
+gatetest-logs/
