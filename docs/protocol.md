@@ -205,14 +205,16 @@ the PF's current value. Nothing else.
 Why rule 2 needs "never confirmed": if the PF applied a pilot's command and its aircraft later
 changed the value itself, pushing the old command back would be a write no pilot did.
 
-**Owned values** (fuel, payload; Fenix simulates them on each side). They are aligned once,
-by the join-time comparison (`snapshot_request reason: join`): the joiner is corrected to the
-PF's value with rule 3. After that an owned difference is never corrected, never a desync and
-never counted by the loop guard. It is reported as `drift`: after each value comparison of a
+**Owned values** (fuel, payload; Fenix simulates them on each side). They are never written,
+not even at join: each pilot loads fuel and payload in their own Fenix EFB, like in real flight
+planning. An owned difference is never corrected, never a desync and never counted by the loop
+guard. It is reported as `drift`: after each value comparison of a
 group with owned vars the server sends `drift {group, values: [{var, pf, pm, delta}]}` to
 both (unsequenced, not replayed; values in the dataref's own units, `delta` = pm − pf). Empty
 `values` means no drift any more. In `snapshot_diff` such a var has action `drift`, and a
 group whose only differences are drift does not count as differing for `control_changed`.
+The bridge shows drift as information; a profile can set `drift_warn` per dataref (fuel:
+100 kg) for one amber line when the values differ by more at the start of the session.
 
 `correction {id, var, class, target, group, settle_ms, source, source_seq?, request_id}` is
 acked like a command (same retries). A confirmed correction → `notice corrected` to both. A

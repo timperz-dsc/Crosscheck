@@ -51,7 +51,7 @@ heartbeat → 50 ms), so the full suite takes about half a minute.
 | 11 | Correction loop guard: stops after 3 corrections in 60 s, clears correctly |
 | 12 | No corrections during a control handover freeze |
 | 13 | Only the PF streams; rate limit; stream frozen during handover |
-| 14 | Owned values (fuel) aligned once at join, then reported as drift only |
+| 14 | Owned values (fuel) are never written, not even at join; differences are reported as drift only |
 | unit, schema | Safety rule, loop guard, preflight, join codes, replay log, schema examples |
 
 ## Layout

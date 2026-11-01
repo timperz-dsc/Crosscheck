@@ -364,6 +364,16 @@ public class ProfileLoaderTests
     }
 
     [Fact]
+    public void Drift_warn_is_for_owned_values_only()
+    {
+        var owned = Valid.Replace("    poll_hz: 1", "    poll_hz: 1\n    drift_warn: 100");
+        var result = Load(owned);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        Assert.Equal(100, result.Profile!.Datarefs![0].DriftWarn);
+        Assert.Contains("only used by class owned", Single(Load(owned.Replace("class: owned\n    group: systems", "class: observe\n    group: systems"))).Message);
+    }
+
+    [Fact]
     public void Group_labels_must_name_groups()
     {
         Assert.Contains("not listed in 'groups'", Single(Load(Valid + "\ngroup_labels: { nowhere: Nowhere }\n")).Message);

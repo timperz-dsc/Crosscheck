@@ -10,7 +10,7 @@ Protocol: [docs/protocol.md](../docs/protocol.md).
 | `Crosscheck.Profiles` (+ `.Cli`, `.Tests`) | profile format, loader and validator |
 | `Crosscheck.Bridge.Core` | sim and Fenix interfaces with fakes, sync engine, protocol client, local API, log |
 | `Crosscheck.Bridge.SimConnect` | the real sim adapter (needs the MSFS 2024 SDK) |
-| `Crosscheck.Bridge` | the `crosscheck` program: UI in the browser, tray icon, console |
+| `Crosscheck.Bridge` | the `crosscheck` program: app window (WebView2), tray icon, console |
 | `Crosscheck.Bridge.Tests` | unit and end-to-end tests (no sim needed) |
 | `Crosscheck.Bridge.SimSmoke.Tests` | real-sim smoke test, skipped by default ([README](Crosscheck.Bridge.SimSmoke.Tests/README.md)) |
 
@@ -30,9 +30,12 @@ in `server/` once first. They take about a minute.
 
 ## Run it
 
-`crosscheck` without a command starts the bridge and opens the Crosscheck UI in the browser
-(`http://127.0.0.1:8790/`). A tray icon offers "Open Crosscheck" and "Quit" (Quit leaves the
-session properly). Create or join the session in the UI.
+`crosscheck` without a command starts the bridge and opens the Crosscheck window: the UI in
+WebView2 (part of Windows 10/11). Closing the window hides it to the tray; the tray icon offers
+"Open Crosscheck" and "Quit" (Quit leaves the session properly). Links to outside sites open in
+the default browser. Without the WebView2 runtime the UI opens in the default browser instead,
+with a warning in the console. The same UI also works in any browser on this computer at
+`http://127.0.0.1:8790/` (for debugging). Create or join the session in the window.
 
 ## Try it: two bridges with fake sims
 
@@ -43,7 +46,7 @@ Three terminals, all from the repo root.
    cd server
    npm start
    ```
-2. First pilot (the browser opens; click Create session):
+2. First pilot (the Crosscheck window opens; click Create session):
    ```
    dotnet run --project bridge/Crosscheck.Bridge -- --sim fake --name Sebastian
    ```
@@ -89,8 +92,8 @@ crosscheck join <CODE> [options]  headless: join a session
 --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
 --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
 --ui-dir <dir>        folder with the built UI (default wwwroot next to the program)
---no-browser          do not open the UI in the browser on start
---no-tray             no tray icon
+--no-browser          no window and no browser on start (tests; the UI stays reachable by URL)
+--no-tray             no tray icon (closing the window then quits)
 --verbose             more console output
 ```
 

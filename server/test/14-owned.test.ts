@@ -10,14 +10,22 @@ const withFuel = (kg: number): VarDef[] => [...TEST_VARS, { name: FUEL, cls: 'ow
 
 interface Drift { group: string; values: { var: string; pf: number; pm: number; delta: number }[] }
 
-describe('14. owned values (fuel): aligned once at join, then drift only', () => {
-  it('aligns fuel at join; afterwards changes are reported as drift, never corrected or raised', async () => {
-    pair = await startPair({ host: { sim: new FakeSim(withFuel(1500)) }, guest: { sim: new FakeSim(withFuel(1450)) } });
-    const { host, guest, server } = pair;
+describe('14. owned values (fuel): never written, only drift', () => {
+  it('a fuel difference at join is reported as drift, not aligned', async () => {
+    pair = await startPair({ host: { sim: new FakeSim(withFuel(1500)) }, guest: { sim: new FakeSim(withFuel(1100)) } });
+    const { host, guest } = pair;
+    const drift = await guest.waitFor('drift', (m) => body<Drift>(m).values.length === 1);
+    expect(body<Drift>(drift)).toEqual({ group: 'systems', values: [{ var: FUEL, pf: 1500, pm: 1100, delta: -400 }] });
+    await host.waitFor('drift', (m) => body<Drift>(m).values.length === 1);
+    await sleep(pair.server.config.snapshotIntervalMs * 3);
+    expect(guest.sim.get(FUEL)).toBe(1100);
+    expect([...host.messages('correction'), ...guest.messages('correction')]).toHaveLength(0);
+    expect([...host.messages('desync'), ...guest.messages('desync')]).toHaveLength(0);
+  });
 
-    // Join-time resync: the joiner gets the host's fuel, once.
-    await waitUntil(() => guest.sim.get(FUEL) === 1500, 'fuel aligned at join');
-    expect(guest.messages('correction', (m) => body(m).var === FUEL)).toHaveLength(1);
+  it('changes during the session are reported as drift, never corrected or raised', async () => {
+    pair = await startPair({ host: { sim: new FakeSim(withFuel(1500)) }, guest: { sim: new FakeSim(withFuel(1500)) } });
+    const { host, guest, server } = pair;
 
     // During the session Fenix keeps changing fuel on one side.
     const mark = [host.mark(), guest.mark()];
@@ -30,7 +38,7 @@ describe('14. owned values (fuel): aligned once at join, then drift only', () =>
     expect(drift.seq).toBeUndefined();
     await guest.waitFor('drift', (m) => body<Drift>(m).values.length === 1, { from: mark[1] });
 
-    expect(guest.messages('correction', (m) => body(m).var === FUEL)).toHaveLength(1); // still only the join one
+    expect(guest.messages('correction', (m) => body(m).var === FUEL)).toHaveLength(0);
     expect([...host.messages('desync'), ...guest.messages('desync')]).toHaveLength(0);
     expect(host.messages('snapshot_diff', (m) => (body<{ differences: { var: string }[] }>(m).differences).some((d) => d.var === FUEL), mark[0])).toHaveLength(0);
     expect(server.logLines().some((l) => l.event === 'desync_still_open' || l.event === 'correction_loop')).toBe(false);

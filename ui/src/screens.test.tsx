@@ -181,6 +181,13 @@ describe('session', () => {
     expect(b.actions.takeControl).toHaveBeenCalledWith(true);
   });
 
+  it('fuel loaded differently: one amber line, no red, no desync', () => {
+    show(bridge(inSession({ owned: [{ var: 'fuel', label: 'Fuel', unit: 'kg', delta: -400, warn: true }] })));
+    expect(screen.getByText('Fuel differs by 400 kg. Load the same fuel and payload in the Fenix A320 EFB.')).toHaveClass('warning');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
+    expect(screen.getByText('400 kg apart')).toHaveClass('muted');
+  });
+
   it('server unreachable: one line, the session view stays', () => {
     show(bridge(inSession({ server: 'reconnecting' })));
     expect(screen.getByText('Connection to the server lost. Reconnecting. Both sims keep flying, just not synced.')).toBeInTheDocument();

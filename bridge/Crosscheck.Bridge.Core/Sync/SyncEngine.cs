@@ -152,6 +152,45 @@ public sealed class SyncEngine : IAsyncDisposable
     public IReadOnlyList<string> ActiveGroups => Groups.ToList();
 
     private readonly Dictionary<string, JsonArray> _drift = new(StringComparer.Ordinal);
+    /// <summary>Owned drift (absolute) in the first report of this session.</summary>
+    private readonly Dictionary<string, double> _driftAtStart = new(StringComparer.Ordinal);
+    /// <summary>Owned vars that came within drift_warn once: their start warning is resolved.</summary>
+    private readonly HashSet<string> _driftResolved = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Owned values that differed by more than the profile's drift_warn when the session started
+    /// and still do (fuel: "load the same fuel in the EFB"). Information only: never written.
+    /// </summary>
+    public IReadOnlyList<(string Var, double Delta)> DriftWarnings
+    {
+        get
+        {
+            var current = Drift;
+            lock (_gate)
+            {
+                return (_profile.Datarefs ?? [])
+                    .Where(d => d.DriftWarn is { } t && _driftAtStart.TryGetValue(d.Path, out var start) && start > t && !_driftResolved.Contains(d.Path))
+                    .Select(d => (d.Path, current.TryGetValue(d.Path, out var c) ? c.Delta : 0))
+                    .ToList();
+            }
+        }
+    }
+
+    private void OnDrift(string group, JsonArray values)
+    {
+        lock (_gate)
+        {
+            _drift[group] = values;
+            var deltas = values.OfType<JsonObject>().ToDictionary(v => v["var"]!.GetValue<string>(), v => Math.Abs(v["delta"]!.GetValue<double>()));
+            foreach (var d in (_profile.Datarefs ?? []).Where(d => d.Group == group && d.Class == SyncClass.Owned))
+            {
+                var now = deltas.GetValueOrDefault(d.Path);
+                if (_driftAtStart.TryAdd(d.Path, now) && now > (d.DriftWarn ?? double.MaxValue))
+                    _log.Event("drift_at_start", new JsonObject { ["var"] = d.Path, ["delta"] = now, ["warn_above"] = d.DriftWarn });
+                if (d.DriftWarn is { } t && now <= t) _driftResolved.Add(d.Path);
+            }
+        }
+    }
 
     /// <summary>Latest owned drift per var: (pf, pm, delta) in the dataref's units.</summary>
     public IReadOnlyDictionary<string, (double Pf, double Pm, double Delta)> Drift
@@ -371,7 +410,7 @@ public sealed class SyncEngine : IAsyncDisposable
                 break;
             }
             case "drift":
-                lock (_gate) _drift[body["group"]!.GetValue<string>()] = (JsonArray)body["values"]!.DeepClone();
+                OnDrift(body["group"]!.GetValue<string>(), (JsonArray)body["values"]!.DeepClone());
                 break;
             case "stream":
                 if (body["data"] is JsonObject data)

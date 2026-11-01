@@ -125,6 +125,12 @@ export function desyncExplanation(d: Desync, peer: string): string {
     : `${what} The alarm clears when both match.`;
 }
 
+/** One amber line: owned values are loaded by each pilot, never synced. */
+export function driftWarningText(label: string, delta: number, unit: string | null, aircraft: string): string {
+  const amount = Math.round(Math.abs(delta) * 10) / 10;
+  return `${label} differs by ${amount}${unit ? ` ${unit}` : ''}. Load the same fuel and payload in the ${aircraft} EFB.`;
+}
+
 export function driftText(delta: number, unit: string | null): string {
   const amount = Math.round(Math.abs(delta) * 10) / 10;
   if (amount === 0) return 'Match';

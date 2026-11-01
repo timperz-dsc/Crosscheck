@@ -33,7 +33,7 @@ return Environment.ExitCode;
 
 namespace Crosscheck.Bridge.App
 {
-    /// <summary>Command line. No command = UI mode (browser + tray); create/join = headless.</summary>
+    /// <summary>Command line. No command = UI mode (app window + tray); create/join = headless.</summary>
     public sealed record Cli(
         SessionMode? Mode, string? Code, Uri Server, string ProfilePath, bool FakeSim, int ApiPort,
         string? LogDir, double GqlPollHz, string? Airac, string? Name, bool Verbose, SeatSide? Side = null,
@@ -41,7 +41,7 @@ namespace Crosscheck.Bridge.App
     {
         public const string Usage = """
             Usage:
-              crosscheck [options]              open the Crosscheck UI (create or join there)
+              crosscheck [options]              open the Crosscheck window (create or join there)
               crosscheck create [options]       headless: create a session
               crosscheck join <CODE> [options]  headless: join a session
 
@@ -56,7 +56,7 @@ namespace Crosscheck.Bridge.App
               --airac <cycle>       AIRAC cycle of your nav data, e.g. 2611
               --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
               --ui-dir <dir>        folder with the built UI (default wwwroot next to the program)
-              --no-browser          do not open the UI in the browser on start
+              --no-browser          no app window and no browser on start (tests)
               --no-tray             no tray icon
               --verbose             more console output
             """;
@@ -171,7 +171,7 @@ namespace Crosscheck.Bridge.App
     public sealed class BridgeService(Cli cli, ILoggerFactory loggers, IHostApplicationLifetime lifetime) : BackgroundService
     {
         private BridgeRuntime? _runtime;
-        private TrayIcon? _tray;
+        private DesktopShell? _shell;
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
@@ -199,8 +199,10 @@ namespace Crosscheck.Bridge.App
                 {
                     var url = $"http://127.0.0.1:{api.Port}/";
                     log.LogInformation("Crosscheck: {Url}", url);
-                    if (cli.Mode is null && !cli.NoBrowser) OpenBrowser(url, log);
-                    if (!cli.NoTray) _tray = TrayIcon.Start(() => OpenBrowser(url, log), lifetime.StopApplication);
+                    // UI mode: the app window (WebView2), or the browser if WebView2 is missing.
+                    // The URL also works in any normal browser on this computer (for debugging).
+                    var window = cli.Mode is null && !cli.NoBrowser;
+                    if (window || !cli.NoTray) _shell = DesktopShell.Start(url, window, !cli.NoTray, lifetime.StopApplication, log);
                 }
                 log.LogInformation("Bridge log: {Path}", _runtime.Log.Path);
                 log.LogInformation("Commands: control | control @peer_lost | give | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");
@@ -215,18 +217,6 @@ namespace Crosscheck.Bridge.App
                 log.LogError("{Message}", e.Message);
                 Environment.ExitCode = 1;
                 lifetime.StopApplication();
-            }
-        }
-
-        private static void OpenBrowser(string url, ILogger log)
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-            }
-            catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
-            {
-                log.LogWarning("Could not open the browser ({Message}). Open {Url} yourself.", e.Message, url);
             }
         }
 
@@ -271,7 +261,7 @@ namespace Crosscheck.Bridge.App
 
         public override async Task StopAsync(CancellationToken ct)
         {
-            _tray?.Dispose();
+            _shell?.Dispose();
             if (_runtime is not null) await _runtime.StopAsync(); // leave: frees the slot for the other pilot
             await base.StopAsync(ct);
         }

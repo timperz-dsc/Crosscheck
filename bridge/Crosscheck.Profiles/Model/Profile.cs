@@ -66,7 +66,8 @@ public sealed record DatarefEntry(
     double? PollHz = null,
     string? Note = null,
     string? Label = null,
-    string? Unit = null);
+    string? Unit = null,
+    double? DriftWarn = null);
 
 /// <summary>The sidestick takeover pushbutton of each seat (left = captain, right = first officer).</summary>
 public sealed record TakeoverRole(string Captain, string Fo);

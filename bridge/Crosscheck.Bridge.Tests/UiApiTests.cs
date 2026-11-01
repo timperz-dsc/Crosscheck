@@ -127,7 +127,7 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
         Assert.Contains(crew, c => c!["you"]!.GetValue<bool>() && c["side"]!.GetValue<string>() == "fo" && c["role"]!.GetValue<string>() == "pm");
         Assert.Contains(crew, c => !c!["you"]!.GetValue<bool>() && c["side"]!.GetValue<string>() == "captain" && c["role"]!.GetValue<string>() == "pf");
         Assert.Contains(gs["groups"]!.AsArray(), g => g!["label"]!.GetValue<string>() == "Main panel" && g["differs"]!.GetValue<int>() == 0);
-        Assert.Contains(gs["owned"]!.AsArray(), o => o!["label"]!.GetValue<string>() == "Fuel left" && o["unit"]!.GetValue<string>() == "kg");
+        Assert.Contains(gs["owned"]!.AsArray(), o => o!["label"]!.GetValue<string>() == "Left tank fuel" && o["unit"]!.GetValue<string>() == "kg");
     }
 
     [Fact]
@@ -242,6 +242,31 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
         Assert.Equal(-12, fuel["delta"]!.GetValue<double>());
         Assert.Empty(host.Status.OpenDesyncs);
         Assert.Empty(guest.Status.OpenDesyncs);
+    }
+
+    [Fact]
+    public async Task Fuel_that_differs_at_join_is_a_warning_until_both_load_the_same()
+    {
+        var host = await Idle("host");
+        FakeFenixGraphQl? guestGql = null;
+        var guest = await Idle("guest", g =>
+        {
+            guestGql = g;
+            g.Datarefs["aircraft.fuel.left.amount.kg"] = 1100.0; // loaded differently in the EFB
+        });
+        await Post(host, "/api/session/create");
+        await Post(guest, "/api/session/join", new { code = host.JoinCode });
+        await Wait.Until(() => guest.Engine!.DriftWarnings.Count == 1, "warning at the start", 10000);
+
+        var fuel = (await Status(guest))["owned"]!.AsArray().Single()!;
+        Assert.True(fuel["warn"]!.GetValue<bool>());
+        Assert.Equal(400, Math.Abs(fuel["delta"]!.GetValue<double>()));
+        Assert.Empty(guest.Status.OpenDesyncs); // no red, no desync
+        Assert.Equal(1100.0, guestGql!.Datarefs["aircraft.fuel.left.amount.kg"]); // never written
+
+        guestGql.Datarefs["aircraft.fuel.left.amount.kg"] = 1450.0; // now within 100 kg
+        await Wait.Until(() => guest.Engine!.DriftWarnings.Count == 0, "warning resolved", 15000);
+        Assert.False((await Status(guest))["owned"]!.AsArray().Single()!["warn"]!.GetValue<bool>());
     }
 
     [Fact]

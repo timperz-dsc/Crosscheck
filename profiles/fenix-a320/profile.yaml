@@ -122,8 +122,9 @@ vars:
 datarefs:
   # Name confirmed in spike/VarTypes/GRAPHQL.md ("fuel per tank").
   - path: aircraft.fuel.left.amount.kg
-    label: Fuel left
+    label: Left tank fuel
     unit: kg
+    drift_warn: 100
     class: owned
     group: systems
     poll_hz: 1

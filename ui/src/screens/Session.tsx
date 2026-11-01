@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertIcon, Button, Line, Mark } from '../components/parts';
 import type { Actions, ControlNotice, Desync, RecentItem, Status } from '../types';
 import {
-  SideName, desyncExplanation, differsHeading, driftText, lastCompared, otherSide, peerLostText, roleName, sideName, timeOfDay,
+  SideName, desyncExplanation, differsHeading, driftText, driftWarningText, lastCompared, otherSide, peerLostText, roleName, sideName, timeOfDay,
 } from '../words';
 import { SessionHeader } from './Waiting';
 
@@ -35,6 +35,9 @@ export function Session({ status, recent, actions, busy, error, confirmPeerLost,
       {peer && peer.state === 'lost' && status.peer_lost_at && (
         <Line tone="warning">{peerLostText(peer, status.peer_lost_at, status.session_ttl_ms ?? 300000, now)}</Line>
       )}
+      {(status.owned ?? []).filter((o) => o.warn).map((o) => (
+        <Line key={o.var} tone="warning">{driftWarningText(o.label, o.delta, o.unit, status.this_computer.aircraft.name)}</Line>
+      ))}
       {confirmPeerLost && !isPf && (
         <div className="line" role="status">
           <span className="warning">The {peerWord} is not connected. Take control anyway?</span>

@@ -87,10 +87,13 @@ vars:
     label: APU MASTER
     value_labels: { "0": OFF, "1": ON }    # keys are numbers in values/range
 datarefs:
-  - { path: aircraft.fuel.left.amount.kg, class: owned, group: systems, poll_hz: 1, label: Fuel left, unit: kg }
+  - { path: aircraft.fuel.left.amount.kg, class: owned, group: systems, poll_hz: 1, label: Left tank fuel, unit: kg, drift_warn: 100 }
 ```
 
 `group_labels` keys must be listed in `groups`. `unit` is shown with owned drift ("12 kg apart").
+`drift_warn` (owned only): if the values differ by more than this at the start of the session,
+the UI shows one amber line asking both pilots to load the same values. Owned values are never
+written by Crosscheck.
 
 ## Roles
 

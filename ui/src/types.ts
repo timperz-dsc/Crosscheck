@@ -44,6 +44,8 @@ export interface OwnedRow {
   label: string;
   unit: string | null;
   delta: number;
+  /** Differed by more than the profile's drift_warn when the session started, and still does. */
+  warn?: boolean;
 }
 
 export interface DesyncValue {

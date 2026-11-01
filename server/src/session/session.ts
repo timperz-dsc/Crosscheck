@@ -519,8 +519,8 @@ export class Session {
 
   /**
    * Builds the diff of one group and applies the PF safety rule, the loop guard and the freeze rule.
-   * Owned values (fuel, payload) are aligned only by the join-time resync; afterwards they are
-   * drift: reported, never corrected, never a desync.
+   * Owned values (fuel, payload) are never written: each pilot loads them in their own aircraft
+   * (Fenix EFB). Differences are drift: reported, never corrected, never a desync.
    */
   private processGroup(requestId: string, reason: RequestReason, group: string, byClient: Map<string, SnapshotValue[]>): void {
     const pf = this.pfClientId ? this.slot(this.pfClientId) : undefined;
@@ -531,17 +531,16 @@ export class Session {
     const all = diffValues(refValues, otherValues);
     const differing = new Set(all.map((d) => d.var));
     const g = this.group(group);
-    const alignOwned = reason === 'join';
-    const drift = alignOwned ? [] : all.filter((d) => d.class === 'owned');
-    const diffs = alignOwned ? all : all.filter((d) => d.class !== 'owned');
+    const drift = all.filter((d) => d.class === 'owned');
+    const diffs = all.filter((d) => d.class !== 'owned');
     g.diffVars = diffs.map((d) => d.var).sort();
     for (const d of [...this.desyncs.values()]) {
       if (d.group === group && !differing.has(d.var)) this.clearDesync(d.var, 'match');
     }
     const hasOwned = [...refValues, ...otherValues].some((v) => v.class === 'owned');
-    if (hasOwned && !alignOwned) this.sendDrift(group, g, drift);
+    if (hasOwned) this.sendDrift(group, g, drift);
     if (diffs.length === 0) {
-      this.log.event(drift.length > 0 ? 'snapshot_drift_only' : 'snapshot_equal', { request_id: requestId, group });
+      this.log.event(drift.length > 0 ? 'snapshot_drift_only' : 'snapshot_equal', { request_id: requestId, reason, group });
       return;
     }
 
@@ -568,7 +567,7 @@ export class Session {
       } else if (this.handover) {
         g.deferred = true;
         decisions.push({ ...base, action: 'deferred' });
-      } else if (d.class !== 'owned' && !this.guard.allows(d.var)) {
+      } else if (!this.guard.allows(d.var)) {
         decisions.push({ ...base, action: 'held', reason: 'correction_loop' });
         toRaise.push({
           d, reason: 'correction_loop', blocking: true,
@@ -606,8 +605,7 @@ export class Session {
   }
 
   private sendCorrection(d: Extract<RawDecision, { action: 'correct' }>, group: string, requestId: string, pf: ClientSlot, pm: ClientSlot): void {
-    // Owned values are only corrected by the join-time alignment; they never count in the loop guard.
-    if (d.class !== 'owned') this.guard.record(d.var);
+    this.guard.record(d.var);
     for (const side of d.sides) {
       const target = side === 'pf' ? pf : pm;
       const id = `corr:${this.seq + 1}`; // server namespace, cannot collide with client command ids

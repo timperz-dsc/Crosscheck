@@ -132,12 +132,14 @@ internal static class UiStatus
     private static JsonArray Owned(BridgeRuntime r, Sync.SyncEngine engine)
     {
         var drift = engine.Drift;
+        var warnings = engine.DriftWarnings.Select(w => w.Var).ToHashSet();
         return new JsonArray((r.Profile.Datarefs ?? []).Where(d => d.Class == SyncClass.Owned).Select(d => (JsonNode)new JsonObject
         {
             ["var"] = d.Path,
             ["label"] = r.Labels.Var(d.Path),
             ["unit"] = d.Unit,
             ["delta"] = drift.TryGetValue(d.Path, out var x) ? x.Delta : 0,
+            ["warn"] = warnings.Contains(d.Path),
         }).ToArray());
     }
 

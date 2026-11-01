@@ -1,7 +1,8 @@
 # ui/
 
 The Crosscheck UI: React + TypeScript + Vite. The bridge serves the built files on
-`http://127.0.0.1:8790/` and opens them in the browser when it starts. Everything comes from the
+`http://127.0.0.1:8790/` and shows them in its own window (WebView2). Any browser on the same
+computer can open that address too, which helps when debugging. Everything comes from the
 bridge's local API (`/api/...`, see [bridge/README.md](../bridge/README.md)); the UI keeps no
 state of its own.
 
