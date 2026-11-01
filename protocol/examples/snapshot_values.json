@@ -16,6 +16,12 @@
         "var": "I_OH_ELEC_BAT1_FAULT",
         "class": "observe",
         "value": 0
+      },
+      {
+        "var": "aircraft.fuel.left.amount.kg",
+        "class": "owned",
+        "value": 3750,
+        "step": 50
       }
     ]
   }

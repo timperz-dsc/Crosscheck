@@ -147,6 +147,14 @@ h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
 .blocks { display: flex; flex-direction: column; }
 .blocks .block + .block { border-top: 0; }
 
+/* Amber lines and the quiet indicators line, below the red items. Hairlines, no fill. */
+.notes { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.note { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.note-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.note-stack { display: flex; flex-direction: column; gap: 10px; }
+.details { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.details li { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 6px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+
 @media (max-width: 640px) {
   .header, .line { padding-left: 24px; padding-right: 24px; }
   .main { padding-left: 24px; padding-right: 24px; }

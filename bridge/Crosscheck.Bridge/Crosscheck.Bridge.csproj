@@ -28,6 +28,8 @@
   <ItemGroup>
     <Content Include="defaults.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\profiles\fenix-a320\profile.yaml" Link="profiles\fenix-a320\profile.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Controls that are not synced yet: watched read-only so moving one is never silent (CRO-26). -->
+    <Content Include="..\..\profiles\fenix-a320\unsynced.csv" Link="profiles\fenix-a320\unsynced.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

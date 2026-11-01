@@ -67,7 +67,15 @@ public sealed class MemoryChannel : IProtocolChannel
     public event Action<JsonObject>? MessageReceived;
     public event Action<bool>? Resumed;
 
-    public void Send(string type, JsonObject body) => Sent.Enqueue((type, (JsonObject)body.DeepClone()));
+    /// <summary>Outgoing messages that do not match the protocol schema. Must stay empty.</summary>
+    public ConcurrentQueue<string> Invalid { get; } = new();
+
+    public void Send(string type, JsonObject body)
+    {
+        var envelope = new JsonObject { ["v"] = 1, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
+        if (MessageValidator.Shared.Validate(envelope) is { } error) Invalid.Enqueue(error);
+        Sent.Enqueue((type, (JsonObject)body.DeepClone()));
+    }
 
     public List<JsonObject> SentOf(string type) => Sent.Where(s => s.Type == type).Select(s => s.Body).ToList();
 
@@ -95,12 +103,15 @@ public sealed class EngineHarness : IAsyncDisposable
     public BridgeStatus Status { get; } = new();
     public SyncEngine Engine { get; }
 
-    public EngineHarness(EngineOptions? options = null)
+    public EngineHarness(EngineOptions? options = null, bool withUnsynced = false)
     {
         Sim = new FakeSimAdapter(Profile, new FakeSimOptions { FrameMs = 5, EffectLagMs = 20, McduLagMs = 30 });
         Gql = new FakeFenixGraphQl(Sim);
-        Engine = new SyncEngine(Profile, Sim, Gql, Channel, Hub, new BridgeLog(null), Status, NullLogger.Instance, options: options);
+        Unsynced = withUnsynced ? UnsyncedList.LoadNextTo(Repo.FixtureProfile, Profile) : UnsyncedList.Empty;
+        Engine = new SyncEngine(Profile, Sim, Gql, Channel, Hub, new BridgeLog(null), Status, NullLogger.Instance, options: options, unsynced: Unsynced);
     }
+
+    public UnsyncedList Unsynced { get; }
 
     /// <summary>Starts sim and engine and opens a session in which this side is PF or PM.</summary>
     public async Task StartAsync(bool pf)
@@ -157,5 +168,6 @@ public sealed class EngineHarness : IAsyncDisposable
     {
         await Engine.DisposeAsync();
         await Sim.DisposeAsync();
+        Assert.Empty(Channel.Invalid); // every message the engine sent matches the protocol schema
     }
 }

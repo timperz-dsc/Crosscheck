@@ -90,6 +90,8 @@ internal sealed class SemanticValidator
                 Add($"{at}/poll_hz", $"'poll_hz' is not used by class {Lower(d.Class)}");
             if (d.DriftWarn is not null && d.Class != SyncClass.Owned)
                 Add($"{at}/drift_warn", $"'drift_warn' is only used by class owned");
+            if (d.DriftStep is not null && d.Class != SyncClass.Owned)
+                Add($"{at}/drift_step", $"'drift_step' is only used by class owned");
         }
 
         if (_profile.Roles?.Takeover is { } takeover) CheckTakeover(takeover, varsByName);

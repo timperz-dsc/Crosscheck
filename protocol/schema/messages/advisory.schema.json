@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/advisory.schema.json",
+  "title": "advisory",
+  "description": "An amber line for both pilots: a control that is not synced yet, hardware fighting over a var, or a simulator that is not connected. Replayable; the latest message per key wins. (server to client)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "advisory"
+    },
+    "body": {
+      "$ref": "../common.schema.json#/$defs/advisory"
+    }
+  },
+  "unevaluatedProperties": false
+}

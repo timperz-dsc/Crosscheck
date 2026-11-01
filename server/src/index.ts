@@ -13,9 +13,11 @@ const trustProxy = process.env.CROSSCHECK_TRUST_PROXY !== undefined
   : process.env.RAILWAY_ENVIRONMENT_NAME !== undefined;
 
 // Per-IP limits on create and join (0 = no limit). Tests that make many sessions from one address switch them off.
-const limits: { createLimit?: number; joinLimit?: number } = {};
+const limits: { createLimit?: number; joinLimit?: number; indicatorHoldMs?: number } = {};
 if (process.env.CROSSCHECK_CREATE_LIMIT !== undefined) limits.createLimit = Number(process.env.CROSSCHECK_CREATE_LIMIT);
 if (process.env.CROSSCHECK_JOIN_LIMIT !== undefined) limits.joinLimit = Number(process.env.CROSSCHECK_JOIN_LIMIT);
+// How long an indicator must differ before it is shown (default 10 s; tests shorten it).
+if (process.env.CROSSCHECK_INDICATOR_HOLD_MS !== undefined) limits.indicatorHoldMs = Number(process.env.CROSSCHECK_INDICATOR_HOLD_MS);
 
 const { app } = await buildServer({ logDir, echoEvents: true, trustProxy, ...limits }, { logger: true });
 await app.listen({ port, host });

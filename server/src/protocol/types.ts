@@ -47,13 +47,33 @@ export interface DiffEntry {
 
 export type DesyncReason =
   | 'no_ack' | 'refused' | 'observe_mismatch' | 'log_conflict' | 'missing_value'
-  | 'correction_failed' | 'correction_loop' | 'no_pf';
+  | 'correction_failed' | 'correction_loop' | 'no_pf' | 'effect_mismatch';
+
+/** Where a desync is shown: red (an input did not arrive, sticky, at the top) or quiet (an indicator differs). */
+export type Tier = 'red' | 'quiet';
 
 export interface ActiveDesync {
   var: string;
   group: string | null;
   reason: DesyncReason;
   since: number;
+  tier: Tier;
+}
+
+export type AdvisoryKind = 'not_synced' | 'hardware_fighting' | 'sim_disconnected';
+
+/** An amber line for both pilots (never a desync, never written). The latest body per key wins. */
+export interface AdvisoryBody {
+  key: string;
+  kind: AdvisoryKind;
+  active: boolean;
+  tier: 'amber';
+  var?: string;
+  label?: string;
+  seat: Seat;
+  at: number;
+  count?: number;
+  message: string;
 }
 
 export interface Timing {
@@ -91,7 +111,10 @@ export interface CommandBody {
   settle_ms: number;
   origin?: Origin;
   attempt?: number;
+  /** Pulse only: compare this effect var between the sims after settle. */
+  effect?: EffectSpec;
 }
+export interface EffectSpec { var: string; expect: 'same' | 'parity' }
 export interface AckBody {
   id: string;
   ok: boolean;
@@ -99,9 +122,11 @@ export interface AckBody {
   superseded?: boolean;
   from?: string;
   attempt?: number;
+  /** The receiver's effect var value after settle (commands with effect). */
+  effect?: Scalar;
 }
 export interface SnapshotHashBody { group: string; hash: string; applied_seq: number }
-export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar }
+export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar; step?: number }
 export interface SnapshotValuesBody { request_id: string; group: string; values: SnapshotValue[] }
 export type ControlConfirm = '@peer_lost';
 export type ControlKind = 'take' | 'give';
@@ -110,6 +135,9 @@ export interface ControlAckBody { epoch: number }
 export interface StreamBody { frame: number; data: Record<string, number>; from?: string }
 export interface PingBody { nonce: number; t: number; rtt_ms: number | null }
 export interface PongBody { nonce: number; t: number }
+export interface SimStateBody { connected: boolean }
+export interface UnsyncedInputBody { var: string; label: string }
+export interface EffectReportBody { id: string; var: string; value: Scalar }
 
 // ---- server → client bodies (only the ones built in several places) ----
 export type DecisionAction = 'correct' | 'desync' | 'held' | 'deferred';
@@ -148,5 +176,5 @@ export type NoticeKind = 'overridden' | 'corrected' | 'desync_cleared' | 'stream
 /** Server-to-client messages that are kept in the replay log and re-sent after a resume. */
 export const REPLAYABLE: ReadonlySet<string> = new Set([
   'command', 'accepted', 'ack', 'desync', 'notice', 'correction', 'snapshot_diff',
-  'control_changed', 'peer_status',
+  'control_changed', 'peer_status', 'advisory',
 ]);

@@ -70,6 +70,8 @@ export class FakeBridge {
   dropAcks = false;
   /** Socket stays open, but nothing is sent any more (one-way stall). */
   mute = false;
+  /** The simulator is connected. While false: no snapshot answers and no hashes (like the real bridge). */
+  simConnected = true;
   /** Socket stays open, but nothing received is processed (other direction stalled). */
   deaf = false;
   /** Ids of commands that were dropped, with their attempt numbers. */
@@ -173,6 +175,35 @@ export class FakeBridge {
     return id;
   }
 
+  /**
+   * A press with an effect check: the command carries effect, and the own effect value is reported
+   * reportAfterMs later (null = never report).
+   */
+  pressWithEffect(name: string, opts: { expect?: 'same' | 'parity'; settleMs?: number; reportAfterMs?: number | null } = {}): string {
+    const def = this.sim.defs.get(name)!;
+    const effectVar = def.toggles!;
+    this.sim.press(name, 'pilot');
+    const id = this.nextId();
+    const settleMs = opts.settleMs ?? 20;
+    this.send('command', {
+      id, var: name, class: 'pulse', value: 1, group: def.group, settle_ms: settleMs, effect: { var: effectVar, expect: opts.expect ?? 'same' },
+    });
+    const after = opts.reportAfterMs === undefined ? settleMs : opts.reportAfterMs;
+    if (after !== null) setTimeout(() => this.send('effect_report', { id, var: effectVar, value: this.sim.get(effectVar) }), after);
+    return id;
+  }
+
+  /** The simulator connects or disconnects (sim_state). */
+  setSim(connected: boolean): void {
+    this.simConnected = connected;
+    this.send('sim_state', { connected });
+  }
+
+  /** The pilot moved a control that is not synced (watched read-only). */
+  unsyncedInput(name: string, label: string): void {
+    this.send('unsynced_input', { var: name, label });
+  }
+
   requestControl(confirm?: string[]): void {
     this.send('control_request', confirm ? { confirm } : {});
   }
@@ -187,6 +218,7 @@ export class FakeBridge {
   }
 
   sendHashes(): void {
+    if (!this.simConnected) return;
     for (const group of this.sim.groups()) {
       this.send('snapshot_hash', { group, hash: this.sim.hash(group), applied_seq: this.appliedSeq });
     }
@@ -277,6 +309,7 @@ export class FakeBridge {
         break;
       }
       case 'snapshot_request': {
+        if (!this.simConnected) break;
         const groups = (body.groups as string[] | null) ?? this.sim.groups();
         for (const group of groups) {
           if (!this.sim.groups().includes(group)) continue;
@@ -345,7 +378,7 @@ export class FakeBridge {
       ack = { id: b.id, ok, observed: this.sim.display(b.var) };
     } else {
       const ok = this.sim.press(b.var, 'remote');
-      ack = { id: b.id, ok, observed: b.value ?? 1 };
+      ack = { id: b.id, ok, observed: b.value ?? 1, ...(b.effect ? { effect: this.sim.get(b.effect.var) } : {}) };
     }
     this.appliedSeq = Math.max(this.appliedSeq, seq);
     this.ackCache.set(b.id, ack);

@@ -6,6 +6,7 @@ import { decideCorrections, diffValues, type LoggedCommand, type VarDiff } from 
 import { generateJoinCode, JOIN_CODE_ALPHABET, normalizeJoinCode } from '../src/session/joinCode.js';
 import { comparePreflight } from '../src/session/preflight.js';
 import { ReplayLog } from '../src/session/replayLog.js';
+import { driftShouldSend, effectsMatch, tierFor } from '../src/session/session.js';
 import type { Envelope } from '../src/protocol/types.js';
 import { PREFLIGHT } from './fake/fakeBridge.js';
 import { canonicalHash, formatValue } from './fake/fakeSim.js';
@@ -166,5 +167,65 @@ describe('canonical hash test vectors (protocol/test-vectors, also checked by th
       expect(values.map((v) => formatValue(v.value))).toEqual(c.formatted);
       expect(canonicalHash(values)).toBe(c.hash);
     }
+  });
+});
+
+describe('desync tiers (protocol/test-vectors/desync-tiers.json, also checked by the C# bridge)', () => {
+  it('only an indicator may be quiet; every failed pilot input is red', () => {
+    const file = new URL('../../protocol/test-vectors/desync-tiers.json', import.meta.url);
+    const { cases } = JSON.parse(readFileSync(file, 'utf8')) as { cases: { name: string; class: string; delta_display: boolean; tier: string }[] };
+    // The server never sees a delta display as observe: the bridge reports it under the encoder (class delta).
+    for (const c of cases) expect(tierFor(c.delta_display ? 'delta' : c.class), c.name).toBe(c.tier);
+    for (const cls of ['verified', 'analog', 'delta', 'pulse']) expect(tierFor(cls)).toBe('red');
+  });
+});
+
+describe('pulse effect comparison', () => {
+  it('same compares values, parity compares odd/even', () => {
+    expect(effectsMatch(1, 1, 'same')).toBe(true);
+    expect(effectsMatch(0, 1, 'same')).toBe(false);
+    expect(effectsMatch(3, 5, 'parity')).toBe(true);
+    expect(effectsMatch(3, 4, 'parity')).toBe(false);
+    expect(effectsMatch('ab', 'ab', 'same')).toBe(true);
+  });
+});
+
+describe('drift rate (protocol/test-vectors/drift-rate.json)', () => {
+  interface Case { name: string; step: number | null; min_interval_ms: number; steps: { t_ms: number; drift: Record<string, number>; send: boolean }[] }
+  it('matches every vector', () => {
+    const file = new URL('../../protocol/test-vectors/drift-rate.json', import.meta.url);
+    const { cases } = JSON.parse(readFileSync(file, 'utf8')) as { cases: Case[] };
+    for (const c of cases) {
+      let sent = new Map<string, number>();
+      let sentAt = 0;
+      for (const s of c.steps) {
+        const current = new Map(Object.entries(s.drift));
+        const send = driftShouldSend(sent, current, sentAt, s.t_ms, () => c.step ?? undefined, c.min_interval_ms);
+        expect(send, `${c.name} at ${s.t_ms}`).toBe(s.send);
+        if (send) {
+          sent = current;
+          sentAt = s.t_ms;
+        }
+      }
+    }
+  });
+
+  it('the gate test 1 fuel drift (1,289 messages) shrinks to a handful', () => {
+    const file = new URL('./fixtures/gate-test-1.json', import.meta.url);
+    const { fuel_drift: fuel } = JSON.parse(readFileSync(file, 'utf8')) as { fuel_drift: { step: number; messages: [number, number | null][] } };
+    expect(fuel.messages).toHaveLength(1289);
+    let sent = new Map<string, number>();
+    let sentAt = 0;
+    let count = 0;
+    for (const [t, delta] of fuel.messages) {
+      const current = new Map(delta === null ? [] : [['fuel', delta] as [string, number]]);
+      if (!driftShouldSend(sent, current, sentAt, t, () => fuel.step, 10_000)) continue;
+      count++;
+      sent = current;
+      sentAt = t;
+    }
+    // Every start, stop and jump of the difference is still sent; the repeats are not.
+    expect(count).toBeLessThan(40);
+    expect(count).toBeGreaterThan(0);
   });
 });

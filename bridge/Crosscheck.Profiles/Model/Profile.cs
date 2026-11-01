@@ -67,7 +67,15 @@ public sealed record DatarefEntry(
     string? Note = null,
     string? Label = null,
     string? Unit = null,
-    double? DriftWarn = null);
+    double? DriftWarn = null,
+    double? DriftStep = null)
+{
+    /// <summary>
+    /// owned: a drift change smaller than this is sent at most every 10 s. Default: half of
+    /// drift_warn (50 kg for fuel with drift_warn 100); null without both.
+    /// </summary>
+    public double? EffectiveDriftStep => DriftStep ?? (DriftWarn is { } w ? w / 2 : null);
+}
 
 /// <summary>The sidestick takeover pushbutton of each seat (left = captain, right = first officer).</summary>
 public sealed record TakeoverRole(string Captain, string Fo);

@@ -22,6 +22,12 @@ export interface PendingEntry {
   paused: boolean;
   /** Corrections: which side the receiver was when the correction was decided. */
   side?: Role;
+  /**
+   * Re-send on no ack / ok:false. Only for absolute values (verified, analog, owned): writing the
+   * same value again is harmless. Pulses, counters and delta steps are never re-sent, because a
+   * re-send is another press or click; they fail on the first no ack / ok:false.
+   */
+  retry: boolean;
 }
 
 export interface PendingHooks {
@@ -36,8 +42,8 @@ export interface PendingHooks {
 
 /**
  * Commands and corrections waiting for an ack. Timeout = settle_ms + margin + RTT. No ack
- * or ok:false → re-send (max maxRetries), then failed(). While the receiver is lost nothing
- * is re-sent and no retries are used up; resume continues.
+ * or ok:false → re-send (max maxRetries, absolute values only), then failed(). While the
+ * receiver is lost nothing is re-sent and no retries are used up; resume continues.
  */
 export class PendingAcks {
   private readonly entries = new Map<string, PendingEntry>();
@@ -63,7 +69,7 @@ export class PendingAcks {
     if (ack.ok) {
       this.remove(entry);
       this.hooks.ok(entry, ack);
-    } else if (entry.attempt < this.hooks.maxRetries) {
+    } else if (entry.retry && entry.attempt < this.hooks.maxRetries) {
       entry.attempt++;
       this.hooks.resend(entry);
       this.arm(entry);
@@ -120,13 +126,16 @@ export class PendingAcks {
 
   private arm(entry: PendingEntry): void {
     this.clearTimer(entry);
-    entry.timer = setTimeout(() => this.timeout(entry), this.hooks.timeoutFor(entry));
+    // Never re-sent, but just as patient: waits as long as the re-sends of an absolute value would
+    // (a burst of key presses is applied one by one on the other side).
+    const wait = this.hooks.timeoutFor(entry) * (entry.retry ? 1 : this.hooks.maxRetries + 1);
+    entry.timer = setTimeout(() => this.timeout(entry), wait);
   }
 
   private timeout(entry: PendingEntry): void {
     entry.timer = null;
     if (!this.entries.has(entry.id) || entry.paused) return;
-    if (entry.attempt < this.hooks.maxRetries) {
+    if (entry.retry && entry.attempt < this.hooks.maxRetries) {
       entry.attempt++;
       this.hooks.resend(entry);
       this.arm(entry);

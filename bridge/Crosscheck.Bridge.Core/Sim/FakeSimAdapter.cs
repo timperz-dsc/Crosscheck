@@ -29,6 +29,8 @@ public sealed class FakeSimAdapter : ISimAdapter
     private readonly Dictionary<int, string> _screens = new() { [1] = "", [2] = "" };
     private readonly HashSet<string> _refused = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (double Value, int RevertMs)> _stuck = new(StringComparer.Ordinal);
+    /// <summary>Keys whose effect lamp does not change on a press (system unpowered).</summary>
+    private readonly HashSet<string> _unpowered = new(StringComparer.Ordinal);
     private HashSet<string> _watched = new(StringComparer.Ordinal);
     private Timer? _frame;
     private SimState _state = SimState.Disconnected;
@@ -58,7 +60,12 @@ public sealed class FakeSimAdapter : ISimAdapter
 
     public Task StartAsync(SimPlan plan, CancellationToken ct)
     {
-        lock (_gate) _watched = plan.Watched.ToHashSet(StringComparer.Ordinal);
+        lock (_gate)
+        {
+            _watched = plan.Watched.ToHashSet(StringComparer.Ordinal);
+            // Watched names outside the profile (controls not synced yet) exist in the cockpit too.
+            foreach (var name in _watched) _values.TryAdd(name, 0);
+        }
         _frame = new Timer(_ => Frame(), null, _options.FrameMs, _options.FrameMs);
         SetConnected(true);
         return Task.CompletedTask;
@@ -124,6 +131,12 @@ public sealed class FakeSimAdapter : ISimAdapter
         lock (_gate) _refused.Add(name);
     }
 
+    /// <summary>A key press is stored, but its effect lamp does not change (system unpowered).</summary>
+    public void Unpower(string name)
+    {
+        lock (_gate) _unpowered.Add(name);
+    }
+
     /// <summary>Every change of <paramref name="name"/> is reverted after <paramref name="revertMs"/>.</summary>
     public void Stick(string name, double value, int revertMs = 30)
     {
@@ -175,6 +188,12 @@ public sealed class FakeSimAdapter : ISimAdapter
         {
             var change = value - old;
             Later(_options.EffectLagMs, () => _values[display] += change);
+        }
+        else if (spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is { } lamp && _values.ContainsKey(lamp))
+        {
+            // A toggling key (FD): each press toggles its lamp, unless the system is unpowered.
+            var pressed = spec.Press == PressMode.Counter ? value > old && ((long)value & 1) == 1 : old == 0 && value != 0;
+            if (pressed && !_unpowered.Contains(name)) Later(_options.EffectLagMs, () => _values[lamp] = _values[lamp] == 0 ? 1 : 0);
         }
         else if (spec.Verify?.Lvar is { } effect && _values.ContainsKey(effect))
         {

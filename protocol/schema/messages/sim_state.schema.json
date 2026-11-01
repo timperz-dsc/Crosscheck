@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/sim_state.schema.json",
+  "title": "sim_state",
+  "description": "The bridge's simulator connection changed. While disconnected the bridge answers no snapshot requests and the server does not compare. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "sim_state"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "connected"
+      ],
+      "properties": {
+        "connected": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

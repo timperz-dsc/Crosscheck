@@ -23,13 +23,15 @@ describe('2. lost command → retry → ok', () => {
     expect([...host.messages('desync'), ...guest.messages('desync')]).toHaveLength(0);
   });
 
-  it('applies a re-sent delta only once (receiver dedupes by id)', async () => {
+  it('never re-sends a delta step: a missing ack is a red desync after one delivery (CRO-26)', async () => {
     pair = await startPair();
     const { host, guest } = pair;
     guest.dropAcks = true;
 
-    host.turn('E_FCU_HEADING', 5);
-    await guest.waitFor('command', (m) => body(m).attempt === 2);
+    const id = host.turn('E_FCU_HEADING', 5);
+    const desync = await host.waitFor('desync', (m) => body(m).command_id === id);
+    expect(body(desync)).toMatchObject({ var: 'E_FCU_HEADING', reason: 'no_ack', tier: 'red' });
+    expect(guest.messages('command', (m) => body(m).id === id).map((m) => body(m).attempt)).toEqual([0]);
     expect(guest.sim.display('E_FCU_HEADING')).toBe(105);
     expect(host.sim.display('E_FCU_HEADING')).toBe(105);
   });

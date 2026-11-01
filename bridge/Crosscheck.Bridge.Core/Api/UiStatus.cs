@@ -67,7 +67,10 @@ internal static class UiStatus
         json["last_compared_at"] = engine.LastComparedAt?.ToString("O");
         json["groups"] = Groups(r, engine);
         json["owned"] = Owned(r, engine);
-        json["desyncs"] = Desyncs(r, engine, client);
+        var (red, indicators) = Desyncs(r, engine, client);
+        json["desyncs"] = red;
+        json["indicators"] = indicators;
+        json["advisories"] = Advisories(r);
         json["control_notice"] = engine.IsPf && engine.ControlNotice is { } n ? ControlNotice(r, n, engine.ControlNoticeAt) : null;
         return json;
     }
@@ -126,7 +129,7 @@ internal static class UiStatus
         {
             ["id"] = g,
             ["label"] = r.Labels.Group(g),
-            ["differs"] = desyncs.Count(d => d.Body["group"]?.GetValue<string>() == g),
+            ["differs"] = desyncs.Count(d => d.Body["group"]?.GetValue<string>() == g && TierOf(r, d.Body) == "red"),
         }).ToArray());
     }
 
@@ -144,43 +147,122 @@ internal static class UiStatus
         }).ToArray());
     }
 
-    private static JsonArray Desyncs(BridgeRuntime r, Sync.SyncEngine engine, ProtocolClient client)
+    /// <summary>Reasons that mean a pilot's input did not arrive or had another result: always red.</summary>
+    private static readonly HashSet<string> InputReasons =
+        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch"];
+
+    /// <summary>
+    /// Where a desync is shown. The server sends the tier; as defence in depth only an indicator may be
+    /// quiet: an observe var or dataref (or an MCDU screen) that is not an encoder display, with a reason
+    /// that is not a failed input. Everything else is red: a failed pilot input never ends up quiet.
+    /// </summary>
+    public static string TierOf(BridgeRuntime r, JsonObject body)
     {
-        var list = new JsonArray();
-        foreach (var (body, since) in r.Status.Desyncs.OrderBy(d => d.Since))
+        var name = body["var"]!.GetValue<string>();
+        var cls = r.Profile.Vars.FirstOrDefault(v => v.Name == name)?.Class
+                  ?? r.Profile.Datarefs?.FirstOrDefault(d => d.Path == name)?.Class
+                  ?? (name.StartsWith("aircraft.mcdu", StringComparison.Ordinal) ? SyncClass.Observe : null);
+        var deltaDisplay = r.Profile.Vars.Any(v => v.Class == SyncClass.Delta && v.Display == name);
+        return TierOf(cls, deltaDisplay, body["reason"]?.GetValue<string>(), body["tier"]?.GetValue<string>());
+    }
+
+    public static string TierOf(SyncClass? cls, bool deltaDisplay, string? reason, string? serverTier) =>
+        serverTier == "quiet" && cls == SyncClass.Observe && !deltaDisplay && !InputReasons.Contains(reason ?? "") ? "quiet" : "red";
+
+    private static (JsonArray Red, JsonArray Indicators) Desyncs(BridgeRuntime r, Sync.SyncEngine engine, ProtocolClient client)
+    {
+        var all = r.Status.Desyncs.OrderBy(d => d.Since).Select(d => (d.Body, d.Since, Tier: TierOf(r, d.Body))).ToList();
+        var red = new JsonArray();
+        var indicators = new JsonArray();
+        var attached = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var (body, since, tier) in all.Where(d => d.Tier == "red"))
         {
-            var name = body["var"]!.GetValue<string>();
+            var item = Item(r, engine, client, body, since, tier);
+            // Lamps that differ in the same group are most likely effects of this input: listed under it.
             var group = body["group"]?.GetValue<string>();
-            var spec = r.Profile.Vars.FirstOrDefault(v => v.Name == name);
-            double? mine = r.Sim.TryGet(name, out var m) ? m : null;
-            var receiverIsYou = body["client_id"]?.GetValue<string>() is { } c && c == client.ClientId;
-            double? other = body["values"] is JsonObject values
-                ? Num(values[engine.IsPf ? "pm" : "pf"])
-                : receiverIsYou ? Num(body["expected"]) : Num(body["observed"]);
-            if (body["values"] is JsonObject v2 && mine is null) mine = Num(v2[engine.IsPf ? "pf" : "pm"]);
-            var writable = spec?.Class is SyncClass.Verified or SyncClass.Analog;
-            var options = new JsonArray();
-            if (writable)
-                foreach (var value in new[] { mine, other }.OfType<double>().Distinct().Where(x => r.Sim.Guard.IsAllowedValue(name, x)))
-                    options.Add(new JsonObject { ["value"] = value, ["text"] = r.Labels.Value(name, value) });
-            list.Add(new JsonObject
+            var effects = new JsonArray();
+            if (group is not null && FirstRedOfGroup(red, group))
             {
-                ["var"] = name,
-                ["label"] = r.Labels.Var(name),
-                ["has_label"] = r.Labels.HasLabel(name),
-                ["group"] = group,
-                ["group_label"] = group is null ? null : r.Labels.Group(group),
-                ["reason"] = body["reason"]!.GetValue<string>(),
-                ["since"] = since.ToString("O"),
-                ["receiver_is_you"] = receiverIsYou,
-                ["you"] = new JsonObject { ["value"] = mine, ["text"] = r.Labels.Value(name, mine) },
-                ["other"] = new JsonObject { ["value"] = other, ["text"] = r.Labels.Value(name, other) },
-                ["writable"] = writable,
-                ["options"] = options,
-                ["message"] = body["message"]?.GetValue<string>(),
-            });
+                foreach (var (q, qSince, _) in all.Where(d => d.Tier == "quiet" && d.Body["group"]?.GetValue<string>() == group))
+                {
+                    effects.Add(Item(r, engine, client, q, qSince, "quiet"));
+                    attached.Add(q["var"]!.GetValue<string>());
+                }
+            }
+            item["effects"] = effects;
+            red.Add(item);
         }
-        return list;
+        foreach (var (body, since, _) in all.Where(d => d.Tier == "quiet" && !attached.Contains(d.Body["var"]!.GetValue<string>())))
+            indicators.Add(Item(r, engine, client, body, since, "quiet"));
+        return (red, indicators);
+    }
+
+    /// <summary>Effects go under the first red item of a group only (never listed twice).</summary>
+    private static bool FirstRedOfGroup(JsonArray red, string group) => !red.Any(x => x!["group"]?.GetValue<string>() == group);
+
+    private static JsonObject Item(BridgeRuntime r, Sync.SyncEngine engine, ProtocolClient client, JsonObject body, DateTimeOffset since, string tier)
+    {
+        var name = body["var"]!.GetValue<string>();
+        var group = body["group"]?.GetValue<string>();
+        var reason = body["reason"]!.GetValue<string>();
+        var spec = r.Profile.Vars.FirstOrDefault(v => v.Name == name);
+        var effectCompare = reason == "effect_mismatch";
+        // An effect desync compares the key's lamp, not the key itself: its values come from the message.
+        double? mine = !effectCompare && r.Sim.TryGet(name, out var m) ? m : null;
+        var receiverIsYou = body["client_id"]?.GetValue<string>() is { } c && c == client.ClientId;
+        double? other = body["values"] is JsonObject values
+            ? Num(values[engine.IsPf ? "pm" : "pf"])
+            : receiverIsYou ? Num(body["expected"]) : Num(body["observed"]);
+        if (body["values"] is JsonObject v2 && mine is null) mine = Num(v2[engine.IsPf ? "pf" : "pm"]);
+        var writable = !effectCompare && spec?.Class is SyncClass.Verified or SyncClass.Analog;
+        var options = new JsonArray();
+        if (writable)
+            foreach (var value in new[] { mine, other }.OfType<double>().Distinct().Where(x => r.Sim.Guard.IsAllowedValue(name, x)))
+                options.Add(new JsonObject { ["value"] = value, ["text"] = r.Labels.Value(name, value) });
+        string Text(double? v) => effectCompare ? (v is null ? "unknown" : Sync.Labels.Number(v.Value)) : r.Labels.Value(name, v);
+        return new JsonObject
+        {
+            ["var"] = name,
+            ["label"] = r.Labels.Var(name),
+            ["has_label"] = r.Labels.HasLabel(name),
+            ["group"] = group,
+            ["group_label"] = group is null ? null : r.Labels.Group(group),
+            ["reason"] = reason,
+            ["tier"] = tier,
+            ["since"] = since.ToString("O"),
+            ["receiver_is_you"] = receiverIsYou,
+            ["you"] = new JsonObject { ["value"] = mine, ["text"] = Text(mine) },
+            ["other"] = new JsonObject { ["value"] = other, ["text"] = Text(other) },
+            ["writable"] = writable,
+            ["options"] = options,
+            ["message"] = body["message"]?.GetValue<string>(),
+        };
+    }
+
+    /// <summary>Amber lines: controls not synced yet, hardware fighting, a sim that is not connected. Newest first.</summary>
+    private static JsonArray Advisories(BridgeRuntime r)
+    {
+        var mySeat = r.Status.Seat;
+        var otherSide = r.Status.SeatSide == "fo" ? "captain" : "first officer";
+        return new JsonArray(r.Status.Advisories
+            .OrderByDescending(a => a["at"]?.GetValue<long>() ?? 0)
+            .Select(a =>
+            {
+                var name = a["var"]?.GetValue<string>();
+                var mine = a["seat"]?.GetValue<string>() == mySeat;
+                return (JsonNode)new JsonObject
+                {
+                    ["key"] = a["key"]!.GetValue<string>(),
+                    ["kind"] = a["kind"]!.GetValue<string>(),
+                    ["var"] = name,
+                    ["label"] = a["label"]?.GetValue<string>() ?? (name is null ? null : r.Labels.Var(name)),
+                    ["mine"] = mine,
+                    ["who"] = mine ? "you" : otherSide,
+                    ["at"] = DateTimeOffset.FromUnixTimeMilliseconds(a["at"]?.GetValue<long>() ?? 0).ToString("O"),
+                    ["count"] = a["count"]?.GetValue<int>(),
+                    ["message"] = a["message"]?.GetValue<string>(),
+                };
+            }).ToArray());
     }
 
     private static JsonObject ControlNotice(BridgeRuntime r, JsonObject notice, DateTimeOffset? at)

@@ -209,7 +209,8 @@
         "note": { "type": "string" },
         "label": { "description": "Name as the pilots see it, for example Fuel left.", "type": "string", "minLength": 1 },
         "unit": { "description": "Unit of the value, for example kg. Shown with drift.", "type": "string", "minLength": 1 },
-        "drift_warn": { "description": "owned only: a difference larger than this (in unit) at the start of the session shows one amber line.", "type": "number", "exclusiveMinimum": 0 }
+        "drift_warn": { "description": "owned only: a difference larger than this (in unit) shows one amber line.", "type": "number", "exclusiveMinimum": 0 },
+        "drift_step": { "description": "owned only: a change of the difference smaller than this (in unit) is sent at most every 10 s. Default: half of drift_warn.", "type": "number", "exclusiveMinimum": 0 }
       }
     }
   }

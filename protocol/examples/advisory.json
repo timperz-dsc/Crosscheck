@@ -1,0 +1,19 @@
+{
+  "v": 1,
+  "type": "advisory",
+  "session": "s_k3J9xQ2mPa",
+  "seq": 61,
+  "ts": 1793520000000,
+  "body": {
+    "key": "not_synced:S_FCU_AP1",
+    "kind": "not_synced",
+    "active": true,
+    "tier": "amber",
+    "var": "S_FCU_AP1",
+    "label": "AP1",
+    "seat": "host",
+    "at": 1793520000000,
+    "count": 1,
+    "message": "AP1 (S_FCU_AP1) moved on the host side: not synced yet."
+  }
+}

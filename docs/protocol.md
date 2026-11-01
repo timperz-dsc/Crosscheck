@@ -49,12 +49,16 @@ resume.
 | `command` | both | A pilot changed something. |
 | `accepted` | S→C | Command logged; carries its seq. |
 | `ack` | both | Result of applying a command or correction. |
-| `desync` | S→C | Out of sync and not fixed. Stays open until `desync_cleared`. |
+| `desync` | S→C | Out of sync and not fixed. Stays open until `desync_cleared`. `tier` red or quiet. |
+| `advisory` | S→C | An amber line: control not synced yet, hardware fighting, sim not connected (section 7a). |
 | `notice` | S→C | `overridden`, `corrected`, `desync_cleared`, `stream_dropped`, `control_ack_missing`. |
 | `snapshot_hash` | C→S | Hash of one panel group, every ~2 s. |
 | `snapshot_request` / `snapshot_values` | S→C / C→S | Values of groups on mismatch or resync. |
 | `snapshot_diff` | S→C | Differences of one group and the decision per var. |
-| `drift` | S→C | Owned values (fuel, payload) that differ, for information. |
+| `drift` | S→C | Owned values (fuel, payload) that differ, for information. Rate limited. |
+| `sim_state` | C→S | The bridge's simulator connected or disconnected. |
+| `unsynced_input` | C→S | A pilot moved a control that is watched read-only (not synced yet). |
+| `effect_report` | C→S | The sender's own effect value after a pulse with `effect` (section 5). |
 | `correction` | S→C | Write this target value (decided by the PF safety rule). |
 | `control_request` | C→S | "I have control" (from the PM). |
 | `control_give` | C→S | "You have control" (from the PF). |
@@ -140,11 +144,30 @@ Flow:
    answers `ack {id, ok, observed}`.
 4. Server forwards the ack to the origin with `from` and `attempt`.
 
-**Timeouts and retries.** The server waits `settle_ms + 300 ms + receiver RTT`. No ack, or
-`ok: false`, → the same message is re-sent with `attempt` 1, 2, 3. After the third re-send:
-`desync {var, expected, observed, reason}` to both pilots, `reason` `no_ack` or `refused`
-(the origin also gets the last failed ack). Retries pause while the receiver is lost; no
-retries are used up then, the resume replays instead.
+**Timeouts and retries.** The server waits `settle_ms + 300 ms + receiver RTT`. Only absolute
+values (`verified`, `analog`, `owned`) are re-sent: no ack, or `ok: false`, → the same message
+again with `attempt` 1, 2, 3, then `desync`. **Pulses, counters and delta steps are never
+re-sent** (also not as corrections): a re-send would be another press or click. `ok: false`
+→ desync at once; no ack → the server waits as long as the 3 re-sends would take (a burst of
+key presses is applied one by one), then desync. The desync is `desync {var, expected, observed,
+reason, tier: "red"}` to both pilots, `reason` `no_ack` or `refused` (the origin also gets the
+last failed ack). Timers pause while the receiver is lost; on resume, commands sent before the
+outage are delivered once (receivers dedupe by id, and never apply a pulse or delta id twice).
+A late `ok` ack for a command that already failed clears its desync.
+
+**Pulse effect check.** A pulse whose var has an effect lamp in the profile (`verify.lvar`)
+carries `effect {var, expect: same|parity}`. The receiver's ack carries `effect`, its lamp after
+settle; `ok` only says the press was stored. The sender reads its own lamp `settle_ms` after the
+press and sends `effect_report {id, var, value}`. The server compares both: equal (`same`) or
+equal odd/even (`parity`) → nothing, also when neither lamp changed (system unpowered on both
+sides). Different, or a value missing after settle + 2 × 300 ms + RTTs → red `desync
+effect_mismatch` with `values {pf, pm}` (the lamp values).
+
+**Tiers.** Every desync carries `tier`. `quiet` only for an indicator (class `observe`): it is
+shown collapsed ("Indicators differ (n)"). Everything else is `red`: a pilot's input did not
+arrive, or its result differs. A failed pilot input is never quiet. The display of an encoder is
+reported under the encoder (class `delta`), so it is an input, not an indicator.
+Test vectors: `protocol/test-vectors/desync-tiers.json`.
 
 A command id that is already logged is not relayed again: the origin gets `accepted
 {duplicate: true}` with the original seq (resend after reconnect).
@@ -192,7 +215,8 @@ diffs the values and sends `snapshot_diff` with a decision per differing var.
 **PF safety rule.** Per differing var, the target is either a logged pilot command's value or
 the PF's current value. Nothing else.
 
-1. `observe` → `desync observe_mismatch`. Outputs are never written.
+1. `observe` → `desync observe_mismatch` (tier quiet), but only after the var has differed for
+   10 s (indicators lag their inputs). Outputs are never written.
 2. Absolute class, the latest logged pilot command for the var has the value of one side,
    **and the PF never confirmed that command** (the PF neither sent it nor acked it ok) →
    correct the side that differs with that value (`source: command_log`, `source_seq`). Only
@@ -211,10 +235,20 @@ planning. An owned difference is never corrected, never a desync and never count
 guard. It is reported as `drift`: after each value comparison of a
 group with owned vars the server sends `drift {group, values: [{var, pf, pm, delta}]}` to
 both (unsequenced, not replayed; values in the dataref's own units, `delta` = pm − pf). Empty
-`values` means no drift any more. In `snapshot_diff` such a var has action `drift`, and a
-group whose only differences are drift does not count as differing for `control_changed`.
-The bridge shows drift as information; a profile can set `drift_warn` per dataref (fuel:
-100 kg) for one amber line when the values differ by more at the start of the session.
+`values` means no drift any more. Owned vars are not listed in `snapshot_diff`, and a group
+whose only differences are drift does not count as differing for `control_changed`.
+Drift is rate limited: a var that starts or stops drifting, or whose delta moved by more than
+its `step` (sent by the bridge with the owned value in `snapshot_values`; profile `drift_step`,
+default half of `drift_warn`: 50 kg for fuel), is sent at once; smaller changes at most every
+10 s. Test vectors: `protocol/test-vectors/drift-rate.json`. The bridge shows one amber line
+while a difference is larger than `drift_warn` ("Fuel differs by 400 kg – load the same fuel in
+the EFB"), never a desync.
+
+**Simulator not connected.** A bridge sends `sim_state {connected}` when its sim connects or
+disconnects (and again after a resume). While a sim is disconnected the bridge answers no
+`snapshot_request`, the server does not compare or request snapshots ("not comparable"), and
+both pilots get one advisory `sim_disconnected` instead of a `missing_value` desync per var.
+On reconnect the server requests all groups (`resync`).
 
 `correction {id, var, class, target, group, settle_ms, source, source_seq?, request_id}` is
 acked like a command (same retries). A confirmed correction → `notice corrected` to both. A
@@ -230,11 +264,27 @@ decides with the new PF as reference.
 
 **Open desyncs.** A desync stays open (listed in `resumed.desyncs`, `control_changed.desyncs` and `control_denied.desyncs`)
 and is not repeated while it is open. It clears with `notice desync_cleared` when the values
-match again (equal hashes or equal values), when a pilot sends a command for that var, or when
-a correction for it is confirmed. While `correction_loop`, `correction_failed`,
+match again (equal hashes or equal values), when a command for that var is acked `ok`, or when
+a correction for it is confirmed. A new pilot command alone does **not** clear it: a click that
+is refused too must never wipe the red line. A failed pulse is not in any snapshot, so only a
+confirmed press clears it; an `effect_mismatch` also clears when the lamps match in a snapshot. While `correction_loop`, `correction_failed`,
 `observe_mismatch`, `log_conflict` or `missing_value` is open, the var is not corrected
 automatically (`held` in `snapshot_diff`). `no_ack`/`refused` do not block corrections:
 the snapshot is how those recover.
+
+## 7a. Advisories
+
+`advisory {key, kind, active, tier: "amber", seat, at, var?, label?, count?, message}` goes to
+both pilots (sequenced, replayed). One line per `key`; the latest message wins; `active: false`
+removes it. The active ones are listed in `joined.advisories` and `resumed.advisories`.
+
+| Kind | Key | When | Ends |
+|---|---|---|---|
+| `not_synced` | `not_synced:<var>` | A pilot moved a control that is watched read-only (`unsynced_input`; the list is `profiles/<aircraft>/unsynced.csv`). `seat` = who moved it, `count` = how often. | At the end of the session. |
+| `hardware_fighting` | `hardware_fighting:<var>` | 3 `overridden` conflicts on one var within 30 s (both pilots' hardware set it). | 30 s without another override. |
+| `sim_disconnected` | `sim_disconnected:<seat>` | That pilot's `sim_state {connected: false}`. | `sim_state {connected: true}`, or the pilot is lost or leaves. |
+
+Advisories are never desyncs and never write anything. The UI shows them below the red items.
 
 ## 8. Control token
 
@@ -330,7 +380,10 @@ this file to a desync report.
 | Setting | Value |
 |---|---|
 | Heartbeat / lost after / slot kept | 1 s / 5 s / 5 min |
-| Ack timeout | `settle_ms` + 300 ms + RTT, 3 re-sends |
+| Ack timeout | `settle_ms` + 300 ms + RTT; 3 re-sends for absolute values only |
+| Indicator hold (quiet desync) | 10 s |
+| Drift: step / at most | per dataref (fuel 50 kg) / every 10 s |
+| Hardware fighting | 3 overrides within 30 s |
 | Conflict window ("overridden") | 1 s |
 | Snapshot interval / mismatch rounds | 2 s / 2 |
 | Correction settle / loop guard | 500 ms / more than 3 per 60 s |

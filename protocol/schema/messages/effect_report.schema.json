@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/effect_report.schema.json",
+  "title": "effect_report",
+  "description": "The sender's own effect var value, read settle_ms after its pulse press, for a command with effect. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "effect_report"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "var",
+        "value"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../common.schema.json#/$defs/id"
+        },
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "value": {
+          "$ref": "../common.schema.json#/$defs/scalar"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

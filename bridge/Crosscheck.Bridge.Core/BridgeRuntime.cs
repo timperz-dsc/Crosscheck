@@ -119,6 +119,8 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     /// <summary>The last thing that went wrong with a session request, in words (shown on the start screen).</summary>
     public string? LastError { get; private set; }
     public Labels Labels { get; private set; } = null!;
+    /// <summary>Controls watched read-only because they are not synced yet (unsynced.csv next to the profile).</summary>
+    public UnsyncedList Unsynced { get; private set; } = UnsyncedList.Empty;
     public Uri ServerUrl => _server;
 
     /// <summary>Path of this bridge's own log file (null if logging is off). A pilot can send it after a test.</summary>
@@ -131,6 +133,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         if (!loaded.IsValid) throw new ProfileInvalidException(loaded.FormatIssues());
         Profile = loaded.Profile!;
         Labels = new Labels(Profile);
+        Unsynced = UnsyncedList.LoadNextTo(_options.ProfilePath, Profile);
         ProfileHash = global::Crosscheck.Bridge.ProfileHash.Of(await File.ReadAllBytesAsync(_options.ProfilePath, ct));
 
         Log = new BridgeLog(_options.LogDir ?? BridgeLog.DefaultDirectory);
@@ -145,7 +148,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         GraphQl = backends.GraphQl;
         _package = backends.Package;
         Sim.StateChanged += s => Status.Sim = s == SimState.Connected ? "connected" : "disconnected";
-        await Sim.StartAsync(SyncEngine.PlanFor(Profile), ct);
+        await Sim.StartAsync(SyncEngine.PlanFor(Profile, Unsynced.Names), ct);
         Status.Sim = Sim.State == SimState.Connected ? "connected" : "disconnected";
         await GraphQl.StartAsync(SyncEngine.GraphQlPathsFor(Profile), ct);
         _versions = ReadVersionsAsync(_life.Token);
@@ -402,7 +405,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             if (s is ServerState.Reconnecting or ServerState.Ended)
                 Events.Publish("server_" + Status.Server, s == ServerState.Ended ? "Session ended." : "Connection to the server lost; resuming.");
         };
-        var engine = new SyncEngine(Profile, Sim, GraphQl, client, Events, Log, Status, _logger, options: _options.Engine);
+        var engine = new SyncEngine(Profile, Sim, GraphQl, client, Events, Log, Status, _logger, options: _options.Engine, unsynced: Unsynced);
         engine.Start();
         Client = client;
         Engine = engine;

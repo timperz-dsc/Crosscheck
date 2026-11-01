@@ -19,6 +19,23 @@ static class ReportWriter
         return sb.ToString();
     }
 
+    /// <summary>
+    /// unsynced.csv: the S_/A_ vars still on the review list, with a label. The bridge watches them
+    /// read-only and shows "You moved &lt;label&gt; – not synced yet" (CRO-26). Short label unless two clash.
+    /// </summary>
+    public static string UnsyncedCsv(IEnumerable<Review> reviews)
+    {
+        var rows = reviews.Where(r => r.Name.StartsWith("S_", StringComparison.Ordinal) || r.Name.StartsWith("A_", StringComparison.Ordinal))
+            .Select(r => r.Name).Distinct().Order(StringComparer.Ordinal)
+            .Select(n => (Name: n, Label: Rules.LabelOf(n))).ToList();
+        // Without a panel around it, a one-word short label ("MODE") is too vague: keep the system ("ENG MODE").
+        var clash = rows.GroupBy(r => r.Label.Short).Where(g => g.Count() > 1).SelectMany(g => g).Select(r => r.Name)
+            .Concat(rows.Where(r => !r.Label.Short.Contains(' ')).Select(r => r.Name)).ToHashSet();
+        var sb = new StringBuilder("name,label\n");
+        foreach (var r in rows) sb.Append($"{Csv(r.Name)},{Csv(clash.Contains(r.Name) ? r.Label.Long : r.Label.Short)}\n");
+        return sb.ToString();
+    }
+
     public static string Report(Profile profile, List<Entry> entries, List<Review> reviews, List<Pairing> pairings,
         List<string> sample, List<string> scanNames, List<string> profileNames, string scanPath, int excluded, int handKept,
         OverrideFile? overrides = null)

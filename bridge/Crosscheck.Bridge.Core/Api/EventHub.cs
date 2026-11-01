@@ -44,6 +44,8 @@ public sealed class BridgeStatus
     private readonly object _gate = new();
     private readonly Dictionary<string, JsonObject> _desyncs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, DateTimeOffset> _desyncSince = new(StringComparer.Ordinal);
+    /// <summary>Active amber lines from the server (advisory messages), by key.</summary>
+    private readonly Dictionary<string, JsonObject> _advisories = new(StringComparer.Ordinal);
 
     public string? SessionId { get; set; }
     public string? JoinCode { get; set; }
@@ -76,6 +78,31 @@ public sealed class BridgeStatus
         get { lock (_gate) return _desyncs.Select(d => ((JsonObject)d.Value.DeepClone(), _desyncSince[d.Key])).ToList(); }
     }
 
+    public void SetAdvisory(string key, JsonObject body)
+    {
+        lock (_gate) _advisories[key] = (JsonObject)body.DeepClone();
+    }
+
+    public void RemoveAdvisory(string key)
+    {
+        lock (_gate) _advisories.Remove(key);
+    }
+
+    /// <summary>After joined/resumed: exactly the advisories the server says are active.</summary>
+    public void ResetAdvisories(IEnumerable<JsonObject> active)
+    {
+        lock (_gate)
+        {
+            _advisories.Clear();
+            foreach (var a in active) _advisories[a["key"]!.GetValue<string>()] = (JsonObject)a.DeepClone();
+        }
+    }
+
+    public IReadOnlyList<JsonObject> Advisories
+    {
+        get { lock (_gate) return _advisories.Values.Select(a => (JsonObject)a.DeepClone()).ToList(); }
+    }
+
     /// <summary>Back to "not in a session": forget everything session-specific.</summary>
     public void ResetSession()
     {
@@ -83,6 +110,7 @@ public sealed class BridgeStatus
         {
             _desyncs.Clear();
             _desyncSince.Clear();
+            _advisories.Clear();
         }
         SessionId = JoinCode = ClientId = Seat = SeatSide = Role = PfClientId = PeerState = null;
         RttMs = null;

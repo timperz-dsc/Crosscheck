@@ -38,6 +38,7 @@ public sealed class ServerFixture : IAsyncLifetime
         info.Environment["CROSSCHECK_LOG_DIR"] = LogDir;
         info.Environment["CROSSCHECK_CREATE_LIMIT"] = "0"; // many sessions from one address
         info.Environment["CROSSCHECK_JOIN_LIMIT"] = "0";
+        info.Environment["CROSSCHECK_INDICATOR_HOLD_MS"] = "500"; // indicators wait 10 s by default
         _process = Process.Start(info)!;
         var ready = new TaskCompletionSource();
         _process.OutputDataReceived += (_, e) => { if (e.Data?.Contains("Crosscheck session server") == true) ready.TrySetResult(); };

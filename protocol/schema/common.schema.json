@@ -242,7 +242,8 @@
         "missing_value",
         "correction_failed",
         "correction_loop",
-        "no_pf"
+        "no_pf",
+        "effect_mismatch"
       ]
     },
     "activeDesync": {
@@ -253,7 +254,8 @@
         "var",
         "group",
         "reason",
-        "since"
+        "since",
+        "tier"
       ],
       "properties": {
         "var": {
@@ -275,6 +277,9 @@
         "since": {
           "type": "integer",
           "minimum": 0
+        },
+        "tier": {
+          "$ref": "#/$defs/tier"
         }
       }
     },
@@ -376,6 +381,76 @@
         "take",
         "give"
       ]
+    },
+    "tier": {
+      "description": "Where a desync is shown. red: a pilot's input did not arrive, or the sims show a different result of an input (sticky, at the top). quiet: an indicator differs (collapsed). A failed pilot input is always red.",
+      "enum": [
+        "red",
+        "quiet"
+      ]
+    },
+    "advisoryKind": {
+      "description": "not_synced: a pilot moved a control that is not synced yet. hardware_fighting: repeated overrides on one var (both pilots' hardware set it). sim_disconnected: one pilot's simulator is not connected; that pilot's panels are not comparable.",
+      "enum": [
+        "not_synced",
+        "hardware_fighting",
+        "sim_disconnected"
+      ]
+    },
+    "advisory": {
+      "description": "An amber line shown to both pilots. Never a desync, never written to a sim.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "kind",
+        "active",
+        "tier",
+        "seat",
+        "at",
+        "message"
+      ],
+      "properties": {
+        "key": {
+          "description": "Stable id: one line per key (not_synced:<var>, hardware_fighting:<var>, sim_disconnected:<seat>).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "kind": {
+          "$ref": "#/$defs/advisoryKind"
+        },
+        "active": {
+          "description": "false: the line goes away.",
+          "type": "boolean"
+        },
+        "tier": {
+          "const": "amber"
+        },
+        "var": {
+          "$ref": "#/$defs/varName"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "seat": {
+          "description": "not_synced: who moved it. sim_disconnected: whose sim. hardware_fighting: the seat of the last override.",
+          "$ref": "#/$defs/seat"
+        },
+        "at": {
+          "description": "Server time (ms) of the last event for this key.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "message": {
+          "type": "string"
+        }
+      }
     }
   }
 }

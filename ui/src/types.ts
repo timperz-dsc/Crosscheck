@@ -44,7 +44,7 @@ export interface OwnedRow {
   label: string;
   unit: string | null;
   delta: number;
-  /** Differed by more than the profile's drift_warn when the session started, and still does. */
+  /** Differs by more than the profile's drift_warn right now: one amber line. */
   warn?: boolean;
 }
 
@@ -66,6 +66,25 @@ export interface Desync {
   other: DesyncValue;
   writable: boolean;
   options: { value: number; text: string }[];
+  message: string | null;
+  /** red: an input did not arrive (sticky, at the top). quiet: an indicator differs. */
+  tier?: 'red' | 'quiet';
+  /** Red only: lamps of the same panel that differ too, most likely because of this input. */
+  effects?: Desync[];
+}
+
+/** An amber line: a control that is not synced yet, hardware fighting, a sim that is not connected. */
+export interface Advisory {
+  key: string;
+  kind: 'not_synced' | 'hardware_fighting' | 'sim_disconnected';
+  var: string | null;
+  label: string | null;
+  /** This pilot moved it / this pilot's sim. */
+  mine: boolean;
+  /** "you", "captain" or "first officer". */
+  who: string;
+  at: string;
+  count: number | null;
   message: string | null;
 }
 
@@ -100,6 +119,9 @@ export interface Status {
   groups?: GroupRow[];
   owned?: OwnedRow[];
   desyncs?: Desync[];
+  /** Quiet: indicators that differ for 10 s or more (not attached to a red input). */
+  indicators?: Desync[];
+  advisories?: Advisory[];
   control_notice?: ControlNotice | null;
 }
 

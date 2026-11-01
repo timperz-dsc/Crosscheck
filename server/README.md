@@ -23,6 +23,7 @@ Stop it with Ctrl+C.
 | `LOG_DIR` | `logs` | One JSONL file per session; attach it to desync reports. (`CROSSCHECK_LOG_DIR` also works.) |
 | `CROSSCHECK_CREATE_LIMIT` | `10` | Per IP: sessions that may be created per 10 min (`0` = off) |
 | `CROSSCHECK_JOIN_LIMIT` | `30` | Per IP: join and preflight checks per 10 min (`0` = off) |
+| `CROSSCHECK_INDICATOR_HOLD_MS` | `10000` | How long an indicator must differ before it is shown (tests shorten it) |
 | `CROSSCHECK_TRUST_PROXY` | on at Railway | Read the client IP from `X-Forwarded-For` (`1`/`0`) |
 
 Every session event is also printed to stdout as one JSON line (join codes left out).
@@ -60,7 +61,13 @@ heartbeat → 50 ms), so the full suite takes about half a minute.
 | 13 | Only the PF streams; rate limit; stream frozen during handover |
 | 14 | Owned values (fuel) are never written, not even at join; differences are reported as drift only |
 | 15 | `/health` with version; per-IP limit on create and join; one stdout line per event; an unwritable log folder never stops a session |
-| unit, schema | Safety rule, loop guard, preflight, join codes, replay log, schema examples |
+| 16 | An input desync stays until an ok ack or a match: more refused clicks never wipe it; failed key presses are not cleared by snapshots; a late ok ack clears it |
+| 17 | Tiers: an indicator is quiet and only after 10 s; a failed correction is red |
+| 18 | Advisories: sim not connected (one line, nothing compared, resync after), not synced yet (both pilots, kept on resume), hardware fighting (3 overrides in 30 s) |
+| 19 | Owned drift rate limit: steady difference sent once, steps larger than 50 kg at once, small changes at most every 10 s |
+| 20 | Key effect compared between the sims (same, parity, both unpowered is fine, missing report is red); pulses never re-sent, absolute values 3 times |
+| 21 | Replay of gate test 1 (`test/fixtures/gate-test-1.json`): ELEC PUMP counter 1…28 against [0, 1] stays red to the end; host sim disconnect gives no missing_value desyncs |
+| unit, schema | Safety rule, loop guard, preflight, join codes, replay log, schema examples, tier and drift-rate vectors, gate test 1 fuel drift |
 
 ## Layout
 

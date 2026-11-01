@@ -4,10 +4,11 @@ import { SessionLog } from '../log/jsonl.js';
 import type { ProtocolValidator } from '../protocol/validate.js';
 import {
   REPLAYABLE, isAbsolute,
-  type AckBody, type ActiveDesync, type CommandBody, type CommandClass, type ControlAckBody,
+  type AckBody, type ActiveDesync, type AdvisoryBody, type CommandBody, type CommandClass, type ControlAckBody,
   type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
-  type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
-  type Seat, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Timing,
+  type EffectReportBody, type EffectSpec, type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
+  type Seat, type SimStateBody, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Tier, type Timing,
+  type UnsyncedInputBody,
 } from '../protocol/types.js';
 import { CorrectionGuard } from './correctionGuard.js';
 import { decideCorrections, diffValues, type LoggedCommand, type RawDecision } from './corrections.js';
@@ -50,6 +51,8 @@ export interface ClientSlot {
   pingNonce: number;
   expiryTimer: NodeJS.Timeout | null;
   stream: StreamStats;
+  /** The bridge's simulator is connected (sim_state). While false its groups are not comparable. */
+  simConnected: boolean;
 }
 
 interface CommandRecord {
@@ -78,6 +81,24 @@ interface GroupState {
   diffVars: string[];
   /** Owned vars that drifted in the last comparison; a drift message with no values clears them. */
   driftVars: string[];
+  /** Observe vars that differ, since when (raised only after config.indicatorHoldMs). */
+  observeSince: Map<string, number>;
+  /** Owned drift as last sent to the pilots (rate limit), and when. */
+  driftSent: Map<string, number>;
+  driftSentAt: number;
+}
+
+/** A pulse with an effect check: the effect values of both sims after settle are compared. */
+interface EffectCheck {
+  id: string;
+  var: string;
+  group: string;
+  effect: EffectSpec;
+  origin: string;
+  receiver: string;
+  sender?: Scalar;
+  received?: Scalar;
+  timer: NodeJS.Timeout;
 }
 
 type RequestReason = 'mismatch' | 'resync' | 'join' | 'control';
@@ -94,6 +115,11 @@ interface SnapshotRequestState {
 interface OpenDesync extends ActiveDesync {
   /** Blocking desyncs stop automatic corrections for the var until they clear. */
   blocking: boolean;
+  /**
+   * The snapshot var whose match clears this desync (usually the var itself). null: never cleared
+   * by a snapshot (pulses are not in snapshots; only a confirmed press clears them).
+   */
+  matchVar: string | null;
 }
 
 type JoinResult =
@@ -101,6 +127,8 @@ type JoinResult =
   | { ok: false; reason: 'session_full' | 'preflight_mismatch'; message: string; diff: DiffEntry[] };
 
 const MAX_REMEMBERED_IDS = 10000;
+/** Failed command ids kept so that a late ok ack can still clear the desync. */
+const MAX_FAILED_IDS = 500;
 const NOT_LOGGED = new Set(['stream', 'ping', 'pong']);
 
 export class Session {
@@ -117,6 +145,15 @@ export class Session {
   private readonly groups = new Map<string, GroupState>();
   private readonly requests = new Map<string, SnapshotRequestState>();
   private readonly desyncs = new Map<string, OpenDesync>();
+  /** Amber lines by key; only active ones are kept. */
+  private readonly advisories = new Map<string, AdvisoryBody>();
+  /** Failed command id → var and origin (a late ok ack clears the desync and reaches the origin). */
+  private readonly failedIds = new Map<string, { var: string; origin?: string; attempt: number }>();
+  /** Recent overrides per var (hardware fighting) and the timer that ends the advisory. */
+  private readonly overrides = new Map<string, { times: number[]; timer: NodeJS.Timeout | null }>();
+  private readonly effectChecks = new Map<string, EffectCheck>();
+  /** Drift step per owned var, from snapshot values. */
+  private readonly driftSteps = new Map<string, number>();
   private handover: { epoch: number; kind: ControlKind; newPf: string; prevPf: string | null; confirmed: ControlConfirm[]; timer: NodeJS.Timeout } | null = null;
   /** Last stream frame relayed from the PF; handed to the new PF in control_changed. */
   private lastFrame: { frame: number; data: Record<string, number>; from: string } | null = null;
@@ -181,6 +218,7 @@ export class Session {
     this.emit([slot], 'joined', {
       session_id: this.id, client_id: slot.id, resume_token: slot.token, seat, role: this.role(slot),
       pf_client_id: this.pfClientId, peer: peer ? this.peerInfo(peer) : null, warnings, config: this.timing(),
+      advisories: this.openAdvisories(),
     });
     if (peer) {
       this.emit([peer], 'peer_status', {
@@ -216,7 +254,7 @@ export class Session {
     this.sendUnsequenced(slot, 'resumed', {
       session_id: this.id, client_id: slot.id, seat: slot.seat, role: this.role(slot), pf_client_id: this.pfClientId,
       replayed: replay?.length ?? 0, full_resync: fullResync, desyncs: this.openDesyncs(),
-      peer: peer ? this.peerInfo(peer) : null, config: this.timing(),
+      peer: peer ? this.peerInfo(peer) : null, config: this.timing(), advisories: this.openAdvisories(),
     });
     if (replay) {
       for (const msg of replay) this.sendRaw(slot, { ...msg, replay: true });
@@ -257,6 +295,9 @@ export class Session {
       case 'ping': return this.onPing(slot, body);
       case 'pong': return this.onPong(slot, body);
       case 'leave': return this.removeSlot(slot, 'left');
+      case 'sim_state': return this.onSimState(slot, body);
+      case 'unsynced_input': return this.onUnsyncedInput(slot, body);
+      case 'effect_report': return this.onEffectReport(slot, body);
       default:
         this.sendError(slot, 'forbidden', `${msg.type} is not allowed from a client in a session`);
     }
@@ -285,14 +326,15 @@ export class Session {
     const conflict = absolute && prev && isAbsolute(prev.cls) && prev.origin !== slot.id && now - prev.receivedAt <= this.config.conflictWindowMs
       ? prev : undefined;
 
-    // A pilot acted on this var: an open desync for it is closed; the command is verified anew.
-    this.clearDesync(body.var, 'pilot_command');
+    // An open desync for this var stays open until this command is acked ok (or the values
+    // match): a new click that is refused too must never wipe the red line (CRO-26).
 
     const relay: CommandBody = {
       id: body.id, var: body.var, class: body.class,
       ...(body.value !== undefined ? { value: body.value } : {}),
       ...(body.delta !== undefined ? { delta: body.delta } : {}),
       group: body.group, settle_ms: body.settle_ms,
+      ...(body.effect ? { effect: body.effect } : {}),
       origin: { client_id: slot.id, seat: slot.seat, role: this.role(slot) }, attempt: 0,
     };
     let seq: number;
@@ -319,8 +361,9 @@ export class Session {
       this.pending.start({
         kind: 'command', id: body.id, seq, to: peer.id, origin: slot.id, var: body.var, group: body.group, cls: body.class,
         expected: body.value ?? null, ...(body.delta !== undefined ? { delta: body.delta } : {}),
-        settleMs: body.settle_ms, message: relayed,
+        settleMs: body.settle_ms, message: relayed, retry: absolute,
       }, peer.state === 'connected');
+      if (body.effect && body.class === 'pulse') this.startEffectCheck(body, slot, peer);
     }
 
     if (conflict) {
@@ -332,6 +375,7 @@ export class Session {
           message: `${body.var} overridden by ${role.toUpperCase()} (${slot.seat}).`,
         });
       }
+      this.recordOverride(body.var, slot);
     }
   }
 
@@ -344,7 +388,18 @@ export class Session {
   }
 
   private onAck(slot: ClientSlot, body: AckBody): void {
-    if (!this.pending.ack(slot.id, body)) this.log.event('ack_unmatched', { client: slot.id, id: body.id });
+    if (this.pending.ack(slot.id, body)) return;
+    // A late ok for a command that already failed: the input did arrive after all.
+    const failed = body.ok ? this.failedIds.get(body.id) : undefined;
+    if (failed !== undefined) {
+      this.failedIds.delete(body.id);
+      this.log.event('late_ack_ok', { client: slot.id, id: body.id, var: failed.var });
+      const origin = failed.origin ? this.slot(failed.origin) : undefined;
+      if (origin) this.emit([origin], 'ack', { id: body.id, ok: true, observed: body.observed, from: slot.id, attempt: failed.attempt });
+      this.clearDesync(failed.var, 'confirmed');
+      return;
+    }
+    this.log.event('ack_unmatched', { client: slot.id, id: body.id });
   }
 
   private resend(e: PendingEntry): void {
@@ -363,7 +418,15 @@ export class Session {
       if (origin) {
         this.emit([origin], 'ack', {
           id: e.id, ok: true, observed: ack.observed, ...(ack.superseded ? { superseded: true } : {}), from: e.to, attempt: e.attempt,
+          ...(ack.effect !== undefined ? { effect: ack.effect } : {}),
         });
+      }
+      // The input arrived: an open desync for this var is resolved by it.
+      this.clearDesync(e.var, 'confirmed');
+      const check = this.effectChecks.get(e.id);
+      if (check) {
+        check.received = ack.effect ?? null;
+        this.completeEffectCheck(check, false);
       }
     } else {
       const target = this.slot(e.to);
@@ -383,39 +446,51 @@ export class Session {
       if (origin && e.lastAck) {
         this.emit([origin], 'ack', { id: e.id, ok: false, observed, from: e.to, attempt: e.attempt });
       }
-      const what = reason === 'no_ack' ? `no ack after ${this.config.maxRetries} re-sends` : `value refused after ${this.config.maxRetries} re-sends`;
+      const tries = e.retry ? ` after ${this.config.maxRetries} re-sends` : '';
+      const what = reason === 'no_ack' ? `no ack${tries}` : `value refused${tries}`;
+      this.failedIds.set(e.id, { var: e.var, ...(e.origin ? { origin: e.origin } : {}), attempt: e.attempt });
+      if (this.failedIds.size > MAX_FAILED_IDS) this.failedIds.delete(this.failedIds.keys().next().value!);
+      this.dropEffectCheck(e.id);
       this.raiseDesync({
         var: e.var, group: e.group, reason, expected: e.expected, observed,
         ...(e.delta !== undefined ? { delta: e.delta } : {}), command_id: e.id, client_id: e.to,
         message: `${e.var}: ${what} on the ${receiver?.seat ?? 'other'} side.`,
-      }, false);
+      }, false, 'red', e.cls === 'pulse' ? null : e.var);
     } else {
       this.raiseDesync({
         var: e.var, group: e.group, reason: 'correction_failed', expected: e.expected, observed, command_id: e.id, client_id: e.to,
         message: `${e.var}: correction to ${String(e.expected)} did not take effect on the ${receiver?.seat ?? 'other'} side.`,
-      }, true);
+      }, true, 'red');
     }
   }
 
   // ------------------------------------------------------------------ desyncs
 
-  private raiseDesync(body: { var: string; group?: string; reason: DesyncReason; expected: Scalar; observed: Scalar; message: string } & Record<string, unknown>, blocking: boolean): void {
+  /**
+   * Opens a desync for both pilots. tier red: a pilot input did not arrive (or its result differs);
+   * quiet: an indicator differs. Only observe vars may ever be quiet (see tierFor).
+   */
+  private raiseDesync(
+    body: { var: string; group?: string; reason: DesyncReason; expected: Scalar; observed: Scalar; message: string } & Record<string, unknown>,
+    blocking: boolean, tier: Tier, matchVar: string | null = body.var,
+  ): void {
     const open = this.desyncs.get(body.var);
     if (open && open.reason === body.reason) {
       open.blocking ||= blocking;
       this.log.event('desync_still_open', { var: body.var, reason: body.reason });
       return;
     }
-    this.desyncs.set(body.var, { var: body.var, group: body.group ?? null, reason: body.reason, since: Date.now(), blocking });
-    this.emit(this.slots, 'desync', body);
+    this.desyncs.set(body.var, { var: body.var, group: body.group ?? null, reason: body.reason, since: Date.now(), tier, blocking, matchVar });
+    this.emit(this.slots, 'desync', { ...body, tier });
   }
 
-  private clearDesync(name: string, why: 'match' | 'pilot_command' | 'corrected'): void {
+  /** A desync clears only when the values match, a command for the var is confirmed, or a correction is confirmed. */
+  private clearDesync(name: string, why: 'match' | 'confirmed' | 'corrected'): void {
     const open = this.desyncs.get(name);
     if (!open) return;
     this.desyncs.delete(name);
     this.guard.reset(name);
-    const text = { match: 'values match again', pilot_command: 'a pilot acted on it', corrected: 'correction confirmed' }[why];
+    const text = { match: 'values match again', confirmed: 'a command for it was confirmed', corrected: 'correction confirmed' }[why];
     this.emit(this.slots, 'notice', {
       kind: 'desync_cleared', var: name, ...(open.group ? { group: open.group } : {}), reason: open.reason,
       message: `${name}: desync cleared (${text}).`,
@@ -423,7 +498,7 @@ export class Session {
   }
 
   private openDesyncs(): ActiveDesync[] {
-    return [...this.desyncs.values()].map(({ blocking: _blocking, ...d }) => d);
+    return [...this.desyncs.values()].map(({ blocking: _blocking, matchVar: _matchVar, ...d }) => d);
   }
 
   // ------------------------------------------------------------------ snapshots
@@ -431,7 +506,10 @@ export class Session {
   private group(name: string): GroupState {
     let g = this.groups.get(name);
     if (!g) {
-      g = { reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [], driftVars: [] };
+      g = {
+        reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [], driftVars: [],
+        observeSince: new Map(), driftSent: new Map(), driftSentAt: 0,
+      };
       this.groups.set(name, g);
     }
     return g;
@@ -449,7 +527,7 @@ export class Session {
    * A mismatch must repeat mismatchRounds times (effect vars lag) before values are requested.
    */
   private compareGroup(name: string, g: GroupState): void {
-    if (!this.bothConnected()) return;
+    if (!this.bothConnected() || !this.simsConnected()) return;
     const [a, b] = this.slots.map((s) => g.reports.get(s.id));
     if (!a || !b) return;
     if (g.inFlight || this.pending.countInGroup(name) > 0) return;
@@ -458,7 +536,8 @@ export class Session {
       g.mismatchCount = 0;
       g.diffVars = [];
       if (g.driftVars.length > 0) this.sendDrift(name, g, []);
-      for (const d of [...this.desyncs.values()]) if (d.group === name) this.clearDesync(d.var, 'match');
+      for (const d of [...this.desyncs.values()]) if (d.group === name && d.matchVar !== null) this.clearDesync(d.var, 'match');
+      for (const v of g.observeSince.keys()) g.observeSince.delete(v);
       return;
     }
     g.mismatchCount++;
@@ -471,6 +550,11 @@ export class Session {
   private requestSnapshot(groups: string[] | null, reason: RequestReason): void {
     if (!this.bothConnected()) {
       this.log.event('snapshot_request_skipped', { groups, reason, why: 'peer not connected' });
+      return;
+    }
+    if (!this.simsConnected()) {
+      // A disconnected sim has no values: not comparable (one amber line instead of missing_value desyncs).
+      this.log.event('snapshot_request_skipped', { groups, reason, why: 'sim not connected' });
       return;
     }
     const id = `r${++this.requestCounter}`;
@@ -530,13 +614,17 @@ export class Session {
     const otherValues = byClient.get(other.id)!;
     const all = diffValues(refValues, otherValues);
     const differing = new Set(all.map((d) => d.var));
+    const reported = new Set([...refValues, ...otherValues].map((v) => v.var));
+    for (const v of [...refValues, ...otherValues]) if (v.class === 'owned' && v.step !== undefined) this.driftSteps.set(v.var, v.step);
     const g = this.group(group);
     const drift = all.filter((d) => d.class === 'owned');
     const diffs = all.filter((d) => d.class !== 'owned');
     g.diffVars = diffs.map((d) => d.var).sort();
     for (const d of [...this.desyncs.values()]) {
-      if (d.group === group && !differing.has(d.var)) this.clearDesync(d.var, 'match');
+      if (d.matchVar !== null && reported.has(d.matchVar) && !differing.has(d.matchVar)) this.clearDesync(d.var, 'match');
     }
+    const now = Date.now();
+    for (const v of [...g.observeSince.keys()]) if (!differing.has(v)) g.observeSince.delete(v);
     const hasOwned = [...refValues, ...otherValues].some((v) => v.class === 'owned');
     if (hasOwned) this.sendDrift(group, g, drift);
     if (diffs.length === 0) {
@@ -556,7 +644,11 @@ export class Session {
       const open = this.desyncs.get(d.var);
       const base = { var: d.var, class: d.class, pf: d.pf, pm: d.pm };
       if (d.action === 'desync') {
+        const tier = tierFor(d.class);
         if (open && open.reason === d.reason) {
+          decisions.push({ ...base, action: 'held', reason: d.reason });
+        } else if (tier === 'quiet' && now - (g.observeSince.get(d.var) ?? (g.observeSince.set(d.var, now), now)) < this.config.indicatorHoldMs) {
+          // An indicator must differ for a while before it counts (it may just lag the input).
           decisions.push({ ...base, action: 'held', reason: d.reason });
         } else {
           decisions.push({ ...base, action: 'desync', reason: d.reason });
@@ -590,17 +682,26 @@ export class Session {
     for (const r of toRaise) {
       this.raiseDesync({
         var: r.d.var, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm }, message: r.text,
-      }, r.blocking);
+      }, r.blocking, tierFor(r.d.class));
     }
     for (const d of toCorrect) this.sendCorrection(d, group, requestId, ref, other);
   }
 
-  /** Owned values that differ in one group, in their own units. Empty values = no drift any more. */
+  /**
+   * Owned values that differ in one group, in their own units. Empty values = no drift any more.
+   * Rate limited (driftShouldSend): a var that starts or stops drifting, or changes by more than its
+   * step, is sent at once; smaller changes at most every driftMinIntervalMs.
+   */
   private sendDrift(group: string, g: GroupState, drift: { var: string; pf: Scalar; pm: Scalar }[]): void {
     const values = drift
       .filter((d): d is { var: string; pf: number; pm: number } => typeof d.pf === 'number' && typeof d.pm === 'number')
       .map((d) => ({ var: d.var, pf: d.pf, pm: d.pm, delta: Math.round((d.pm - d.pf) * 1000) / 1000 }));
     g.driftVars = values.map((v) => v.var);
+    const now = Date.now();
+    const current = new Map(values.map((v) => [v.var, v.delta]));
+    if (!driftShouldSend(g.driftSent, current, g.driftSentAt, now, (v) => this.driftSteps.get(v), this.config.driftMinIntervalMs)) return;
+    g.driftSent = current;
+    g.driftSentAt = now;
     for (const s of this.slots) if (s.state === 'connected') this.sendUnsequenced(s, 'drift', { group, values });
   }
 
@@ -616,7 +717,7 @@ export class Session {
       const sent = this.emit([target], 'correction', body);
       this.pending.start({
         kind: 'correction', id, seq: sent.seq, to: target.id, var: d.var, group, cls: d.class, expected: d.target,
-        settleMs: this.config.correctionSettleMs, message: sent.env, side,
+        settleMs: this.config.correctionSettleMs, message: sent.env, side, retry: isAbsolute(d.class),
       }, target.state === 'connected');
     }
   }
@@ -831,6 +932,7 @@ export class Session {
       conn.terminate();
     }
     this.pending.pauseFor(slot.id);
+    this.resetSimState(slot);
     // Old hashes from before the outage must not be compared after a resume.
     for (const g of this.groups.values()) g.reports.delete(slot.id);
     this.log.event('client_lost', { client: slot.id, reason });
@@ -852,6 +954,8 @@ export class Session {
       conn.terminate();
     }
     this.pending.cancelWhere((e) => e.to === slot.id);
+    this.resetSimState(slot);
+    for (const [id, c] of this.effectChecks) if (c.origin === slot.id || c.receiver === slot.id) this.dropEffectCheck(id);
     this.replay.forget(slot.id);
     for (const g of this.groups.values()) g.reports.delete(slot.id);
     if (this.pfClientId === slot.id) this.pfClientId = null;
@@ -876,6 +980,9 @@ export class Session {
     this.requests.clear();
     if (this.handover) clearTimeout(this.handover.timer);
     if (this.controlAcks) clearTimeout(this.controlAcks.timer);
+    for (const o of this.overrides.values()) if (o.timer) clearTimeout(o.timer);
+    for (const c of this.effectChecks.values()) clearTimeout(c.timer);
+    this.effectChecks.clear();
     for (const s of this.slots) {
       if (s.expiryTimer) clearTimeout(s.expiryTimer);
       s.conn?.terminate();
@@ -892,6 +999,7 @@ export class Session {
       id: newClientId(), seat, token: newResumeToken(), preflight, conn: null, state: 'connected',
       lastRxAt: now, lastPongAt: now, rttMs: null, clientRttMs: null, pingNonce: 0, expiryTimer: null,
       stream: { frames: 0, dropped: 0, active: false, lastAt: 0, windowStart: 0, windowCount: 0, lastNoticeAt: -Infinity },
+      simConnected: true,
       ...(name ? { name } : {}),
     };
     this.slots.push(slot);
@@ -916,6 +1024,142 @@ export class Session {
 
   private bothConnected(): boolean {
     return this.slots.length === 2 && this.slots.every((s) => s.state === 'connected');
+  }
+
+  private simsConnected(): boolean {
+    return this.slots.every((s) => s.simConnected);
+  }
+
+  // ------------------------------------------------------------------ advisories (amber lines)
+
+  /** Sends one amber line to both pilots (latest body per key wins); inactive ones are forgotten. */
+  private setAdvisory(body: AdvisoryBody): void {
+    if (body.active) this.advisories.set(body.key, body);
+    else if (!this.advisories.delete(body.key)) return;
+    this.emit(this.slots, 'advisory', body);
+  }
+
+  private openAdvisories(): AdvisoryBody[] {
+    return [...this.advisories.values()];
+  }
+
+  /** The bridge's sim connected or disconnected. While disconnected nothing is compared. */
+  private onSimState(slot: ClientSlot, body: SimStateBody): void {
+    if (slot.simConnected === body.connected) return;
+    slot.simConnected = body.connected;
+    this.log.event('sim_state', { client: slot.id, connected: body.connected });
+    const key = `sim_disconnected:${slot.seat}`;
+    if (!body.connected) {
+      for (const g of this.groups.values()) {
+        g.reports.delete(slot.id);
+        g.mismatchCount = 0;
+        g.observeSince.clear();
+      }
+      this.setAdvisory({
+        key, kind: 'sim_disconnected', active: true, tier: 'amber', seat: slot.seat, at: Date.now(),
+        message: `The ${slot.seat} simulator is not connected: its panels are not compared until it is back.`,
+      });
+      return;
+    }
+    this.setAdvisory({ key, kind: 'sim_disconnected', active: false, tier: 'amber', seat: slot.seat, at: Date.now(), message: `The ${slot.seat} simulator is connected again.` });
+    if (this.simsConnected()) this.requestSnapshot(null, 'resync');
+  }
+
+  /** Lost or gone: its sim state is unknown, the peer_status line says so instead. */
+  private resetSimState(slot: ClientSlot): void {
+    if (slot.simConnected) return;
+    slot.simConnected = true;
+    this.setAdvisory({
+      key: `sim_disconnected:${slot.seat}`, kind: 'sim_disconnected', active: false, tier: 'amber', seat: slot.seat, at: Date.now(),
+      message: `The ${slot.seat} side left or was lost.`,
+    });
+  }
+
+  /** A pilot moved a control that is watched read-only (not synced yet). One line per control. */
+  private onUnsyncedInput(slot: ClientSlot, body: UnsyncedInputBody): void {
+    const key = `not_synced:${body.var}`;
+    const prev = this.advisories.get(key);
+    this.setAdvisory({
+      key, kind: 'not_synced', active: true, tier: 'amber', var: body.var, label: body.label, seat: slot.seat, at: Date.now(),
+      count: (prev?.count ?? 0) + 1, message: `${body.label} (${body.var}) moved on the ${slot.seat} side: not synced yet.`,
+    });
+  }
+
+  /** Overrides on one var: fightCount within fightWindowMs → "hardware fighting" until it calms down. */
+  private recordOverride(name: string, slot: ClientSlot): void {
+    const now = Date.now();
+    const o = this.overrides.get(name) ?? { times: [], timer: null };
+    o.times = [...o.times.filter((t) => now - t < this.config.fightWindowMs), now];
+    this.overrides.set(name, o);
+    const key = `hardware_fighting:${name}`;
+    if (o.times.length < this.config.fightCount && !this.advisories.has(key)) return;
+    this.setAdvisory({
+      key, kind: 'hardware_fighting', active: true, tier: 'amber', var: name, seat: slot.seat, at: now, count: o.times.length,
+      message: `${name} keeps changing back and forth between the two sims (${o.times.length} overrides in ${Math.round(this.config.fightWindowMs / 1000)} s): both hardware controls may be setting it.`,
+    });
+    if (o.timer) clearTimeout(o.timer);
+    o.timer = setTimeout(() => {
+      o.timer = null;
+      this.overrides.delete(name);
+      this.setAdvisory({ key, kind: 'hardware_fighting', active: false, tier: 'amber', var: name, seat: slot.seat, at: Date.now(), message: `${name}: no more overrides.` });
+    }, this.config.fightWindowMs);
+  }
+
+  // ------------------------------------------------------------------ pulse effect check
+
+  /** Compares the effect var of both sims after a pulse: red only if they differ (both unchanged is fine). */
+  private startEffectCheck(body: CommandBody, origin: ClientSlot, receiver: ClientSlot): void {
+    const effect = body.effect!;
+    const wait = body.settle_ms + 2 * this.config.ackMarginMs + (origin.rttMs ?? 0) + (receiver.rttMs ?? 0);
+    const check: EffectCheck = {
+      id: body.id, var: body.var, group: body.group, effect, origin: origin.id, receiver: receiver.id,
+      timer: setTimeout(() => this.completeEffectCheck(check, true), wait),
+    };
+    this.effectChecks.set(body.id, check);
+  }
+
+  private onEffectReport(slot: ClientSlot, body: EffectReportBody): void {
+    const check = this.effectChecks.get(body.id);
+    if (!check || check.origin !== slot.id) {
+      this.log.event('effect_report_unmatched', { client: slot.id, id: body.id });
+      return;
+    }
+    check.sender = body.value;
+    this.completeEffectCheck(check, false);
+  }
+
+  private dropEffectCheck(id: string): void {
+    const check = this.effectChecks.get(id);
+    if (!check) return;
+    clearTimeout(check.timer);
+    this.effectChecks.delete(id);
+  }
+
+  private completeEffectCheck(check: EffectCheck, timedOut: boolean): void {
+    if (!timedOut && (check.sender === undefined || check.received === undefined)) return;
+    this.dropEffectCheck(check.id);
+    const sender = check.sender ?? null;
+    const received = check.received ?? null;
+    const known = sender !== null && received !== null;
+    if (known && effectsMatch(sender, received, check.effect.expect)) {
+      this.log.event('effect_ok', { id: check.id, var: check.var, effect: check.effect.var, value: sender });
+      return;
+    }
+    const origin = this.slot(check.origin);
+    const receiver = this.slot(check.receiver);
+    if (!origin || !receiver || receiver.state !== 'connected' || origin.state !== 'connected') {
+      // A side left or was lost: that is shown as such; the result cannot be compared.
+      this.log.event('effect_check_dropped', { id: check.id, var: check.var, why: 'side not connected' });
+      return;
+    }
+    const values = this.role(origin) === 'pf' ? { pf: sender, pm: received } : { pf: received, pm: sender };
+    const message = known
+      ? `${check.var}: pressed on the ${origin.seat} side, but ${check.effect.var} shows ${String(received)} on the ${receiver.seat} side and ${String(sender)} on the ${origin.seat} side.`
+      : `${check.var}: pressed on the ${origin.seat} side; the result (${check.effect.var}) is unknown on the ${sender === null ? origin.seat : receiver.seat} side.`;
+    this.raiseDesync({
+      var: check.var, group: check.group, reason: 'effect_mismatch', expected: sender, observed: received, values,
+      command_id: check.id, client_id: check.receiver, message,
+    }, false, 'red', check.effect.var);
   }
 
   private role(slot: ClientSlot): Role {
@@ -967,6 +1211,39 @@ export class Session {
     const conn = slot.conn;
     if (conn?.isOpen()) conn.send(JSON.stringify(env));
   }
+}
+
+/** Only an indicator (observe var) may be quiet. Everything a pilot sets is red. */
+export function tierFor(cls: string): Tier {
+  return cls === 'observe' ? 'quiet' : 'red';
+}
+
+/** Effect values of both sims after a pulse: equal (same), or equal odd/even (parity). */
+export function effectsMatch(a: Scalar, b: Scalar, expect: 'same' | 'parity'): boolean {
+  if (typeof a === 'number' && typeof b === 'number') {
+    return expect === 'parity' ? (Math.round(a) & 1) === (Math.round(b) & 1) : Math.abs(a - b) <= 1e-6;
+  }
+  return a === b;
+}
+
+/**
+ * Drift rate limit. Send at once when a var starts or stops drifting, or its delta moved by more
+ * than its step since it was last sent; any other change at most every minIntervalMs. Without a
+ * step every change waits for the interval.
+ */
+export function driftShouldSend(
+  sent: ReadonlyMap<string, number>, current: ReadonlyMap<string, number>, sentAt: number, now: number,
+  stepOf: (name: string) => number | undefined, minIntervalMs: number,
+): boolean {
+  let changed = false;
+  for (const name of sent.keys()) if (!current.has(name)) return true;
+  for (const [name, delta] of current) {
+    const last = sent.get(name);
+    if (last === undefined) return true;
+    if (Math.abs(delta - last) > (stepOf(name) ?? Infinity)) return true;
+    if (delta !== last) changed = true;
+  }
+  return changed && now - sentAt >= minIntervalMs;
 }
 
 function desyncText(name: string, reason: DesyncReason): string {

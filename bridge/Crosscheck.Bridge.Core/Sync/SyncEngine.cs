@@ -20,6 +20,8 @@ public sealed record EngineOptions
     public int DefaultSettleMs { get; init; } = 100;
     /// <summary>Which seat this pilot sits in (whose takeover pushbutton is theirs). null = host is captain, guest is fo.</summary>
     public SeatSide? SeatSide { get; init; }
+    /// <summary>Acks kept for answering re-sends. Pulse and delta ids are remembered beyond this (never applied twice).</summary>
+    public int AckCacheSize { get; init; } = 5000;
 }
 
 /// <summary>Cockpit seat: left (captain) or right (first officer). Not the same as the session seat host/guest.</summary>
@@ -59,6 +61,16 @@ public sealed class SyncEngine : IAsyncDisposable
     private readonly Queue<string> _ackOrder = new();
     private readonly HashSet<string> _inFlight = new(StringComparer.Ordinal);
     private readonly Dictionary<string, double> _pressCounter = new(StringComparer.Ordinal);
+    /// <summary>
+    /// Ids of pulse and delta commands already applied. Never evicted during the session: a duplicate
+    /// can never press or click twice (the ack cache only keeps the last 5000).
+    /// </summary>
+    private readonly HashSet<string> _appliedEvents = new(StringComparer.Ordinal);
+    /// <summary>Controls watched read-only because they are not synced yet (name → label).</summary>
+    private readonly IReadOnlyDictionary<string, string> _unsynced;
+    private readonly Dictionary<string, double> _unsyncedSentAt = new(StringComparer.Ordinal);
+    /// <summary>Display vars of delta entries: compared under the encoder (an input), not as indicators.</summary>
+    private readonly HashSet<string> _deltaDisplays;
     /// <summary>Own command id → what the pilot did, in words (for the ack in the recent list).</summary>
     private readonly Dictionary<string, string> _sentText = new(StringComparer.Ordinal);
     private readonly IClock _clock;
@@ -75,8 +87,11 @@ public sealed class SyncEngine : IAsyncDisposable
     private string? _takeoverVar;
 
     public SyncEngine(Profile profile, ISimAdapter sim, IFenixGraphQl gql, IProtocolChannel client, EventHub hub,
-        BridgeLog log, BridgeStatus status, ILogger logger, IClock? clock = null, EngineOptions? options = null)
+        BridgeLog log, BridgeStatus status, ILogger logger, IClock? clock = null, EngineOptions? options = null,
+        UnsyncedList? unsynced = null)
     {
+        _unsynced = (unsynced ?? UnsyncedList.Empty).Labels;
+        _deltaDisplays = profile.Vars.Where(v => v.Class == SyncClass.Delta && v.Display is not null).Select(v => v.Display!).ToHashSet(StringComparer.Ordinal);
         _profile = profile;
         _sim = sim;
         _gql = gql;
@@ -113,13 +128,14 @@ public sealed class SyncEngine : IAsyncDisposable
         ["applied_seq"] = Interlocked.Read(ref _appliedSeq),
     };
 
-    /// <summary>Only profile vars, and never ignore/stream.</summary>
-    public SimPlan Plan => PlanFor(_profile);
+    /// <summary>Profile vars (never ignore/stream) and the read-only watch list of controls not synced yet.</summary>
+    public SimPlan Plan => PlanFor(_profile, _unsynced.Keys);
 
-    public static SimPlan PlanFor(Profile profile)
+    public static SimPlan PlanFor(Profile profile, IEnumerable<string>? unsynced = null)
     {
         var vars = profile.Vars.Select(v => v.Name).ToHashSet(StringComparer.Ordinal);
         var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var n in unsynced ?? []) if (!vars.Contains(n)) names.Add(n);
         foreach (var v in profile.Vars.Where(v => Watched.Contains(v.Class)))
         {
             names.Add(v.Name);
@@ -154,25 +170,20 @@ public sealed class SyncEngine : IAsyncDisposable
     private readonly Dictionary<string, JsonArray> _drift = new(StringComparer.Ordinal);
     /// <summary>Owned drift (absolute) in the first report of this session.</summary>
     private readonly Dictionary<string, double> _driftAtStart = new(StringComparer.Ordinal);
-    /// <summary>Owned vars that came within drift_warn once: their start warning is resolved.</summary>
-    private readonly HashSet<string> _driftResolved = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Owned values that differed by more than the profile's drift_warn when the session started
-    /// and still do (fuel: "load the same fuel in the EFB"). Information only: never written.
+    /// Owned values that differ by more than the profile's drift_warn right now (fuel: "load the
+    /// same fuel in the EFB"). One amber line, never a desync. Information only: never written.
     /// </summary>
     public IReadOnlyList<(string Var, double Delta)> DriftWarnings
     {
         get
         {
             var current = Drift;
-            lock (_gate)
-            {
-                return (_profile.Datarefs ?? [])
-                    .Where(d => d.DriftWarn is { } t && _driftAtStart.TryGetValue(d.Path, out var start) && start > t && !_driftResolved.Contains(d.Path))
-                    .Select(d => (d.Path, current.TryGetValue(d.Path, out var c) ? c.Delta : 0))
-                    .ToList();
-            }
+            return (_profile.Datarefs ?? [])
+                .Where(d => d.Class == SyncClass.Owned && d.DriftWarn is { } t && current.TryGetValue(d.Path, out var c) && Math.Abs(c.Delta) > t)
+                .Select(d => (d.Path, current[d.Path].Delta))
+                .ToList();
         }
     }
 
@@ -187,7 +198,6 @@ public sealed class SyncEngine : IAsyncDisposable
                 var now = deltas.GetValueOrDefault(d.Path);
                 if (_driftAtStart.TryAdd(d.Path, now) && now > (d.DriftWarn ?? double.MaxValue))
                     _log.Event("drift_at_start", new JsonObject { ["var"] = d.Path, ["delta"] = now, ["warn_above"] = d.DriftWarn });
-                if (d.DriftWarn is { } t && now <= t) _driftResolved.Add(d.Path);
             }
         }
     }
@@ -236,16 +246,24 @@ public sealed class SyncEngine : IAsyncDisposable
             new JsonObject { ["state"] = _status.Sim });
         _log.Event("sim_state", new JsonObject { ["state"] = _status.Sim });
         // After (re)connect the first values are a fresh start, not pilot actions.
+        bool active;
         lock (_gate)
         {
             _lastSeen.Clear();
             _baseline.Clear();
+            active = _sessionActive;
         }
+        // The server stops comparing while a sim is gone (one amber line instead of missing values).
+        if (active) _client.Send("sim_state", new JsonObject { ["connected"] = state == SimState.Connected });
     }
 
     private void OnSimValue(string name, double value)
     {
-        if (!_vars.TryGetValue(name, out var spec)) return;
+        if (!_vars.TryGetValue(name, out var spec))
+        {
+            if (_unsynced.TryGetValue(name, out var label)) OnUnsyncedValue(name, value, label);
+            return;
+        }
         JsonObject? command = null;
         var takeover = false;
         lock (_gate)
@@ -290,7 +308,11 @@ public sealed class SyncEngine : IAsyncDisposable
                 // observe and owned: never sent, only reported in snapshots.
             }
         }
-        if (command is not null) _client.Send("command", command);
+        if (command is not null)
+        {
+            _client.Send("command", command);
+            if (command["effect"] is JsonObject effect) _ = ReportEffectAsync(command["id"]!.GetValue<string>(), effect["var"]!.GetValue<string>(), command["settle_ms"]!.GetValue<int>());
+        }
         // The press is synced like any other var (above). On the PM's own seat it also means
         // "I have control". Only pilot presses get here: our own writes are echoes.
         if (takeover && !IsPf)
@@ -299,6 +321,41 @@ public sealed class SyncEngine : IAsyncDisposable
             _hub.Publish("takeover_pressed", "Takeover pushbutton pressed: requesting control.", new JsonObject { ["var"] = name });
             RequestControl();
         }
+    }
+
+    /// <summary>
+    /// A control that is not synced yet moved: both pilots get one amber line. Read-only, never
+    /// written. The first values after (re)connect are not moves; at most one message per 2 s.
+    /// </summary>
+    private void OnUnsyncedValue(string name, double value, string label)
+    {
+        lock (_gate)
+        {
+            var hadPrev = _lastSeen.TryGetValue(name, out var prev);
+            _lastSeen[name] = value;
+            if (!hadPrev || !_sessionActive || value == prev) return;
+            var now = _clock.NowMs;
+            if (_unsyncedSentAt.TryGetValue(name, out var last) && now - last < 2000) return;
+            _unsyncedSentAt[name] = now;
+        }
+        _log.Event("unsynced_input", new JsonObject { ["var"] = name, ["value"] = value });
+        _client.Send("unsynced_input", new JsonObject { ["var"] = name, ["label"] = label });
+    }
+
+    /// <summary>Sender side of the effect comparison: this sim's own effect value after settle.</summary>
+    private async Task ReportEffectAsync(string id, string effectVar, int settleMs)
+    {
+        try
+        {
+            await Task.Delay(settleMs, _stop.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        double? value = _sim.TryGet(effectVar, out var v) ? v : null;
+        _log.Event("effect_report", new JsonObject { ["id"] = id, ["var"] = effectVar, ["value"] = value });
+        _client.Send("effect_report", new JsonObject { ["id"] = id, ["var"] = effectVar, ["value"] = value });
     }
 
     private void LogEcho(string name, double value) =>
@@ -318,6 +375,9 @@ public sealed class SyncEngine : IAsyncDisposable
         else body["value"] = value;
         body["group"] = spec.Group;
         body["settle_ms"] = (spec.Verify?.SettleMs ?? _options.DefaultSettleMs) + (spec.Class == SyncClass.Pulse ? spec.PulseMs ?? 0 : 0);
+        // A key with an effect lamp: the server compares the lamp of both sims after settle.
+        if (spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is { } lamp)
+            body["effect"] = new JsonObject { ["var"] = lamp, ["expect"] = spec.Verify.Expect == VerifyExpect.Parity ? "parity" : "same" };
         _pendingOwn[id] = (spec.Name, Absolute.Contains(spec.Class), body);
         _sentText[id] = Labels.Action(spec.Name, spec.Class, value, delta);
         if (_sentText.Count > 2000) _sentText.Remove(_sentText.Keys.First());
@@ -331,6 +391,8 @@ public sealed class SyncEngine : IAsyncDisposable
         List<JsonObject> resend;
         lock (_gate) resend = _pendingOwn.Values.Select(p => (JsonObject)p.Body.DeepClone()).ToList();
         foreach (var body in resend) _client.Send("command", body);
+        // The server forgets a lost client's sim state; say again if the sim is gone.
+        if (_sim.State != SimState.Connected) _client.Send("sim_state", new JsonObject { ["connected"] = false });
         _hub.Publish("resumed", fullResync ? "Reconnected; full snapshot resync." : "Reconnected; missed changes replayed.",
             new JsonObject { ["full_resync"] = fullResync });
     }
@@ -394,6 +456,12 @@ public sealed class SyncEngine : IAsyncDisposable
                 foreach (var w in body["warnings"] as JsonArray ?? [])
                     _hub.Publish("warning", w!["message"]!.GetValue<string>(), w.AsObject());
                 break;
+            case "advisory":
+                var key = body["key"]!.GetValue<string>();
+                if (body["active"]?.GetValue<bool>() == true) _status.SetAdvisory(key, body);
+                else _status.RemoveAdvisory(key);
+                _hub.Publish("advisory", body["message"]!.GetValue<string>(), body);
+                break;
             case "snapshot_diff":
                 _hub.Publish("snapshot_diff", $"Snapshot differences in {body["group"]}.", body);
                 break;
@@ -440,6 +508,9 @@ public sealed class SyncEngine : IAsyncDisposable
             PeerLostAt = _status.PeerState == "lost" ? DateTimeOffset.UtcNow : null;
         }
         SetPf(body["pf_client_id"]?.GetValue<string>());
+        if (body["advisories"] is JsonArray advisories)
+            _status.ResetAdvisories(advisories.OfType<JsonObject>().Where(a => a["active"]?.GetValue<bool>() == true));
+        if (_sim.State != SimState.Connected) _client.Send("sim_state", new JsonObject { ["connected"] = false });
         _snapshotTimer?.Dispose();
         _snapshotTimer = new Timer(_ => SendHashes(), null, _client.SnapshotIntervalMs, _client.SnapshotIntervalMs);
     }
@@ -482,6 +553,12 @@ public sealed class SyncEngine : IAsyncDisposable
                 _client.Send("ack", (JsonObject)cached.DeepClone());
                 return;
             }
+            if (_appliedEvents.Contains(id))
+            {
+                // Applied before and the ack is no longer cached: never press or click twice.
+                _client.Send("ack", new JsonObject { ["id"] = id, ["ok"] = true, ["observed"] = null });
+                return;
+            }
             if (!_inFlight.Add(id)) return; // re-send while still being applied: the ack follows
             if (!_vars.TryGetValue(name, out var spec))
             {
@@ -503,6 +580,7 @@ public sealed class SyncEngine : IAsyncDisposable
                 _lastSeqByVar[name] = seq;
             }
             _appliedSeq = Math.Max(_appliedSeq, seq);
+            if (spec.Class is SyncClass.Pulse or SyncClass.Delta) _appliedEvents.Add(id);
             var settle = body["settle_ms"]!.GetValue<int>();
             _applyQueue.Writer.TryWrite(new ApplyJob(id, spec, false, body["value"]?.GetValue<double>(), body["delta"]?.GetValue<double>(), settle, null));
         }
@@ -541,15 +619,16 @@ public sealed class SyncEngine : IAsyncDisposable
         }
     }
 
-    private void SendAck(string id, bool ok, object? observed, bool superseded = false)
+    private void SendAck(string id, bool ok, object? observed, bool superseded = false, JsonNode? effect = null, bool withEffect = false)
     {
         var ack = new JsonObject { ["id"] = id, ["ok"] = ok, ["observed"] = observed switch { double d => d, string s => s, _ => null } };
         if (superseded) ack["superseded"] = true;
+        if (withEffect) ack["effect"] = effect?.DeepClone();
         lock (_gate)
         {
             _ackCache[id] = ack;
             _ackOrder.Enqueue(id);
-            while (_ackOrder.Count > 5000) _ackCache.Remove(_ackOrder.Dequeue());
+            while (_ackOrder.Count > _options.AckCacheSize) _ackCache.Remove(_ackOrder.Dequeue());
             _inFlight.Remove(id);
         }
         _client.Send("ack", (JsonObject)ack.DeepClone());
@@ -759,7 +838,10 @@ public sealed class SyncEngine : IAsyncDisposable
         {
             ["id"] = job.Id, ["var"] = name, ["correction"] = job.IsCorrection, ["stored"] = stored, ["effect"] = effect?.DeepClone(), ["ok"] = ok,
         });
-        SendAck(job.Id, ok, observed);
+        // A key with an effect lamp: the ack carries this sim's lamp; the server compares it with the sender's.
+        // ok stays "the press was stored": no effect on both sides (unpowered) is not a failure.
+        var withEffect = spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is not null;
+        SendAck(job.Id, ok, observed, effect: effect, withEffect: withEffect);
     }
 
     private static JsonNode? Node(object? v) => v switch { double d => d, string s => s, _ => null };
@@ -785,6 +867,9 @@ public sealed class SyncEngine : IAsyncDisposable
         var list = new List<(string, string, object?)>();
         foreach (var v in _profile.Vars.Where(v => v.Group == group))
         {
+            // The display of an encoder is an input: it is compared under the encoder name (class delta), so a
+            // difference is corrected or red, never a quiet indicator.
+            if (v.Class == SyncClass.Observe && _deltaDisplays.Contains(v.Name)) continue;
             switch (v.Class)
             {
                 case SyncClass.Verified or SyncClass.Analog or SyncClass.Owned or SyncClass.Observe:
@@ -803,6 +888,13 @@ public sealed class SyncEngine : IAsyncDisposable
             list.Add(($"aircraft.mcdu{cdu}.display", "observe", _gql.Mcdu(cdu)?.Hash));
         return list;
     }
+
+    private Dictionary<string, double>? _driftStepsCache;
+
+    /// <summary>Drift step per owned dataref (drift_step, or half of drift_warn).</summary>
+    private Dictionary<string, double> _driftSteps => _driftStepsCache ??= (_profile.Datarefs ?? [])
+        .Where(d => d.Class == SyncClass.Owned && d.EffectiveDriftStep is not null)
+        .ToDictionary(d => d.Path, d => d.EffectiveDriftStep!.Value, StringComparer.Ordinal);
 
     public string GroupHash(string group) => CanonicalHash.Compute(GroupValues(group).Select(v => (v.Var, v.Value)));
 
@@ -823,6 +915,8 @@ public sealed class SyncEngine : IAsyncDisposable
 
     private void OnSnapshotRequest(JsonObject body)
     {
+        // A disconnected sim has no values: no answer (the server knows from sim_state; not comparable).
+        if (_sim.State != SimState.Connected) return;
         var groups = body["groups"] is JsonArray arr ? arr.Select(g => g!.GetValue<string>()).ToList() : Groups.ToList();
         foreach (var group in groups.Where(g => _profile.Groups.Contains(g)))
         {
@@ -832,9 +926,11 @@ public sealed class SyncEngine : IAsyncDisposable
             {
                 ["request_id"] = body["request_id"]!.DeepClone(),
                 ["group"] = group,
-                ["values"] = new JsonArray(values.Select(v => (JsonNode)new JsonObject
+                ["values"] = new JsonArray(values.Select(v =>
                 {
-                    ["var"] = v.Var, ["class"] = v.Class, ["value"] = Node(v.Value),
+                    var item = new JsonObject { ["var"] = v.Var, ["class"] = v.Class, ["value"] = Node(v.Value) };
+                    if (v.Class == "owned" && _driftSteps.TryGetValue(v.Var, out var step)) item["step"] = step;
+                    return (JsonNode)item;
                 }).ToArray()),
             });
         }

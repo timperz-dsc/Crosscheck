@@ -51,6 +51,13 @@ export interface ServerConfig {
   joinWindowMs: number;
   /** Take the client IP from X-Forwarded-For (only behind a trusted proxy such as Railway's). */
   trustProxy: boolean;
+  /** An indicator (observe var) must differ this long before it is raised as a quiet desync. */
+  indicatorHoldMs: number;
+  /** Owned drift that changed by less than its step is sent at most this often. */
+  driftMinIntervalMs: number;
+  /** This many overrides on one var within fightWindowMs → "hardware fighting" advisory. */
+  fightCount: number;
+  fightWindowMs: number;
   /** Validate every outgoing message against the schema (tests). */
   validateOutgoing: boolean;
   /** Max WebSocket message size in bytes. */
@@ -80,6 +87,10 @@ export const DEFAULT_CONFIG: ServerConfig = {
   handshakeTimeoutMs: 10 * 1000,
   logDir: null,
   echoEvents: false,
+  indicatorHoldMs: 10 * 1000,
+  driftMinIntervalMs: 10 * 1000,
+  fightCount: 3,
+  fightWindowMs: 30 * 1000,
   createLimit: 10,
   createWindowMs: 10 * 60 * 1000,
   joinLimit: 30,
@@ -94,6 +105,7 @@ const TIME_KEYS = [
   'snapshotIntervalMs', 'snapshotRequestTimeoutMs', 'freezeMs', 'controlAckTimeoutMs',
   'correctionSettleMs', 'correctionLoopWindowMs', 'streamNoticeIntervalMs', 'streamIdleMs',
   'summaryIntervalMs', 'handshakeTimeoutMs', 'createWindowMs', 'joinWindowMs',
+  'indicatorHoldMs', 'driftMinIntervalMs', 'fightWindowMs',
 ] as const satisfies readonly (keyof ServerConfig)[];
 
 /**

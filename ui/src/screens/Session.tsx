@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { AlertIcon, Button, Line, Mark } from '../components/parts';
-import type { Actions, ControlNotice, Desync, RecentItem, Status } from '../types';
+import type { ReactNode } from 'react';
+import { AlertIcon, Button, Mark } from '../components/parts';
+import type { Actions, Advisory, ControlNotice, Desync, RecentItem, Status } from '../types';
 import {
-  SideName, desyncExplanation, differsHeading, driftText, driftWarningText, lastCompared, otherSide, peerLostText, roleName, sideName, timeOfDay,
+  SideName, advisoryText, desyncExplanation, differsHeading, driftText, driftWarningText, effectsText, indicatorsLine, lastCompared,
+  notSyncedText, otherSide, peerLostText, roleName, sideName, timeOfDay,
 } from '../words';
 import { SessionHeader } from './Waiting';
 
@@ -17,8 +19,13 @@ interface Props {
   now: number;
 }
 
+/** More "not synced yet" lines than this collapse into one. */
+const NOT_SYNCED_MAX_LINES = 3;
+
 export function Session({ status, recent, actions, busy, error, confirmPeerLost, now }: Props) {
-  const desyncs = status.desyncs ?? [];
+  // Red: a pilot's input did not arrive. Quiet: indicators. (The bridge splits them; quiet ones are never red here.)
+  const desyncs = (status.desyncs ?? []).filter((d) => d.tier !== 'quiet');
+  const indicators = [...(status.indicators ?? []), ...(status.desyncs ?? []).filter((d) => d.tier === 'quiet')];
   const crew = status.crew ?? [];
   const me = crew.find((c) => c.you);
   const peer = crew.find((c) => !c.you);
@@ -29,21 +36,6 @@ export function Session({ status, recent, actions, busy, error, confirmPeerLost,
   return (
     <>
       <SessionHeader status={status} actions={actions} busy={busy} />
-      {status.server === 'reconnecting' && (
-        <Line tone="warning">Connection to the server lost. Reconnecting. Both sims keep flying, just not synced.</Line>
-      )}
-      {peer && peer.state === 'lost' && status.peer_lost_at && (
-        <Line tone="warning">{peerLostText(peer, status.peer_lost_at, status.session_ttl_ms ?? 300000, now)}</Line>
-      )}
-      {(status.owned ?? []).filter((o) => o.warn).map((o) => (
-        <Line key={o.var} tone="warning">{driftWarningText(o.label, o.delta, o.unit, status.this_computer.aircraft.name)}</Line>
-      ))}
-      {confirmPeerLost && !isPf && (
-        <div className="line" role="status">
-          <span className="warning">The {peerWord} is not connected. Take control anyway?</span>
-          <Button small onClick={() => void actions.takeControl(true)} disabled={busy}>Take control anyway</Button>
-        </div>
-      )}
       <main className="main main-session">
         <div className="session-col">
           <div className="heading">
@@ -66,6 +58,10 @@ export function Session({ status, recent, actions, busy, error, confirmPeerLost,
               ))}
             </div>
           )}
+
+          <AmberLines status={status} peerWord={peerWord} isPf={isPf} confirmPeerLost={confirmPeerLost} actions={actions} busy={busy} now={now} />
+
+          {indicators.length > 0 && <Indicators indicators={indicators} peerWord={peerWord} />}
 
           <section className="stack-wide">
             <dl className="list list-crew">
@@ -183,6 +179,7 @@ function DesyncBlock({ desync: d, peerWord, actions, busy }: { desync: Desync; p
         <dd>{d.other.text}</dd>
       </dl>
       <p className="prose">{desyncExplanation(d, peerWord)}</p>
+      {d.effects && d.effects.length > 0 && <p className="muted prose">{effectsText(d.effects)}</p>}
       {d.writable && d.options.length > 0 && (
         <div className="row">
           {d.options.map((o, i) => (
@@ -193,5 +190,96 @@ function DesyncBlock({ desync: d, peerWord, actions, busy }: { desync: Desync; p
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * Amber lines, always below the red items: connection, a sim that is not connected, hardware
+ * fighting, fuel, and controls that are not synced yet (one line each, more than 3 collapse).
+ */
+function AmberLines({ status, peerWord, isPf, confirmPeerLost, actions, busy, now }: {
+  status: Status; peerWord: string; isPf: boolean; confirmPeerLost: boolean; actions: Actions; busy: boolean; now: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const peer = (status.crew ?? []).find((c) => !c.you);
+  const advisories = status.advisories ?? [];
+  const notSynced = advisories.filter((a) => a.kind === 'not_synced');
+  const others = advisories.filter((a) => a.kind !== 'not_synced');
+  const fuel = driftWarningText(status.owned ?? []);
+  const lines: ReactNode[] = [];
+  if (status.server === 'reconnecting') {
+    lines.push(<span key="server" className="warning">Connection to the server lost. Reconnecting. Both sims keep flying, just not synced.</span>);
+  }
+  if (peer && peer.state === 'lost' && status.peer_lost_at) {
+    lines.push(<span key="peer" className="warning">{peerLostText(peer, status.peer_lost_at, status.session_ttl_ms ?? 300000, now)}</span>);
+  }
+  if (confirmPeerLost && !isPf) {
+    lines.push(
+      <span key="confirm" className="note-row">
+        <span className="warning">The {peerWord} is not connected. Take control anyway?</span>
+        <Button small onClick={() => void actions.takeControl(true)} disabled={busy}>Take control anyway</Button>
+      </span>,
+    );
+  }
+  for (const a of others) lines.push(<span key={a.key} className="warning">{advisoryText(a)}</span>);
+  if (fuel) lines.push(<span key="fuel" className="warning">{fuel}</span>);
+  if (notSynced.length > 0 && notSynced.length <= NOT_SYNCED_MAX_LINES) {
+    for (const a of notSynced) lines.push(<span key={a.key} className="warning">{notSyncedText(a)}</span>);
+  } else if (notSynced.length > NOT_SYNCED_MAX_LINES) {
+    lines.push(
+      <span key="not-synced" className="note-stack">
+        <span className="note-row">
+          <span className="warning">Not synced yet ({notSynced.length})</span>
+          <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide' : 'Show'}</Button>
+        </span>
+        {open && (
+          <ul className="details" aria-label="Not synced yet">
+            {notSynced.map((a) => <NotSyncedItem key={a.key} advisory={a} />)}
+          </ul>
+        )}
+      </span>,
+    );
+  }
+  if (lines.length === 0) return null;
+  return (
+    <div className="notes" role="status">
+      {lines.map((l, i) => <div key={i} className="note">{l}</div>)}
+    </div>
+  );
+}
+
+function NotSyncedItem({ advisory: a }: { advisory: Advisory }) {
+  return (
+    <li>
+      <span>{a.label ?? a.var}</span>
+      <span className="muted">{a.mine ? 'moved by you' : `moved by the ${a.who}`}, {timeOfDay(a.at)}</span>
+    </li>
+  );
+}
+
+/** Quiet: one grey line with a count; details on click. Never red. */
+function Indicators({ indicators, peerWord }: { indicators: Desync[]; peerWord: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="notes">
+      <div className="note note-stack">
+        <span className="note-row">
+          <span className="muted">{indicatorsLine(indicators.length)}</span>
+          <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide details' : 'Show details'}</Button>
+        </span>
+        {open && (
+          <ul className="details" aria-label="Indicators that differ">
+            {indicators.map((d) => (
+              <li key={d.var}>
+                <span className={d.has_label ? undefined : 'mono'}>{d.label}</span>
+                <span className="muted">
+                  you {d.you.text}, {peerWord} {d.other.text}, since {timeOfDay(d.since)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }

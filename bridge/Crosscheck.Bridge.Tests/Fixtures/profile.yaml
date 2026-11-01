@@ -112,6 +112,19 @@ vars:
     pulse_ms: 150
     press: counter
 
+  # Test data: a key with an effect lamp that toggles on each press (CRO-26 effect comparison).
+  - name: S_FCU_EFIS1_FD
+    label: FD
+    class: pulse
+    group: efis
+    pulse_ms: 40
+    verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 60 }
+
+  - name: I_FCU_EFIS1_FD
+    label: FD light
+    class: observe
+    group: efis
+
   # Test data: an encoder with no display var (verified by read-back only).
   - name: E_MIP_CLOCK_SET
     label: Clock set

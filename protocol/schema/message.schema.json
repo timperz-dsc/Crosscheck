@@ -99,6 +99,18 @@
     },
     {
       "$ref": "messages/error.schema.json"
+    },
+    {
+      "$ref": "messages/advisory.schema.json"
+    },
+    {
+      "$ref": "messages/sim_state.schema.json"
+    },
+    {
+      "$ref": "messages/unsynced_input.schema.json"
+    },
+    {
+      "$ref": "messages/effect_report.schema.json"
     }
   ]
 }

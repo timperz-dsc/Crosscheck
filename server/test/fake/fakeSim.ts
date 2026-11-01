@@ -12,6 +12,10 @@ export interface VarDef {
   /** pulse: character appended to `screen` on each press. */
   key?: string;
   screen?: string;
+  /** pulse: effect var that toggles 0/1 on each press (unless the system is unpowered). */
+  toggles?: string;
+  /** owned: drift step reported in snapshot values. */
+  step?: number;
 }
 
 /** A small stand-in profile with one var of each kind. */
@@ -25,6 +29,8 @@ export const TEST_VARS: VarDef[] = [
   { name: 'S_FCU_AP1', cls: 'verified', group: 'fcu', init: 0 },
   { name: 'S_CDU1_KEY_A', cls: 'pulse', group: 'mcdu', init: 0, key: 'A', screen: 'MCDU1_SCREEN' },
   { name: 'MCDU1_SCREEN', cls: 'observe', group: 'mcdu', init: '' },
+  { name: 'S_FCU_EFIS1_FD', cls: 'pulse', group: 'efis', init: 0, toggles: 'I_FCU_EFIS1_FD' },
+  { name: 'I_FCU_EFIS1_FD', cls: 'observe', group: 'efis', init: 1 },
 ];
 
 export type WriteSource = 'pilot' | 'remote' | 'correction';
@@ -52,6 +58,10 @@ export class FakeSim {
   private readonly values = new Map<string, number | string>();
   readonly defs = new Map<string, VarDef>();
   private readonly refused = new Set<string>();
+  /** Values the sim accepts per var (like the bridge's profile guard); others are refused. */
+  private readonly allowed = new Map<string, number[]>();
+  /** Pulses whose effect does not change (system unpowered). */
+  private readonly unpowered = new Set<string>();
   private readonly stuck = new Map<string, { value: number; revertMs: number }>();
   /** Every write that reached this sim, in order. */
   readonly writes: { name: string; value: number | string; source: WriteSource }[] = [];
@@ -81,6 +91,8 @@ export class FakeSim {
     this.def(name);
     this.writes.push({ name, value, source });
     if (this.refused.has(name)) return false;
+    const allowed = this.allowed.get(name);
+    if (allowed && !allowed.includes(value)) return false;
     this.values.set(name, value);
     const stuck = this.stuck.get(name);
     if (stuck && value !== stuck.value) setTimeout(() => this.values.set(name, stuck.value), stuck.revertMs);
@@ -107,11 +119,26 @@ export class FakeSim {
     this.writes.push({ name, value: 1, source });
     if (this.refused.has(name)) return false;
     if (d.screen && d.key) this.values.set(d.screen, `${this.get(d.screen) as string}${d.key}`);
+    if (d.toggles && !this.unpowered.has(name)) this.values.set(d.toggles, this.get(d.toggles) === 1 ? 0 : 1);
     return true;
   }
 
   refuse(name: string): void {
     this.refused.add(name);
+  }
+
+  accept(name: string): void {
+    this.refused.delete(name);
+  }
+
+  /** Only these values are written (others are refused), like a profile's allowed values. */
+  allow(name: string, values: number[]): void {
+    this.allowed.set(name, values);
+  }
+
+  /** The press has no effect (system unpowered). */
+  unpower(name: string): void {
+    this.unpowered.add(name);
   }
 
   /** Like Fenix logic that keeps changing a var back: every write reverts after revertMs. */
@@ -131,7 +158,10 @@ export class FakeSim {
     const out: SnapshotValue[] = [];
     for (const d of this.defs.values()) {
       if (d.group !== group || d.cls === 'pulse') continue;
-      out.push({ var: d.name, class: d.cls, value: d.cls === 'delta' ? this.display(d.name) : this.get(d.name) });
+      out.push({
+        var: d.name, class: d.cls, value: d.cls === 'delta' ? this.display(d.name) : this.get(d.name),
+        ...(d.cls === 'owned' && d.step !== undefined ? { step: d.step } : {}),
+      });
     }
     return out;
   }

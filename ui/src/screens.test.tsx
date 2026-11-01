@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Screens } from './App';
 import { BLEED, NOW, at, bridge, idle, inSession } from './test/fixtures';
-import type { Preflight } from './types';
+import type { Advisory, Desync, Preflight } from './types';
 
 const show = (b: ReturnType<typeof bridge>) => render(<Screens bridge={b} now={NOW} />);
 
@@ -167,7 +167,7 @@ describe('session', () => {
     expect(within(block).getByText(/^Overhead, open since/)).toBeInTheDocument();
     expect(within(block).getByText('ON')).toBeInTheDocument();
     expect(within(block).getByText('OFF')).toBeInTheDocument();
-    expect(within(block).getByText(/You changed it, but the captain's switch did not move after 3 tries/)).toBeInTheDocument();
+    expect(within(block).getByText(/You changed it, but it did not change in the captain's cockpit/)).toBeInTheDocument();
     expect(screen.getByText('1 differs')).toHaveClass('differs');
     await userEvent.click(within(block).getByRole('button', { name: 'Set both to OFF' }));
     expect(b.actions.setBoth).toHaveBeenCalledWith('S_OH_PNEUMATIC_ENG1_BLEED', 0);
@@ -205,7 +205,7 @@ describe('session', () => {
 
   it('fuel loaded differently: one amber line, no red, no desync', () => {
     show(bridge(inSession({ owned: [{ var: 'fuel', label: 'Fuel', unit: 'kg', delta: -400, warn: true }] })));
-    expect(screen.getByText('Fuel differs by 400 kg. Load the same fuel and payload in the Fenix A320 EFB.')).toHaveClass('warning');
+    expect(screen.getByText('Fuel differs by 400 kg – load the same fuel in the EFB.')).toHaveClass('warning');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
     expect(screen.getByText('400 kg apart')).toHaveClass('muted');
   });
@@ -227,5 +227,100 @@ describe('bridge not running', () => {
   it('says so in one line', () => {
     show(bridge(null, { bridgeDown: true }));
     expect(screen.getByText(/The Crosscheck bridge is not running/)).toBeInTheDocument();
+  });
+});
+
+describe('session: three tiers (CRO-26)', () => {
+  const lamp = (name: string, label: string, group = 'overhead'): Desync => ({
+    ...BLEED, var: name, label, group, group_label: 'Overhead', reason: 'observe_mismatch', tier: 'quiet', writable: false, options: [],
+    you: { value: 1, text: '1' }, other: { value: 0, text: '0' },
+  });
+  const adv = (over: Partial<Advisory>): Advisory => ({
+    key: `not_synced:${over.var ?? 'S_X'}`, kind: 'not_synced', var: 'S_X', label: 'X', mine: true, who: 'you', at: at(5), count: 1, message: null, ...over,
+  });
+
+  it('red input first, then amber lines, then the quiet indicators line', () => {
+    show(bridge(inSession({
+      desyncs: [{ ...BLEED, tier: 'red' }],
+      indicators: [lamp('I_MIP_GEAR_1_L', 'Gear indicator')],
+      advisories: [adv({ var: 'S_FCU_AP1', label: 'AP1', key: 'not_synced:S_FCU_AP1' })],
+      owned: [{ var: 'fuel', label: 'Left tank fuel', unit: 'kg', delta: -400, warn: true }],
+    })));
+    const red = screen.getByRole('region', { name: 'ENG 1 BLEED' });
+    const amber = screen.getByText('You moved AP1 – not synced yet.');
+    const fuel = screen.getByText('Fuel differs by 400 kg – load the same fuel in the EFB.');
+    const quiet = screen.getByText('Indicators differ (1)');
+    expect(amber).toHaveClass('warning');
+    expect(fuel).toHaveClass('warning');
+    expect(quiet).toHaveClass('muted');
+    // Document order: red above amber above quiet.
+    expect(red.compareDocumentPosition(amber) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(amber.compareDocumentPosition(quiet) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('One control differs'); // red only
+  });
+
+  it('indicators are collapsed into one line; details on click', async () => {
+    show(bridge(inSession({ indicators: [lamp('I_MIP_GEAR_1_L', 'Gear indicator'), lamp('I_OH_X', 'X light')] })));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
+    expect(screen.queryByText('Gear indicator')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Show details' }));
+    const list = screen.getByRole('list', { name: 'Indicators that differ' });
+    expect(within(list).getByText('Gear indicator')).toBeInTheDocument();
+    expect(within(list).getAllByText(/you 1, captain 0, since/)).toHaveLength(2);
+    expect(screen.queryByRole('region', { name: 'Gear indicator' })).toBeNull(); // never a red block
+  });
+
+  it('lamps of the same panel are listed under the red input as likely effects', () => {
+    show(bridge(inSession({ desyncs: [{ ...BLEED, tier: 'red', effects: [lamp('I_OH_BLEED_L', 'ENG 1 BLEED light')] }] })));
+    const block = screen.getByRole('region', { name: 'ENG 1 BLEED' });
+    expect(within(block).getByText('Likely effects: ENG 1 BLEED light.')).toHaveClass('muted');
+    expect(screen.queryByText(/Indicators differ/)).toBeNull();
+  });
+
+  it('a desync marked quiet is never shown as a red block', () => {
+    show(bridge(inSession({ desyncs: [lamp('I_MIP_GEAR_1_L', 'Gear indicator', 'mip')] })));
+    expect(screen.queryByRole('region', { name: 'Gear indicator' })).toBeNull();
+    expect(screen.getByText('Indicators differ (1)')).toBeInTheDocument();
+  });
+
+  it('up to three not-synced controls: one line each, by who moved them', () => {
+    show(bridge(inSession({
+      advisories: [
+        adv({ var: 'S_ENG_MODE', label: 'ENG MODE', key: 'not_synced:S_ENG_MODE' }),
+        adv({ var: 'S_FCU_AP1', label: 'AP1', key: 'not_synced:S_FCU_AP1', mine: false, who: 'captain' }),
+      ],
+    })));
+    expect(screen.getByText('You moved ENG MODE – not synced yet.')).toHaveClass('warning');
+    expect(screen.getByText('The captain moved AP1 – not synced yet.')).toHaveClass('warning');
+  });
+
+  it('more than three collapse into one amber line, newest first in the details', async () => {
+    const names = ['AP1', 'AP2', 'EXPED', 'ENG MODE'];
+    show(bridge(inSession({ advisories: names.map((n, i) => adv({ var: `S_${i}`, key: `not_synced:S_${i}`, label: n, at: at(i) })) })));
+    expect(screen.getByText('Not synced yet (4)')).toHaveClass('warning');
+    expect(screen.queryByText(/You moved AP1/)).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Show' }));
+    const items = within(screen.getByRole('list', { name: 'Not synced yet' })).getAllByRole('listitem');
+    expect(items.map((li) => li.firstChild?.textContent)).toEqual(names);
+  });
+
+  it('hardware fighting and a disconnected sim are amber lines', () => {
+    show(bridge(inSession({
+      advisories: [
+        adv({ kind: 'hardware_fighting', key: 'hardware_fighting:S_MIP_PARKING_BRAKE', var: 'S_MIP_PARKING_BRAKE', label: 'PARKING BRAKE', mine: false, who: 'captain' }),
+        adv({ kind: 'sim_disconnected', key: 'sim_disconnected:host', var: null, label: null, mine: false, who: 'captain' }),
+      ],
+    })));
+    expect(screen.getByText(/PARKING BRAKE keeps switching back and forth between the two cockpits/)).toHaveClass('warning');
+    expect(screen.getByText("The captain's simulator is not connected. Panels are not compared until it is back.")).toHaveClass('warning');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
+  });
+
+  it('a key whose light differs explains what happened, without Set both', () => {
+    show(bridge(inSession({
+      desyncs: [{ ...BLEED, var: 'S_FCU_EFIS1_FD', label: 'FD', reason: 'effect_mismatch', tier: 'red', receiver_is_you: true, writable: false, options: [] }],
+    })));
+    expect(screen.getByText(/The captain pressed it. The press arrived, but its light shows a different result in your cockpit/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Set both/ })).toBeNull();
   });
 });

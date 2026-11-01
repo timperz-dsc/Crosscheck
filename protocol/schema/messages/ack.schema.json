@@ -40,6 +40,10 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 10
+        },
+        "effect": {
+          "description": "Pulse commands with an effect check: the receiver's effect var value after settle. The server compares it with the sender's effect_report.",
+          "$ref": "../common.schema.json#/$defs/scalar"
         }
       }
     }

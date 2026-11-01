@@ -72,6 +72,13 @@
         },
         "config": {
           "$ref": "../common.schema.json#/$defs/timing"
+        },
+        "advisories": {
+          "description": "Advisories that are active now (amber lines).",
+          "type": "array",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/advisory"
+          }
         }
       }
     }

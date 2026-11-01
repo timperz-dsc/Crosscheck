@@ -113,6 +113,7 @@ var breakers = profileNames.Where(n => n.StartsWith("E_CB_")).ToList();
 var sample = DenyList.BreakerSample(breakers);
 File.WriteAllText(Path.Combine(outDir, "probe-deny.yaml"), DenyWriter.Write(sample));
 File.WriteAllText(Path.Combine(outDir, "draft-review.csv"), ReportWriter.ReviewCsv(reviews));
+File.WriteAllText(Path.Combine(outDir, "unsynced.csv"), ReportWriter.UnsyncedCsv(reviews));
 File.WriteAllText(Path.Combine(outDir, "draft-report.md"),
     ReportWriter.Report(profile, entries, reviews, pairings, sample, fenixNames, profileNames, scanPath, excluded, alreadyThere, overrides));
 

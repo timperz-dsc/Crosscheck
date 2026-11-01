@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/unsynced_input.schema.json",
+  "title": "unsynced_input",
+  "description": "A pilot moved a control that is watched read-only because it is not synced yet. Never written to any sim. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "unsynced_input"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "label"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

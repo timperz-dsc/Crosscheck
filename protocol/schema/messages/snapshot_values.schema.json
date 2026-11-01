@@ -43,6 +43,11 @@
               },
               "value": {
                 "$ref": "../common.schema.json#/$defs/scalar"
+              },
+              "step": {
+                "description": "Owned values only: a drift change smaller than this is sent at most every 10 s.",
+                "type": "number",
+                "exclusiveMinimum": 0
               }
             }
           }

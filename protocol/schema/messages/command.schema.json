@@ -55,6 +55,26 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 10
+        },
+        "effect": {
+          "description": "Pulse only: compare this effect var between the two sims after settle (the sender reports its own value with effect_report). same: equal values; parity: equal odd/even.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "var",
+            "expect"
+          ],
+          "properties": {
+            "var": {
+              "$ref": "../common.schema.json#/$defs/varName"
+            },
+            "expect": {
+              "enum": [
+                "same",
+                "parity"
+              ]
+            }
+          }
         }
       },
       "allOf": [

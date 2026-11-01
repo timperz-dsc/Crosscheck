@@ -1,5 +1,5 @@
 // The sentences the UI shows. Plain, specific, sentence case.
-import type { CrewMember, Desync, PreflightRow, Side, Status } from './types';
+import type { Advisory, CrewMember, Desync, OwnedRow, PreflightRow, Side, Status } from './types';
 
 export const sideName = (side: Side) => (side === 'captain' ? 'captain' : 'first officer');
 export const SideName = (side: Side) => (side === 'captain' ? 'Captain' : 'First officer');
@@ -98,12 +98,16 @@ export function desyncExplanation(d: Desync, peer: string): string {
     switch (d.reason) {
       case 'no_ack':
         return d.receiver_is_you
-          ? `The ${peer} changed it, but your sim did not confirm it after 3 tries.`
-          : `You changed it, but the ${peer}'s sim did not confirm it after 3 tries.`;
+          ? `The ${peer} changed it, but your sim did not confirm it.`
+          : `You changed it, but the ${peer}'s sim did not confirm it.`;
       case 'refused':
         return d.receiver_is_you
-          ? `The ${peer} changed it, but your switch did not move after 3 tries.`
-          : `You changed it, but the ${peer}'s switch did not move after 3 tries.`;
+          ? `The ${peer} changed it, but it did not change in your cockpit.`
+          : `You changed it, but it did not change in the ${peer}'s cockpit.`;
+      case 'effect_mismatch':
+        return d.receiver_is_you
+          ? `The ${peer} pressed it. The press arrived, but its light shows a different result in your cockpit.`
+          : `You pressed it. The press arrived, but its light shows a different result in the ${peer}'s cockpit.`;
       case 'correction_failed':
         return 'It was set to match the pilot flying, but the change did not take effect.';
       case 'correction_loop':
@@ -125,10 +129,46 @@ export function desyncExplanation(d: Desync, peer: string): string {
     : `${what} The alarm clears when both match.`;
 }
 
-/** One amber line: owned values are loaded by each pilot, never synced. */
-export function driftWarningText(label: string, delta: number, unit: string | null, aircraft: string): string {
-  const amount = Math.round(Math.abs(delta) * 10) / 10;
-  return `${label} differs by ${amount}${unit ? ` ${unit}` : ''}. Load the same fuel and payload in the ${aircraft} EFB.`;
+/** One amber line for owned values (loaded by each pilot, never synced): the largest difference. */
+export function driftWarningText(rows: OwnedRow[]): string | null {
+  const warn = rows.filter((o) => o.warn).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const top = warn[0];
+  if (!top) return null;
+  const amount = Math.round(Math.abs(top.delta) * 10) / 10;
+  const what = /fuel/i.test(top.label) ? 'Fuel' : top.label;
+  return `${what} differs by ${amount}${top.unit ? ` ${top.unit}` : ''} – load the same fuel in the EFB.`;
+}
+
+// ---- amber lines and indicators ----
+
+const who = (a: Advisory) => (a.mine ? 'You' : `The ${a.who}`);
+
+/** "You moved ENG MODE – not synced yet." */
+export function notSyncedText(a: Advisory): string {
+  return `${who(a)} moved ${a.label ?? a.var ?? 'a control'} – not synced yet.`;
+}
+
+export function advisoryText(a: Advisory): string {
+  switch (a.kind) {
+    case 'not_synced':
+      return notSyncedText(a);
+    case 'hardware_fighting':
+      return `${a.label ?? a.var} keeps switching back and forth between the two cockpits. Both hardware controls may be setting it; leave it to one pilot.`;
+    case 'sim_disconnected':
+      return a.mine
+        ? 'Your simulator is not connected. Your panels are not compared until it is back.'
+        : `The ${a.who}'s simulator is not connected. Panels are not compared until it is back.`;
+    default:
+      return a.message ?? '';
+  }
+}
+
+export function indicatorsLine(n: number): string {
+  return `Indicators differ (${n})`;
+}
+
+export function effectsText(effects: Desync[]): string {
+  return `Likely effects: ${effects.map((e) => e.label).join(', ')}.`;
 }
 
 export function driftText(delta: number, unit: string | null): string {

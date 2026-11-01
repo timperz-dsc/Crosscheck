@@ -1,0 +1,18 @@
+{
+  "description": "Which tier a desync is shown in (docs/protocol.md section 5). Only an indicator (class observe) may be quiet; a failed pilot input is always red. delta_display: the var is the display of a delta (encoder) entry, which counts as an input (the bridge reports it under the encoder, and its UI treats it as red). Read by server/test/unit.test.ts and bridge/Crosscheck.Bridge.Tests/UnitTests.cs.",
+  "cases": [
+    { "name": "switch value refused", "class": "verified", "reason": "refused", "delta_display": false, "tier": "red" },
+    { "name": "switch command not acked", "class": "verified", "reason": "no_ack", "delta_display": false, "tier": "red" },
+    { "name": "knob correction failed", "class": "analog", "reason": "correction_failed", "delta_display": false, "tier": "red" },
+    { "name": "encoder step not acked", "class": "delta", "reason": "no_ack", "delta_display": false, "tier": "red" },
+    { "name": "encoder correction loop", "class": "delta", "reason": "correction_loop", "delta_display": false, "tier": "red" },
+    { "name": "key press refused", "class": "pulse", "reason": "refused", "delta_display": false, "tier": "red" },
+    { "name": "key press effect differs", "class": "pulse", "reason": "effect_mismatch", "delta_display": false, "tier": "red" },
+    { "name": "switch logged value matches neither side", "class": "verified", "reason": "log_conflict", "delta_display": false, "tier": "red" },
+    { "name": "switch value unknown on one side", "class": "verified", "reason": "missing_value", "delta_display": false, "tier": "red" },
+    { "name": "switch differs without a pilot flying", "class": "verified", "reason": "no_pf", "delta_display": false, "tier": "red" },
+    { "name": "lamp differs", "class": "observe", "reason": "observe_mismatch", "delta_display": false, "tier": "quiet" },
+    { "name": "lamp unknown on one side", "class": "observe", "reason": "missing_value", "delta_display": false, "tier": "quiet" },
+    { "name": "FCU speed display differs", "class": "observe", "reason": "observe_mismatch", "delta_display": true, "tier": "red" }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "description": "Owned drift rate limit (docs/protocol.md section 7). A var that starts or stops drifting, or whose delta moved by more than its step since it was last sent, is sent at once. Any other change at most every min_interval_ms. Without a step every change waits for the interval. Each step is a comparison at t_ms with the drift deltas of that moment (empty = no drift); send says whether a drift message goes out. Read by server/test/unit.test.ts.",
+  "cases": [
+    {
+      "name": "fuel with a 50 kg step",
+      "step": 50,
+      "min_interval_ms": 10000,
+      "steps": [
+        { "t_ms": 0, "drift": { "fuel": -400 }, "send": true },
+        { "t_ms": 2000, "drift": { "fuel": -400 }, "send": false },
+        { "t_ms": 4000, "drift": { "fuel": -410 }, "send": false },
+        { "t_ms": 6000, "drift": { "fuel": -420 }, "send": false },
+        { "t_ms": 10000, "drift": { "fuel": -430 }, "send": true },
+        { "t_ms": 12000, "drift": { "fuel": -430 }, "send": false },
+        { "t_ms": 13000, "drift": { "fuel": -500 }, "send": true },
+        { "t_ms": 14000, "drift": {}, "send": true },
+        { "t_ms": 16000, "drift": {}, "send": false },
+        { "t_ms": 18000, "drift": { "fuel": -20 }, "send": true }
+      ]
+    },
+    {
+      "name": "no step: only start and stop are immediate",
+      "step": null,
+      "min_interval_ms": 10000,
+      "steps": [
+        { "t_ms": 0, "drift": { "fuel": 5 }, "send": true },
+        { "t_ms": 1000, "drift": { "fuel": 500 }, "send": false },
+        { "t_ms": 10000, "drift": { "fuel": 500 }, "send": true },
+        { "t_ms": 11000, "drift": {}, "send": true }
+      ]
+    }
+  ]
+}
