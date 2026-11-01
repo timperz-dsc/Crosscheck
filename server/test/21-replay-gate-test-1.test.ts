@@ -9,14 +9,16 @@ interface GateTest1 {
   end: { sim_disconnected_t_ms: number };
 }
 const DATA = JSON.parse(readFileSync(new URL('./fixtures/gate-test-1.json', import.meta.url), 'utf8')) as GateTest1;
-const PUMP = DATA.elec_pump.var;
+// The real ELEC PUMP is a press counter since CRO-27 (its replay is in the bridge end-to-end tests). The
+// counter values are replayed here on a stand-in absolute [0, 1] switch: a refused value must stay red.
+const PUMP = 'S_OH_ELEC_APU_MASTER';
 const withPump = (): VarDef[] => [...TEST_VARS, { name: PUMP, cls: 'verified', group: 'overhead', init: 0 }];
 
 let pair: Pair;
 afterEach(async () => pair?.close());
 
 describe('21. replay of gate test 1', () => {
-  it('ELEC PUMP counter values 1…28 against [0, 1]: the red desync appears and stays visible to the end', async () => {
+  it('ELEC PUMP counter values 1…28 against a [0, 1] switch: the red desync appears and stays visible to the end', async () => {
     pair = await startPair({ host: { sim: new FakeSim(withPump()) }, guest: { sim: new FakeSim(withPump()) } });
     const { host, guest, server } = pair;
     guest.sim.allow(PUMP, DATA.elec_pump.allowed);

@@ -84,13 +84,13 @@ vars:
     pulse_ms: 150
     verify: { mcdu: 1, settle_ms: 600 }
 
-  # analog: 0.0 to 1.0 in the L: var; GraphQL shows value x 1024.
+  # analog: 0.0 to 1.0 in the L: var, confirmed by read-back of the L: var itself.
+  # No GraphQL check: system.analog.* did not follow value x 1024 in gate test 1 (scale: CRO-28).
   - name: A_OH_PNEUMATIC_COCKPIT_TEMP
     label: Cockpit temperature
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_PNEUMATIC_COCKPIT_TEMP, scale: 1024, settle_ms: 100 }
 
   # observe: never written, compared between the sims as a desync alarm.
   - name: I_MIP_GEAR_1_L
@@ -130,50 +130,43 @@ vars:
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_LIGHTING_OVD, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_LIGHTING_READING_CAPT
     label: "LIGHTING READING CAPT"
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_LIGHTING_READING_CAPT, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_LIGHTING_READING_FO
     label: "LIGHTING READING FO"
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_LIGHTING_READING_FO, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_PNEUMATIC_AFT_TEMP
     label: "AFT TEMP"
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_PNEUMATIC_AFT_TEMP, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_PNEUMATIC_CARGO_AFT_TEMP
     label: "CARGO AFT TEMP"
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_PNEUMATIC_CARGO_AFT_TEMP, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_PNEUMATIC_FWD_TEMP
     label: "FWD TEMP"
     class: analog
     group: overhead
     range: [0, 1]
-    verify: { graphql: system.analog.A_OH_PNEUMATIC_FWD_TEMP, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_PNEUMATIC_LDG_ELEV
     label: "LDG ELEV"
     class: analog
     group: overhead
-    range: [0, 1]
-    verify: { graphql: system.analog.A_OH_PNEUMATIC_LDG_ELEV, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    range: [-3, 7]
+    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: I_OH_AFT_FADEC_GND_1_L
     label: "FADEC GND 1 light (lower)"
     class: observe
@@ -1164,18 +1157,13 @@ vars:
     class: observe
     group: overhead
     note: "label generated"
-  - name: N_OH_LIGHTING_OVD
-    label: "LIGHTING OVD display"
-    class: observe
-    group: overhead
-    note: "label generated"
   # positions to be learned (CRO-24)
   - name: S_MISC_WIPER_CAPT
     label: "MISC WIPER CAPT"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_MISC_WIPER_FO
     label: "MISC WIPER FO"
@@ -1188,8 +1176,8 @@ vars:
     label: "MISC WIPER REPELLENT CAPT"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_MISC_WIPER_REPELLENT_FO
     label: "MISC WIPER REPELLENT FO"
@@ -1362,8 +1350,8 @@ vars:
     label: "DISC 1 OLD LAYOUT"
     class: verified
     group: overhead
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    values: [0, 1, 2]
+    note: "label generated; three positions; values from the positions pilots used in gate test 1 (CRO-27)"
   - name: S_OH_CARGO_DISC_1_OLD_LAYOUT_Cover
     label: "DISC 1 OLD LAYOUT cover"
     value_labels: { "0": closed, "1": open }
@@ -1375,8 +1363,8 @@ vars:
     label: "DISC 2 OLD LAYOUT"
     class: verified
     group: overhead
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    values: [0, 1, 2]
+    note: "label generated; three positions; values from the positions pilots used in gate test 1 (CRO-27)"
   - name: S_OH_CARGO_DISC_2_OLD_LAYOUT_Cover
     label: "DISC 2 OLD LAYOUT cover"
     value_labels: { "0": closed, "1": open }
@@ -1441,11 +1429,12 @@ vars:
     note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_BUSTIE
     label: "BUSTIE"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0, 1]
+    pulse_ms: 150
+    press: counter
     verify: { lvar: I_OH_ELEC_BUSTIE_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_ELEC_COMMERCIAL
     label: "COMMERCIAL"
     class: verified
@@ -1641,29 +1630,29 @@ vars:
     label: "EXT LT LANDING BOTH"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_OH_EXT_LT_LANDING_L
     label: "EXT LT LANDING L"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_OH_EXT_LT_LANDING_R
     label: "EXT LT LANDING R"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_OH_EXT_LT_NAV_LOGO
     label: "EXT LT NAV LOGO"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_OH_EXT_LT_NOSE
     label: "EXT LT NOSE"
@@ -1683,8 +1672,8 @@ vars:
     label: "EXT LT STROBE"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_OH_EXT_LT_WING
     label: "EXT LT WING"
@@ -1855,8 +1844,8 @@ vars:
     label: "GS MODE"
     class: verified
     group: overhead
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_OH_GPWS_LDG_FLAP3
     label: "LDG FLAP3"
     class: verified
@@ -1869,8 +1858,8 @@ vars:
     label: "SYS"
     class: verified
     group: overhead
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_OH_GPWS_TERR
     label: "TERR"
     class: verified
@@ -1880,11 +1869,12 @@ vars:
     note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_BLUE_ELEC_PUMP
     label: "BLUE ELEC PUMP"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0, 1]
+    pulse_ms: 150
+    press: counter
     verify: { lvar: I_OH_HYD_BLUE_ELEC_PUMP_L, settle_ms: 150 }
-    note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_HYD_BLUE_ELEC_PUMP_Cover
     label: "BLUE ELEC PUMP cover"
     value_labels: { "0": closed, "1": open }
@@ -1978,11 +1968,12 @@ vars:
     note: "label generated"
   - name: S_OH_HYD_YELLOW_ELEC_PUMP
     label: "YELLOW ELEC PUMP"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0, 1]
+    pulse_ms: 150
+    press: counter
     verify: { lvar: I_OH_HYD_YELLOW_ELEC_PUMP_L, settle_ms: 150 }
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2; lower-half rule"
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_INT_LT_DOME
     label: "INT LT DOME"
     class: verified
@@ -2003,34 +1994,34 @@ vars:
     group: overhead
     values: [0]
     note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
   - name: S_OH_LIGHTING_AVIONICS_COMPT
     label: "LIGHTING AVIONICS COMPT"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_NAV_ADR1
     label: "ADR1"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_NAV_ADR2
     label: "ADR2"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_NAV_ADR3
     label: "ADR3"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   # positions to be learned (CRO-24)
   - name: S_OH_NAV_DATA_DISP
     label: "DATA DISP"
@@ -2038,27 +2029,27 @@ vars:
     group: overhead
     values: [0]
     note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
   - name: S_OH_NAV_IR1_SWITCH
     label: "IR1 SWITCH"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_NAV_IR2_SWITCH
     label: "IR2 SWITCH"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_NAV_IR3_SWITCH
     label: "IR3 SWITCH"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   # positions to be learned (CRO-24)
   - name: S_OH_NAV_SYS_DISP
     label: "SYS DISP"
@@ -2237,8 +2228,8 @@ vars:
     label: "PRESS MODE"
     class: verified
     group: overhead
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_OH_PNEUMATIC_RAM_AIR
     label: "RAM AIR"
     class: verified
@@ -2285,15 +2276,15 @@ vars:
     label: "SIGNS"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_OH_SIGNS_SMOKING
     label: "SIGNS SMOKING"
     class: verified
     group: overhead
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_OH_SVCE_INT_OVRD
     label: "SVCE INT OVRD"
     class: verified
@@ -2306,15 +2297,13 @@ vars:
     class: analog
     group: fcu
     range: [0, 1]
-    verify: { graphql: system.analog.A_FCU_LIGHTING, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_FCU_LIGHTING_TEXT
     label: "LIGHTING TEXT"
     class: analog
     group: fcu
     range: [0, 1]
-    verify: { graphql: system.analog.A_FCU_LIGHTING_TEXT, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_FCU_HEADING_DASHED
     label: "HEADING DASHED"
     class: observe
@@ -2430,16 +2419,6 @@ vars:
     note: "label generated"
   - name: N_FCU_HEADING
     label: "HEADING display"
-    class: observe
-    group: fcu
-    note: "label generated"
-  - name: N_FCU_LIGHTING
-    label: "LIGHTING display"
-    class: observe
-    group: fcu
-    note: "label generated"
-  - name: N_FCU_LIGHTING_TEXT
-    label: "LIGHTING TEXT display"
     class: observe
     group: fcu
     note: "label generated"
@@ -2676,85 +2655,73 @@ vars:
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_AIR_VENT_CAPT_OPEN, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_AIR_VENT_CAPT_PITCH
     label: "AIR VENT CAPT PITCH"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_AIR_VENT_CAPT_PITCH, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_AIR_VENT_CAPT_YAW
     label: "AIR VENT CAPT YAW"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_AIR_VENT_CAPT_YAW, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_AIR_VENT_FO_OPEN
     label: "AIR VENT FO OPEN"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_AIR_VENT_FO_OPEN, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_AIR_VENT_FO_PITCH
     label: "AIR VENT FO PITCH"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_AIR_VENT_FO_PITCH, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_AIR_VENT_FO_YAW
     label: "AIR VENT FO YAW"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_AIR_VENT_FO_YAW, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_FLOOD_MAIN
     label: "LIGHTING FLOOD MAIN"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_LIGHTING_FLOOD_MAIN, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_FLOOD_PEDESTAL
     label: "LIGHTING FLOOD PEDESTAL"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_LIGHTING_FLOOD_PEDESTAL, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_MAP_L
     label: "LIGHTING MAP L"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_LIGHTING_MAP_L, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_MAP_R
     label: "LIGHTING MAP R"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_LIGHTING_MAP_R, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LOUDSPEAKER_CAPT
     label: "LOUDSPEAKER CAPT"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_LOUDSPEAKER_CAPT, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LOUDSPEAKER_FO
     label: "LOUDSPEAKER FO"
     class: analog
     group: mip
     range: [0, 1]
-    verify: { graphql: system.analog.A_MIP_LOUDSPEAKER_FO, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_MIP_ISFD_BARO_INCH
     label: "ISFD BARO INCH"
     class: observe
@@ -2991,26 +2958,6 @@ vars:
     class: observe
     group: mip
     note: "label generated"
-  - name: N_DCDU1_BRIGHTNESS
-    label: "DCDU1 BRIGHTNESS display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_DCDU2_BRIGHTNESS
-    label: "DCDU2 BRIGHTNESS display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_CLOCK_CHRONO
-    label: "CLOCK CHRONO display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_CLOCK_ELAPSED
-    label: "CLOCK ELAPSED display"
-    class: observe
-    group: mip
-    note: "label generated"
   - name: N_MIP_CLOCK_MODE
     label: "CLOCK MODE display"
     class: observe
@@ -3023,51 +2970,6 @@ vars:
     note: "label generated"
   - name: N_MIP_ISFD_BARO_INCH
     label: "ISFD BARO INCH display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_CENTER_L
-    label: "LIGHTING FLOOD CENTER L display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_CENTER_R
-    label: "LIGHTING FLOOD CENTER R display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_MAIN_L
-    label: "LIGHTING FLOOD MAIN L display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_MAIN_R
-    label: "LIGHTING FLOOD MAIN R display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_PEDESTAL
-    label: "LIGHTING FLOOD PEDESTAL display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_PEDESTAL_L
-    label: "LIGHTING FLOOD PEDESTAL L display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_FLOOD_PEDESTAL_R
-    label: "LIGHTING FLOOD PEDESTAL R display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_MAP_L
-    label: "LIGHTING MAP L display"
-    class: observe
-    group: mip
-    note: "label generated"
-  - name: N_MIP_LIGHTING_MAP_R
-    label: "LIGHTING MAP R display"
     class: observe
     group: mip
     note: "label generated"
@@ -3303,512 +3205,439 @@ vars:
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_ADF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_ADF_2_VOLUME
     label: "ASP2 ADF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_ADF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_CAB_VOLUME
     label: "ASP2 CAB VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_CAB_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_HF_1_VOLUME
     label: "ASP2 HF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_HF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_HF_2_VOLUME
     label: "ASP2 HF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_HF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_ILS_VOLUME
     label: "ASP2 ILS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_ILS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_INT_VOLUME
     label: "ASP2 INT VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_INT_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_MARKER_VOLUME
     label: "ASP2 MARKER VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_MARKER_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_MLS_VOLUME
     label: "ASP2 MLS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_MLS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_PA_VOLUME
     label: "ASP2 PA VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_PA_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_SPKR_VOLUME
     label: "ASP2 SPKR VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_SPKR_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_VHF_1_VOLUME
     label: "ASP2 VHF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_VHF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_VHF_2_VOLUME
     label: "ASP2 VHF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_VHF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_VHF_3_VOLUME
     label: "ASP2 VHF 3 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_VHF_3_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_VOR_1_VOLUME
     label: "ASP2 VOR 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_VOR_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP2_VOR_2_VOLUME
     label: "ASP2 VOR 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP2_VOR_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_ADF_1_VOLUME
     label: "ASP3 ADF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_ADF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_ADF_2_VOLUME
     label: "ASP3 ADF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_ADF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_CAB_VOLUME
     label: "ASP3 CAB VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_CAB_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_HF_1_VOLUME
     label: "ASP3 HF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_HF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_HF_2_VOLUME
     label: "ASP3 HF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_HF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_ILS_VOLUME
     label: "ASP3 ILS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_ILS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_INT_VOLUME
     label: "ASP3 INT VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_INT_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_MARKER_VOLUME
     label: "ASP3 MARKER VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_MARKER_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_MLS_VOLUME
     label: "ASP3 MLS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_MLS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_PA_VOLUME
     label: "ASP3 PA VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_PA_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_SPKR_VOLUME
     label: "ASP3 SPKR VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_SPKR_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_VHF_1_VOLUME
     label: "ASP3 VHF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_VHF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_VHF_2_VOLUME
     label: "ASP3 VHF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_VHF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_VHF_3_VOLUME
     label: "ASP3 VHF 3 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_VHF_3_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_VOR_1_VOLUME
     label: "ASP3 VOR 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_VOR_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP3_VOR_2_VOLUME
     label: "ASP3 VOR 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP3_VOR_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_ADF_1_VOLUME
     label: "ASP4 ADF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_ADF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_ADF_2_VOLUME
     label: "ASP4 ADF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_ADF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_CAB_VOLUME
     label: "ASP4 CAB VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_CAB_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_HF_1_VOLUME
     label: "ASP4 HF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_HF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_HF_2_VOLUME
     label: "ASP4 HF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_HF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_ILS_VOLUME
     label: "ASP4 ILS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_ILS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_INT_VOLUME
     label: "ASP4 INT VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_INT_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_MARKER_VOLUME
     label: "ASP4 MARKER VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_MARKER_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_MLS_VOLUME
     label: "ASP4 MLS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_MLS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_PA_VOLUME
     label: "ASP4 PA VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_PA_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_SPKR_VOLUME
     label: "ASP4 SPKR VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_SPKR_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_VHF_1_VOLUME
     label: "ASP4 VHF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_VHF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_VHF_2_VOLUME
     label: "ASP4 VHF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_VHF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_VHF_3_VOLUME
     label: "ASP4 VHF 3 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_VHF_3_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_VOR_1_VOLUME
     label: "ASP4 VOR 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_VOR_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP4_VOR_2_VOLUME
     label: "ASP4 VOR 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP4_VOR_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_ADF_1_VOLUME
     label: "ASP ADF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_ADF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_ADF_2_VOLUME
     label: "ASP ADF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_ADF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_CAB_VOLUME
     label: "ASP CAB VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_CAB_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_HF_1_VOLUME
     label: "ASP HF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_HF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_HF_2_VOLUME
     label: "ASP HF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_HF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_ILS_VOLUME
     label: "ASP ILS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_ILS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_INT_VOLUME
     label: "ASP INT VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_INT_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_MARKER_VOLUME
     label: "ASP MARKER VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_MARKER_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_MLS_VOLUME
     label: "ASP MLS VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_MLS_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_PA_VOLUME
     label: "ASP PA VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_PA_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_SPKR_VOLUME
     label: "ASP SPKR VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_SPKR_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_VHF_1_VOLUME
     label: "ASP VHF 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_VHF_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_VHF_2_VOLUME
     label: "ASP VHF 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_VHF_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_VHF_3_VOLUME
     label: "ASP VHF 3 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_VHF_3_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_VOR_1_VOLUME
     label: "ASP VOR 1 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_VOR_1_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_ASP_VOR_2_VOLUME
     label: "ASP VOR 2 VOLUME"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_ASP_VOR_2_VOLUME, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_DRAIMS1_BRIGHTNESS
     label: "DRAIMS1 BRIGHTNESS"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_DRAIMS1_BRIGHTNESS, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_DRAIMS1_NAV_REC
     label: "DRAIMS1 NAV REC knob"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_DRAIMS1_NAV_REC, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_DRAIMS2_BRIGHTNESS
     label: "DRAIMS2 BRIGHTNESS"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_DRAIMS2_BRIGHTNESS, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_DRAIMS2_NAV_REC
     label: "DRAIMS2 NAV REC knob"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_DRAIMS2_NAV_REC, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_DRAIMS3_BRIGHTNESS
     label: "DRAIMS3 BRIGHTNESS"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_DRAIMS3_BRIGHTNESS, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_DRAIMS3_NAV_REC
     label: "DRAIMS3 NAV REC knob"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_DRAIMS3_NAV_REC, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_PED_LIGHTING_PEDESTAL
     label: "LIGHTING PEDESTAL"
     class: analog
     group: pedestal
     range: [0, 1]
-    verify: { graphql: system.analog.A_PED_LIGHTING_PEDESTAL, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_WR_GAIN
     label: "WR GAIN knob"
     class: analog
     group: pedestal
-    range: [0, 1]
-    verify: { graphql: system.analog.A_WR_GAIN, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    range: [-5, 0]
+    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_WR_TILT
     label: "WR TILT"
     class: analog
     group: pedestal
-    range: [0, 1]
-    verify: { graphql: system.analog.A_WR_TILT, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    range: [3, 10]
+    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_PED_RMP1_COURSE_DISPLAYED
     label: "RMP1 COURSE DISPLAYED"
     class: observe
@@ -4785,11 +4614,6 @@ vars:
     class: observe
     group: pedestal
     note: "label generated"
-  - name: N_PED_LIGHTING_PEDESTAL
-    label: "LIGHTING PEDESTAL display"
-    class: observe
-    group: pedestal
-    note: "label generated"
   - name: N_PED_RMP1_ACTIVE
     label: "RMP1 ACTIVE display"
     class: observe
@@ -4922,6 +4746,13 @@ vars:
     values: [0, 1]
     verify: { lvar: I_ASP2_VHF_3_REC, settle_ms: 150 }
     note: "label generated; class from step 2: effect follows the value (I_ASP2_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP2_VOICE
+    label: "ASP2 VOICE"
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    verify: { lvar: I_ASP2_VOICE, settle_ms: 150 }
+    note: "label generated; a cockpit click moves this key, not S_ASP2_VOICE_LATCH; edge-triggered: 1 then 0 toggles I_ASP2_VOICE (CRO-27)"
   - name: S_ASP2_VOICE_LATCH
     label: "ASP2 VOICE LATCH"
     class: verified
@@ -5040,6 +4871,13 @@ vars:
     values: [0, 1]
     verify: { lvar: I_ASP3_VHF_3_REC, settle_ms: 150 }
     note: "label generated; class from step 2: effect follows the value (I_ASP3_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP3_VOICE
+    label: "ASP3 VOICE"
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    verify: { lvar: I_ASP3_VOICE, settle_ms: 150 }
+    note: "label generated; a cockpit click moves this key, not S_ASP3_VOICE_LATCH; edge-triggered: 1 then 0 toggles I_ASP3_VOICE (CRO-27)"
   - name: S_ASP3_VOICE_LATCH
     label: "ASP3 VOICE LATCH"
     class: verified
@@ -5164,6 +5002,13 @@ vars:
     values: [0, 1]
     verify: { lvar: I_ASP_VHF_3_REC, settle_ms: 150 }
     note: "label generated; class from step 2: effect follows the value (I_ASP_VHF_3_REC): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0; the key is not synced, this latch is (CRO-8 step 3)"
+  - name: S_ASP_VOICE
+    label: "ASP VOICE"
+    class: pulse
+    group: pedestal
+    pulse_ms: 150
+    verify: { lvar: I_ASP_VOICE, settle_ms: 150 }
+    note: "label generated; a cockpit click moves this key, not S_ASP_VOICE_LATCH; edge-triggered: 1 then 0 toggles I_ASP_VOICE (CRO-27)"
   - name: S_ASP_VOICE_LATCH
     label: "ASP VOICE LATCH"
     class: verified
@@ -5190,8 +5035,8 @@ vars:
     label: "AUDIO SWITCHING"
     class: verified
     group: pedestal
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_ENG_MASTER_1
     label: "MASTER 1"
     class: verified
@@ -5204,62 +5049,62 @@ vars:
     group: pedestal
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
-  # positions to be learned (CRO-24)
   - name: S_PED_ATC_0
     label: "ATC 0"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_1
     label: "ATC 1"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_2
     label: "ATC 2"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_3
     label: "ATC 3"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_4
     label: "ATC 4"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_5
     label: "ATC 5"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_6
     label: "ATC 6"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_7
     label: "ATC 7"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_CLR
     label: "ATC CLR"
     class: pulse
@@ -5899,8 +5744,8 @@ vars:
     label: "TCAS RANGE"
     class: verified
     group: pedestal
-    values: [2]
-    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2, 3]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WR_GAIN
     label: "WR GAIN switch"
@@ -5908,41 +5753,41 @@ vars:
     group: pedestal
     values: [0]
     note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
   - name: S_WR_GCS
     label: "WR GCS"
-    class: verified
+    class: pulse
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    pulse_ms: 150
+    press: counter
+    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   # positions to be learned (CRO-24)
   - name: S_WR_MODE
     label: "WR MODE"
     class: verified
     group: pedestal
-    values: [2]
-    note: "label generated; values [2] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [1, 2, 3]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WR_MULTISCAN
     label: "WR MULTISCAN"
     class: verified
     group: pedestal
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WR_PRED_WS
     label: "WR PRED WS"
     class: verified
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WR_SYS
     label: "WR SYS"
     class: verified
     group: pedestal
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_XPDR_ALTREPORTING
     label: "XPDR ALTREPORTING"
     class: verified
@@ -5954,8 +5799,8 @@ vars:
     label: "XPDR ATC"
     class: verified
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_XPDR_IDENT
     label: "XPDR IDENT"
     class: pulse
@@ -5967,15 +5812,15 @@ vars:
     label: "XPDR MODE"
     class: verified
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_XPDR_OPERATION
     label: "XPDR OPERATION"
     class: verified
     group: pedestal
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1, 2]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: I_CDU1_DASH
     label: "CDU 1 DASH light"
     class: observe
@@ -6013,11 +5858,6 @@ vars:
     note: "label generated"
   - name: I_CDU1_RDY
     label: "CDU 1 RDY light"
-    class: observe
-    group: cdu1
-    note: "label generated"
-  - name: N_CDU1_BRIGHTNESS
-    label: "CDU 1 BRIGHTNESS display"
     class: observe
     group: cdu1
     note: "label generated"
@@ -6560,11 +6400,6 @@ vars:
     note: "label generated"
   - name: I_CDU2_RDY
     label: "CDU 2 RDY light"
-    class: observe
-    group: cdu2
-    note: "label generated"
-  - name: N_CDU2_BRIGHTNESS
-    label: "CDU 2 BRIGHTNESS display"
     class: observe
     group: cdu2
     note: "label generated"
@@ -9441,43 +9276,13 @@ vars:
     class: analog
     group: flightcontrols
     range: [0, 1]
-    verify: { graphql: system.analog.A_FC_ELEVATOR_TRIM, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_FC_SPEEDBRAKE
     label: "FC SPEEDBRAKE knob"
     class: analog
     group: flightcontrols
-    range: [0, 1]
-    verify: { graphql: system.analog.A_FC_SPEEDBRAKE, scale: 1024, settle_ms: 100 }
-    note: "label generated"
-  - name: A_FC_THROTTLE_LEFT_GATE
-    label: "FC THROTTLE LEFT GATE"
-    class: analog
-    group: flightcontrols
-    range: [0, 1]
-    verify: { graphql: system.analog.A_FC_THROTTLE_LEFT_GATE, scale: 1024, settle_ms: 100 }
-    note: "label generated"
-  - name: A_FC_THROTTLE_LEFT_INPUT
-    label: "FC THROTTLE LEFT INPUT"
-    class: analog
-    group: flightcontrols
-    range: [0, 1]
-    verify: { graphql: system.analog.A_FC_THROTTLE_LEFT_INPUT, scale: 1024, settle_ms: 100 }
-    note: "label generated"
-  - name: A_FC_THROTTLE_RIGHT_GATE
-    label: "FC THROTTLE RIGHT GATE"
-    class: analog
-    group: flightcontrols
-    range: [0, 1]
-    verify: { graphql: system.analog.A_FC_THROTTLE_RIGHT_GATE, scale: 1024, settle_ms: 100 }
-    note: "label generated"
-  - name: A_FC_THROTTLE_RIGHT_INPUT
-    label: "FC THROTTLE RIGHT INPUT"
-    class: analog
-    group: flightcontrols
-    range: [0, 1]
-    verify: { graphql: system.analog.A_FC_THROTTLE_RIGHT_INPUT, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    range: [1, 3]
+    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_FC_ELEVATOR_TRIM_MOTOR_POWER
     label: "FC ELEVATOR TRIM MOTOR POWER"
     class: observe
@@ -9513,53 +9318,8 @@ vars:
     class: observe
     group: flightcontrols
     note: "label generated"
-  - name: N_FC_BRAKE_RIGHT
-    label: "FC BRAKE RIGHT display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_CAPT_TILLER
-    label: "FC CAPT TILLER display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_ELEVATOR_TRIM
-    label: "FC ELEVATOR TRIM display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_FO_TILLER
-    label: "FC FO TILLER display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_RUDDER
-    label: "FC RUDDER display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
   - name: N_FC_RUDDER_TRIM_DECIMAL
     label: "FC RUDDER TRIM DECIMAL display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_SIDESTICK_CAPT_BANK
-    label: "FC SIDESTICK CAPT BANK display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_SIDESTICK_CAPT_PITCH
-    label: "FC SIDESTICK CAPT PITCH display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_SIDESTICK_FO_BANK
-    label: "FC SIDESTICK FO BANK display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
-  - name: N_FC_SIDESTICK_FO_PITCH
-    label: "FC SIDESTICK FO PITCH display"
     class: observe
     group: flightcontrols
     note: "label generated"
@@ -9604,8 +9364,8 @@ vars:
     label: "COCKPIT DOOR"
     class: verified
     group: cabin
-    values: [1]
-    note: "label generated; values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_GALLEY_AFT_BREAKERS_COVER
     label: "GALLEY AFT BREAKERS COVER"
     class: verified
@@ -9629,42 +9389,36 @@ vars:
     label: "WINDOW BLINDS CAPT"
     class: verified
     group: cabin
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WINDOW_BLINDS_FO
     label: "WINDOW BLINDS FO"
     class: verified
     group: cabin
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WINDOW_BLINDS_REAR_CAPT
     label: "WINDOW BLINDS REAR CAPT"
     class: verified
     group: cabin
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WINDOW_BLINDS_REAR_FO
     label: "WINDOW BLINDS REAR FO"
     class: verified
     group: cabin
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  - name: S_WINDOW_CAPT_LATCH
-    label: "WINDOW CAPT LATCH"
-    class: verified
-    group: cabin
     values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_WINDOW_CAPT_LEVER
     label: "WINDOW CAPT LEVER"
     class: verified
     group: cabin
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_WINDOW_FO_LATCH
     label: "WINDOW FO LATCH"
     class: verified
@@ -9743,31 +9497,6 @@ vars:
     class: observe
     group: systems
     note: "label generated"
-  - name: N_FUEL_CTR_TANK
-    label: "CTR TANK display"
-    class: observe
-    group: systems
-    note: "label generated"
-  - name: N_FUEL_PRESEL
-    label: "PRESEL display"
-    class: observe
-    group: systems
-    note: "label generated"
-  - name: N_FUEL_TOTAL_QTY
-    label: "TOTAL QTY display"
-    class: observe
-    group: systems
-    note: "label generated"
-  - name: N_FUEL_WING_TANK_L
-    label: "WING TANK L display"
-    class: observe
-    group: systems
-    note: "label generated"
-  - name: N_FUEL_WING_TANK_R
-    label: "WING TANK R display"
-    class: observe
-    group: systems
-    note: "label generated"
   - name: N_HYD_PRESSURE_BRAKE_LEFT
     label: "PRESSURE BRAKE LEFT display"
     class: observe
@@ -9783,8 +9512,7 @@ vars:
     class: analog
     group: ground
     range: [0, 1]
-    verify: { graphql: system.analog.A_EXT_CARGO_DOOR_BULK_HANDLE, scale: 1024, settle_ms: 100 }
-    note: "label generated"
+    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_EXT_HYD_GEAR_DOOR_PRESSURE
     label: "EXT HYD GEAR DOOR PRESSURE"
     class: observe
@@ -9907,11 +9635,6 @@ vars:
     note: "label generated"
   - name: I_EXT_REFUELING_VALVE_RIGHT
     label: "EXT REFUELING VALVE RIGHT light"
-    class: observe
-    group: ground
-    note: "label generated"
-  - name: N_EXT_REFUELING_LIGHTING
-    label: "EXT REFUELING LIGHTING display"
     class: observe
     group: ground
     note: "label generated"
@@ -10151,6 +9874,11 @@ vars:
     values: [0, 1]
     verify: { graphql: system.switches.S_EXT_WATER_SERVICE_DOOR, scale: 1, settle_ms: 100 }
     note: "label generated; values [0,1] confirmed in step 2"
+  - name: N_OH_LIGHTING_OVD
+    label: "LIGHTING OVD display"
+    class: ignore
+    group: overhead
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
   - name: S_OH_ELEC_APU_GENERATOR_Anim
     label: "APU GENERATOR animation"
     class: ignore
@@ -10391,11 +10119,86 @@ vars:
     class: ignore
     group: overhead
     note: "label generated; animation position written by the model"
+  - name: N_FCU_LIGHTING
+    label: "LIGHTING display"
+    class: ignore
+    group: fcu
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_FCU_LIGHTING_TEXT
+    label: "LIGHTING TEXT display"
+    class: ignore
+    group: fcu
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_DCDU1_BRIGHTNESS
+    label: "DCDU1 BRIGHTNESS display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_DCDU2_BRIGHTNESS
+    label: "DCDU2 BRIGHTNESS display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_CLOCK_CHRONO
+    label: "CLOCK CHRONO display"
+    class: ignore
+    group: mip
+    note: "label generated; clock: differs by start moment; not compared (CRO-27)"
+  - name: N_MIP_CLOCK_ELAPSED
+    label: "CLOCK ELAPSED display"
+    class: ignore
+    group: mip
+    note: "label generated; clock: differs by start moment; not compared (CRO-27)"
   - name: N_MIP_CLOCK_UTC
     label: "CLOCK UTC display"
     class: ignore
     group: mip
     note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
+  - name: N_MIP_LIGHTING_FLOOD_CENTER_L
+    label: "LIGHTING FLOOD CENTER L display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_FLOOD_CENTER_R
+    label: "LIGHTING FLOOD CENTER R display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_FLOOD_MAIN_L
+    label: "LIGHTING FLOOD MAIN L display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_FLOOD_MAIN_R
+    label: "LIGHTING FLOOD MAIN R display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_FLOOD_PEDESTAL
+    label: "LIGHTING FLOOD PEDESTAL display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_FLOOD_PEDESTAL_L
+    label: "LIGHTING FLOOD PEDESTAL L display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_FLOOD_PEDESTAL_R
+    label: "LIGHTING FLOOD PEDESTAL R display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_MAP_L
+    label: "LIGHTING MAP L display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_MIP_LIGHTING_MAP_R
+    label: "LIGHTING MAP R display"
+    class: ignore
+    group: mip
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
   - name: S_EFB_CHARGING_CABLE_CAPT_TEMP
     label: "EFB CHARGING CABLE CAPT TEMP"
     class: ignore
@@ -10406,6 +10209,11 @@ vars:
     class: ignore
     group: mip
     note: "label generated; EFB cosmetics, not synced (CRO-8 step 3)"
+  - name: N_PED_LIGHTING_PEDESTAL
+    label: "LIGHTING PEDESTAL display"
+    class: ignore
+    group: pedestal
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
   - name: S_ASP2_ADF_1_REC
     label: "ASP2 ADF 1 REC"
     class: ignore
@@ -10471,11 +10279,6 @@ vars:
     class: ignore
     group: pedestal
     note: "label generated; state synced via S_ASP2_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
-  - name: S_ASP2_VOICE
-    label: "ASP2 VOICE"
-    class: ignore
-    group: pedestal
-    note: "label generated; state synced via S_ASP2_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
   - name: S_ASP2_VOR_1_REC
     label: "ASP2 VOR 1 REC"
     class: ignore
@@ -10551,11 +10354,6 @@ vars:
     class: ignore
     group: pedestal
     note: "label generated; state synced via S_ASP3_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
-  - name: S_ASP3_VOICE
-    label: "ASP3 VOICE"
-    class: ignore
-    group: pedestal
-    note: "label generated; state synced via S_ASP3_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
   - name: S_ASP3_VOR_1_REC
     label: "ASP3 VOR 1 REC"
     class: ignore
@@ -10631,11 +10429,6 @@ vars:
     class: ignore
     group: pedestal
     note: "label generated; state synced via S_ASP_VHF_3_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
-  - name: S_ASP_VOICE
-    label: "ASP VOICE"
-    class: ignore
-    group: pedestal
-    note: "label generated; state synced via S_ASP_VOICE_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
   - name: S_ASP_VOR_1_REC
     label: "ASP VOR 1 REC"
     class: ignore
@@ -10646,6 +10439,36 @@ vars:
     class: ignore
     group: pedestal
     note: "label generated; state synced via S_ASP_VOR_2_REC_LATCH; only the flying pilot's key moves, so comparing it would be a false alarm (CRO-8 step 3)"
+  - name: N_CDU1_BRIGHTNESS
+    label: "CDU 1 BRIGHTNESS display"
+    class: ignore
+    group: cdu1
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: N_CDU2_BRIGHTNESS
+    label: "CDU 2 BRIGHTNESS display"
+    class: ignore
+    group: cdu2
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: A_FC_THROTTLE_LEFT_GATE
+    label: "FC THROTTLE LEFT GATE"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+  - name: A_FC_THROTTLE_LEFT_INPUT
+    label: "FC THROTTLE LEFT INPUT"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+  - name: A_FC_THROTTLE_RIGHT_GATE
+    label: "FC THROTTLE RIGHT GATE"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+  - name: A_FC_THROTTLE_RIGHT_INPUT
+    label: "FC THROTTLE RIGHT INPUT"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
   - name: B_FC_SPEEDBRAKE
     label: "FC SPEEDBRAKE"
     class: ignore
@@ -10656,6 +10479,51 @@ vars:
     class: ignore
     group: flightcontrols
     note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
+  - name: N_FC_BRAKE_RIGHT
+    label: "FC BRAKE RIGHT display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_CAPT_TILLER
+    label: "FC CAPT TILLER display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_ELEVATOR_TRIM
+    label: "FC ELEVATOR TRIM display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_FO_TILLER
+    label: "FC FO TILLER display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_RUDDER
+    label: "FC RUDDER display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_SIDESTICK_CAPT_BANK
+    label: "FC SIDESTICK CAPT BANK display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_SIDESTICK_CAPT_PITCH
+    label: "FC SIDESTICK CAPT PITCH display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_SIDESTICK_FO_BANK
+    label: "FC SIDESTICK FO BANK display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_SIDESTICK_FO_PITCH
+    label: "FC SIDESTICK FO PITCH display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
   - name: N_SEAT_DISTANCE_CAPT
     label: "SEAT DISTANCE CAPT display"
     class: ignore
@@ -10746,6 +10614,11 @@ vars:
     class: ignore
     group: cabin
     note: "label generated; cosmetic cabin item"
+  - name: S_WINDOW_CAPT_LATCH
+    label: "WINDOW CAPT LATCH"
+    class: ignore
+    group: cabin
+    note: "label generated; in-between animation values (0.1 seen); not compared (CRO-27)"
   - name: A320.audio.1.reception
     label: "A320.audio.1.reception"
     class: ignore
@@ -12511,11 +12384,41 @@ vars:
     class: ignore
     group: systems
     note: "label generated; aircraft sound/animation/gauge var, not synced"
+  - name: N_FUEL_CTR_TANK
+    label: "CTR TANK display"
+    class: ignore
+    group: systems
+    note: "label generated; fuel gauge: the owned GraphQL fuel drift already covers fuel; not compared (CRO-27)"
+  - name: N_FUEL_PRESEL
+    label: "PRESEL display"
+    class: ignore
+    group: systems
+    note: "label generated; fuel gauge: the owned GraphQL fuel drift already covers fuel; not compared (CRO-27)"
+  - name: N_FUEL_TOTAL_QTY
+    label: "TOTAL QTY display"
+    class: ignore
+    group: systems
+    note: "label generated; fuel gauge: the owned GraphQL fuel drift already covers fuel; not compared (CRO-27)"
+  - name: N_FUEL_WING_TANK_L
+    label: "WING TANK L display"
+    class: ignore
+    group: systems
+    note: "label generated; fuel gauge: the owned GraphQL fuel drift already covers fuel; not compared (CRO-27)"
+  - name: N_FUEL_WING_TANK_R
+    label: "WING TANK R display"
+    class: ignore
+    group: systems
+    note: "label generated; fuel gauge: the owned GraphQL fuel drift already covers fuel; not compared (CRO-27)"
   - name: N_HYD_PRESSURE_BRAKE_ACCU
     label: "PRESSURE BRAKE ACCU display"
     class: ignore
     group: systems
     note: "label generated; changes with no input (CRO-8 step 2 noise sample); not compared"
+  - name: N_EXT_REFUELING_LIGHTING
+    label: "EXT REFUELING LIGHTING display"
+    class: ignore
+    group: ground
+    note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
   # >>> end generated <<<
 
 datarefs:

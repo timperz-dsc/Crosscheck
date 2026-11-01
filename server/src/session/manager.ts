@@ -1,7 +1,7 @@
 import type { WebSocket } from 'ws';
 import type { ServerConfig } from '../config.js';
 import type { ProtocolValidator } from '../protocol/validate.js';
-import type { CreateBody, Envelope, ErrorCode, JoinBody, ResumeBody } from '../protocol/types.js';
+import { OUTDATED_MESSAGE, PROTOCOL_VERSION, type CreateBody, type Envelope, type ErrorCode, type JoinBody, type ResumeBody } from '../protocol/types.js';
 import { generateJoinCode, newSessionId, normalizeJoinCode } from './joinCode.js';
 import { Session, type Conn } from './session.js';
 import { comparePreflight } from './preflight.js';
@@ -78,6 +78,8 @@ export class SessionManager {
     } catch {
       return this.error(conn, 'invalid_json', 'message is not valid JSON');
     }
+    const v = (data as { v?: unknown } | null)?.v;
+    if (typeof v === 'number' && v !== PROTOCOL_VERSION) return this.wrongVersion(conn, v);
     const result = this.validator.validate(data);
     if (!result.ok) {
       conn.session?.log.event('invalid_message', { client: conn.slot?.id ?? null, code: result.code, details: result.details, raw: raw.slice(0, 2000) });
@@ -142,7 +144,7 @@ export class SessionManager {
     const result = session.join(conn, body.preflight, body.name);
     if (!result.ok) {
       const rejected = { reason: result.reason, message: result.message, diff: result.diff };
-      session.log.write({ dir: 'out', to: [], msg: { v: 1, type: 'join_rejected', session: null, ts: Date.now(), body: rejected } });
+      session.log.write({ dir: 'out', to: [], msg: { v: PROTOCOL_VERSION, type: 'join_rejected', session: null, ts: Date.now(), body: rejected } });
       return this.send(conn, null, 'join_rejected', rejected);
     }
     this.attached(conn);
@@ -186,8 +188,23 @@ export class SessionManager {
     this.send(conn, conn.session?.id ?? null, 'error', { code, message, ...(details && details.length > 0 ? { details } : {}) });
   }
 
+  /**
+   * A client with another protocol version (for example the 0.1.0 zip at preflight or join). The answer
+   * goes out in the client's own envelope version, because an old bridge drops every message whose `v`
+   * it does not know, and the pilot would only see a timeout. The error body is the same in every version.
+   */
+  private wrongVersion(conn: SocketConn, v: number): void {
+    const message = v < PROTOCOL_VERSION
+      ? OUTDATED_MESSAGE
+      : 'This server runs an older Crosscheck version. Ask whoever runs the server to update it.';
+    conn.send(JSON.stringify({
+      v, type: 'error', session: conn.session?.id ?? null, ts: Date.now(),
+      body: { code: 'unsupported_version', message },
+    }));
+  }
+
   private send(conn: SocketConn, session: string | null, type: string, body: object): void {
-    conn.send(JSON.stringify({ v: 1, type, session, ts: Date.now(), body }));
+    conn.send(JSON.stringify({ v: PROTOCOL_VERSION, type, session, ts: Date.now(), body }));
   }
 
   /** Server shutdown. */

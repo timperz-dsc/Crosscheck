@@ -1,7 +1,10 @@
-// TypeScript view of protocol v1. The JSON Schema in protocol/schema is the source of truth;
+// TypeScript view of protocol v2. The JSON Schema in protocol/schema is the source of truth;
 // every inbound message is validated against it before these types are trusted.
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
+
+/** Shown to a client that speaks another protocol version (for example the 0.1.0 zip). */
+export const OUTDATED_MESSAGE = 'Your Crosscheck is out of date. Download the latest version.';
 
 export type Seat = 'host' | 'guest';
 export type Role = 'pf' | 'pm';
@@ -16,7 +19,7 @@ export const ABSOLUTE_CLASSES: ReadonlySet<string> = new Set(['verified', 'analo
 export const isAbsolute = (cls: string): cls is AbsoluteClass => ABSOLUTE_CLASSES.has(cls);
 
 export interface Envelope<T extends string = string, B = Record<string, unknown>> {
-  v: 1;
+  v: typeof PROTOCOL_VERSION;
   type: T;
   session: string | null;
   seq?: number;

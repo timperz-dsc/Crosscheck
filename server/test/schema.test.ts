@@ -22,18 +22,18 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
   });
 
   it('rejects malformed messages', () => {
-    const base = { v: 1, session: 's_abcdefg', ts: 1 };
+    const base = { v: 2, session: 's_abcdefg', ts: 1 };
     const bad = [
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'delta', value: 1, group: 'g', settle_ms: 10 } }, // delta with value
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'verified', group: 'g', settle_ms: 10 } }, // no value
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'observe', value: 1, group: 'g', settle_ms: 10 } }, // not commandable
       { ...base, type: 'ack', body: { id: 'a', ok: true, observed: 1, extra: 1 } }, // unknown field
       { ...base, type: 'ack', extra: 1, body: { id: 'a', ok: true, observed: 1 } }, // unknown envelope field
-      { ...base, v: 2, type: 'ack', body: { id: 'a', ok: true, observed: 1 } },
+      { ...base, v: 1, type: 'ack', body: { id: 'a', ok: true, observed: 1 } }, // old protocol
       { ...base, type: 'nonsense', body: {} },
     ];
     for (const msg of bad) expect(v.validate(msg).ok).toBe(false);
-    expect(v.validate({ ...base, v: 2, type: 'ack', body: {} })).toMatchObject({ ok: false, code: 'unsupported_version' });
+    expect(v.validate({ ...base, v: 1, type: 'ack', body: {} })).toMatchObject({ ok: false, code: 'unsupported_version' });
   });
 
   it('the server answers invalid input with an error and keeps the socket open', async () => {
@@ -45,7 +45,7 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
       ws.on('message', (d) => replies.push(JSON.parse(d.toString())));
       ws.send('not json');
       ws.send(JSON.stringify({ v: 9, type: 'ping', session: null, ts: 1, body: {} }));
-      ws.send(JSON.stringify({ v: 1, type: 'command', session: null, ts: 1, body: { id: 'a', var: 'X', class: 'verified', value: 1, group: 'g', settle_ms: 1 } }));
+      ws.send(JSON.stringify({ v: 2, type: 'command', session: null, ts: 1, body: { id: 'a', var: 'X', class: 'verified', value: 1, group: 'g', settle_ms: 1 } }));
       await new Promise((r) => setTimeout(r, 100));
       expect(replies.map((r) => r.body.code)).toEqual(['invalid_json', 'unsupported_version', 'not_in_session']);
       expect(ws.readyState).toBe(WebSocket.OPEN);

@@ -60,7 +60,7 @@ You do not need to set `PORT`. Railway sets it itself.
 ## 6. Check that it works
 
 1. Open `https://<your-domain>/health` in a browser.
-2. You should see something like `{"ok":true,"version":"0.1.0","protocol":1,"sessions":0}`.
+2. You should see something like `{"ok":true,"version":"0.1.0","protocol":2,"sessions":0}`.
    If you see that, the server is running.
 3. In the service, open the **Deployments** tab. The latest one should say **Active**.
    Click **View logs** to see what the server prints.

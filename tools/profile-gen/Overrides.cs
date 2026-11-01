@@ -7,6 +7,7 @@
 //       class: verified                # optional for a patch; required to promote
 //       group: overhead                # optional; required to promote
 //       values: [0, 1]                 # only values backed by scan, probe or owner (range rule)
+//       range: [-3, 7]                 # analog: min and max backed by scan, pilot input or owner
 //       display: N_X                   # delta only
 //       verify: { lvar: I_X_L, settle_ms: 150 }    # or { graphql: path, settle_ms: 100 }
 //       value_labels: { "0": "OFF", "1": "ON" }
@@ -26,7 +27,7 @@ using YamlDotNet.RepresentationModel;
 namespace ProfileGen;
 
 sealed record Override(
-    string Name, string? Class, string? Group, double[]? Values, string? Display, Verify? Verify,
+    string Name, string? Class, string? Group, double[]? Values, double[]? Range, string? Display, Verify? Verify,
     Dictionary<string, string>? ValueLabels, int? PulseMs, bool? Counter, string? Note, string? Comment, string Evidence);
 
 sealed record OpenItem(string What, IReadOnlyList<string> Vars, string Why);
@@ -51,6 +52,10 @@ sealed class OverrideFile
                 var name = S("name") ?? throw new InvalidDataException($"{path}: an override has no name");
                 double[]? values = item.Children.TryGetValue("values", out var vn) && vn is YamlSequenceNode vs
                     ? vs.Children.Select(c => double.Parse(((YamlScalarNode)c).Value!, CultureInfo.InvariantCulture)).ToArray() : null;
+                double[]? range = item.Children.TryGetValue("range", out var rn) && rn is YamlSequenceNode rs
+                    ? rs.Children.Select(c => double.Parse(((YamlScalarNode)c).Value!, CultureInfo.InvariantCulture)).ToArray() : null;
+                if (range is not null && (range.Length != 2 || range[0] >= range[1]))
+                    throw new InvalidDataException($"{path}: {name}: range needs [min, max] with min < max");
                 Dictionary<string, string>? labels = item.Children.TryGetValue("value_labels", out var ln) && ln is YamlMappingNode lm
                     ? lm.Children.ToDictionary(kv => ((YamlScalarNode)kv.Key).Value!, kv => ((YamlScalarNode)kv.Value).Value!) : null;
                 Verify? verify = null;
@@ -63,7 +68,7 @@ sealed class OverrideFile
                         : throw new InvalidDataException($"{path}: {name}: verify needs lvar or graphql");
                 }
                 file.Overrides.Add(new Override(
-                    name, S("class"), S("group"), values, S("display"), verify, labels,
+                    name, S("class"), S("group"), values, range, S("display"), verify, labels,
                     S("pulse_ms") is { } pm ? int.Parse(pm, CultureInfo.InvariantCulture) : null,
                     S("press") is { } press ? press == "counter" : null,
                     S("note"), S("comment"),
@@ -122,7 +127,7 @@ sealed class OverrideFile
         {
             Name = o.Name, Class = cls, Group = group, Value = value,
             Values = silent ? null : o.Values ?? keep?.Values,
-            Range = silent ? null : keep?.Range,
+            Range = silent ? null : o.Range ?? keep?.Range,
             PulseMs = cls == "pulse" ? o.PulseMs ?? keep?.PulseMs ?? 150 : null,
             Counter = cls == "pulse" && (o.Counter ?? keep?.Counter ?? false),
             ValueLabels = o.ValueLabels ?? keep?.ValueLabels,

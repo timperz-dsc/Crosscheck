@@ -83,6 +83,61 @@ public sealed class NoSilentFailureEndToEndTests(ServerFixture server) : IAsyncL
     }
 
     [Fact]
+    public async Task Replay_gate_test_1_elec_pump_as_a_press_counter_goes_through_with_no_desync()
+    {
+        // CRO-27: the same ELEC PUMP clicks, now profiled as in the real profile (pulse, press: counter,
+        // effect lamp). Real click timing; only the 800 s gap between the two series is shortened.
+        var data = JsonNode.Parse(File.ReadAllText(Path.Combine(Repo.Root, "server", "test", "fixtures", "gate-test-1.json")))!;
+        const string name = "S_OH_HYD_YELLOW_ELEC_PUMP", lamp = "I_OH_HYD_YELLOW_ELEC_PUMP_L";
+        Assert.Equal(name, data["elec_pump"]!["var"]!.GetValue<string>());
+        var commands = data["elec_pump"]!["commands"]!.AsArray()
+            .Select(c => (T: c!["t_ms"]!.GetValue<int>(), Value: c["value"]!.GetValue<double>()))
+            .Select(c => (T: c.T > 60_000 ? c.T - 808_000 : c.T, c.Value)).ToList();
+        Assert.Equal(Enumerable.Range(1, 28).Select(i => (double)i), commands.Select(c => c.Value));
+
+        var (host, guest) = await Pair();
+        var start = DateTime.UtcNow;
+        foreach (var c in commands)
+        {
+            var wait = start.AddMilliseconds(c.T) - DateTime.UtcNow;
+            if (wait > TimeSpan.Zero) await Task.Delay(wait);
+            Sim(host).PilotSet(name, c.Value);
+        }
+        // 14 presses: the guest wrote press and release for each, counting up from its own 0 to 28.
+        await Wait.Until(() => Sim(guest).Get(name) == 28, "guest counter at 28", 10000);
+        await Task.Delay(3000); // effect checks and more snapshot rounds
+
+        var writes = Sim(guest).Writes.Where(w => w.Name == name).Select(w => w.Value).ToList();
+        Assert.Equal(Enumerable.Range(1, 28).Select(i => (double)i), writes);
+        Assert.Equal(Sim(host).Get(lamp), Sim(guest).Get(lamp));
+        foreach (var b in new[] { host, guest })
+        {
+            var s = await Status(b);
+            Assert.DoesNotContain(s["desyncs"]!.AsArray(), d => d!["var"]!.GetValue<string>() is name or lamp);
+            Assert.DoesNotContain(s["indicators"]!.AsArray(), d => d!["var"]!.GetValue<string>() == lamp);
+            Assert.DoesNotContain(name, b.Status.OpenDesyncs);
+        }
+    }
+
+    [Fact]
+    public async Task An_analog_knob_outside_0_1_inside_its_range_is_confirmed_by_read_back()
+    {
+        // CRO-27: LDG ELEV went -3 … 7 in gate test 1 and was refused against [0, 1]; the GraphQL check
+        // (x 1024) failed even inside it. Now: range [-3, 7], no GraphQL check, confirmed by read-back.
+        var (host, guest) = await Pair();
+        const string name = "A_OH_PNEUMATIC_LDG_ELEV";
+        foreach (var v in new[] { -3, -2.75, 0.25, 6.5, 7 })
+        {
+            Sim(host).PilotSet(name, v);
+            await Wait.Until(() => Sim(guest).Get(name) == v, $"guest at {v}", 5000);
+        }
+        await Task.Delay(1500);
+        foreach (var b in new[] { host, guest })
+            Assert.DoesNotContain(name, b.Status.OpenDesyncs);
+        Assert.DoesNotContain(Sim(guest).Writes, w => w.Name == name && (w.Value < -3 || w.Value > 7));
+    }
+
+    [Fact]
     public async Task A_control_that_is_not_synced_is_one_amber_line_for_both_pilots()
     {
         var (host, guest) = await Pair();

@@ -118,12 +118,35 @@ vars:
     class: pulse
     group: efis
     pulse_ms: 40
-    verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 60 }
+    verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 } # longer than the fake lamp lag (110 ms), as in the real profile
 
   - name: I_FCU_EFIS1_FD
     label: FD light
     class: observe
     group: efis
+
+  # Test data (CRO-27): a latching push button that Fenix counts, as in the real profile
+  # (gate test 1: ELEC PUMP 1…28, press and release each +1).
+  - name: S_OH_HYD_YELLOW_ELEC_PUMP
+    label: YELLOW ELEC PUMP
+    class: pulse
+    group: overhead
+    pulse_ms: 150
+    press: counter
+    verify: { lvar: I_OH_HYD_YELLOW_ELEC_PUMP_L, settle_ms: 150 }
+
+  - name: I_OH_HYD_YELLOW_ELEC_PUMP_L
+    label: YELLOW ELEC PUMP light
+    class: observe
+    group: overhead
+
+  # Test data (CRO-27): an analog knob with its range from gate test 1 and no GraphQL check
+  # (confirmed by read-back of its own L: var).
+  - name: A_OH_PNEUMATIC_LDG_ELEV
+    label: LDG ELEV
+    class: analog
+    group: overhead
+    range: [-3, 7]
 
   # Test data: an encoder with no display var (verified by read-back only).
   - name: E_MIP_CLOCK_SET

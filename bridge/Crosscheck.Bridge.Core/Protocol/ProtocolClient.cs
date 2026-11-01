@@ -23,6 +23,11 @@ public enum ServerState
 /// </summary>
 public sealed class ProtocolClient : IProtocolChannel, IAsyncDisposable
 {
+    /// <summary>Protocol version in every envelope (`v`). The server refuses clients with another version.</summary>
+    public const int ProtocolVersion = 2;
+    public const string OutdatedMessage = "Your Crosscheck is out of date. Download the latest version.";
+    public const string ServerOutdatedMessage = "The server runs an older Crosscheck version. Ask whoever runs the server to update it.";
+
     private readonly Uri _server;
     private readonly BridgeLog _log;
     private readonly ILogger _logger;
@@ -131,7 +136,7 @@ public sealed class ProtocolClient : IProtocolChannel, IAsyncDisposable
     {
         var env = new JsonObject
         {
-            ["v"] = 1,
+            ["v"] = ProtocolVersion,
             ["type"] = type,
             ["session"] = type is "create" or "join" ? null : SessionId,
             ["ts"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
@@ -207,6 +212,17 @@ public sealed class ProtocolClient : IProtocolChannel, IAsyncDisposable
         {
             _log.Event("invalid_incoming", new JsonObject { ["error"] = e.Message });
             return;
+        }
+        if (msg["v"] is JsonValue version && version.TryGetValue<double>(out var v) && v != ProtocolVersion)
+        {
+            // Another protocol version (an older or newer server): its messages cannot be read, but the
+            // pilot must see why instead of a timeout. A waiting create, join or check gets this error.
+            _log.Event("wrong_protocol", new JsonObject { ["server_v"] = v, ["type"] = msg["type"]?.DeepClone() });
+            msg = new JsonObject
+            {
+                ["v"] = ProtocolVersion, ["type"] = "error", ["session"] = null, ["ts"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                ["body"] = new JsonObject { ["code"] = "unsupported_version", ["message"] = v < ProtocolVersion ? ServerOutdatedMessage : OutdatedMessage },
+            };
         }
         if (_validator.Validate(msg) is { } error)
         {

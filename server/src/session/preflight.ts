@@ -8,7 +8,14 @@ export interface PreflightResult {
 /** What a bridge sends when it could not read a version. */
 export const UNKNOWN = 'unknown';
 
-const major = (version: string) => version.split(/[.+-]/)[0] ?? '';
+/**
+ * The part of the bridge version that must match. Before 1.0 every minor version may change the
+ * protocol, so the minor counts as the major there: 0.1.x and 0.2.x do not match, 1.2 and 1.3 do.
+ */
+export const major = (version: string): string => {
+  const [first = '', second = ''] = version.split(/[.+-]/);
+  return first === '0' ? `0.${second}` : first;
+};
 
 /**
  * Compares a joining client's preflight with the session reference (the creator's).
@@ -23,7 +30,7 @@ export function comparePreflight(reference: Preflight, joining: Preflight): Pref
 
   if (major(reference.bridge_version) !== major(joining.bridge_version)) {
     reject('bridge_version', reference.bridge_version, joining.bridge_version,
-      `Bridge major version differs (${reference.bridge_version} vs ${joining.bridge_version}). Both pilots need the same major version.`);
+      `Bridge major version differs (${reference.bridge_version} vs ${joining.bridge_version}). Both pilots need the same major version (before 1.0: the same minor version).`);
   }
   if (reference.profile_id !== joining.profile_id) {
     reject('profile_id', reference.profile_id, joining.profile_id, 'Different aircraft profiles.');

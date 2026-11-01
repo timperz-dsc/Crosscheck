@@ -1,4 +1,4 @@
-# Crosscheck protocol v1
+# Crosscheck protocol v2
 
 How the bridges and the session server talk. The server is in [`server/`](../server/), the
 JSON Schema for every message is in [`protocol/schema/`](../protocol/schema/) with one example
@@ -14,7 +14,7 @@ what no pilot did.
 
 - One WebSocket per bridge: `ws://<host>:8787/ws` (phase 1: the server runs locally).
 - Text frames, one JSON object per frame, max 256 KiB.
-- `GET /health` answers `{"ok":true,"protocol":1,"sessions":<n>}`.
+- `GET /health` answers `{"ok":true,"protocol":2,"sessions":<n>}`.
 
 ## 2. Envelope
 
@@ -24,7 +24,7 @@ what no pilot did.
 
 | Field | Meaning |
 |---|---|
-| `v` | Protocol version, always `1`. Other versions get `error unsupported_version`. |
+| `v` | Protocol version, always `2` (bridge 0.2.0 and later; v1 was the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
 | `type` | Message type, snake_case (list below). |
 | `session` | Session id; `null` in `create`, `join` and anything sent before a session exists. |
 | `seq` | Server-assigned, only on server-to-client messages that belong to the session log. One counter per session, strictly increasing. A command's `seq` is its global order. Clients never send `seq`. |
@@ -99,13 +99,13 @@ or `pm` changes with control transfer. The host is PF at the start.
 **Preflight.** Sent in `create` and `join`:
 
 ```json
-{ "bridge_version": "0.1.0", "profile_id": "fenix-a320", "profile_hash": "sha256:…",
+{ "bridge_version": "0.2.0", "profile_id": "fenix-a320", "profile_hash": "sha256:…",
   "aircraft": { "package_version": "3.0.0.7613", "app_version": "3.0.0.330" }, "airac": "2611" }
 ```
 
 | Field | Rule |
 |---|---|
-| `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). |
+| `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). Before 1.0 the minor counts as the major: `0.1.x` vs `0.2.x` is rejected, `0.2.0` vs `0.2.5` is fine. |
 | `profile_id`, `profile_hash` | Must match. The hash is compared as an opaque string. The bridge computes it as `sha256:` + hex SHA-256 of the profile file with CRLF normalised to LF, so line endings never change it. |
 | `aircraft.package_version`, `aircraft.app_version` | Must match. |
 | `airac` | Entered by hand (bridge `--airac`); Crosscheck does not read it from the aircraft. Mismatch, or unknown on one side → **warning**, not rejected, with the reminder "Check that both pilots use the same AIRAC". MCDU pages may differ. |

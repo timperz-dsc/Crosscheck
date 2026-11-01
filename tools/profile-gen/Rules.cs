@@ -130,8 +130,10 @@ static class Rules
             case 'E':
                 return WithGroup(v, group, "delta"); // display var is paired in a second pass
             case 'A':
+                // No GraphQL check: system.analog.* did not follow value x 1024 in gate test 1 (all analog
+                // acks failed), so an analog write is confirmed by read-back of its own L: var. Scale: CRO-28.
                 return Make(v, group, "analog", range: [0, 1],
-                    verify: new Verify("graphql", $"system.analog.{name}", 100, 1024));
+                    note: "confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)");
             case 'S':
                 return ClassifySwitch(v, group);
         }

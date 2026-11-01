@@ -16,8 +16,8 @@
       ],
       "properties": {
         "v": {
-          "description": "Protocol version. Always 1.",
-          "const": 1
+          "description": "Protocol version. Always 2 (bridge 0.2.0 and later). The server answers a message with another version with error unsupported_version, in that version's envelope.",
+          "const": 2
         },
         "type": {
           "description": "Message type (snake_case).",

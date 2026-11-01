@@ -3,7 +3,7 @@ import type { ServerConfig } from '../config.js';
 import { SessionLog } from '../log/jsonl.js';
 import type { ProtocolValidator } from '../protocol/validate.js';
 import {
-  REPLAYABLE, isAbsolute,
+  PROTOCOL_VERSION, REPLAYABLE, isAbsolute,
   type AckBody, type ActiveDesync, type AdvisoryBody, type CommandBody, type CommandClass, type ControlAckBody,
   type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
   type EffectReportBody, type EffectSpec, type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
@@ -1184,7 +1184,7 @@ export class Session {
   private emit(targets: ClientSlot[], type: string, body: object, opts: { seq?: number; replayable?: boolean } = {}): { seq: number; env: Envelope } {
     const replayable = opts.replayable ?? REPLAYABLE.has(type);
     const seq = opts.seq ?? ++this.seq;
-    const env: Envelope = { v: 1, type, session: this.id, seq, ts: Date.now(), body: body as Record<string, unknown> };
+    const env: Envelope = { v: PROTOCOL_VERSION, type, session: this.id, seq, ts: Date.now(), body: body as Record<string, unknown> };
     for (const t of targets) {
       if (replayable) this.replay.add(seq, t.id, env);
       if (t.state === 'connected') this.sendRaw(t, env);
@@ -1194,7 +1194,7 @@ export class Session {
   }
 
   private sendUnsequenced(slot: ClientSlot, type: string, body: object): void {
-    const env: Envelope = { v: 1, type, session: this.id, ts: Date.now(), body: body as Record<string, unknown> };
+    const env: Envelope = { v: PROTOCOL_VERSION, type, session: this.id, ts: Date.now(), body: body as Record<string, unknown> };
     this.sendRaw(slot, env);
     if (!NOT_LOGGED.has(type)) this.log.write({ dir: 'out', to: [slot.id], msg: env });
   }

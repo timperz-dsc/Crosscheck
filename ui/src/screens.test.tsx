@@ -83,7 +83,7 @@ describe('preflight (joiner)', () => {
   type Row = Preflight['rows'][number];
   const rows = (over: Partial<Record<Row['field'], [string, string, Row['result']]>> = {}): Row[] => {
     const base: [Row['field'], string, string, string][] = [
-      ['bridge_version', 'Crosscheck bridge', '0.1.0', '0.1.0'],
+      ['bridge_version', 'Crosscheck bridge', '0.2.0', '0.2.0'],
       ['profile', 'Profile', 'fenix-a320 · 7f3a9c', 'fenix-a320 · 7f3a9c'],
       ['aircraft.package_version', 'Fenix A320 package', '3.0.0.7613', '3.0.0.7613'],
       ['aircraft.app_version', 'Fenix A320 app', '3.0.0.330', '3.0.0.330'],

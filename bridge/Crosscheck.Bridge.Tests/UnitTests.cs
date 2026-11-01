@@ -187,9 +187,9 @@ public class MessageValidatorTests
     [Fact]
     public void Rejects_malformed_messages()
     {
-        var bad = JsonNode.Parse("""{"v":1,"type":"command","session":"s_abcdefg","ts":1,"body":{"id":"a","var":"X","class":"delta","value":1,"group":"g","settle_ms":1}}""")!;
+        var bad = JsonNode.Parse("""{"v":2,"type":"command","session":"s_abcdefg","ts":1,"body":{"id":"a","var":"X","class":"delta","value":1,"group":"g","settle_ms":1}}""")!;
         Assert.NotNull(MessageValidator.Shared.Validate(bad));
-        var unknown = JsonNode.Parse("""{"v":1,"type":"nope","session":null,"ts":1,"body":{}}""")!;
+        var unknown = JsonNode.Parse("""{"v":2,"type":"nope","session":null,"ts":1,"body":{}}""")!;
         Assert.NotNull(MessageValidator.Shared.Validate(unknown));
     }
 }

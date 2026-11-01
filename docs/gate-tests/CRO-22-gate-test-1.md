@@ -358,3 +358,23 @@ A pilot's failed input can never land in the quiet tier, so it can never drown i
   a desync stays visible.
 - Server, bridge and UI unit tests for the tiers, drift rate and tolerances.
 - Gate test 2 with the same checklist.
+
+---
+
+## 6. Addendum (CRO-27): corrections after a second look at the logs
+
+- **Ranges (F).** The logs go a little further than the table in section 2 F: LDG ELEV −3 … **7**, speedbrake 1 … **3**,
+  WR GAIN −5 … 0 (0 in the scan and snapshots). The profile uses these ranges (owner confirmed).
+- **Analog GraphQL check.** It was wrong for every analog knob, not only out of range. LDG ELEV read about 200–250 in
+  `system.analog` for knob values 0 … 1 (not value × 1024), so all 30 applied LDG ELEV writes acked `ok: false`, even
+  inside [0, 1]. Lighting, volume and temperature knobs failed the same way. The check was removed from all 102 analog
+  entries; they are confirmed by read-back of their own L: var. Calibrating the scale is CRO-28.
+- **VOICE (S6).** Not only a class question: when the host pressed VOICE (19:10:19) `I_ASP_VOICE` went to 1 while
+  `S_ASP_VOICE_LATCH` stayed 0. A click on VOICE moves only the key; a click on a REC key moves its `_LATCH`. The VOICE
+  keys of ASP 1–3 are now pulses checked against their lamp.
+- **RMP 2/3 POWER (J).** Not a profile problem. All three POWER switches were 1 on both sims for the whole session and
+  nobody moved RMP 2 or 3; only RMP 1 was toggled (19:11), which is why only it was sent. The difference was the output
+  `B_PED_RMP2/3_POWER`: on the guest it came on only after the AC power transfer at 18:57:02, about four minutes after
+  the host. The entries are unchanged.
+- **FO takeover button.** `S_FC_FO_INST_DISCONNECT` went 0 → 1 → 2 → 0 within 1.5 s; the 2 was refused. It is a held
+  button and goes with FIRE TEST and SVCE INT OVRD into the hold step (cause D).

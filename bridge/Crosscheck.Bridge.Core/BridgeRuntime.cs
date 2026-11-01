@@ -242,7 +242,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             if (answer["type"]!.GetValue<string>() != "created")
             {
                 await EndSessionAsync(leave: false);
-                return Error($"The server refused: {answer["body"]?["message"]}");
+                return Error(Refusal(answer["body"]));
             }
             Hosting = true;
             Preflight = null;
@@ -260,6 +260,10 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             _sessionLock.Release();
         }
     }
+
+    /// <summary>The text for a refused create, check or join. A version refusal is shown as the server wrote it.</summary>
+    private static string Refusal(JsonNode? body) =>
+        body?["code"]?.GetValue<string>() == "unsupported_version" ? $"{body["message"]}" : $"The server refused: {body?["message"]}";
 
     public async Task<ApiResult> CheckAsync(string code)
     {
@@ -283,7 +287,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
                         ? "This session already has two pilots."
                         : $"No session with the code {code.Trim().ToUpperInvariant()}. Check the code with the captain.");
                 default:
-                    return Error($"The server refused: {body["message"]}");
+                    return Error(Refusal(body));
             }
         }
         catch (Exception e) when (e is System.Net.WebSockets.WebSocketException or TimeoutException or HttpRequestException)
@@ -312,7 +316,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             if (type != "joined")
             {
                 await EndSessionAsync(leave: false);
-                var result = Error(type == "join_rejected" ? body["message"]!.GetValue<string>() : $"The server refused: {body["message"]}");
+                var result = Error(type == "join_rejected" ? body["message"]!.GetValue<string>() : Refusal(body));
                 return type == "join_rejected" ? result with { Rejected = body } : result;
             }
             foreach (var w in body["warnings"] as JsonArray ?? [])
