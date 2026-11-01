@@ -12,6 +12,9 @@ public sealed record UserSettings(string? Server)
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Crosscheck", "settings.json");
 
+    /// <summary>defaults.json next to the program: the server address the package was built for. Same format as settings.json.</summary>
+    public static string ShippedDefaultsPath => Path.Combine(AppContext.BaseDirectory, "defaults.json");
+
     public static UserSettings Load(string path)
     {
         try

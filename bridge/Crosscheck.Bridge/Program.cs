@@ -47,7 +47,8 @@ namespace Crosscheck.Bridge.App
 
             Options:
               --server <url>        session server, e.g. wss://your-server.up.railway.app/ws
-                                    (default: the address saved in the UI, else ws://127.0.0.1:8787/ws)
+                                    (default: the address saved in the UI, else defaults.json next to
+                                    the program, else ws://127.0.0.1:8787/ws)
               --profile <file>      aircraft profile (default profiles/fenix-a320/profile.yaml)
               --sim simconnect|fake real sim (default) or an in-memory fake sim
               --name <text>         your name shown to the other pilot
@@ -64,7 +65,7 @@ namespace Crosscheck.Bridge.App
 
         private static readonly string[] Flags = ["--verbose", "--no-browser", "--no-tray"];
 
-        public static bool TryParse(string[] args, out Cli cli, out string error, string? settingsPath = null)
+        public static bool TryParse(string[] args, out Cli cli, out string error, string? settingsPath = null, string? defaultsPath = null)
         {
             cli = null!;
             error = "";
@@ -136,7 +137,7 @@ namespace Crosscheck.Bridge.App
                 error = "--seat-side must be captain or fo";
                 return false;
             }
-            // Order: --server, then the address saved from the UI, then the local development server.
+            // Order: --server, the address saved from the UI, the default shipped next to the exe, local development.
             Uri server;
             if (opts.GetValueOrDefault("--server") is { } given)
             {
@@ -146,7 +147,8 @@ namespace Crosscheck.Bridge.App
                     return false;
                 }
             }
-            else if (!ServerAddress.TryNormalize(UserSettings.Load(settingsPath ?? UserSettings.DefaultPath).Server, out server, out _))
+            else if (!ServerAddress.TryNormalize(UserSettings.Load(settingsPath ?? UserSettings.DefaultPath).Server, out server, out _)
+                     && !ServerAddress.TryNormalize(UserSettings.Load(defaultsPath ?? UserSettings.ShippedDefaultsPath).Server, out server, out _))
             {
                 server = new Uri(ServerAddress.Default);
             }
