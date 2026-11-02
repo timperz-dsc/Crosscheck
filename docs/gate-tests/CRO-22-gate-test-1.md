@@ -172,6 +172,12 @@ only checks it for GraphQL and MCDU text (`SyncEngine.cs:732-735`). The pilots g
 Why Fenix ignored those presses cannot be told from the logs. It needs one targeted test (owner-approved, FD only,
 +1/+1 steps from the current value).
 
+**Update (CRO-29 observation, see section 7):** with IRS aligned, every FD press toggled `I_FCU_EFIS1_FD` on the
+down edge (50–71 ms). Owner's reading: on the guest the FD most likely went dark because his ADIRS were not synced
+and not aligned; an unaligned IRS turns the FD off, so the presses had nothing to switch. This is a consequence of
+the ADIRS desync, not a separate FD fault. The fix for I (check the effect var) stays valid: it would have made this
+visible.
+
 **Fix:** when `verify.lvar` exists, a pulse that does not change the effect (or its parity, `expect: parity`) is
 acked `ok: false`, which raises a desync.
 
@@ -378,3 +384,20 @@ A pilot's failed input can never land in the quiet tier, so it can never drown i
   the host. The entries are unchanged.
 - **FO takeover button.** `S_FC_FO_INST_DISCONNECT` went 0 → 1 → 2 → 0 within 1.5 s; the 2 was refused. It is a held
   button and goes with FIRE TEST and SVCE INT OVRD into the hold step (cause D).
+
+---
+
+## 7. Addendum (CRO-29 part 1): read-only observation of the push buttons
+
+Full report: `profiles/fenix-a320/observe-report.md`. The owner clicked 19 push buttons at the gate (once, fast double,
+2 s hold); `profile-probe observe` logged every frame, with no writes.
+
+- **B and D confirmed.** Every Fenix S_ push button counts +1 on press and +1 on release (odd = down). None returns
+  to 0, which is why the 0 → non-zero detection saw each key only once.
+- **FIRE TEST needs about 1 s held** before anything happens, so the 150 ms pulse could never run it on the other sim.
+- **SVCE INT OVRD is momentary**: its lamp is on only while held. The `verified [0, 1]` entry is wrong.
+- **FD:** see the update under cause I (ADIRS not synced on the guest, not an FD fault).
+- **Proposed fix for B and D together:** mirror each down/up edge as its own command, written relative to the
+  receiver's own value, with no fixed pulse timer. A 30 s safety cap releases a mirrored button if no up arrives.
+  Takeover buttons are mirrored PF → PM only; a PM press is a control-transfer request. Details and the open owner
+  decisions are in the report.

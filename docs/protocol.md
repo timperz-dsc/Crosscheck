@@ -8,7 +8,8 @@ truth; the C# bridge and the server validate against the same files.
 The core rule is the same as everywhere in Crosscheck: every change is confirmed, and no
 desync is ever silent. The server orders, relays, tracks acks, compares snapshots and raises
 visible desyncs. It never invents a value and never writes into the pilot flying's (PF's) sim
-what no pilot did.
+what no pilot did. The one narrow exception is the safety release of a mirrored push button
+(section 5).
 
 ## 1. Transport
 
@@ -169,6 +170,22 @@ arrive, or its result differs. A failed pilot input is never quiet. The display 
 reported under the encoder (class `delta`), so it is an input, not an indicator.
 Test vectors: `protocol/test-vectors/desync-tiers.json`.
 
+**Push button edges (CRO-29/30).** Fenix push buttons count +1 on press and +1 on release (odd =
+down, even = up; `profiles/fenix-a320/observe-report.md`). The sender sends each down and up
+edge as its own pulse command. The receiver writes its own value + 1, never the sender's
+number, and writes an up only after its down was read back, never sooner than the sender's
+gap (floor 50 ms). A hold is mirrored as a hold; there is no fixed pulse timer.
+
+**Safety release (the only write no pilot made).** If a receiver pressed a button down for a
+mirrored "down" edge and the "up" never arrives, it releases the button itself:
+- when: 30 s after the mirrored down (below Fenix's 40 s takeover latch), or at once when the
+  session link is lost while the button is down;
+- what: one "up" edge (own value + 1, to even) on that button only. Only for a button that
+  Crosscheck itself pressed down in that sim; never a "down", never any other var;
+- always with a red desync to both pilots, naming the button (new reason `safety_release`,
+  added to the schema with the CRO-29/30 implementation).
+A button the local pilot is holding is never released by Crosscheck.
+
 A command id that is already logged is not relayed again: the origin gets `accepted
 {duplicate: true}` with the original seq (resend after reconnect).
 
@@ -322,8 +339,14 @@ The safety rules do not change with the token: corrections never go to the PF's 
 a logged pilot command, and the correction loop guard stays.
 
 **Takeover pushbutton.** The bridge treats a press of the sidestick takeover pushbutton on the
-PM's own seat (profile `roles.takeover`) as `control_request`. The press itself is synced
-like any other var, on both sides.
+PM's own seat (profile `roles.takeover`) as `control_request` (granted at once, as above).
+The press is never written into the sim of the pilot who is flying at that moment, because
+there it would lock out the flying pilot's stick:
+- PF presses it: mirrored to the PM's sim with the push button edge rule (section 5).
+- PM presses it: the bridge holds the edges back and sends `control_request`. Once
+  `control_changed` makes that pilot the PF, the held edges and any later ones are sent as a
+  normal press from the new PF, so the AP disconnects in both sims. If control is not granted
+  (`control_denied`), the edges are dropped and nothing is mirrored.
 
 ## 9. Stream
 

@@ -17,6 +17,7 @@ dotnet run --project tools/profile-probe -- <command>
 | command | what | writes to the sim |
 |---|---|---|
 | `plan` | what each phase would probe and skip | no (no sim) |
+| `observe [--only ID]` | CRO-29: guided, the pilot clicks push buttons (once, twice fast, 2 s hold) and every change is recorded each sim frame; see below | no |
 | `readonly` | 30 s noise sample of every watched var, TITLE, fuel datarefs (AIRAC is not read: preflight asks the pilots) | no |
 | `verified` | brief item 1 + 4: `[0,1]` guesses (tries 2 only where 2 is known); which lamp half reacts | yes |
 | `buttons` | item 2: momentary vs latching | yes |
@@ -33,6 +34,22 @@ dotnet run --project tools/profile-probe -- <command>
 | `propose` | `probe-results.csv`, `probe-report.md`, `profile.proposed.yaml` | no (no sim) |
 
 Options: `--only NAME`, `--redo`. Exit codes: 0 ok, 1 error, 2 safety stop, 3 not restored, 4 Ctrl+C.
+
+## observe (CRO-29 part 1)
+
+Read only. The tool asks the pilot step by step to click each push button in `ObserveVars.cs`
+once, twice as fast as possible, and hold it for about 2 s. Enter = done, `s` = skip, `r` = redo,
+`q` = stop and save. It reads every listed L: var each sim frame and logs every change with a
+time in ms and the frame number, plus MCDU1 screen changes from Fenix GraphQL.
+
+- It never writes to the sim: it uses its own SimConnect client (`ObserveReader.cs`) that only
+  defines and requests data, and never the bridge sim adapter. `ObserveTests` checks this.
+- Before the first step it checks the parked setup (on ground, parking brake, engines off,
+  external power) and stops if it is wrong; it never fixes anything itself.
+- Output: `profiles/fenix-a320/observe-results.csv` (`observe-results-<id>.csv` with `--only`),
+  a summary per step in `.probe/observe-summary.txt`, and a timestamped raw copy in `.probe/`.
+- At the end it lists lamps and values that are not back at their start value, so the pilot
+  can put them back by hand.
 
 ## Range rule
 

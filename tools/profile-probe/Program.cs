@@ -24,7 +24,7 @@ static class Program
         {
             // First Ctrl+C: stop after restoring the current var. A second one kills the process;
             // the checkpoint then restores the var on the next start.
-            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine("Ctrl+C: restoring the current var, then stopping..."); }
+            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine(args[0] == "observe" ? "Ctrl+C: saving what was recorded, then stopping..." : "Ctrl+C: restoring the current var, then stopping..."); }
         };
 
         try
@@ -46,6 +46,7 @@ static class Program
                 case "restore": return await SimCommand(paths, null, opts, cts.Token);
                 case "undo": return await UndoCommand(paths, opts, cts.Token);
                 case "peek":return await PeekCommand(paths, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray(), args.Contains("--clear"), args.Contains("--pilot-ok"), cts.Token);
+                case "observe": return await ObserveCommand(paths, opts, cts.Token);
                 case "readonly": return await SimCommand(paths, Phase.Readonly, opts, cts.Token);
                 case "auto":
                     foreach (var p in AutoPhases)
@@ -75,6 +76,7 @@ static class Program
     static void Usage() => Console.WriteLine("""
         profile-probe <command> [options]
           plan                      dry run: what each phase would write (no sim)
+          observe [--only ID]       CRO-29: read only; you click push buttons step by step, it records every change
           readonly                  item 7 + d/e: 30 s noise sample, TITLE, fuel (no writes)
           verified | buttons | encoders | breakers   items 1+4, 2, 5, 6
           auto                      verified, buttons, encoders, breakers back to back
@@ -241,6 +243,33 @@ static class Program
     }
 
     /// <summary>
+    /// Read only (CRO-29 part 1). No SimConnectAdapter here: only ObserveReader and SimvarReader,
+    /// which can define and request data and nothing else.
+    /// </summary>
+    static async Task<int> ObserveCommand(RepoPaths paths, Options opts, CancellationToken ct)
+    {
+        Directory.CreateDirectory(paths.WorkDir);
+        FileStream runLock;
+        try { runLock = new FileStream(Path.Combine(paths.WorkDir, "run.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+        catch (IOException) { Console.WriteLine("another profile-probe run is active; not starting"); return ExitError; }
+        using var heldLock = runLock;
+
+        await using var source = new ObserveReader(ObserveVars.All);
+        await using var simvars = new SimvarReader();
+        await using var gql = new FenixGraphQlClient(1, Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+        var suffix = opts.Only is { } o ? "-" + o.ToLowerInvariant() : "";
+        var settings = new ObserveSettings
+        {
+            CsvPath = Path.Combine(paths.ProfileDir, $"observe-results{suffix}.csv"),
+            SummaryPath = Path.Combine(paths.WorkDir, $"observe-summary{suffix}.txt"),
+            RawDir = paths.WorkDir,
+            Only = opts.Only,
+        };
+        var lines = new ConsoleLines();
+        return await new ObservePhase(source, simvars, gql, Console.Out, lines.ReadAsync, settings).Run(ct);
+    }
+
+    /// <summary>
     /// Writes one var back to the original value the probe recorded for it (latest result),
     /// and nothing else. For a var a probe left changed without noticing.
     /// </summary>
@@ -351,4 +380,25 @@ static class Program
             await Task.Delay(100, ct);
         }
     }
+}
+
+/// <summary>Console lines read on a background thread, so waiting for Enter can be cancelled with Ctrl+C.</summary>
+sealed class ConsoleLines
+{
+    readonly System.Threading.Channels.Channel<string?> _lines = System.Threading.Channels.Channel.CreateUnbounded<string?>();
+
+    public ConsoleLines()
+    {
+        new Thread(() =>
+        {
+            while (true)
+            {
+                var line = Console.ReadLine();
+                _lines.Writer.TryWrite(line);
+                if (line is null) return;
+            }
+        }) { IsBackground = true, Name = "console input" }.Start();
+    }
+
+    public async Task<string?> ReadAsync(CancellationToken ct) => await _lines.Reader.ReadAsync(ct);
 }
