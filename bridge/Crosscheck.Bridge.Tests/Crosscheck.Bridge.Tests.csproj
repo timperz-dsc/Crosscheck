@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Crosscheck.Bridge.Core\Crosscheck.Bridge.Core.csproj" />
+    <!-- Only to have crosscheck.exe built before the tests (CliProcessTests start it). -->
+    <ProjectReference Include="..\Crosscheck.Bridge\Crosscheck.Bridge.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
 </Project>

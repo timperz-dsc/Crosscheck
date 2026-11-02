@@ -7,16 +7,25 @@
     <RootNamespace>Crosscheck.Bridge.SimConnect</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
-    <MsfsSdkDir>$([MSBuild]::EnsureTrailingSlash('$(MSFS2024_SDK)'))</MsfsSdkDir>
-    <SimConnectLibDir>$(MsfsSdkDir)SimConnect SDK\lib\</SimConnectLibDir>
   </PropertyGroup>
 
-  <!-- Needs the MSFS 2024 SDK (MSFS2024_SDK environment variable), like the spikes. -->
+  <!-- With the MSFS 2024 SDK (MSFS2024_SDK environment variable) the DLLs come from it; otherwise
+       from the copies in bridge/third_party/simconnect (Microsoft's files, see its README), so CI builds too. -->
+  <PropertyGroup Condition="'$(MSFS2024_SDK)' != ''">
+    <MsfsSdkDir>$([MSBuild]::EnsureTrailingSlash('$(MSFS2024_SDK)'))</MsfsSdkDir>
+    <SimConnectNativeDir>$(MsfsSdkDir)SimConnect SDK\lib\</SimConnectNativeDir>
+    <SimConnectManagedDir>$(MsfsSdkDir)SimConnect SDK\lib\managed\</SimConnectManagedDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSFS2024_SDK)' == ''">
+    <SimConnectNativeDir>$(MSBuildThisFileDirectory)..\third_party\simconnect\</SimConnectNativeDir>
+    <SimConnectManagedDir>$(MSBuildThisFileDirectory)..\third_party\simconnect\</SimConnectManagedDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.FlightSimulator.SimConnect">
-      <HintPath>$(SimConnectLibDir)managed\Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+      <HintPath>$(SimConnectManagedDir)Microsoft.FlightSimulator.SimConnect.dll</HintPath>
     </Reference>
-    <None Include="$(SimConnectLibDir)SimConnect.dll" Link="SimConnect.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(SimConnectNativeDir)SimConnect.dll" Link="SimConnect.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,8 +33,8 @@
   </ItemGroup>
 
   <Target Name="CheckMsfsSdk" BeforeTargets="ResolveAssemblyReferences">
-    <Error Condition="'$(MSFS2024_SDK)' == ''" Text="MSFS2024_SDK environment variable is not set. Install the MSFS 2024 SDK (see bridge/README.md)." />
-    <Error Condition="!Exists('$(SimConnectLibDir)SimConnect.dll')" Text="SimConnect.dll not found under $(SimConnectLibDir)" />
+    <Error Condition="!Exists('$(SimConnectNativeDir)SimConnect.dll')" Text="SimConnect.dll not found under $(SimConnectNativeDir)" />
+    <Error Condition="!Exists('$(SimConnectManagedDir)Microsoft.FlightSimulator.SimConnect.dll')" Text="Microsoft.FlightSimulator.SimConnect.dll not found under $(SimConnectManagedDir)" />
   </Target>
 
 </Project>

@@ -165,7 +165,7 @@ internal sealed class AppWindow : Form
     {
         try
         {
-            var data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Crosscheck", "WebView2");
+            var data = AppPaths.WebView2Dir;
             var env = await CoreWebView2Environment.CreateAsync(null, data);
             await _web.EnsureCoreWebView2Async(env);
             var core = _web.CoreWebView2;

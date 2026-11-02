@@ -28,4 +28,6 @@ public interface IBridgeControl
     Task<ApiResult> PilotSetAsync(string name, double value);
     /// <summary>One click of a toggle button in this pilot's own sim only, not mirrored (toggle_mismatch).</summary>
     Task<ApiResult> PressHereOnlyAsync(string name);
+    /// <summary>Installs the downloaded update and restarts. Refused during a session.</summary>
+    ApiResult ApplyUpdate();
 }

@@ -118,6 +118,7 @@ export function useBridge(pollMs = 1000): BridgeState {
     setBoth: (variable, value) => run(() => post('/api/set', { var: variable, value }))(),
     pressHere: (variable) => run(() => post('/api/press-here', { var: variable }))(),
     setServer: (url) => run(() => post('/api/settings/server', { url }))(),
+    applyUpdate: () => run(() => post('/api/update/apply'))(),
   };
 
   return { status, recent, bridgeDown, error, confirmPeerLost, busy, actions };

@@ -4,13 +4,12 @@ using System.Text.Json.Nodes;
 namespace Crosscheck.Bridge;
 
 /// <summary>
-/// What the pilot sets in the UI and Crosscheck remembers: %LOCALAPPDATA%\Crosscheck\settings.json.
+/// What the pilot sets in the UI and Crosscheck remembers: %LOCALAPPDATA%\CrosscheckData\settings.json.
 /// A missing or broken file means defaults; reading never throws.
 /// </summary>
 public sealed record UserSettings(string? Server)
 {
-    public static string DefaultPath =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Crosscheck", "settings.json");
+    public static string DefaultPath => AppPaths.SettingsFile;
 
     /// <summary>defaults.json next to the program: the server address the package was built for. Same format as settings.json.</summary>
     public static string ShippedDefaultsPath => Path.Combine(AppContext.BaseDirectory, "defaults.json");

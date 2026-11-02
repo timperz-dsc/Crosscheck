@@ -97,10 +97,19 @@ export interface ControlNotice {
   vars: string[];
 }
 
+/** Self-update (null when this copy was not installed with the installer). */
+export interface UpdateStatus {
+  state: 'none' | 'checking' | 'ready' | 'error';
+  version: string | null;
+  /** Set when the check was started because the server refused our version. */
+  reason: 'unsupported_version' | null;
+}
+
 export interface Status {
   phase: Phase;
   bridge_version: string;
   last_error: string | null;
+  update?: UpdateStatus | null;
   /** This bridge's own log file, for sending to the developer after a test. */
   log: { folder: string; file: string } | null;
   this_computer: ThisComputer;
@@ -153,4 +162,5 @@ export interface Actions {
   setBoth(variable: string, value: number): Promise<void>;
   pressHere(variable: string): Promise<void>;
   setServer(url: string): Promise<void>;
+  applyUpdate(): Promise<void>;
 }

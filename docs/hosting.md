@@ -87,7 +87,7 @@ For a headless start from a command line: `crosscheck create --server wss://<you
   (session created, pilot joined, desync, pilot lost and so on). Join codes are not printed.
   The full session logs, one file per session, are in the volume at `/data/logs`.
 - **On each pilot's computer:** Crosscheck writes its own log to
-  `%LOCALAPPDATA%\Crosscheck\logs` (paste that into the Windows Explorer address bar). After a
+  `%LOCALAPPDATA%\CrosscheckData\logs` (paste that into the Windows Explorer address bar). After a
   session ends, the window shows this folder. After a test, ask each pilot to send the newest
   file from there. You then do not need access to Railway.
 

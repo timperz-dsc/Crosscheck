@@ -31,7 +31,7 @@ public sealed record BridgeOptions
     public int ApiPort { get; init; } = 8790;
     /// <summary>Folder with the built UI (index.html). null = wwwroot next to the program.</summary>
     public string? UiDir { get; init; }
-    /// <summary>null = default (%LOCALAPPDATA%\Crosscheck\logs).</summary>
+    /// <summary>null = default (%LOCALAPPDATA%\CrosscheckData\logs).</summary>
     public string? LogDir { get; init; }
     /// <summary>Where the server address set in the UI is saved. null = not saved (tests).</summary>
     public string? SettingsPath { get; init; }
@@ -118,6 +118,10 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     public PreflightCheck? Preflight { get; private set; }
     /// <summary>The last thing that went wrong with a session request, in words (shown on the start screen).</summary>
     public string? LastError { get; private set; }
+    /// <summary>True from the moment a create/join/check starts until the session is over. Updates never install then.</summary>
+    public bool SessionActive => Preflight is not null || _sessionLock.CurrentCount == 0 || (Engine is not null && Client?.State != ServerState.Ended);
+    /// <summary>Self-update (null when not installed with the installer, and in tests).</summary>
+    public Updater? Updater { get; set; }
     public Labels Labels { get; private set; } = null!;
     /// <summary>Controls watched read-only because they are not synced yet (unsynced.csv next to the profile).</summary>
     public UnsyncedList Unsynced { get; private set; } = UnsyncedList.Empty;
@@ -262,8 +266,13 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     }
 
     /// <summary>The text for a refused create, check or join. A version refusal is shown as the server wrote it.</summary>
-    private static string Refusal(JsonNode? body) =>
-        body?["code"]?.GetValue<string>() == "unsupported_version" ? $"{body["message"]}" : $"The server refused: {body?["message"]}";
+    private string Refusal(JsonNode? body)
+    {
+        if (body?["code"]?.GetValue<string>() != "unsupported_version") return $"The server refused: {body?["message"]}";
+        // Our version is not accepted: look for an update at once (Updater is null in tests and headless runs).
+        if (Updater is { } updater) _ = updater.CheckNowAsync("unsupported_version");
+        return $"{body["message"]}";
+    }
 
     public async Task<ApiResult> CheckAsync(string code)
     {
@@ -402,6 +411,8 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             return ApiResult.Fail(e.Message);
         }
     }
+
+    public ApiResult ApplyUpdate() => Updater?.ApplyAndRestart() ?? ApiResult.Fail("This copy was not installed with the installer.");
 
     public JsonObject StatusJson() => UiStatus.Build(this);
 

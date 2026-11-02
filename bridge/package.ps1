@@ -1,44 +1,29 @@
-# Builds dist/crosscheck-<version>-win-x64.zip: the UI, the bridge (self-contained, no .NET
-# install needed), the Fenix profile and defaults.json (default server). Nothing from tools/.
+# Local build of the installer: dist/releases/ gets the Velopack package and Crosscheck-win-Setup.exe.
+# The GitHub release (.github/workflows/release.yml) does the same steps; use this to try a build on your PC.
+# Needs once:  dotnet tool install -g vpk --version <the Velopack version in Crosscheck.Bridge.csproj>
 # Run from anywhere:  powershell -File bridge\package.ps1
 $ErrorActionPreference = 'Stop'
 $repo = Resolve-Path (Join-Path $PSScriptRoot '..')
-$csproj = Join-Path $PSScriptRoot 'Crosscheck.Bridge\Crosscheck.Bridge.csproj'
-$version = ([xml](Get-Content $csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
-$name = "crosscheck-$version-win-x64"
+$bridgeCsproj = Join-Path $PSScriptRoot 'Crosscheck.Bridge\Crosscheck.Bridge.csproj'
+$coreCsproj = Join-Path $PSScriptRoot 'Crosscheck.Bridge.Core\Crosscheck.Bridge.Core.csproj'
+$first = { param($path) ([xml](Get-Content $path)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1 }
+$version = & $first $bridgeCsproj
+if ($version -ne (& $first $coreCsproj)) { throw "Version differs: $bridgeCsproj says $version, $coreCsproj says $(& $first $coreCsproj). Both must match." }
 $dist = Join-Path $repo 'dist'
-$stage = Join-Path $dist $name
+$publish = Join-Path $dist 'publish'
+$releases = Join-Path $dist 'releases'
 
 Push-Location (Join-Path $repo 'ui')
 try { npm run build; if ($LASTEXITCODE -ne 0) { throw 'UI build failed' } } finally { Pop-Location }
 
-if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
-dotnet publish (Join-Path $PSScriptRoot 'Crosscheck.Bridge') -c Release -r win-x64 --self-contained true -o $stage -v q
+if (Test-Path $publish) { Remove-Item $publish -Recurse -Force }
+dotnet publish (Join-Path $PSScriptRoot 'Crosscheck.Bridge') -c Release -r win-x64 --self-contained true -o $publish -v q
 if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
-Get-ChildItem $stage -Filter *.pdb -Recurse | Remove-Item -Force
+Get-ChildItem $publish -Filter *.pdb -Recurse | Remove-Item -Force
 
-@"
-Crosscheck $version - shared cockpit for MSFS 2024 (Fenix A320)
-
-1. Unpack this zip into a folder of your own (for example C:\Crosscheck). Do not run it from inside the zip.
-2. Start MSFS 2024 with the Fenix A320, then run crosscheck.exe.
-3. Windows SmartScreen may warn because the program is not signed.
-   Click "More info", then "Run anyway".
-4. In the Crosscheck window: create a session and send the code to the other pilot,
-   or join with the code you were given.
-
-You need MSFS 2024 and the same Fenix version as the other pilot. Crosscheck compares
-this before you join and tells you if it differs.
-
-The server address is preset (defaults.json next to crosscheck.exe). You can change it
-in the window under "Session server".
-
-If something goes wrong, send the newest file from the logs folder to the developer:
-  %LOCALAPPDATA%\Crosscheck\logs
-(paste that line into the Windows Explorer address bar)
-"@ | Set-Content (Join-Path $stage 'README.txt') -Encoding utf8
-
-$zip = Join-Path $dist "$name.zip"
-if (Test-Path $zip) { Remove-Item $zip -Force }
-Compress-Archive -Path $stage -DestinationPath $zip -CompressionLevel Optimal
-Write-Host "Built $zip ($([math]::Round((Get-Item $zip).Length / 1MB, 1)) MB)"
+# Packages of older local builds stay in $releases, so Velopack can also make a delta package.
+vpk pack --packId Crosscheck --packVersion $version --packTitle Crosscheck --packAuthors Crosscheck `
+    --packDir $publish --mainExe crosscheck.exe --runtime win-x64 `
+    --icon (Join-Path $repo 'assets\brand\crosscheck.ico') --shortcuts 'Desktop,StartMenuRoot' --outputDir $releases
+if ($LASTEXITCODE -ne 0) { throw 'vpk pack failed' }
+Write-Host "Built $releases (Crosscheck-win-Setup.exe is the installer)"

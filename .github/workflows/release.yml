@@ -1,0 +1,89 @@
+# Builds the installer and publishes a GitHub release. Started by hand:
+# GitHub -> Actions -> Release -> Run workflow. Needs no secrets.
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the version
+        id: version
+        shell: pwsh
+        run: |
+          $first = { param($path) ([xml](Get-Content $path)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1 }
+          $bridge = & $first 'bridge/Crosscheck.Bridge/Crosscheck.Bridge.csproj'
+          $core = & $first 'bridge/Crosscheck.Bridge.Core/Crosscheck.Bridge.Core.csproj'
+          if (-not $bridge) { throw 'No Version found in Crosscheck.Bridge.csproj' }
+          if ($bridge -ne $core) { throw "Version differs: Crosscheck.Bridge.csproj says $bridge, Crosscheck.Bridge.Core.csproj says $core. Both must match." }
+          "version=$bridge" >> $env:GITHUB_OUTPUT
+
+      - name: Fail if this version is already released
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release view "v$env:VERSION" --repo "$env:GITHUB_REPOSITORY" *> $null
+          if ($LASTEXITCODE -eq 0) { throw "Version $env:VERSION is already released (tag v$env:VERSION). Bump the version first." }
+          $global:LASTEXITCODE = 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build the UI
+        working-directory: ui
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish the bridge (self-contained)
+        shell: pwsh
+        run: |
+          dotnet publish bridge/Crosscheck.Bridge -c Release -r win-x64 --self-contained true -o publish -v q
+          if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
+          Get-ChildItem publish -Filter *.pdb -Recurse | Remove-Item -Force
+
+      - name: Install vpk (same version as the Velopack package)
+        shell: pwsh
+        run: |
+          $ref = Select-String -Path bridge/Crosscheck.Bridge/Crosscheck.Bridge.csproj -Pattern 'Include="Velopack"\s+Version="([^"]+)"'
+          $velopack = $ref.Matches[0].Groups[1].Value
+          dotnet tool install -g vpk --version $velopack
+          if ($LASTEXITCODE -ne 0) { throw 'vpk install failed' }
+
+      - name: Pack the installer
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Fetch earlier releases so Velopack can build a small delta package.
+          vpk download github --repoUrl "https://github.com/$env:GITHUB_REPOSITORY" --token "${{ secrets.GITHUB_TOKEN }}" --outputDir releases
+          $global:LASTEXITCODE = 0
+          vpk pack --packId Crosscheck --packVersion $env:VERSION --packTitle Crosscheck --packAuthors Crosscheck `
+            --packDir publish --mainExe crosscheck.exe --runtime win-x64 `
+            --icon assets/brand/crosscheck.ico --shortcuts 'Desktop,StartMenuRoot' --outputDir releases
+          if ($LASTEXITCODE -ne 0) { throw 'vpk pack failed' }
+
+      - name: Publish the GitHub release
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          vpk upload github --repoUrl "https://github.com/$env:GITHUB_REPOSITORY" --token "${{ secrets.GITHUB_TOKEN }}" `
+            --outputDir releases --publish --releaseName "Crosscheck $env:VERSION" --tag "v$env:VERSION" --targetCommitish "$env:GITHUB_SHA"
+          if ($LASTEXITCODE -ne 0) { throw 'vpk upload failed' }

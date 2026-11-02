@@ -64,6 +64,33 @@ export function ServerSetting({ status, actions, busy }: { status: Status; actio
   );
 }
 
+/** Update ready, or the server refused our version and we are looking for a newer one. */
+function UpdateNotice({ status, actions, busy }: { status: Status; actions: Actions; busy: boolean }) {
+  const update = status.update;
+  if (!update) return null;
+  const refused = update.reason === 'unsupported_version';
+  if (update.state === 'ready') {
+    return (
+      <div className="stack-wide update-notice" role="status">
+        <p className={refused ? 'warning' : 'muted'}>
+          {refused ? 'The server needs a newer Crosscheck. ' : ''}Update ready{update.version ? ` (${update.version})` : ''} – restart to install.
+        </p>
+        <Button onClick={() => void actions.applyUpdate()} disabled={busy}>Restart and update</Button>
+      </div>
+    );
+  }
+  if (!refused) return null;
+  return (
+    <div className="stack-wide update-notice" role="status">
+      <p className="warning">
+        {update.state === 'checking'
+          ? 'Your Crosscheck is out of date. Looking for an update…'
+          : 'Your Crosscheck is out of date, but no update could be found. Download the latest version from the Crosscheck releases page on GitHub.'}
+      </p>
+    </div>
+  );
+}
+
 export function Start({ status, actions, busy, error }: { status: Status; actions: Actions; busy: boolean; error: string | null }) {
   const [code, setCode] = useState('');
   const blocked = status.start_blocked === 'sim_not_connected';
@@ -84,6 +111,7 @@ export function Start({ status, actions, busy, error }: { status: Status; action
           <h1>Start a shared cockpit</h1>
           <p className="lead">Create a session and send the code to your first officer, or join with a code you were given.</p>
         </div>
+        <UpdateNotice status={status} actions={actions} busy={busy} />
         <div className="stack-wide">
           <div className="choices">
             <section className="choice">

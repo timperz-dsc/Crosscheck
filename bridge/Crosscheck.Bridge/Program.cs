@@ -9,6 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+// Velopack first: the installer starts the program with special arguments (install, update, uninstall)
+// and expects it to handle them and exit before anything else happens.
+Velopack.VelopackApp.Build().Run();
+AppPaths.MigrateOldData(); // settings, logs and WebView2 used to live in the folder the installer now owns
+if (args.Length > 0) ConsoleAttach.AttachToParent(); // started from a terminal: output goes there
 if (!Cli.TryParse(args, out var cli, out var error))
 {
     Console.Error.WriteLine(error);
@@ -53,7 +58,7 @@ namespace Crosscheck.Bridge.App
               --sim simconnect|fake real sim (default) or an in-memory fake sim
               --name <text>         your name shown to the other pilot
               --api-port <n>        local API and UI port on 127.0.0.1 (default 8790, -1 = off)
-              --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
+              --log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\CrosscheckData\logs)
               --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
               --airac <cycle>       AIRAC cycle you loaded, typed by hand (not read from the aircraft), e.g. 2611
               --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
@@ -215,6 +220,13 @@ namespace Crosscheck.Bridge.App
                     // The URL also works in any normal browser on this computer (for debugging).
                     var window = cli.Mode is null && !cli.NoBrowser;
                     if (window || !cli.NoTray) _shell = DesktopShell.Start(url, window, !cli.NoTray, lifetime.StopApplication, log);
+                }
+                if (cli.Mode is null)
+                {
+                    // Only the window version updates itself, and only when installed with the installer.
+                    var updater = new Updater(new VelopackUpdateSource(), () => _runtime!.SessionActive);
+                    _runtime.Updater = updater;
+                    _ = updater.StartAsync(ct);
                 }
                 log.LogInformation("Bridge log: {Path}", _runtime.Log.Path);
                 log.LogInformation("Commands: control | control @peer_lost | give | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");

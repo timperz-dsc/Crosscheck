@@ -14,8 +14,9 @@ Protocol: [docs/protocol.md](../docs/protocol.md).
 | `Crosscheck.Bridge.Tests` | unit and end-to-end tests (no sim needed) |
 | `Crosscheck.Bridge.SimSmoke.Tests` | real-sim smoke test, skipped by default ([README](Crosscheck.Bridge.SimSmoke.Tests/README.md)) |
 
-Requirements: Windows x64, .NET 8 SDK, the MSFS 2024 SDK with `MSFS2024_SDK` pointing at its
-folder (for SimConnect), and Node 22+ for the session server and the UI.
+Requirements: Windows x64, .NET 8 SDK, and Node 22+ for the session server and the UI. SimConnect comes
+from the MSFS 2024 SDK if `MSFS2024_SDK` points at its folder, otherwise from the copies in
+`third_party/simconnect/` (Microsoft's files, see the README there).
 
 ## Build and test
 
@@ -87,7 +88,7 @@ crosscheck join <CODE> [options]  headless: join a session
 --sim simconnect|fake real sim (default) or an in-memory fake sim
 --name <text>         your name shown to the other pilot
 --api-port <n>        local API and UI port on 127.0.0.1 (default 8790, -1 = off)
---log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\Crosscheck\logs)
+--log-dir <dir>       bridge log folder (default %LOCALAPPDATA%\CrosscheckData\logs)
 --gql-poll-hz <n>     Fenix GraphQL poll rate (default 2)
 --airac <cycle>       AIRAC cycle you loaded, typed by hand (not read from the aircraft), e.g. 2611
 --seat-side <side>    your cockpit seat: captain or fo (default: host captain, guest fo)
@@ -142,7 +143,7 @@ Errors answer 409 with `{ok: false, error}`; the error is a sentence the UI show
 
 ## Log
 
-One JSONL file per run in `%LOCALAPPDATA%\Crosscheck\logs` (or `--log-dir`), in the same line
+One JSONL file per run in `%LOCALAPPDATA%\CrosscheckData\logs` (or `--log-dir`), in the same line
 format as the server's session log: every protocol message except ping, pong and stream,
 plus events (echo suppressed, applied with verification result, refused writes, sim state).
 Resume tokens are redacted. Attach it to a desync report together with the server log.
@@ -161,3 +162,16 @@ Enforced in the sim adapter itself, so nothing above it can bypass it:
   command.
 - If the sim or the server goes away, the bridge keeps running and reconnects; both sims keep
   flying, just unsynced.
+
+## Installer, updates and the console
+
+- `crosscheck.exe` is a Windows program without a console window. Started from a terminal with
+  arguments (`create`, `join`, `--sim fake` ...) it attaches to that terminal, so output and
+  Ctrl+C work. A Windows program does not make the shell wait: in PowerShell use
+  `Start-Process -Wait -NoNewWindow .\crosscheck.exe create` (or pipe it: `.\crosscheck.exe create | Out-Host`).
+- Releases are made with Velopack (installer `Crosscheck-win-Setup.exe`, per user, self-updating from
+  GitHub releases). See [docs/release.md](../docs/release.md). Build one locally with `bridge/package.ps1`.
+- Updates install only when the pilot clicks "Restart and update" or at the next start, never during a
+  session. A copy that is not installed (a build folder) never updates itself.
+- Settings, logs and the WebView2 profile are in `%LOCALAPPDATA%\CrosscheckData`. Older versions used
+  `%LOCALAPPDATA%\Crosscheck`, which is now the installer's folder; the first start moves the data over.

@@ -351,3 +351,33 @@ describe('session: three tiers (CRO-26)', () => {
     expect(screen.queryByRole('button', { name: /here only/ })).toBeNull();
   });
 });
+
+describe('update notice', () => {
+  const update = (state: 'none' | 'checking' | 'ready' | 'error', reason: 'unsupported_version' | null = null) =>
+    idle({ update: { state, version: state === 'ready' ? '0.4.0' : null, reason } });
+
+  it('shows nothing when not installed or nothing is new', () => {
+    show(bridge(idle()));
+    expect(screen.queryByRole('status')).toBeNull();
+    show(bridge(update('none')));
+    expect(screen.queryByText(/Update ready/)).toBeNull();
+  });
+
+  it('offers a restart when an update is ready', async () => {
+    const b = bridge(update('ready'));
+    show(b);
+    expect(screen.getByRole('status')).toHaveTextContent('Update ready (0.4.0) – restart to install.');
+    await userEvent.click(screen.getByRole('button', { name: 'Restart and update' }));
+    expect(b.actions.applyUpdate).toHaveBeenCalled();
+  });
+
+  it('says so when the server refused our version and an update is being looked for', () => {
+    show(bridge(update('checking', 'unsupported_version')));
+    expect(screen.getByRole('status')).toHaveTextContent('out of date. Looking for an update');
+  });
+
+  it('tells the pilot where to download when no update was found', () => {
+    show(bridge(update('error', 'unsupported_version')));
+    expect(screen.getByRole('status')).toHaveTextContent('no update could be found');
+  });
+});

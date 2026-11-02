@@ -78,6 +78,7 @@ public sealed class LocalApi : IAsyncDisposable
         app.MapPost("/api/control/take", async (HttpRequest req) =>
             Answer(bridge.TakeControl((await Body(req))?["confirm_peer_lost"]?.GetValue<bool>() == true)));
         app.MapPost("/api/control/give", () => Answer(bridge.GiveControl()));
+        app.MapPost("/api/update/apply", () => Answer(bridge.ApplyUpdate()));
         app.MapPost("/api/set", async (HttpRequest req) =>
         {
             var b = await Body(req);

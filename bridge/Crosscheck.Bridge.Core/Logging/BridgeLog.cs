@@ -24,8 +24,7 @@ public sealed class BridgeLog
         Path = System.IO.Path.Combine(directory, $"bridge-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Environment.ProcessId}-{Guid.NewGuid().ToString("N")[..6]}.jsonl");
     }
 
-    public static string DefaultDirectory =>
-        System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Crosscheck", "logs");
+    public static string DefaultDirectory => AppPaths.LogsDir;
 
     public void Message(string dir, JsonObject msg)
     {

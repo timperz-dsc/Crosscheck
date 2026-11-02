@@ -1,0 +1,6 @@
+Crosscheck is released under the MIT license (see LICENSE), except for the third-party files below.
+
+bridge/third_party/simconnect/
+  SimConnect.dll and Microsoft.FlightSimulator.SimConnect.dll are Microsoft's files from the
+  Microsoft Flight Simulator 2024 SDK. They are covered by the MSFS SDK license, not by the
+  MIT license. See bridge/third_party/simconnect/README.md.
