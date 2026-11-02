@@ -1,0 +1,11 @@
+{
+  "v": 4,
+  "type": "counter_suspect",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "var": "S_PED_COCKPIT_DOOR_VIDEO",
+    "group": "pedestal",
+    "label": "COCKPIT DOOR VIDEO"
+  }
+}

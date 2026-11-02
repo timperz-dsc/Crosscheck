@@ -51,9 +51,19 @@ describe('PF safety rule (decideCorrections)', () => {
     expect(decideCorrections([d({ class: 'observe' })], log())[0]).toMatchObject({ action: 'desync', reason: 'observe_mismatch' });
     expect(decideCorrections([d({ pf: null })], log())[0]).toMatchObject({ action: 'desync', reason: 'missing_value' });
   });
-  it('delta (display value) → PM gets the PF display as target, never the PF', () => {
+  it('delta (display value) is never corrected: a red display_mismatch, nothing while not comparable (CRO-33)', () => {
     const [r] = decideCorrections([d({ class: 'delta', pf: 120, pm: 118 })], log({ seq: 3, value: 5, pfConfirmed: false }));
-    expect(r).toMatchObject({ action: 'correct', target: 120, sides: ['pm'], source: 'pf_reference' });
+    expect(r).toMatchObject({ action: 'desync', reason: 'display_mismatch' });
+    expect(decideCorrections([d({ class: 'delta', pf: 1000, pm: null, pfContext: '', pmContext: 'unpowered' })], log())[0])
+      .toMatchObject({ action: 'skip', why: 'not_comparable' });
+    expect(decideCorrections([d({ class: 'delta', pf: 120, pm: 118, pfContext: '1,0', pmContext: '0,0' })], log())[0])
+      .toMatchObject({ action: 'skip' });
+    expect(decideCorrections([d({ class: 'delta', pf: 120, pm: 118, pfContext: '1,0', pmContext: '1,0' })], log())[0])
+      .toMatchObject({ action: 'desync', reason: 'display_mismatch' });
+  });
+  it('a deny-list control is never corrected: not_mirrored (CRO-33)', () => {
+    expect(decideCorrections([d({ class: 'denied', pf: 2, pm: 0 })], log({ seq: 3, value: 2, pfConfirmed: false }))[0])
+      .toMatchObject({ action: 'desync', reason: 'not_mirrored' });
   });
   it('never targets the PF with a value that is not a logged command', () => {
     const cases: [VarDiff, LoggedCommand | undefined][] = [
@@ -134,7 +144,7 @@ describe('join codes', () => {
 });
 
 describe('replay log', () => {
-  const env = (seq: number): Envelope => ({ v: 3, type: 'command', session: 's_abcdefg', seq, ts: 0, body: {} });
+  const env = (seq: number): Envelope => ({ v: 4, type: 'command', session: 's_abcdefg', seq, ts: 0, body: {} });
   it('replays per client after last_seq and reports a gap once entries were evicted', () => {
     const log = new ReplayLog(3);
     log.add(1, 'a', env(1));

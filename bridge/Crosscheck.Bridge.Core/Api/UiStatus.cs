@@ -17,6 +17,7 @@ internal static class UiStatus
     [
         "action_confirmed", "action_failed", "action_applied", "corrected", "overridden", "desync", "desync_cleared",
         "control_changed", "takeover_pressed", "peer_joined", "peer_lost", "peer_resumed", "peer_left", "peer_expired",
+        "press_here_only", "release_it", "denied_input", "counter_suspect", "press_lost",
     ];
 
     public static JsonArray Recent(EventHub hub) =>
@@ -150,7 +151,8 @@ internal static class UiStatus
 
     /// <summary>Reasons that mean a pilot's input did not arrive or had another result: always red.</summary>
     private static readonly HashSet<string> InputReasons =
-        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch", "safety_release", "press_mismatch", "toggle_mismatch", "mode_mismatch"];
+        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch", "safety_release", "press_mismatch", "toggle_mismatch", "mode_mismatch",
+         "not_mirrored", "stuck_pressed", "press_lost", "display_mismatch"];
 
     /// <summary>
     /// Where a desync is shown. The server sends the tier; as defence in depth only an indicator may be
@@ -226,14 +228,16 @@ internal static class UiStatus
         var spec = r.Profile.Vars.FirstOrDefault(v => v.Name == name);
         // An effect or toggle desync compares the key's lamp, a press desync the key's up/down state (parity),
         // not the key's own counter: their values come from the message.
-        var effectCompare = reason is "effect_mismatch" or "toggle_mismatch" or "press_mismatch" or "mode_mismatch";
+        var effectCompare = reason is "effect_mismatch" or "toggle_mismatch" or "press_mismatch" or "mode_mismatch"
+            or "stuck_pressed" or "display_mismatch" or "not_mirrored" or "press_lost";
         double? mine = !effectCompare && r.Sim.TryGet(name, out var m) ? m : null;
         var receiverIsYou = body["client_id"]?.GetValue<string>() is { } c && c == client.ClientId;
         double? other = body["values"] is JsonObject values
             ? Num(values[engine.IsPf ? "pm" : "pf"])
             : receiverIsYou ? Num(body["expected"]) : Num(body["observed"]);
         if (body["values"] is JsonObject v2 && mine is null) mine = Num(v2[engine.IsPf ? "pf" : "pm"]);
-        var writable = !effectCompare && spec?.Class is SyncClass.Verified or SyncClass.Analog;
+        // "Set both" only for proven absolute switches and analog knobs (never push buttons, counters or the deny list).
+        var writable = !effectCompare && engine.CanSetBoth(name);
         var options = new JsonArray();
         if (writable)
             foreach (var value in new[] { mine, other }.OfType<double>().Distinct().Where(x => r.Sim.Guard.IsAllowedValue(name, x)))
@@ -242,7 +246,9 @@ internal static class UiStatus
         {
             _ when v is null && effectCompare => "unknown",
             "toggle_mismatch" or "mode_mismatch" => v > 0 ? "on" : "off",
-            "press_mismatch" => ((long)Math.Round(v!.Value) & 1) == 1 ? "held down" : "up",
+            "press_mismatch" or "stuck_pressed" => ((long)Math.Round(v!.Value) & 1) == 1 ? "held down" : "up",
+            "display_mismatch" or "not_mirrored" => Sync.Labels.Number(v!.Value),
+            "press_lost" => "unknown",
             "effect_mismatch" => Sync.Labels.Number(v!.Value),
             _ => r.Labels.Value(name, v),
         };
@@ -262,10 +268,16 @@ internal static class UiStatus
             ["writable"] = writable,
             ["options"] = options,
             // A toggle light that differs: a cockpit press is mirrored and flips both, so the fix is one click here only.
-            ["press_here"] = reason == "toggle_mismatch" && spec is { Class: SyncClass.Pulse, Press: PressMode.Edge, Verify.Lvar: not null },
+            ["press_here"] = reason == "toggle_mismatch" && spec is { Class: SyncClass.Pulse, Press: PressMode.Edge, Verify.Lvar: not null, NeverWrite: false }
+                && !IsTakeover(r, name),
+            // A button stuck pressed in this cockpit: one up step here, pilot-initiated (CRO-33).
+            ["release_here"] = engine.CanReleaseHere(name, body),
             ["message"] = body["message"]?.GetValue<string>(),
         };
     }
+
+    private static bool IsTakeover(BridgeRuntime r, string name) =>
+        r.Profile.Roles?.Takeover is { } t && (t.Captain == name || t.Fo == name);
 
     /// <summary>Amber lines: controls not synced yet, hardware fighting, a sim that is not connected. Newest first.</summary>
     private static JsonArray Advisories(BridgeRuntime r)

@@ -24,6 +24,8 @@ export interface VarDef {
   /** mode: the pilots' text and the control the difference is shown under. */
   message?: string;
   reportAs?: string;
+  /** delta with compare_when: reported with a context ("unpowered" with value null while the unit is off). */
+  gated?: boolean;
 }
 
 /** A small stand-in profile with one var of each kind. */
@@ -77,6 +79,9 @@ export class FakeSim {
   /** Pulses whose effect does not change (system unpowered). */
   private readonly unpowered = new Set<string>();
   private readonly stuck = new Map<string, { value: number; revertMs: number }>();
+  /** Encoders (gated) whose unit is unpowered, and the mode context of the others. */
+  private readonly unitOff = new Set<string>();
+  private readonly modes = new Map<string, string>();
   /** Every write that reached this sim, in order. */
   readonly writes: { name: string; value: number | string; source: WriteSource }[] = [];
 
@@ -165,6 +170,17 @@ export class FakeSim {
     this.stuck.delete(name);
   }
 
+  /** The unit of a gated encoder is switched off (true) or on: its display is not comparable while off. */
+  unitPower(name: string, on: boolean): void {
+    if (on) this.unitOff.delete(name);
+    else this.unitOff.add(name);
+  }
+
+  /** The mode of a gated encoder's unit (TRK/FPA, MACH, selected radio ...). */
+  mode(name: string, context: string): void {
+    this.modes.set(name, context);
+  }
+
   groups(): string[] {
     return [...new Set([...this.defs.values()].map((d) => d.group))].sort();
   }
@@ -179,6 +195,11 @@ export class FakeSim {
         continue;
       }
       if (d.cls === 'pulse') continue;
+      if (d.cls === 'delta' && d.gated) {
+        const off = this.unitOff.has(d.name);
+        out.push({ var: d.name, class: 'delta', value: off ? null : this.display(d.name), context: off ? 'unpowered' : this.modes.get(d.name) ?? '' });
+        continue;
+      }
       out.push({
         var: d.name, class: d.cls, value: d.cls === 'delta' ? this.display(d.name) : this.get(d.name),
         ...(d.cls === 'owned' && d.step !== undefined ? { step: d.step } : {}),

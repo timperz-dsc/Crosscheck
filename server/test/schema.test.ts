@@ -22,7 +22,7 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
   });
 
   it('rejects malformed messages', () => {
-    const base = { v: 3, session: 's_abcdefg', ts: 1 };
+    const base = { v: 4, session: 's_abcdefg', ts: 1 };
     const bad = [
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'delta', value: 1, group: 'g', settle_ms: 10 } }, // delta with value
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'verified', group: 'g', settle_ms: 10 } }, // no value
@@ -31,6 +31,7 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
       { ...base, type: 'ack', extra: 1, body: { id: 'a', ok: true, observed: 1 } }, // unknown envelope field
       { ...base, v: 1, type: 'ack', body: { id: 'a', ok: true, observed: 1 } }, // old protocol
       { ...base, v: 2, type: 'ack', body: { id: 'a', ok: true, observed: 1 } }, // protocol 2 (bridge 0.2.0)
+      { ...base, v: 3, type: 'ack', body: { id: 'a', ok: true, observed: 1 } }, // protocol 3 (bridge 0.3.x)
       { ...base, type: 'nonsense', body: {} },
     ];
     for (const msg of bad) expect(v.validate(msg).ok).toBe(false);
@@ -46,7 +47,7 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
       ws.on('message', (d) => replies.push(JSON.parse(d.toString())));
       ws.send('not json');
       ws.send(JSON.stringify({ v: 9, type: 'ping', session: null, ts: 1, body: {} }));
-      ws.send(JSON.stringify({ v: 3, type: 'command', session: null, ts: 1, body: { id: 'a', var: 'X', class: 'verified', value: 1, group: 'g', settle_ms: 1 } }));
+      ws.send(JSON.stringify({ v: 4, type: 'command', session: null, ts: 1, body: { id: 'a', var: 'X', class: 'verified', value: 1, group: 'g', settle_ms: 1 } }));
       await new Promise((r) => setTimeout(r, 100));
       expect(replies.map((r) => r.body.code)).toEqual(['invalid_json', 'unsupported_version', 'not_in_session']);
       expect(ws.readyState).toBe(WebSocket.OPEN);

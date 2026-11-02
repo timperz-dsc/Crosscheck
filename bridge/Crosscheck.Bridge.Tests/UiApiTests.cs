@@ -166,6 +166,81 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, (await Post(guest, "/api/session/join", new { code = host.JoinCode })).Code);
     }
 
+    /// <summary>Like SessionViaApi, with cockpit values that exist before the session starts (not pilot actions).</summary>
+    private async Task<(BridgeRuntime Host, BridgeRuntime Guest)> SessionWith(Action<FakeSimAdapter>? host = null, Action<FakeSimAdapter>? guest = null)
+    {
+        var h = await Idle("host");
+        var g = await Idle("guest");
+        host?.Invoke(Sim(h));
+        guest?.Invoke(Sim(g));
+        Assert.Equal(HttpStatusCode.OK, (await Post(h, "/api/session/create")).Code);
+        Assert.Equal(HttpStatusCode.OK, (await Post(g, "/api/session/join", new { code = h.JoinCode })).Code);
+        await Wait.Until(() => h.Status.PeerState == "joined", "host sees the guest");
+        await Task.Delay(400);
+        return (h, g);
+    }
+
+    private static JsonObject? Line(JsonObject status, string name) =>
+        status["desyncs"]!.AsArray().FirstOrDefault(d => d!["var"]!.GetValue<string>() == name)?.AsObject();
+
+    [Fact]
+    public async Task An_idg_click_is_refused_on_the_other_side_and_shown_to_both_as_not_mirrored()
+    {
+        // Gate test 2 cause A (CRO-33): IDG is on the deny list. Never written, shown to both pilots.
+        const string idg = "S_OH_ELEC_IDG1";
+        var (host, guest) = await SessionViaApi();
+        await Sim(host).PilotPress(idg, holdMs: 80);
+        foreach (var b in new[] { host, guest })
+            await Wait.Until(() => b.Status.OpenDesyncs.Contains(idg), $"red line on {b.Status.Seat}", 10000);
+        var line = Line(await Status(guest), idg)!;
+        Assert.Equal("not_mirrored", line["reason"]!.GetValue<string>());
+        Assert.Equal("red", line["tier"]!.GetValue<string>());
+        Assert.False(line["receiver_is_you"]!.GetValue<bool>()); // pressed in the host's cockpit
+        Assert.True(Line(await Status(host), idg)!["receiver_is_you"]!.GetValue<bool>());
+        Assert.False(line["writable"]!.GetValue<bool>());
+        Assert.Empty(line["options"]!.AsArray()); // never "Set both"
+        Assert.False(line["press_here"]!.GetValue<bool>());
+        Assert.False(line["release_here"]!.GetValue<bool>());
+        Assert.Equal(HttpStatusCode.Conflict, (await Post(guest, "/api/set", new { var = idg, value = 2 })).Code);
+        Assert.Equal(HttpStatusCode.Conflict, (await Post(guest, "/api/press-here", new { var = idg })).Code);
+        Assert.Equal(HttpStatusCode.Conflict, (await Post(guest, "/api/release", new { var = idg })).Code);
+        await Task.Delay(3000); // snapshot rounds: still red, nothing written
+        Assert.Contains(idg, guest.Status.OpenDesyncs);
+        Assert.DoesNotContain(Sim(guest).Writes, w => w.Name == idg);
+        Assert.DoesNotContain(Sim(host).Writes, w => w.Name == idg);
+
+        // The guest does the same in their cockpit: the values match, the line clears on both sides.
+        await Sim(guest).PilotPress(idg, holdMs: 80);
+        foreach (var b in new[] { host, guest })
+            await Wait.Until(() => !b.Status.OpenDesyncs.Contains(idg), $"cleared on {b.Status.Seat}", 15000);
+    }
+
+    [Fact]
+    public async Task Two_pilots_on_one_counter_button_end_in_release_it_in_the_stuck_cockpit()
+    {
+        // Gate test 2 cause C (CRO-33): the guest's APU AUTO EXTING RESET rested odd (pressed) after both pilots
+        // clicked it at once; the host's was up. Detected as stuck pressed; "Release it" there, one up step.
+        const string reset = "S_OH_APU_AUTOEXTING_RESET";
+        var (host, guest) = await SessionWith(h => h.Logic(reset, 14), g => g.Logic(reset, 17));
+        await Wait.Until(() => guest.Status.DesyncOf(reset)?["reason"]?.GetValue<string>() == "stuck_pressed", "stuck pressed", 20000);
+        await Wait.Until(() => host.Status.DesyncOf(reset)?["reason"]?.GetValue<string>() == "stuck_pressed", "shown to the host too", 5000);
+        var line = Line(await Status(guest), reset)!;
+        Assert.True(line["receiver_is_you"]!.GetValue<bool>()); // stuck in the guest's cockpit
+        Assert.True(line["release_here"]!.GetValue<bool>());
+        Assert.False(line["writable"]!.GetValue<bool>());
+        Assert.False(Line(await Status(host), reset)!["release_here"]!.GetValue<bool>());
+        Assert.Equal(HttpStatusCode.Conflict, (await Post(host, "/api/release", new { var = reset })).Code); // not the host's cockpit
+        Assert.Empty(Sim(guest).Writes.Where(w => w.Name == reset)); // never released automatically
+
+        var released = await Post(guest, "/api/release", new { var = reset });
+        Assert.Equal(HttpStatusCode.OK, released.Code);
+        Assert.Equal(18, Sim(guest).Get(reset)); // one up step, never a down
+        Assert.Equal([18.0], Sim(guest).Writes.Where(w => w.Name == reset).Select(w => w.Value));
+        Assert.Empty(Sim(host).Writes.Where(w => w.Name == reset)); // not mirrored
+        foreach (var b in new[] { host, guest })
+            await Wait.Until(() => !b.Status.OpenDesyncs.Contains(reset), $"cleared on {b.Status.Seat}", 15000);
+    }
+
     [Fact]
     public async Task Set_both_sends_a_pilot_command_from_this_seat_and_clears_the_desync()
     {

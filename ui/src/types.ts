@@ -68,6 +68,8 @@ export interface Desync {
   options: { value: number; text: string }[];
   /** toggle_mismatch: offer "Press X here only" (one click in this cockpit, not mirrored). */
   press_here?: boolean;
+  /** stuck_pressed in this cockpit: offer "Release it" (one up step here, not mirrored). */
+  release_here?: boolean;
   message: string | null;
   /** red: an input did not arrive (sticky, at the top). quiet: an indicator differs. */
   tier?: 'red' | 'quiet';
@@ -161,6 +163,7 @@ export interface Actions {
   giveControl(): Promise<void>;
   setBoth(variable: string, value: number): Promise<void>;
   pressHere(variable: string): Promise<void>;
+  releaseIt(variable: string): Promise<void>;
   setServer(url: string): Promise<void>;
   applyUpdate(): Promise<void>;
 }

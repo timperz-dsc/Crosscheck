@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/crosscheck/protocol/v1/messages/effect_report.schema.json",
   "title": "effect_report",
-  "description": "The sender's own effect var value, read settle_ms after its pulse press, for a command with effect. (client to server)",
+  "description": "A push button's lamp, read once per burst: 400 ms (or settle_ms, if longer) after the last edge of that button. Sent by the pilot who pressed (for the burst's last down edge it sent) and by the receiver (for the last down edge it applied); the server compares the two. (client to server)",
   "type": "object",
   "$ref": "../common.schema.json#/$defs/envelope",
   "properties": {

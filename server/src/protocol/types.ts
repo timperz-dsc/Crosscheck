@@ -1,7 +1,7 @@
-// TypeScript view of protocol v3. The JSON Schema in protocol/schema is the source of truth;
+// TypeScript view of protocol v4. The JSON Schema in protocol/schema is the source of truth;
 // every inbound message is validated against it before these types are trusted.
 
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /** Shown to a client that speaks another protocol version (for example the 0.1.0 zip). */
 export const OUTDATED_MESSAGE = 'Your Crosscheck is out of date. Download the latest version.';
@@ -13,7 +13,8 @@ export type Scalar = number | string | null;
 export type AbsoluteClass = 'verified' | 'analog' | 'owned';
 export type EventClass = 'delta' | 'pulse';
 export type CommandClass = AbsoluteClass | EventClass;
-export type SnapshotClass = AbsoluteClass | 'delta' | 'observe' | 'pulse' | 'toggle' | 'mode';
+/** denied: a deny-list control (profile never_write), its raw value; compared only, never corrected or written. */
+export type SnapshotClass = AbsoluteClass | 'delta' | 'observe' | 'pulse' | 'toggle' | 'mode' | 'denied';
 
 export const ABSOLUTE_CLASSES: ReadonlySet<string> = new Set(['verified', 'analog', 'owned']);
 export const isAbsolute = (cls: string): cls is AbsoluteClass => ABSOLUTE_CLASSES.has(cls);
@@ -51,7 +52,8 @@ export interface DiffEntry {
 export type DesyncReason =
   | 'no_ack' | 'refused' | 'observe_mismatch' | 'log_conflict' | 'missing_value'
   | 'correction_failed' | 'correction_loop' | 'no_pf' | 'effect_mismatch'
-  | 'safety_release' | 'press_mismatch' | 'toggle_mismatch' | 'mode_mismatch';
+  | 'safety_release' | 'press_mismatch' | 'toggle_mismatch' | 'mode_mismatch'
+  | 'not_mirrored' | 'stuck_pressed' | 'press_lost' | 'display_mismatch';
 
 /** Where a desync is shown: red (an input did not arrive, sticky, at the top) or quiet (an indicator differs). */
 export type Tier = 'red' | 'quiet';
@@ -64,7 +66,7 @@ export interface ActiveDesync {
   tier: Tier;
 }
 
-export type AdvisoryKind = 'not_synced' | 'hardware_fighting' | 'sim_disconnected';
+export type AdvisoryKind = 'not_synced' | 'hardware_fighting' | 'sim_disconnected' | 'counter_suspect';
 
 /** An amber line for both pilots (never a desync, never written). The latest body per key wins. */
 export interface AdvisoryBody {
@@ -130,12 +132,18 @@ export interface AckBody {
   superseded?: boolean;
   from?: string;
   attempt?: number;
-  /** The receiver's effect var value after settle (commands with effect). */
-  effect?: Scalar;
+  /**
+   * ok false only. press_lost: a mirrored press could not be applied (red). not_synced: a suspected
+   * counter, covered by an amber line. display_check: an encoder click; its display is the proof.
+   */
+  reason?: 'press_lost' | 'not_synced' | 'display_check';
 }
 export interface SnapshotHashBody { group: string; hash: string; applied_seq: number }
 /** mode: an indicator of an input Crosscheck cannot sync (yet), compared as an input (red, never quiet). */
-export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar; step?: number; button?: string; message?: string; report_as?: string }
+/** context (delta with compare_when): "unpowered", or the values of its mode vars; compared only when equal. */
+export interface SnapshotValue {
+  var: string; class: SnapshotClass; value: Scalar; step?: number; button?: string; message?: string; report_as?: string; context?: string;
+}
 /** A receiver released an edge button Crosscheck had pressed down, because the up never arrived. */
 export interface SafetyReleaseBody { var: string; group: string; cause: 'cap' | 'link_lost' | 'peer_lost'; observed: Scalar }
 export interface SnapshotValuesBody { request_id: string; group: string; values: SnapshotValue[] }
@@ -149,6 +157,10 @@ export interface PongBody { nonce: number; t: number }
 export interface SimStateBody { connected: boolean }
 export interface UnsyncedInputBody { var: string; label: string }
 export interface EffectReportBody { id: string; var: string; value: Scalar }
+/** A pilot pressed a deny-list control in their own cockpit (never mirrored). */
+export interface DeniedInputBody { var: string; group: string; label: string }
+/** A verified var behaves like a press counter: not synced from now on. */
+export interface CounterSuspectBody { var: string; group: string; label: string }
 
 // ---- server → client bodies (only the ones built in several places) ----
 export type DecisionAction = 'correct' | 'desync' | 'held' | 'deferred';
@@ -168,7 +180,8 @@ export interface DiffDecision {
 export interface CorrectionBody {
   id: string;
   var: string;
-  class: AbsoluteClass | 'delta';
+  /** Absolute classes only: encoders and push buttons are never corrected. */
+  class: AbsoluteClass;
   target: number;
   group: string;
   settle_ms: number;

@@ -58,6 +58,12 @@ export interface ServerConfig {
    * differed in 2 consecutive snapshot comparisons or for this long, whichever comes first.
    */
   buttonHoldMs: number;
+  /** An edge button held down on one side only this long is "stuck pressed" (red, "Release it" in that cockpit). */
+  stuckMs: number;
+  /** An encoder display that still differs this long after the last click is one red line (never corrected). */
+  encoderHoldMs: number;
+  /** A push button lamp is compared once per burst; each edge extends the wait by this (plus margins). */
+  effectSettleMs: number;
   /** Owned drift that changed by less than its step is sent at most this often. */
   driftMinIntervalMs: number;
   /** This many overrides on one var within fightWindowMs → "hardware fighting" advisory. */
@@ -94,6 +100,9 @@ export const DEFAULT_CONFIG: ServerConfig = {
   echoEvents: false,
   indicatorHoldMs: 10 * 1000,
   buttonHoldMs: 2 * 1000,
+  stuckMs: 5 * 1000,
+  encoderHoldMs: 2 * 1000,
+  effectSettleMs: 400,
   driftMinIntervalMs: 10 * 1000,
   fightCount: 3,
   fightWindowMs: 30 * 1000,
@@ -111,7 +120,7 @@ const TIME_KEYS = [
   'snapshotIntervalMs', 'snapshotRequestTimeoutMs', 'freezeMs', 'controlAckTimeoutMs',
   'correctionSettleMs', 'correctionLoopWindowMs', 'streamNoticeIntervalMs', 'streamIdleMs',
   'summaryIntervalMs', 'handshakeTimeoutMs', 'createWindowMs', 'joinWindowMs',
-  'indicatorHoldMs', 'buttonHoldMs', 'driftMinIntervalMs', 'fightWindowMs',
+  'indicatorHoldMs', 'buttonHoldMs', 'stuckMs', 'encoderHoldMs', 'effectSettleMs', 'driftMinIntervalMs', 'fightWindowMs',
 ] as const satisfies readonly (keyof ServerConfig)[];
 
 /**

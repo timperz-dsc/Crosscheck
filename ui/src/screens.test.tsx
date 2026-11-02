@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Screens } from './App';
@@ -349,6 +349,42 @@ describe('session: three tiers (CRO-26)', () => {
     expect(screen.getByText(/It is held down in your cockpit and up in the captain's\. It is never pressed or released automatically\./)).toBeInTheDocument();
     expect(screen.getByText(/Crosscheck released it in your cockpit because the captain's release never arrived \(30 s, or the connection was lost\)\. Check it in both cockpits\./)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /here only/ })).toBeNull();
+  });
+
+  it('a button stuck pressed in this cockpit offers Release it; in the other cockpit it does not (CRO-33)', async () => {
+    const stuck = {
+      ...BLEED, var: 'S_OH_APU_AUTOEXTING_RESET', label: 'APU AUTO EXTING RESET', reason: 'stuck_pressed', tier: 'red' as const,
+      you: { value: 1, text: 'held down' }, other: { value: 0, text: 'up' }, writable: false, options: [],
+    };
+    const b = bridge(inSession({ desyncs: [{ ...stuck, receiver_is_you: true, release_here: true }] }));
+    show(b);
+    const block = screen.getByRole('region', { name: 'APU AUTO EXTING RESET' });
+    expect(within(block).getByText(/APU AUTO EXTING RESET is stuck pressed in your cockpit \(up in the captain's\)\..*“Release it” lifts it once in your cockpit only; it is never released automatically\./)).toBeInTheDocument();
+    expect(within(block).queryByRole('button', { name: /Set both/ })).toBeNull();
+    await userEvent.click(within(block).getByRole('button', { name: 'Release it' }));
+    expect(b.actions.releaseIt).toHaveBeenCalledWith('S_OH_APU_AUTOEXTING_RESET');
+    cleanup();
+
+    show(bridge(inSession({ desyncs: [{ ...stuck, receiver_is_you: false, release_here: false }] })));
+    expect(screen.getByText(/stuck pressed in the captain's cockpit \(up in yours\)\. The captain can release it there/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Release it' })).toBeNull();
+  });
+
+  it('a deny-list press, a lost press and an encoder display that differs are explained, with no button (CRO-33)', () => {
+    show(bridge(inSession({
+      desyncs: [
+        { ...BLEED, var: 'S_OH_ELEC_IDG1', label: 'IDG 1', reason: 'not_mirrored', tier: 'red', receiver_is_you: false, writable: false, options: [] },
+        { ...BLEED, var: 'S_FCU_EFIS1_FD', label: 'FD', reason: 'press_lost', tier: 'red', receiver_is_you: true, writable: false, options: [] },
+        {
+          ...BLEED, var: 'E_FCU_ALTITUDE', label: 'FCU altitude', reason: 'display_mismatch', tier: 'red', writable: false, options: [],
+          you: { value: 11900, text: '11900' }, other: { value: 49000, text: '49000' },
+        },
+      ],
+    })));
+    expect(screen.getByText(/IDG 1 pressed in the captain's cockpit – not mirrored \(irreversible\)\. Do the same in your cockpit if intended\./)).toBeInTheDocument();
+    expect(screen.getByText(/The captain pressed it, but the press could not be applied in your cockpit \(the button was already down\)\./)).toBeInTheDocument();
+    expect(screen.getByText(/FCU altitude differs: yours 11900, the captain's 49000\. Turn the knob in the cockpit that is wrong\. It is never turned automatically\./)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Set both|here only|Release it/ })).toBeNull();
   });
 });
 

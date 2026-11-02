@@ -26,6 +26,10 @@ sealed class Entry
     public double? Rest { get; init; }
     /// <summary>observe: red comparison text, and the control it is reported under.</summary>
     public (string Text, string? As)? Alarm { get; init; }
+    /// <summary>Deny list: never written on any path, only watched and compared (gate test 2, CRO-33).</summary>
+    public bool NeverWrite { get; init; }
+    /// <summary>delta: compare the display only while powered and these mode vars match.</summary>
+    public (string? Powered, string[]? Same)? CompareWhen { get; init; }
     /// <summary>Written as a comment line above the entry (from overrides.yaml).</summary>
     public string? Comment { get; init; }
     public List<string> Notes { get; } = ["label generated"];

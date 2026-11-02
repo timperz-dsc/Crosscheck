@@ -64,7 +64,16 @@ public sealed record VarEntry(
     string? Label = null,
     IReadOnlyDictionary<string, string>? ValueLabels = null,
     double? Rest = null,
-    AlarmSpec? Alarm = null);
+    AlarmSpec? Alarm = null,
+    bool NeverWrite = false,
+    CompareWhen? CompareWhen = null);
+
+/// <summary>
+/// delta only: when the encoder's display may be compared between the sims. Not while the unit is
+/// unpowered (Powered reads 0), and only while every var in Same shows the same value on both sides
+/// (mode lamps: TRK/FPA, MACH, dashed display, the selected radio of an RMP).
+/// </summary>
+public sealed record CompareWhen(string? Powered = null, IReadOnlyList<string>? Same = null);
 
 /// <summary>
 /// observe only: this indicator shows a pilot input that Crosscheck cannot sync (yet). A difference

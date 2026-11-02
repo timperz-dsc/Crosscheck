@@ -114,6 +114,12 @@
     },
     {
       "$ref": "messages/safety_release.schema.json"
+    },
+    {
+      "$ref": "messages/denied_input.schema.json"
+    },
+    {
+      "$ref": "messages/counter_suspect.schema.json"
     }
   ]
 }

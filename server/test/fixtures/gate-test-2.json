@@ -1,0 +1,327 @@
+{
+  "description": "Anonymised extract of gate test 2 (CRO-22), for replay tests (CRO-33). Times are ms relative to the first event of each part. Var names, values and edges only; no names, ids, codes, paths or URLs.",
+  "fd_burst": {
+    "var": "S_FCU_EFIS1_FD",
+    "lamp": "I_FCU_EFIS1_FD",
+    "note": "Edges the guest received for 9 + 1 host presses of FD (cause D). At +531 ms a down edge found the guest value still odd because the previous up write was not read back yet: one press was lost and acked ok.",
+    "edges": [
+      [
+        0,
+        "down",
+        34517
+      ],
+      [
+        88,
+        "up",
+        87
+      ],
+      [
+        153,
+        "down",
+        64
+      ],
+      [
+        235,
+        "up",
+        82
+      ],
+      [
+        303,
+        "down",
+        66
+      ],
+      [
+        366,
+        "up",
+        63
+      ],
+      [
+        447,
+        "down",
+        62
+      ],
+      [
+        477,
+        "up",
+        42
+      ],
+      [
+        531,
+        "down",
+        60
+      ],
+      [
+        615,
+        "up",
+        83
+      ],
+      [
+        656,
+        "down",
+        41
+      ],
+      [
+        736,
+        "up",
+        80
+      ],
+      [
+        783,
+        "down",
+        45
+      ],
+      [
+        864,
+        "up",
+        81
+      ],
+      [
+        905,
+        "down",
+        41
+      ],
+      [
+        988,
+        "up",
+        83
+      ],
+      [
+        1053,
+        "down",
+        65
+      ],
+      [
+        1208,
+        "up",
+        154
+      ],
+      [
+        2453,
+        "down",
+        1244
+      ],
+      [
+        2514,
+        "up",
+        61
+      ]
+    ],
+    "read_back_ms": {
+      "min": 3,
+      "median": 58,
+      "max": 155
+    }
+  },
+  "idg": {
+    "var": "S_OH_ELEC_IDG1",
+    "note": "Values the host sent for IDG 1 clicks (cause A): a counter, +1 per press and +1 per release. The guest accepted the first value (1 = held down) and refused the rest.",
+    "values": [
+      [
+        0,
+        1
+      ],
+      [
+        107,
+        2
+      ],
+      [
+        6451,
+        3
+      ],
+      [
+        6691,
+        4
+      ],
+      [
+        7072,
+        5
+      ],
+      [
+        7274,
+        6
+      ],
+      [
+        7705,
+        7
+      ],
+      [
+        8426,
+        8
+      ],
+      [
+        9098,
+        9
+      ],
+      [
+        9332,
+        10
+      ],
+      [
+        10305,
+        11
+      ],
+      [
+        10402,
+        12
+      ],
+      [
+        12548,
+        13
+      ],
+      [
+        12630,
+        14
+      ],
+      [
+        13292,
+        15
+      ],
+      [
+        14041,
+        16
+      ],
+      [
+        14950,
+        17
+      ],
+      [
+        15309,
+        18
+      ],
+      [
+        15441,
+        19
+      ],
+      [
+        15540,
+        20
+      ],
+      [
+        15622,
+        21
+      ],
+      [
+        15722,
+        22
+      ]
+    ]
+  },
+  "blue_pump": {
+    "var": "S_OH_HYD_BLUE_ELEC_PUMP",
+    "lamp": "I_OH_HYD_BLUE_ELEC_PUMP_L",
+    "note": "Host values of BLUE ELEC PUMP (cause B): a 0/1 latch, not a counter.",
+    "values": [
+      [
+        0,
+        1
+      ],
+      [
+        100,
+        0
+      ],
+      [
+        1947,
+        1
+      ],
+      [
+        3293,
+        0
+      ],
+      [
+        4537,
+        1
+      ]
+    ]
+  },
+  "alt": {
+    "unpowered": {
+      "pf": 1000,
+      "pm": 100,
+      "note": "Session start, the guest FCU was unpowered (cold and dark): the server corrected +900 clicks six times, nothing moved."
+    },
+    "powered": {
+      "pf": 11900,
+      "pm": 49000,
+      "note": "Later, both powered: the corrections wrote +1000, -37100 and +11800 clicks; the display slammed between 100 and 49000."
+    },
+    "written_clicks": [
+      900,
+      900,
+      900,
+      900,
+      900,
+      900,
+      1000,
+      -37100,
+      11800
+    ],
+    "var": "E_FCU_ALTITUDE",
+    "display": "N_FCU_ALTITUDE"
+  },
+  "phantom_turn": {
+    "var": "E_FCU_EFIS1_BARO",
+    "note": "Four host clicks the guest applied 20-44 ms apart (cause F). The guest read back an in-between value of its own write and sent it back to the host as a pilot turn (+1).",
+    "deltas": [
+      [
+        0,
+        -1
+      ],
+      [
+        45,
+        -1
+      ],
+      [
+        65,
+        -1
+      ],
+      [
+        89,
+        -1
+      ]
+    ]
+  },
+  "apu_reset": {
+    "var": "S_OH_APU_AUTOEXTING_RESET",
+    "note": "Guest side of cause C: host edges as they arrived (remote, edge, gap_ms) and the guest pilot clicking the same button (local_step: +1 each). Fenix only adds 1, so the guest ended with the button resting odd (stuck pressed) for 84 minutes.",
+    "start_value": 12,
+    "events": [
+      [
+        0,
+        "remote",
+        "down",
+        3120
+      ],
+      [
+        329,
+        "remote",
+        "up",
+        329
+      ],
+      [
+        658,
+        "remote",
+        "down",
+        329
+      ],
+      [
+        1074,
+        "local_step",
+        null,
+        null
+      ],
+      [
+        1097,
+        "remote",
+        "up",
+        439
+      ],
+      [
+        1236,
+        "local_step",
+        null,
+        null
+      ]
+    ],
+    "end_parity_in_gate_test": 1
+  }
+}

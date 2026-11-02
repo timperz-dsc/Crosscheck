@@ -30,11 +30,11 @@
           "$ref": "../common.schema.json#/$defs/varName"
         },
         "class": {
+          "description": "Absolute classes only: encoders (delta) and push buttons are never corrected.",
           "enum": [
             "verified",
             "analog",
-            "owned",
-            "delta"
+            "owned"
           ]
         },
         "target": {

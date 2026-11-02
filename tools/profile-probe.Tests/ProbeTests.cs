@@ -426,8 +426,9 @@ public class RepoInputTests
             }
         }
         Assert.Equal(11, Targets.For(Phase.Breakers, inputs).Targets.Count);
-        // 67: profile vars that stay on the probe deny list (ENG MODE, EMER EXIT LT ... joined in gate test 2 prep).
-        Assert.Equal(67, inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null));
+        // 77: profile vars that stay on the probe deny list (ENG MODE, EMER EXIT LT ... joined in gate test 2 prep;
+        // the fire, AGENT, RAT and oxygen MAN ON buttons joined as never_write in CRO-33).
+        Assert.Equal(77, inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null));
     }
 
     [Fact]

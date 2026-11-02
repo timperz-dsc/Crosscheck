@@ -116,16 +116,39 @@ public sealed class EdgeReceiverTests
     [Fact]
     public async Task A_button_the_local_pilot_holds_is_never_pressed_or_released_by_crosscheck()
     {
-        await using var h = await Pm(new EngineOptions { SafetyReleaseMs = 200 });
+        // The other pilot's press waits while the local pilot holds the button; held longer than the cap, it is
+        // a lost press (red), never written into a button the local pilot holds (gate test 2 causes C and D).
+        await using var h = await Pm(new EngineOptions { SafetyReleaseMs = 200, LocalHoldMaxMs = 300 });
         h.Sim.PilotSet(Test, 1); // the local pilot holds it down
-        await Wait.Until(() => h.Commands.Count == 0 && h.Sim.Get(Test) == 1, "held");
-        Assert.True((await h.WaitAck(h.Edge(Test, "down")))["ok"]!.GetValue<bool>());
-        await Task.Delay(400); // longer than the safety cap
+        await Wait.Until(() => h.Commands.Count == 1 && h.Sim.Get(Test) == 1, "held");
+        var down = h.Edge(Test, "down");
+        await Task.Delay(150);
+        Assert.Null(h.AckFor(down)); // held back, not judged yet
+        var ack = await h.WaitAck(down);
+        Assert.False(ack["ok"]!.GetValue<bool>());
+        Assert.Equal("press_lost", ack["reason"]!.GetValue<string>());
         Assert.True((await h.WaitAck(h.Edge(Test, "up", gapMs: 100)))["ok"]!.GetValue<bool>());
-        await Task.Delay(100);
+        await Task.Delay(400); // longer than the safety cap
         Assert.DoesNotContain(h.Sim.Writes, w => w.Name == Test);
         Assert.Equal(1, h.Sim.Get(Test));
         Assert.Empty(h.Channel.SentOf("safety_release"));
+    }
+
+    [Fact]
+    public async Task A_press_during_a_local_press_waits_for_the_local_release_then_lands()
+    {
+        await using var h = await Pm();
+        h.Sim.PilotSet(Test, 1); // local press
+        await Wait.Until(() => h.Commands.Count == 1, "local down sent");
+        var down = h.Edge(Test, "down");
+        var up = h.Edge(Test, "up", gapMs: 80);
+        await Task.Delay(150);
+        Assert.Null(h.AckFor(down));
+        h.Sim.PilotSet(Test, 2); // local release
+        Assert.True((await h.WaitAck(down))["ok"]!.GetValue<bool>());
+        Assert.True((await h.WaitAck(up))["ok"]!.GetValue<bool>());
+        await Wait.Until(() => h.Sim.Get(Test) == 4, "the other pilot's click landed after the local one");
+        Assert.Equal([3.0, 4.0], h.Sim.Writes.Where(w => w.Name == Test).Select(w => w.Value));
     }
 
     [Fact]

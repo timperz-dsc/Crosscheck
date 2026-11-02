@@ -58,6 +58,11 @@
                 "type": "string",
                 "minLength": 1
               },
+              "context": {
+                "description": "Delta items with compare_when only: 'unpowered' while the unit is off (value null), else the values of its mode vars. The display is compared only when both sides report the same context.",
+                "type": "string",
+                "maxLength": 400
+              },
               "report_as": {
                 "description": "Mode items only: show the difference under this control (several indicators of one knob give one line).",
                 "$ref": "../common.schema.json#/$defs/varName"

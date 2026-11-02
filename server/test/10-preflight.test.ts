@@ -71,7 +71,7 @@ describe('10. preflight on join', () => {
   it('accepts a different bridge patch version; join codes are case-insensitive', async () => {
     server = await startServer();
     const host = await hostSession();
-    const guest = await bridge('guest', { ...PREFLIGHT, bridge_version: '0.3.7' });
+    const guest = await bridge('guest', { ...PREFLIGHT, bridge_version: '0.4.7' });
     const answer = await guest.join(host.joinCode.toLowerCase());
     expect(answer.type).toBe('joined');
     expect(body(answer).warnings).toEqual([]);

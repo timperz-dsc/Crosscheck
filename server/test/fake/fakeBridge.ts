@@ -8,7 +8,7 @@ import { sameValue } from '../../src/session/corrections.js';
 import type { FakeSim } from './fakeSim.js';
 
 export const PREFLIGHT: Preflight = {
-  bridge_version: '0.3.0',
+  bridge_version: '0.4.0',
   profile_id: 'fenix-a320',
   profile_hash: 'sha256:7f3a9c1e2b4d5f60',
   aircraft: { package_version: '3.0.0.7613', app_version: '3.0.0.330' },
@@ -68,6 +68,8 @@ export class FakeBridge {
   dropCorrections = 0;
   /** Apply commands but never send acks. */
   dropAcks = false;
+  /** Receiver side of the effect check (protocol 4): report the own lamp after settle. false = never (lost report). */
+  reportEffects = true;
   /** Socket stays open, but nothing is sent any more (one-way stall). */
   mute = false;
   /** The simulator is connected. While false: no snapshot answers and no hashes (like the real bridge). */
@@ -226,7 +228,7 @@ export class FakeBridge {
 
   /** Low-level send (tests use it for malformed or custom messages). */
   send(type: string, body: object, session: string | null = this.sessionId): void {
-    const env = { v: 3, type, session, ts: Date.now(), body };
+    const env = { v: 4, type, session, ts: Date.now(), body };
     const check = sharedValidator().validate(env);
     if (!check.ok) throw new Error(`fake bridge would send an invalid ${type}: ${check.message}`);
     this.sendText(JSON.stringify(env));
@@ -377,8 +379,12 @@ export class FakeBridge {
       const ok = this.sim.turn(b.var, b.delta!, 'remote');
       ack = { id: b.id, ok, observed: this.sim.display(b.var) };
     } else {
-      const ok = this.sim.press(b.var, 'remote');
-      ack = { id: b.id, ok, observed: b.value ?? 1, ...(b.effect ? { effect: this.sim.get(b.effect.var) } : {}) };
+      // An up edge releases the button: no new press (the lamp toggles on the down edge only).
+      const ok = b.edge === 'up' ? true : this.sim.press(b.var, 'remote');
+      ack = { id: b.id, ok, observed: b.value ?? 1 };
+      // Protocol 4: the receiver reports its own lamp after settle (one report per burst in the real bridge).
+      const effect = b.effect;
+      if (effect && this.reportEffects) setTimeout(() => this.send('effect_report', { id: b.id, var: effect.var, value: this.sim.get(effect.var) }), b.settle_ms);
     }
     this.appliedSeq = Math.max(this.appliedSeq, seq);
     this.ackCache.set(b.id, ack);
@@ -393,17 +399,10 @@ export class FakeBridge {
     }
     const cached = this.ackCache.get(b.id);
     if (cached) return this.ack(cached);
-    let ack: AckBody;
-    if (b.class === 'delta') {
-      const change = b.target - this.sim.display(b.var);
-      if (change !== 0) this.sim.turn(b.var, change, 'correction');
-      const observed = this.sim.display(b.var);
-      ack = { id: b.id, ok: sameValue(observed, b.target), observed };
-    } else {
-      this.sim.write(b.var, b.target, 'correction');
-      const observed = this.sim.get(b.var);
-      ack = { id: b.id, ok: sameValue(observed, b.target), observed };
-    }
+    // Protocol 4: corrections are absolute values only (encoders and push buttons are never corrected).
+    this.sim.write(b.var, b.target, 'correction');
+    const observed = this.sim.get(b.var);
+    const ack: AckBody = { id: b.id, ok: sameValue(observed, b.target), observed };
     this.ackCache.set(b.id, ack);
     this.ack(ack);
   }
@@ -428,7 +427,7 @@ export class FakeBridge {
     this.timers = [];
   }
 
-  private nextId(): string {
+  nextId(): string {
     return `${this.name}-${++this.counter}`;
   }
 }

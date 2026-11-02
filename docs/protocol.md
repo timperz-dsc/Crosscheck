@@ -1,4 +1,4 @@
-# Crosscheck protocol v3
+# Crosscheck protocol v4
 
 How the bridges and the session server talk. The server is in [`server/`](../server/), the
 JSON Schema for every message is in [`protocol/schema/`](../protocol/schema/) with one example
@@ -9,23 +9,24 @@ The core rule is the same as everywhere in Crosscheck: every change is confirmed
 desync is ever silent. The server orders, relays, tracks acks, compares snapshots and raises
 visible desyncs. It never invents a value and never writes into the pilot flying's (PF's) sim
 what no pilot did. The one narrow exception is the safety release of a mirrored push button or
-spring-loaded switch (section 5).
+spring-loaded switch (section 5). Irreversible controls on the profile's deny list are never written
+at all (section 5), and encoders are never corrected (section 7).
 
 ## 1. Transport
 
 - One WebSocket per bridge: `ws://<host>:8787/ws` (phase 1: the server runs locally).
 - Text frames, one JSON object per frame, max 256 KiB.
-- `GET /health` answers `{"ok":true,"protocol":3,"sessions":<n>}`.
+- `GET /health` answers `{"ok":true,"protocol":4,"sessions":<n>}`.
 
 ## 2. Envelope
 
 ```json
-{ "v": 3, "type": "command", "session": "s_k3J9xQ2mPa", "seq": 42, "ts": 1793520000000, "body": { } }
+{ "v": 4, "type": "command", "session": "s_k3J9xQ2mPa", "seq": 42, "ts": 1793520000000, "body": { } }
 ```
 
 | Field | Meaning |
 |---|---|
-| `v` | Protocol version, always `3` (bridge 0.3.0 and later; v2 was bridge 0.2.x, v1 the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
+| `v` | Protocol version, always `4` (bridge 0.4.0 and later; v3 was bridge 0.3.x, v2 0.2.x, v1 the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
 | `type` | Message type, snake_case (list below). |
 | `session` | Session id; `null` in `create`, `join` and anything sent before a session exists. |
 | `seq` | Server-assigned, only on server-to-client messages that belong to the session log. One counter per session, strictly increasing. A command's `seq` is its global order. Clients never send `seq`. |
@@ -59,9 +60,11 @@ resume.
 | `drift` | S→C | Owned values (fuel, payload) that differ, for information. Rate limited. |
 | `sim_state` | C→S | The bridge's simulator connected or disconnected. |
 | `unsynced_input` | C→S | A pilot moved a control that is watched read-only (not synced yet). |
-| `effect_report` | C→S | The sender's own effect value after a pulse with `effect` (section 5). |
+| `effect_report` | C→S | A push button's lamp once per burst, from the pilot who pressed and from the receiver (section 5). |
 | `safety_release` | C→S | A receiver released an edge push button Crosscheck had pressed down, because the up never arrived (section 5). |
-| `correction` | S→C | Write this target value (decided by the PF safety rule). |
+| `denied_input` | C→S | A pilot pressed a deny-list control (profile `never_write`) in their own cockpit; never mirrored (section 5). |
+| `counter_suspect` | C→S | A switch behaves like a press counter; it is not synced any more (section 7a). |
+| `correction` | S→C | Write this absolute target value (decided by the PF safety rule). Never for encoders or push buttons. |
 | `control_request` | C→S | "I have control" (from the PM). |
 | `control_give` | C→S | "You have control" (from the PF). |
 | `control_denied` / `control_handover` / `control_changed` | S→C | Refused, freeze, new PF (with open differences). |
@@ -101,13 +104,13 @@ or `pm` changes with control transfer. The host is PF at the start.
 **Preflight.** Sent in `create` and `join`:
 
 ```json
-{ "bridge_version": "0.3.0", "profile_id": "fenix-a320", "profile_hash": "sha256:…",
+{ "bridge_version": "0.4.0", "profile_id": "fenix-a320", "profile_hash": "sha256:…",
   "aircraft": { "package_version": "3.0.0.7613", "app_version": "3.0.0.330" }, "airac": "2611" }
 ```
 
 | Field | Rule |
 |---|---|
-| `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). Before 1.0 the minor counts as the major: `0.2.x` vs `0.3.x` is rejected, `0.3.0` vs `0.3.5` is fine. |
+| `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). Before 1.0 the minor counts as the major: `0.3.x` vs `0.4.x` is rejected, `0.4.0` vs `0.4.5` is fine. |
 | `profile_id`, `profile_hash` | Must match. The hash is compared as an opaque string. The bridge computes it as `sha256:` + hex SHA-256 of the profile file with CRLF normalised to LF, so line endings never change it. |
 | `aircraft.package_version`, `aircraft.app_version` | Must match. |
 | `airac` | Entered by hand (bridge `--airac`); Crosscheck does not read it from the aircraft. Mismatch, or unknown on one side → **warning**, not rejected, with the reminder "Check that both pilots use the same AIRAC". MCDU pages may differ. |
@@ -143,7 +146,10 @@ Flow:
 2. Server relays the command to the other pilot with `origin {client_id, seat, role}` and
    `attempt: 0`, same `seq`.
 3. Receiver applies it, verifies (own L: var, then the effect source from the profile) and
-   answers `ack {id, ok, observed}`.
+   answers `ack {id, ok, observed, reason?}`. `reason` is only set with `ok: false`: `press_lost` (a
+   mirrored press could not be applied: red `press_lost`), `not_synced` (a suspected counter, covered by
+   its amber line: no red) or `display_check` (an encoder click whose proof is its display: no red per
+   click, see section 7).
 4. Server forwards the ack to the origin with `from` and `attempt`.
 
 **Timeouts and retries.** The server waits `settle_ms + 300 ms + receiver RTT`. Only absolute
@@ -157,13 +163,16 @@ last failed ack). Timers pause while the receiver is lost; on resume, commands s
 outage are delivered once (receivers dedupe by id, and never apply a pulse or delta id twice).
 A late `ok` ack for a command that already failed clears its desync.
 
-**Pulse effect check.** A pulse whose var has an effect lamp in the profile (`verify.lvar`)
-carries `effect {var, expect: same|parity}`. The receiver's ack carries `effect`, its lamp after
-settle; `ok` only says the press was stored. The sender reads its own lamp `settle_ms` after the
-press and sends `effect_report {id, var, value}`. The server compares both: equal (`same`) or
-equal odd/even (`parity`) → nothing, also when neither lamp changed (system unpowered on both
-sides). Different, or a value missing after settle + 2 × 300 ms + RTTs → red `desync
-effect_mismatch` with `values {pf, pm}` (the lamp values).
+**Pulse effect check, once per burst (gate test 2 cause D).** A press whose var has an effect lamp
+in the profile (`verify.lvar`) carries `effect {var, expect: same|parity}` on its down edge. Both
+bridges read the lamp once per burst: 400 ms (or `settle_ms`, if longer) after the last edge of that
+button, and send `effect_report {id, var, value}` for the burst's last down edge (the sender for the
+last down it sent, the receiver for the last down it applied). `ok` in the ack only says the press was
+stored. The server keeps one check per button: a newer down edge replaces it, every edge extends its
+wait. It compares both reports: equal (`same`) or equal odd/even (`parity`) → nothing, also when
+neither lamp changed (system unpowered on both sides). Different, or a report missing after 400 ms +
+2 × 300 ms + RTTs after the last edge → red `desync effect_mismatch` with `values {pf, pm}` (the lamps).
+A lamp is never judged in the middle of a burst.
 
 **Tiers.** Every desync carries `tier`. `quiet` only for an indicator (class `observe`): it is
 shown collapsed ("Indicators differ (n)"). Everything else is `red`: a pilot's input did not
@@ -184,11 +193,21 @@ them every sim frame and sends each down and up edge as its own pulse command:
   (a binding that writes 0/1) is one edge if the parity changed (1 → 0 = up). A jump of more
   than 8 steps is not a click: at most one edge from the new parity. `gap_ms` is the time since
   the previous edge of that button.
-- Receiver: writes its own value + 1, never the sender's number. A down is written only from up
-  (even); a button the local pilot already holds is left alone (ack `ok`). An up is written only
-  for a button Crosscheck itself pressed down, after that down was read back, and never sooner
-  than max(50 ms, `gap_ms`) after it. A hold is mirrored for as long as it lasts; there is no
-  fixed pulse timer. A local pilot touching a mirrored button takes it over.
+- Sender, after a collision: Fenix adds 1 on every press and every release, so the local pilot's steps
+  alternate press and release whatever the counter's parity. A click is always sent as down then up.
+- Receiver: writes its own value + 1, never the sender's number. Edges of one button are applied
+  strictly in order: each one first waits for the read-back of the previous edge this bridge wrote,
+  and is judged against that written value, never against a stale read (gate test 2 cause D). A down
+  is written only from up (even). A down that finds the button already down with no local press in
+  progress is a lost press: ack `ok: false, reason: press_lost`, red for both pilots, never `ok`.
+  An up is written only for a button Crosscheck itself pressed down, after that down was read back,
+  and never sooner than max(50 ms, `gap_ms`) after it. A hold is mirrored for as long as it lasts;
+  there is no fixed pulse timer.
+- Local press in progress (gate test 2 cause C): while the local pilot is pressing a button (their down
+  step seen, their up step not yet), incoming edges for that button are held back, in order, and applied
+  after the local release (at most 10 s; after that they are judged as usual, so a down becomes a red
+  lost press). Crosscheck's own mirrored down is then still released by the other pilot's up, also after
+  complete local clicks (+2 each); never while the local pilot is pressing it.
 - Only the down edge carries `effect` (the lamp is compared after the down edge).
 - The server relays `edge` and `gap_ms` unchanged. Edges, like all pulses, are never re-sent.
 
@@ -202,8 +221,9 @@ mirrored "down" edge and the "up" never arrives, it releases the button itself:
   sends `safety_release {var, group, cause: cap|link_lost|peer_lost, observed}`, after resume if
   the link was down; the server raises `desync safety_release` (red) to both. It clears when the
   button state matches again in a snapshot.
-A button the local pilot is holding, or touched after the mirrored down, is never released by
-Crosscheck. The other pilot being lost (`peer_status lost`) counts like a lost link.
+A button the local pilot is pressing is never released by Crosscheck; after complete local clicks
+(+2 each) Crosscheck's own down may still be released. The other pilot being lost (`peer_status lost`)
+counts like a lost link.
 
 **Spring-loaded switches (profile `rest`, owner decision for gate test 2).** RUD TRIM and MAN V/S
 CTL spring back to their middle position. They are `verified`: every change is a command with the
@@ -214,6 +234,30 @@ lost, other pilot lost), it writes the `rest` value itself, only for a switch Cr
 moved in that sim and only while it still shows the value Crosscheck wrote. Never another value,
 never another var, never a switch the local pilot touched; always the red `safety_release` above
 ("Crosscheck returned RUD TRIM to neutral ...").
+
+**Stuck pressed and "Release it" (gate test 2 cause C, owner decision 2026-11-02).** When two pilots
+click one counter button at the same moment, Fenix can leave it resting pressed (odd) in one cockpit;
+a click cannot fix it, because a click adds a press and a release. The server raises red
+`stuck_pressed` when a button is held down on one side only for 5 s (`stuckMs`; `press_mismatch`
+before that), with `client_id` = the pilot whose button is down and `values {pf, pm}` (parities). Only
+that pilot's UI offers "Release it". It writes **one up step** (own value + 1, to even) in that pilot's
+own sim, and only if no pilot holds it on either side: the other side is up (that is why the line
+exists), the button did not move for 5 s here, and no mirrored edge is waiting for it. Never a down,
+never automatic, never mirrored (the other cockpit's button is already up). It clears when the button
+states match again in a snapshot.
+
+**Deny list (profile `never_write`, owner decision 2026-11-02).** Irreversible controls: IDG 1/2
+disconnect, ENG 1/2 and APU fire push buttons, every AGENT/DISCH button (engine, APU, cargo), RAT MAN ON,
+passenger oxygen MAN ON. Not ENG MASTER, DITCHING or EVAC (reversible, they keep syncing); covers keep
+syncing. The bridge's guard refuses these vars on every write path (command, correction, "Set both",
+"Press here only", "Release it", safety release). They are watched instead: a press in one cockpit
+sends `denied_input {var, group, label}` (at most one per 2 s), and the server raises red
+`not_mirrored` for both pilots at once: "IDG 1 pressed in the host cockpit – not mirrored
+(irreversible). Do the same in the other cockpit if intended." The raw value is also compared in
+snapshots (class `denied`), so a pilot who joins later, or a press missed during a reconnect, gives the
+same line after 2 s, naming the cockpit with the higher counter. Never a correction, never a write. It
+clears when both sims show the same value (the same button pressed in the other cockpit). How to mirror
+them is CRO-31.
 
 A command id that is already logged is not relayed again: the origin gets `accepted
 {duplicate: true}` with the original seq (resend after reconnect).
@@ -239,9 +283,11 @@ and corrections on that var, so a stale value is never re-sent.
 
 **Hash.** Every ~2 s (`snapshot_interval_ms`) each client sends per panel group
 `snapshot_hash {group, hash, applied_seq}`. The hash covers the vars of the group with a
-snapshot class (`verified`, `analog`, `owned`, `delta`, `observe`, `pulse`, `toggle`, `mode`;
-never `ignore`). For a `delta` var the bridge reports the display value (e.g. `N_FCU_HEADING`) under
-the encoder's name. An edge push button is reported as `pulse` with its parity only (1 = held
+snapshot class (`verified`, `analog`, `owned`, `delta`, `observe`, `pulse`, `toggle`, `mode`,
+`denied`; never `ignore`). For a `delta` var the bridge reports the display value (e.g. `N_FCU_HEADING`)
+under the encoder's name; with the profile's `compare_when` it adds `context`: `"unpowered"` (and value
+`null`) while the unit is off, else the values of its mode vars (TRK/FPA, MACH, dashed display, the
+selected radio of an RMP). A deny-list var is reported as `denied` with its raw value. An edge push button is reported as `pulse` with its parity only (1 = held
 down), because its counter differs between the sims by design. Its lamp (`verify.lvar`) is the
 button's state and is reported as `{var: <lamp>, class: "toggle", value, button: <button>}`
 instead of an `observe` item. An indicator with a profile `alarm` (an input Crosscheck cannot sync
@@ -274,6 +320,15 @@ the UI lists a toggle item after the other red items of its group. A press in th
 be mirrored and flip both lamps, so the fix is the UI action "Press X here only": one click in
 that pilot's own sim, not mirrored, a pilot action that is never automatic.
 
+**Encoders are never corrected (gate test 2 causes E and F).** A `delta` display that differs is a
+red `display_mismatch` with `values {pf, pm}`, raised only when it still differs 2 s
+(`encoderHoldMs`) after the last click of that knob from either pilot, so a turn in progress never
+raises a line, and an encoder click that did not land is no red line of its own (`display_check`).
+The pilots fix it by turning the knob in the cockpit that is wrong. A display is not compared at all
+(no line, logged `snapshot_not_compared`) while either side reports `context: "unpowered"` or the two
+contexts differ. An encoder without a display is verified by read-back only; its failed click stays a
+red `refused`.
+
 **Mode items are inputs, never corrected.** A `mode` difference is a red `mode_mismatch`, never
 quiet and never written, with the same 2 comparisons / 2 s rule. It is raised under `report_as`
 (several indicators of one knob give one line) with the profile's text as `message`, e.g. "SPD
@@ -290,8 +345,8 @@ the PF's current value. Nothing else.
    **and the PF never confirmed that command** (the PF neither sent it nor acked it ok) →
    correct the side that differs with that value (`source: command_log`, `source_seq`). Only
    this case may write into the PF's sim.
-3. Otherwise → correct **only the PM** to the PF's value (`source: pf_reference`). For
-   `delta` the bridge turns the target display value into a corrective delta.
+3. Otherwise → correct **only the PM** to the PF's value (`source: pf_reference`). Absolute
+   classes only: encoders, push buttons, mode items and deny-list controls are never corrected.
 4. The log value matches neither side, or a value is unknown → `desync` (`log_conflict`,
    `missing_value`); no correction.
 
@@ -350,6 +405,7 @@ removes it. The active ones are listed in `joined.advisories` and `resumed.advis
 | Kind | Key | When | Ends |
 |---|---|---|---|
 | `not_synced` | `not_synced:<var>` | A pilot moved a control that is watched read-only (`unsynced_input`; the list is `profiles/<aircraft>/unsynced.csv`). `seat` = who moved it, `count` = how often. | At the end of the session. |
+| `counter_suspect` | `counter_suspect:<var>` | A bridge saw a `verified` var rise by exactly 1 three times in a row past its allowed values (`counter_suspect`): probably a press counter profiled as a switch (gate test 2 cause A). Both bridges stop syncing it and block its writes; the server never compares or corrects it again and drops its open desync. "Set both" is never offered for it, nor for any var whose values were seen outside its allowed set. | At the end of the session. |
 | `hardware_fighting` | `hardware_fighting:<var>` | 3 `overridden` conflicts on one var within 30 s (both pilots' hardware set it). | 30 s without another override. |
 | `sim_disconnected` | `sim_disconnected:<seat>` | That pilot's `sim_state {connected: false}`. | `sim_state {connected: true}`, or the pilot is lost or leaves. |
 
@@ -461,18 +517,23 @@ this file to a desync report.
 | Ack timeout | `settle_ms` + 300 ms + RTT; 3 re-sends for absolute values only |
 | Indicator hold (quiet desync) | 10 s |
 | Edge button state differs (red) | 2 comparisons in a row or 2 s |
+| Stuck pressed (red, "Release it") | 5 s held down on one side only |
+| Encoder display differs (red, never corrected) | 2 s after the last click |
+| Push button lamp check | once per burst, last edge + 400 ms |
+| Incoming edges held back during a local press | until the local release, at most 10 s |
+| Deny-list press shown | at most once per 2 s per button |
 | Safety release of a mirrored button / up floor | 30 s / 50 ms |
 | Takeover press waiting for control | 5 s, then dropped |
 | Drift: step / at most | per dataref (fuel 50 kg) / every 10 s |
 | Hardware fighting | 3 overrides within 30 s |
 | Conflict window ("overridden") | 1 s |
 | Snapshot interval / mismatch rounds | 2 s / 2 |
-| Correction settle / loop guard | 500 ms / more than 3 per 60 s |
+| Correction settle / loop guard (absolute values only) | 500 ms / more than 3 per 60 s |
 | Control freeze / control ack timeout | 300 ms / 2 s |
 | Session log ring buffer | 2000 entries |
 | Stream | 30 Hz |
 
-## 14. Not in v3
+## 14. Not in v4
 
 - Hosting, accounts, rate limits on join attempts (phase 1 runs locally).
 - The stream field set (after the follower spike).

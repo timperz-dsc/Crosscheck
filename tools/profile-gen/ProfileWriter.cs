@@ -37,9 +37,17 @@ static class ProfileWriter
             if (e.Rest is { } rest) sb.Append("    rest: ").Append(N(rest)).Append('\n');
             if (e.Alarm is { } al)
                 sb.Append("    alarm: { text: ").Append(Q(al.Text)).Append(al.As is { } at ? $", as: {at}" : "").Append(" }\n");
+            if (e.NeverWrite) sb.Append("    never_write: true\n");
             if (e.Press is { } pr) sb.Append("    press: ").Append(pr).Append('\n');
             if (e.PulseMs is { } p) sb.Append("    pulse_ms: ").Append(p).Append('\n');
             if (e.Display is { } d) sb.Append("    display: ").Append(d).Append('\n');
+            if (e.CompareWhen is { } cw)
+            {
+                var parts = new List<string>();
+                if (cw.Powered is { } pw) parts.Add($"powered: {pw}");
+                if (cw.Same is { } same) parts.Add($"same: [{string.Join(", ", same)}]");
+                sb.Append("    compare_when: { ").Append(string.Join(", ", parts)).Append(" }\n");
+            }
             if (e.Verify is { } vf) sb.Append("    verify: ").Append(VerifyText(vf)).Append('\n');
             sb.Append("    note: ").Append(Q(string.Join("; ", e.Notes))).Append('\n');
         }

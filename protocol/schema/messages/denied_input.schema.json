@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/denied_input.schema.json",
+  "title": "denied_input",
+  "description": "A pilot pressed a deny-list control (profile never_write: IDG disconnect, fire push buttons, AGENT/DISCH, RAT MAN ON, oxygen MAN ON) in their own cockpit. Never mirrored, never written: the server shows both pilots a red not_mirrored line. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "denied_input"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "group",
+        "label"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

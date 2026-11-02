@@ -5,6 +5,7 @@ import type { Actions, BridgeEvent, RecentItem, Status } from './types';
 export const RECENT_TYPES = new Set([
   'action_confirmed', 'action_failed', 'action_applied', 'corrected', 'overridden', 'desync', 'desync_cleared',
   'control_changed', 'takeover_pressed', 'peer_joined', 'peer_lost', 'peer_resumed', 'peer_left', 'peer_expired',
+  'press_here_only', 'release_it', 'denied_input', 'counter_suspect', 'press_lost',
 ]);
 
 async function post(path: string, body: unknown = {}): Promise<void> {
@@ -117,6 +118,7 @@ export function useBridge(pollMs = 1000): BridgeState {
     giveControl: () => run(() => post('/api/control/give'))(),
     setBoth: (variable, value) => run(() => post('/api/set', { var: variable, value }))(),
     pressHere: (variable) => run(() => post('/api/press-here', { var: variable }))(),
+    releaseIt: (variable) => run(() => post('/api/release', { var: variable }))(),
     setServer: (url) => run(() => post('/api/settings/server', { url }))(),
     applyUpdate: () => run(() => post('/api/update/apply'))(),
   };

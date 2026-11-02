@@ -69,6 +69,7 @@ internal sealed class SemanticValidator
             CheckValues(v, at);
             if (v.Verify is { } verify) CheckVerify(verify, v.Name, $"{at}/verify", varsByName, datarefPaths);
             if (v.Class == SyncClass.Delta && v.Display is { } display) CheckDisplay(v.Name, display, at, varsByName);
+            if (v.CompareWhen is { } when) CheckCompareWhen(v, when, at, varsByName);
             if (v.ValueLabels is { } labels) CheckValueLabels(v, labels, at);
         }
 
@@ -130,7 +131,7 @@ internal sealed class SemanticValidator
 
         switch (v.Class)
         {
-            case SyncClass.Verified when v.Values is null && v.Range is null:
+            case SyncClass.Verified when v.Values is null && v.Range is null && !v.NeverWrite:
                 Add(at, "class verified needs 'values' or 'range'");
                 break;
             case SyncClass.Analog when v.Range is null:
@@ -156,6 +157,10 @@ internal sealed class SemanticValidator
         Unused(v.RateHz is not null, "rate_hz", [SyncClass.Stream]);
         Unused(v.Rest is not null, "rest", [SyncClass.Verified]);
         Unused(v.Alarm is not null, "alarm", [SyncClass.Observe]);
+        Unused(v.NeverWrite, "never_write", [SyncClass.Verified, SyncClass.Pulse]);
+        Unused(v.CompareWhen is not null, "compare_when", [SyncClass.Delta]);
+        if (v.NeverWrite && v.Rest is not null)
+            Add($"{at}/rest", "a never_write var is never written, so it has no 'rest' to return to");
         if (v is { Class: SyncClass.Verified, Rest: { } rest })
         {
             var ok = v.Values?.Contains(rest) ?? (v.Range is { Count: 2 } r && rest >= r[0] && rest <= r[1]);
@@ -183,6 +188,21 @@ internal sealed class SemanticValidator
             Add($"{at}/display", $"display var '{display}' is not defined in this profile");
         else if (_profile.Vars[target].Class != SyncClass.Observe)
             Add($"{at}/display", $"display var '{display}' must have class observe, it has {Lower(_profile.Vars[target].Class)}");
+    }
+
+    private void CheckCompareWhen(VarEntry v, CompareWhen when, string at, Dictionary<string, int> varsByName)
+    {
+        if (v.Display is null)
+            Add($"{at}/compare_when", "'compare_when' needs 'display' (only a display is compared between the sims)");
+        foreach (var (name, pointer) in new[] { (when.Powered, $"{at}/compare_when/powered") }
+            .Concat((when.Same ?? []).Select((s, k) => ((string?)s, $"{at}/compare_when/same/{k}"))))
+        {
+            if (name is null) continue;
+            if (!varsByName.TryGetValue(name, out var target))
+                Add(pointer, $"compare_when var '{name}' is not defined in this profile");
+            else if (_profile.Vars[target].Class is not SyncClass.Observe)
+                Add(pointer, $"compare_when var '{name}' must have class observe (it is only read), it has {Lower(_profile.Vars[target].Class)}");
+        }
     }
 
     private void CheckVerify(

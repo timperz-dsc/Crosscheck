@@ -80,7 +80,7 @@ type Mocked = { [K in keyof Actions]: ReturnType<typeof vi.fn> & Actions[K] };
 export function actions(): Mocked {
   const ok = () => vi.fn(async () => {});
   return {
-    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), pressHere: ok(), setServer: ok(), applyUpdate: ok(),
+    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), pressHere: ok(), releaseIt: ok(), setServer: ok(), applyUpdate: ok(),
   } as unknown as Mocked;
 }
 

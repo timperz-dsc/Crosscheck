@@ -8,13 +8,17 @@ public sealed class SafetyViolationException(string message) : InvalidOperationE
 /// <summary>
 /// Hard limits on every write, enforced inside the sim adapters so nothing above them can
 /// bypass it: only profile vars of a writable class, only L: var names, only values inside
-/// the profile's set or range.
+/// the profile's set or range. Never a var on the deny list (profile never_write: IDG
+/// disconnect, fire push buttons, AGENT/DISCH ...), on any path (command, correction, "Set both",
+/// "Press here only", "Release it", safety release), and never a var blocked at runtime
+/// (a suspected press counter, CRO-33).
 /// </summary>
 public sealed partial class SimSafetyGuard
 {
     private static readonly HashSet<SyncClass> Writable = [SyncClass.Verified, SyncClass.Analog, SyncClass.Owned, SyncClass.Delta, SyncClass.Pulse];
     private readonly Dictionary<string, VarEntry> _writable;
     private int _refused;
+    private readonly Dictionary<string, string> _blocked = new(StringComparer.Ordinal);
 
     public SimSafetyGuard(Profile profile)
     {
@@ -23,7 +27,21 @@ public sealed partial class SimSafetyGuard
 
     public int Refused => _refused;
 
-    public bool IsWritable(string name) => _writable.ContainsKey(name);
+    public bool IsWritable(string name) => _writable.ContainsKey(name) && !IsDenied(name) && !IsBlocked(name);
+
+    /// <summary>On the profile's deny list (never_write): never written on any path.</summary>
+    public bool IsDenied(string name) => _writable.TryGetValue(name, out var spec) && spec.NeverWrite;
+
+    /// <summary>Blocked at runtime: every later write is refused for the rest of the session.</summary>
+    public void Block(string name, string why)
+    {
+        lock (_blocked) _blocked.TryAdd(name, why);
+    }
+
+    public bool IsBlocked(string name)
+    {
+        lock (_blocked) return _blocked.ContainsKey(name);
+    }
 
     /// <summary>Whether a write would pass, without counting a refusal (for the UI's "Set both" options).</summary>
     public bool IsAllowedValue(string name, double value) => Reason(name, value) is null;
@@ -41,6 +59,9 @@ public sealed partial class SimSafetyGuard
     {
         if (!NamePattern().IsMatch(name)) return "not a plain L: var name";
         if (!_writable.TryGetValue(name, out var spec)) return "not a writable var in the profile";
+        if (spec.NeverWrite) return "on the deny list (irreversible); Crosscheck never writes it";
+        lock (_blocked)
+            if (_blocked.TryGetValue(name, out var why)) return why;
         if (!double.IsFinite(value)) return "not a finite number";
         switch (spec.Class)
         {

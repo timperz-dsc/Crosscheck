@@ -70,11 +70,20 @@ vars:
     verify: { graphql: system.switches.S_FCU_EFIS1_ND_MODE, settle_ms: 100 }
 
   # delta: write the change only, never the absolute value. N_FCU_ALTITUDE shows the result.
+  # Never corrected; the display is compared only while the FCU is powered (gate test 2 cause F).
   - name: E_FCU_ALTITUDE
     label: FCU altitude
     class: delta
     group: fcu
     display: N_FCU_ALTITUDE
+    compare_when: { powered: B_FCU_POWER }
+
+  # FCU power (0 = unpowered): hand-written because E_FCU_ALTITUDE above refers to it.
+  - name: B_FCU_POWER
+    label: "POWER"
+    class: observe
+    group: fcu
+    note: "label generated"
 
   # pulse, press edge: Fenix counts +1 on press and +1 on release (odd = down). Each edge is
   # mirrored as it happens; the receiver writes its own value + 1 (observe-report.md, CRO-29).
@@ -1350,6 +1359,7 @@ vars:
     class: verified
     group: overhead
     values: [0, 1, 2]
+    never_write: true
     note: "label generated; three positions; values from the positions pilots used in gate test 1 (CRO-27)"
   - name: S_OH_CARGO_DISC_1_OLD_LAYOUT_Cover
     label: "DISC 1 OLD LAYOUT cover"
@@ -1363,6 +1373,7 @@ vars:
     class: verified
     group: overhead
     values: [0, 1, 2]
+    never_write: true
     note: "label generated; three positions; values from the positions pilots used in gate test 1 (CRO-27)"
   - name: S_OH_CARGO_DISC_2_OLD_LAYOUT_Cover
     label: "DISC 2 OLD LAYOUT cover"
@@ -1503,10 +1514,11 @@ vars:
     note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_ELEC_IDG1
     label: "IDG1"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    never_write: true
+    press: edge
+    note: "label generated; IDG 1 DISC: push button counter (+1/+1); deny list, never written (CRO-33)"
   - name: S_OH_ELEC_IDG1_Cover
     label: "IDG1 cover"
     value_labels: { "0": closed, "1": open }
@@ -1516,10 +1528,11 @@ vars:
     note: "label generated"
   - name: S_OH_ELEC_IDG2
     label: "IDG2"
-    class: verified
+    class: pulse
     group: overhead
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+    never_write: true
+    press: edge
+    note: "label generated; IDG 2 DISC: push button counter (+1/+1); deny list, never written (CRO-33)"
   - name: S_OH_ELEC_IDG2_Cover
     label: "IDG2 cover"
     value_labels: { "0": closed, "1": open }
@@ -1684,6 +1697,20 @@ vars:
     group: overhead
     values: [0, 1]
     note: "label generated"
+  - name: S_OH_FIRE_APU_AGENT
+    label: "APU AGENT"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; APU AGENT: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
+  - name: S_OH_FIRE_APU_BUTTON
+    label: "APU BUTTON"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; APU FIRE push button: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
   - name: S_OH_FIRE_APU_BUTTON_Cover
     label: "APU BUTTON cover"
     value_labels: { "0": closed, "1": open }
@@ -1697,6 +1724,27 @@ vars:
     group: overhead
     press: edge
     note: "label generated"
+  - name: S_OH_FIRE_ENG1_AGENT1
+    label: "ENG1 AGENT1"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; ENG 1 AGENT 1: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
+  - name: S_OH_FIRE_ENG1_AGENT2
+    label: "ENG1 AGENT2"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; ENG 1 AGENT 2: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
+  - name: S_OH_FIRE_ENG1_BUTTON
+    label: "ENG1 BUTTON"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; ENG 1 FIRE push button: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
   - name: S_OH_FIRE_ENG1_BUTTON_Cover
     label: "ENG1 BUTTON cover"
     value_labels: { "0": closed, "1": open }
@@ -1710,6 +1758,27 @@ vars:
     group: overhead
     press: edge
     note: "label generated"
+  - name: S_OH_FIRE_ENG2_AGENT1
+    label: "ENG2 AGENT1"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; ENG 2 AGENT 1: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
+  - name: S_OH_FIRE_ENG2_AGENT2
+    label: "ENG2 AGENT2"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; ENG 2 AGENT 2: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
+  - name: S_OH_FIRE_ENG2_BUTTON
+    label: "ENG2 BUTTON"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; ENG 2 FIRE push button: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
   - name: S_OH_FIRE_ENG2_BUTTON_Cover
     label: "ENG2 BUTTON cover"
     value_labels: { "0": closed, "1": open }
@@ -1872,11 +1941,11 @@ vars:
     note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
   - name: S_OH_HYD_BLUE_ELEC_PUMP
     label: "BLUE ELEC PUMP"
-    class: pulse
+    class: verified
     group: overhead
-    press: edge
+    values: [0, 1]
     verify: { lvar: I_OH_HYD_BLUE_ELEC_PUMP_L, settle_ms: 150 }
-    note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
+    note: "label generated; 0/1 latch, like PRESS MODE SEL and FUEL X FEED (gate test 2 cause B); lamp as the check"
   - name: S_OH_HYD_BLUE_ELEC_PUMP_Cover
     label: "BLUE ELEC PUMP cover"
     value_labels: { "0": closed, "1": open }
@@ -1961,6 +2030,13 @@ vars:
     values: [0, 1]
     verify: { lvar: I_OH_HYD_PTU_L, settle_ms: 150 }
     note: "label generated; values [0,1] confirmed in step 2; lower-half rule"
+  - name: S_OH_HYD_RAT_MAN_ON
+    label: "RAT MAN ON"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; RAT MAN ON: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
   - name: S_OH_HYD_RAT_MAN_ON_Cover
     label: "RAT MAN ON cover"
     value_labels: { "0": closed, "1": open }
@@ -2095,6 +2171,13 @@ vars:
     group: overhead
     values: [0, 1]
     note: "label generated"
+  - name: S_OH_OXYGEN_MASK_MAN_ON
+    label: "MASK MAN ON"
+    class: pulse
+    group: overhead
+    never_write: true
+    press: edge
+    note: "label generated; passenger oxygen MASK MAN ON: deny list, never written; watched only (CRO-33). Class from the Fenix push button rule, never probed"
   - name: S_OH_OXYGEN_MASK_MAN_ON_Cover
     label: "MASK MAN ON cover"
     value_labels: { "0": closed, "1": open }
@@ -2332,11 +2415,6 @@ vars:
     group: fcu
     alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
     note: "label generated"
-  - name: B_FCU_POWER
-    label: "POWER"
-    class: observe
-    group: fcu
-    note: "label generated"
   - name: B_FCU_SPEED_DASHED
     label: "SPEED DASHED"
     class: observe
@@ -2364,18 +2442,21 @@ vars:
     class: delta
     group: fcu
     display: N_FCU_HEADING
+    compare_when: { powered: B_FCU_POWER, same: [B_FCU_HEADING_DASHED, B_FCU_TRACK_FPA_MODE] }
     note: "label generated"
   - name: E_FCU_SPEED
     label: "SPEED"
     class: delta
     group: fcu
     display: N_FCU_SPEED
+    compare_when: { powered: B_FCU_POWER, same: [B_FCU_SPEED_DASHED, B_FCU_SPEED_MACH] }
     note: "label generated"
   - name: E_FCU_VS
     label: "VS"
     class: delta
     group: fcu
     display: N_FCU_VS
+    compare_when: { powered: B_FCU_POWER, same: [B_FCU_VERTICALSPEED_DASHED, B_FCU_TRACK_FPA_MODE] }
     note: "label generated"
   - name: I_FCU_ALTITUDE_MANAGED
     label: "ALTITUDE MANAGED light"
@@ -2551,12 +2632,14 @@ vars:
     class: delta
     group: efis
     display: N_FCU_EFIS1_BARO_HPA
+    compare_when: { powered: B_FCU_POWER, same: [B_FCU_EFIS1_BARO_STD] }
     note: "label generated; display from step 2: N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH"
   - name: E_FCU_EFIS2_BARO
     label: "EFIS2 BARO"
     class: delta
     group: efis
     display: N_FCU_EFIS2_BARO_HPA
+    compare_when: { powered: B_FCU_POWER, same: [B_FCU_EFIS2_BARO_STD] }
     note: "label generated; display from step 2: N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH"
   - name: I_FCU_EFIS1_ARPT
     label: "EFIS1 ARPT light"
@@ -2671,12 +2754,6 @@ vars:
     group: efis
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
-  - name: S_FCU_EFIS1_BARO_STD
-    label: "EFIS1 BARO STD switch"
-    class: verified
-    group: efis
-    values: [0, 1]
-    note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS1_BARO_STD I_FCU_EFIS1_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
   - name: S_FCU_EFIS1_CSTR
     label: "EFIS1 CSTR"
     class: pulse
@@ -2751,12 +2828,6 @@ vars:
     group: efis
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS2_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
-  - name: S_FCU_EFIS2_BARO_STD
-    label: "EFIS2 BARO STD switch"
-    class: verified
-    group: efis
-    values: [0, 1]
-    note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS2_BARO_STD I_FCU_EFIS2_QNH): latching, or momentary with an effect only while held; GraphQL 0 -> 0 -> 0"
   - name: S_FCU_EFIS2_CSTR
     label: "EFIS2 CSTR"
     class: pulse
@@ -3974,30 +4045,35 @@ vars:
     class: delta
     group: pedestal
     display: N_PED_RMP1_STDBY
+    compare_when: { powered: B_PED_RMP1_POWER, same: [I_PED_RMP1_VHF1, I_PED_RMP1_VHF2, I_PED_RMP1_VHF3, I_PED_RMP1_HF1, I_PED_RMP1_HF2, I_PED_RMP1_AM, I_PED_RMP1_NAV, I_PED_RMP1_VOR, I_PED_RMP1_ILS, I_PED_RMP1_MLS, I_PED_RMP1_ADF, I_PED_RMP1_BFO] }
     note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
   - name: E_PED_RMP1_OUTER
     label: "RMP1 OUTER"
     class: delta
     group: pedestal
     display: N_PED_RMP1_STDBY
+    compare_when: { powered: B_PED_RMP1_POWER, same: [I_PED_RMP1_VHF1, I_PED_RMP1_VHF2, I_PED_RMP1_VHF3, I_PED_RMP1_HF1, I_PED_RMP1_HF2, I_PED_RMP1_AM, I_PED_RMP1_NAV, I_PED_RMP1_VOR, I_PED_RMP1_ILS, I_PED_RMP1_MLS, I_PED_RMP1_ADF, I_PED_RMP1_BFO] }
     note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
   - name: E_PED_RMP2_INNER
     label: "RMP2 INNER"
     class: delta
     group: pedestal
     display: N_PED_RMP2_STDBY
+    compare_when: { powered: B_PED_RMP2_POWER, same: [I_PED_RMP2_VHF1, I_PED_RMP2_VHF2, I_PED_RMP2_VHF3, I_PED_RMP2_HF1, I_PED_RMP2_HF2, I_PED_RMP2_AM, I_PED_RMP2_NAV, I_PED_RMP2_VOR, I_PED_RMP2_ILS, I_PED_RMP2_MLS, I_PED_RMP2_ADF, I_PED_RMP2_BFO] }
     note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
   - name: E_PED_RMP2_OUTER
     label: "RMP2 OUTER"
     class: delta
     group: pedestal
     display: N_PED_RMP2_STDBY
+    compare_when: { powered: B_PED_RMP2_POWER, same: [I_PED_RMP2_VHF1, I_PED_RMP2_VHF2, I_PED_RMP2_VHF3, I_PED_RMP2_HF1, I_PED_RMP2_HF2, I_PED_RMP2_AM, I_PED_RMP2_NAV, I_PED_RMP2_VOR, I_PED_RMP2_ILS, I_PED_RMP2_MLS, I_PED_RMP2_ADF, I_PED_RMP2_BFO] }
     note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
   - name: E_PED_RMP3_INNER
     label: "RMP3 INNER"
     class: delta
     group: pedestal
     display: N_PED_RMP3_STDBY
+    compare_when: { powered: B_PED_RMP3_POWER, same: [I_PED_RMP3_VHF1, I_PED_RMP3_VHF2, I_PED_RMP3_VHF3, I_PED_RMP3_HF1, I_PED_RMP3_HF2, I_PED_RMP3_AM, I_PED_RMP3_NAV, I_PED_RMP3_VOR, I_PED_RMP3_ILS, I_PED_RMP3_MLS, I_PED_RMP3_ADF, I_PED_RMP3_BFO] }
     note: "label generated; display from step 2: N_PED_RMP3_STDBY follows +1/-1"
   # -1 was not accepted at the gate (CRO-8 step 2 rerun); check in the gate test (CRO-22)
   - name: E_PED_RMP3_OUTER
@@ -5629,12 +5705,6 @@ vars:
     group: pedestal
     press: edge
     note: "label generated"
-  - name: S_PED_COCKPIT_DOOR_VIDEO
-    label: "COCKPIT DOOR VIDEO"
-    class: verified
-    group: pedestal
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
   - name: S_PED_DRAIMS1_0
     label: "DRAIMS1 0"
     class: pulse
@@ -7590,15 +7660,13 @@ vars:
     class: pulse
     group: ecam
     press: edge
-    verify: { lvar: I_ECAM_CLR_LEFT, settle_ms: 150 }
-    note: "label generated"
+    note: "label generated; lamp I_ECAM_CLR_LEFT follows ECAM, not the button: no effect check (gate test 2, CRO-33)"
   - name: S_ECAM_CLR_RIGHT
     label: "ECAM CLR RIGHT"
     class: pulse
     group: ecam
     press: edge
-    verify: { lvar: I_ECAM_CLR_RIGHT, settle_ms: 150 }
-    note: "label generated"
+    note: "label generated; lamp I_ECAM_CLR_RIGHT follows ECAM, not the button: no effect check (gate test 2, CRO-33)"
   - name: S_ECAM_COND
     label: "ECAM COND"
     class: pulse

@@ -41,21 +41,25 @@ public sealed class PulseEffectTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task The_receiver_acks_with_its_lamp_and_does_not_judge_it()
+    public async Task The_receiver_reports_its_lamp_once_after_the_burst_and_does_not_judge_it()
     {
         var id = _h.Edge("S_FCU_EFIS1_FD", "down", settleMs: 100);
         var ack = await _h.WaitAck(id);
         Assert.True(ack["ok"]!.GetValue<bool>());
-        Assert.Equal(1, ack["effect"]!.GetValue<double>());
-        var up = await _h.WaitAck(_h.Edge("S_FCU_EFIS1_FD", "up", gapMs: 60, settleMs: 100));
-        Assert.Null(up["effect"]); // no lamp check after an up edge
+        Assert.Null(ack["effect"]); // protocol 4: the lamp goes in effect_report, once per burst
+        Assert.True((await _h.WaitAck(_h.Edge("S_FCU_EFIS1_FD", "up", gapMs: 60, settleMs: 100)))["ok"]!.GetValue<bool>());
+        await Wait.Until(() => _h.Channel.SentOf("effect_report").Count == 1, "one effect report for the burst");
+        var report = _h.Channel.SentOf("effect_report")[0];
+        Assert.Equal(id, report["id"]!.GetValue<string>()); // for the burst's last down edge
+        Assert.Equal(1, report["value"]!.GetValue<double>());
 
         // Unpowered: the press is stored, the lamp does not change. Still ok: the server compares both sims.
         _h.Sim.Unpower("S_FCU_EFIS1_FD");
         var id2 = _h.Edge("S_FCU_EFIS1_FD", "down", settleMs: 100);
-        var ack2 = await _h.WaitAck(id2);
-        Assert.True(ack2["ok"]!.GetValue<bool>());
-        Assert.Equal(1, ack2["effect"]!.GetValue<double>());
+        Assert.True((await _h.WaitAck(id2))["ok"]!.GetValue<bool>());
+        await Wait.Until(() => _h.Channel.SentOf("effect_report").Count == 2, "second report");
+        Assert.Equal(id2, _h.Channel.SentOf("effect_report")[1]["id"]!.GetValue<string>());
+        Assert.Equal(1, _h.Channel.SentOf("effect_report")[1]["value"]!.GetValue<double>());
     }
 }
 
@@ -176,7 +180,8 @@ public sealed class UnsyncedListTests
         var list = UnsyncedList.LoadNextTo(path, profile);
         Assert.True(list.Labels.Count > 150);
         Assert.Contains("S_FCU_SPEED", list.Labels.Keys); // one direction is invisible: unsynced (amber) for gate test 2
-        Assert.Contains("S_OH_FIRE_ENG1_BUTTON", list.Labels.Keys); // never pressed in tests, stays unsynced
+        Assert.DoesNotContain("S_OH_FIRE_ENG1_BUTTON", list.Labels.Keys); // on the deny list (CRO-33): watched, never written
+        Assert.Contains("S_PED_COCKPIT_DOOR_VIDEO", list.Labels.Keys); // a counter: not synced until an observe run
         Assert.DoesNotContain("S_OH_ELEC_APU_START", list.Labels.Keys); // an edge button since gate test 2 prep
         Assert.DoesNotContain("S_FCU_AP1", list.Labels.Keys); // observed in CRO-29, now an edge button
         var inProfile = profile.Vars.Select(v => v.Name).ToHashSet();

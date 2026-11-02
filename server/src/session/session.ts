@@ -8,10 +8,10 @@ import {
   type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
   type EffectReportBody, type EffectSpec, type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
   type Seat, type SimStateBody, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Tier, type Timing,
-  type SafetyReleaseBody, type UnsyncedInputBody,
+  type SafetyReleaseBody, type UnsyncedInputBody, type DeniedInputBody, type CounterSuspectBody,
 } from '../protocol/types.js';
 import { CorrectionGuard } from './correctionGuard.js';
-import { buttonDecision, decideCorrections, diffValues, type LoggedCommand, type RawDecision } from './corrections.js';
+import { buttonDecision, decideCorrections, diffValues, type LoggedCommand, type RawDecision, type VarDiff } from './corrections.js';
 import { newClientId, newResumeToken } from './joinCode.js';
 import { PendingAcks, type PendingEntry } from './pendingAcks.js';
 import { comparePreflight } from './preflight.js';
@@ -98,6 +98,8 @@ interface EffectCheck {
   effect: EffectSpec;
   origin: string;
   receiver: string;
+  /** settle_ms of the down edge that started it. */
+  settleMs: number;
   sender?: Scalar;
   received?: Scalar;
   timer: NodeJS.Timeout;
@@ -154,6 +156,10 @@ export class Session {
   /** Recent overrides per var (hardware fighting) and the timer that ends the advisory. */
   private readonly overrides = new Map<string, { times: number[]; timer: NodeJS.Timeout | null }>();
   private readonly effectChecks = new Map<string, EffectCheck>();
+  /** The open effect check per button (one per burst). */
+  private readonly effectByVar = new Map<string, EffectCheck>();
+  /** Vars a bridge found to behave like press counters: never compared or corrected again. */
+  private readonly counterSuspects = new Set<string>();
   /** Drift step per owned var, from snapshot values. */
   private readonly driftSteps = new Map<string, number>();
   private handover: { epoch: number; kind: ControlKind; newPf: string; prevPf: string | null; confirmed: ControlConfirm[]; timer: NodeJS.Timeout } | null = null;
@@ -301,6 +307,8 @@ export class Session {
       case 'unsynced_input': return this.onUnsyncedInput(slot, body);
       case 'effect_report': return this.onEffectReport(slot, body);
       case 'safety_release': return this.onSafetyRelease(slot, body);
+      case 'denied_input': return this.onDeniedInput(slot, body);
+      case 'counter_suspect': return this.onCounterSuspect(slot, body);
       default:
         this.sendError(slot, 'forbidden', `${msg.type} is not allowed from a client in a session`);
     }
@@ -368,6 +376,7 @@ export class Session {
         settleMs: body.settle_ms, message: relayed, retry: absolute,
       }, peer.state === 'connected');
       if (body.effect && body.class === 'pulse') this.startEffectCheck(body, slot, peer);
+      else if (body.edge) this.extendEffectCheck(body);
     }
 
     if (conflict) {
@@ -422,16 +431,10 @@ export class Session {
       if (origin) {
         this.emit([origin], 'ack', {
           id: e.id, ok: true, observed: ack.observed, ...(ack.superseded ? { superseded: true } : {}), from: e.to, attempt: e.attempt,
-          ...(ack.effect !== undefined ? { effect: ack.effect } : {}),
         });
       }
       // The input arrived: an open desync for this var is resolved by it.
       this.clearDesync(e.var, 'confirmed');
-      const check = this.effectChecks.get(e.id);
-      if (check) {
-        check.received = ack.effect ?? null;
-        this.completeEffectCheck(check, false);
-      }
     } else {
       const target = this.slot(e.to);
       this.emit(this.slots, 'notice', {
@@ -449,6 +452,22 @@ export class Session {
       const origin = e.origin ? this.slot(e.origin) : undefined;
       if (origin && e.lastAck) {
         this.emit([origin], 'ack', { id: e.id, ok: false, observed, from: e.to, attempt: e.attempt });
+      }
+      const ackReason = reason === 'refused' ? e.lastAck?.reason : undefined;
+      if (ackReason === 'not_synced' || ackReason === 'display_check') {
+        // A suspected counter has its amber line; an encoder click is proven by its display 2 s after the
+        // last click (display_mismatch). Neither is a red line of its own (gate test 2 causes A and E).
+        this.log.event('ack_failed_quiet', { id: e.id, var: e.var, reason: ackReason, client: e.to });
+        return;
+      }
+      if (ackReason === 'press_lost') {
+        this.failedIds.set(e.id, { var: e.var, ...(e.origin ? { origin: e.origin } : {}), attempt: e.attempt });
+        if (this.failedIds.size > MAX_FAILED_IDS) this.failedIds.delete(this.failedIds.keys().next().value!);
+        this.raiseDesync({
+          var: e.var, group: e.group, reason: 'press_lost', expected: e.expected, observed, command_id: e.id, client_id: e.to,
+          message: `${e.var}: a press from the ${origin?.seat ?? 'other'} side was lost in the ${receiver?.seat ?? 'other'} cockpit (the button was already down there).`,
+        }, false, 'red', null);
+        return;
       }
       const tries = e.retry ? ` after ${this.config.maxRetries} re-sends` : '';
       const what = reason === 'no_ack' ? `no ack${tries}` : `value refused${tries}`;
@@ -489,12 +508,15 @@ export class Session {
   }
 
   /** A desync clears only when the values match, a command for the var is confirmed, or a correction is confirmed. */
-  private clearDesync(name: string, why: 'match' | 'confirmed' | 'corrected'): void {
+  private clearDesync(name: string, why: 'match' | 'confirmed' | 'corrected' | 'not_synced'): void {
     const open = this.desyncs.get(name);
     if (!open) return;
     this.desyncs.delete(name);
     this.guard.reset(name);
-    const text = { match: 'values match again', confirmed: 'a command for it was confirmed', corrected: 'correction confirmed' }[why];
+    const text = {
+      match: 'values match again', confirmed: 'a command for it was confirmed', corrected: 'correction confirmed',
+      not_synced: 'not synced any more: probably a press counter',
+    }[why];
     this.emit(this.slots, 'notice', {
       kind: 'desync_cleared', var: name, ...(open.group ? { group: open.group } : {}), reason: open.reason,
       message: `${name}: desync cleared (${text}).`,
@@ -638,32 +660,50 @@ export class Session {
       return;
     }
 
-    const raw: RawDecision[] = pf
+    const raw: RawDecision[] = (pf
       ? decideCorrections(diffs, (n) => this.lastLogged(n))
-      : diffs.map((d) => buttonDecision(d) ?? { ...d, action: 'desync' as const, reason: 'no_pf' as const });
+      : diffs.map((d) => buttonDecision(d) ?? { ...d, action: 'desync' as const, reason: 'no_pf' as const }))
+      .filter((d) => {
+        // An encoder display while its unit is unpowered or in another mode, or a suspected counter: nothing to decide.
+        const why = d.action === 'skip' ? d.why : this.counterSuspects.has(d.var) ? 'counter_suspect' : null;
+        if (why) this.log.event('snapshot_not_compared', { group, var: d.var, why, pf: d.pf, pm: d.pm });
+        return why === null;
+      });
 
     const decisions: DiffDecision[] = [];
     const toCorrect: Extract<RawDecision, { action: 'correct' }>[] = [];
-    const toRaise: { d: RawDecision; reason: DesyncReason; blocking: boolean; text: string }[] = [];
+    const toRaise: { d: RawDecision; reason: DesyncReason; blocking: boolean; text: string; extra?: Record<string, unknown> }[] = [];
 
     for (const d of raw) {
+      if (d.action === 'skip') continue;
       // A toggle lamp is reported under its button (the control the pilots press), a mode item under report_as.
       const key = reportKey(d);
       const open = this.desyncs.get(key);
       const base = { var: d.var, class: d.class, pf: d.pf, pm: d.pm };
       if (d.action === 'desync') {
         const tier = tierFor(d.class);
-        if (open && open.reason === d.reason) {
-          decisions.push({ ...base, action: 'held', reason: d.reason });
+        // A button held down on one side only for stuckMs is stuck pressed in that cockpit (gate test 2 cause C).
+        const stuck = d.reason === 'press_mismatch' ? this.stuckSide(g, d, ref, other, now) : null;
+        const reason: DesyncReason = stuck ? 'stuck_pressed' : d.reason;
+        const pressedBy = d.reason === 'not_mirrored' ? this.pressedSide(d, ref, other) : null;
+        if (open && open.reason === reason) {
+          decisions.push({ ...base, action: 'held', reason });
         } else if (tier === 'quiet' && now - (g.observeSince.get(d.var) ?? (g.observeSince.set(d.var, now), now)) < this.config.indicatorHoldMs) {
           // An indicator must differ for a while before it counts (it may just lag the input).
-          decisions.push({ ...base, action: 'held', reason: d.reason });
-        } else if ((d.class === 'pulse' || d.class === 'toggle' || d.class === 'mode') && !this.buttonPersists(g, d.var, now)) {
+          decisions.push({ ...base, action: 'held', reason });
+        } else if ((d.class === 'pulse' || d.class === 'toggle' || d.class === 'mode' || d.class === 'denied') && !this.buttonPersists(g, d.var, now)) {
           // A snapshot taken mid-mirror must never raise a false red: 2 comparisons in a row or buttonHoldMs.
-          decisions.push({ ...base, action: 'held', reason: d.reason });
+          decisions.push({ ...base, action: 'held', reason });
+        } else if (d.class === 'delta' && !this.encoderPersists(g, d.var, now)) {
+          // An encoder display: one line only if it still differs encoderHoldMs after the last click.
+          decisions.push({ ...base, action: 'held', reason });
         } else {
-          decisions.push({ ...base, action: 'desync', reason: d.reason });
-          toRaise.push({ d, reason: d.reason, blocking: true, text: desyncText(d.var, d.reason) });
+          decisions.push({ ...base, action: 'desync', reason });
+          const extra = stuck ? { client_id: stuck.id } : pressedBy ? { client_id: pressedBy.id } : undefined;
+          const text = stuck ? `${d.var}: stuck pressed in the ${stuck.seat} cockpit (held down there only). The ${stuck.seat} can release it.`
+            : d.reason === 'not_mirrored' ? notMirroredText(d.var, pressedBy?.seat)
+              : desyncText(d.var, reason);
+          toRaise.push({ d, reason, blocking: true, text, ...(extra ? { extra } : {}) });
         }
       } else if (open?.blocking) {
         decisions.push({ ...base, action: 'held', reason: open.reason });
@@ -694,7 +734,7 @@ export class Session {
       const key = reportKey(r.d);
       const message = r.d.class === 'mode' && r.d.message ? r.d.message : key !== r.d.var ? desyncText(key, r.reason) : r.text;
       this.raiseDesync({
-        var: key, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm }, message,
+        var: key, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm }, message, ...r.extra,
       }, r.blocking, tierFor(r.d.class), r.d.var);
     }
     for (const d of toCorrect) this.sendCorrection(d, group, requestId, ref, other);
@@ -996,6 +1036,7 @@ export class Session {
     for (const o of this.overrides.values()) if (o.timer) clearTimeout(o.timer);
     for (const c of this.effectChecks.values()) clearTimeout(c.timer);
     this.effectChecks.clear();
+    this.effectByVar.clear();
     for (const s of this.slots) {
       if (s.expiryTimer) clearTimeout(s.expiryTimer);
       s.conn?.terminate();
@@ -1089,6 +1130,64 @@ export class Session {
   }
 
   /** A pilot moved a control that is watched read-only (not synced yet). One line per control. */
+  /**
+   * An encoder display differs: true once it differed for encoderHoldMs after the last click of that
+   * knob (from either pilot), so a turn in progress never raises a line (gate test 2 cause E).
+   */
+  private encoderPersists(g: GroupState, name: string, now: number): boolean {
+    let seen = g.buttonSince.get(name);
+    if (!seen) g.buttonSince.set(name, seen = { at: now, rounds: 0 });
+    const lastClick = this.lastCommandByVar.get(name)?.receivedAt ?? 0;
+    return now - Math.max(seen.at, lastClick) >= this.config.encoderHoldMs;
+  }
+
+  /**
+   * A button held down (odd) on one side only, for stuckMs: the slot whose cockpit has it down.
+   * Nobody holds it on the other side (it is up there); a real click never lasts that long.
+   */
+  private stuckSide(g: GroupState, d: VarDiff, ref: ClientSlot, other: ClientSlot, now: number): ClientSlot | null {
+    const seen = g.buttonSince.get(d.var);
+    if (!seen || now - seen.at < this.config.stuckMs) return null;
+    if (d.pf === 1 && d.pm === 0) return ref;
+    if (d.pf === 0 && d.pm === 1) return other;
+    return null;
+  }
+
+  /** A deny-list control that differs: the cockpit where it was pressed (counters only rise), if clear. */
+  private pressedSide(d: VarDiff, ref: ClientSlot, other: ClientSlot): ClientSlot | null {
+    if (typeof d.pf !== 'number' || typeof d.pm !== 'number') return null;
+    return d.pf > d.pm ? ref : d.pm > d.pf ? other : null;
+  }
+
+  /**
+   * A pilot pressed a deny-list control (IDG disconnect, fire push button, AGENT/DISCH ...) in their own
+   * cockpit. It is never mirrored and never written: both pilots get a red line at once. It clears when
+   * the values match again in a snapshot (the other pilot did the same).
+   */
+  private onDeniedInput(slot: ClientSlot, body: DeniedInputBody): void {
+    this.log.event('denied_input', { client: slot.id, var: body.var });
+    this.raiseDesync({
+      var: body.var, group: body.group, reason: 'not_mirrored', expected: null, observed: null, client_id: slot.id,
+      message: notMirroredText(body.label, slot.seat),
+    }, false, 'red', body.var);
+  }
+
+  /**
+   * A switch behaves like a press counter (gate test 2 cause A): one amber line for both pilots. It is
+   * not synced from now on (both bridges block it), never corrected, and its open red lines are dropped.
+   */
+  private onCounterSuspect(slot: ClientSlot, body: CounterSuspectBody): void {
+    this.counterSuspects.add(body.var);
+    this.log.event('counter_suspect', { client: slot.id, var: body.var });
+    this.pending.cancelWhere((e) => e.var === body.var && e.kind === 'correction');
+    this.setAdvisory({
+      key: `counter_suspect:${body.var}`, kind: 'counter_suspect', active: true, tier: 'amber', var: body.var, label: body.label,
+      seat: slot.seat, at: Date.now(),
+      message: `${body.label}: probably a press counter – not synced. Set it by hand in both cockpits.`,
+    });
+    if (this.desyncs.has(body.var)) this.clearDesync(body.var, 'not_synced');
+  }
+
   /** An edge button differs in this comparison: true once it differed 2 times in a row or for buttonHoldMs. */
   private buttonPersists(g: GroupState, name: string, now: number): boolean {
     const seen = g.buttonSince.get(name);
@@ -1146,24 +1245,48 @@ export class Session {
 
   // ------------------------------------------------------------------ pulse effect check
 
-  /** Compares the effect var of both sims after a pulse: red only if they differ (both unchanged is fine). */
+  /**
+   * Compares a push button's lamp in both sims once per burst (gate test 2 cause D): both bridges read it
+   * effectSettleMs after the last edge and report it for the burst's last down edge. A newer down edge
+   * replaces the check, an up edge extends its wait. Red only if they differ (both unchanged is fine).
+   */
   private startEffectCheck(body: CommandBody, origin: ClientSlot, receiver: ClientSlot): void {
-    const effect = body.effect!;
-    const wait = body.settle_ms + 2 * this.config.ackMarginMs + (origin.rttMs ?? 0) + (receiver.rttMs ?? 0);
+    const previous = this.effectByVar.get(body.var);
+    if (previous) {
+      this.log.event('effect_check_superseded', { id: previous.id, by: body.id, var: body.var });
+      this.dropEffectCheck(previous.id);
+    }
     const check: EffectCheck = {
-      id: body.id, var: body.var, group: body.group, effect, origin: origin.id, receiver: receiver.id,
-      timer: setTimeout(() => this.completeEffectCheck(check, true), wait),
+      id: body.id, var: body.var, group: body.group, effect: body.effect!, origin: origin.id, receiver: receiver.id,
+      settleMs: body.settle_ms, timer: setTimeout(() => this.completeEffectCheck(check, true), this.effectWait(body.settle_ms, origin, receiver)),
     };
     this.effectChecks.set(body.id, check);
+    this.effectByVar.set(body.var, check);
   }
 
+  /** Another edge of the same button: the lamp is read after the burst, so the check waits longer. */
+  private extendEffectCheck(body: CommandBody): void {
+    const check = this.effectByVar.get(body.var);
+    if (!check) return;
+    const origin = this.slot(check.origin);
+    const receiver = this.slot(check.receiver);
+    clearTimeout(check.timer);
+    check.timer = setTimeout(() => this.completeEffectCheck(check, true), this.effectWait(check.settleMs, origin, receiver));
+  }
+
+  private effectWait(settleMs: number, origin?: ClientSlot, receiver?: ClientSlot): number {
+    return Math.max(settleMs, this.config.effectSettleMs) + 2 * this.config.ackMarginMs + (origin?.rttMs ?? 0) + (receiver?.rttMs ?? 0);
+  }
+
+  /** The lamp of one side after the burst: from the pilot who pressed (sender) or from the receiver. */
   private onEffectReport(slot: ClientSlot, body: EffectReportBody): void {
     const check = this.effectChecks.get(body.id);
-    if (!check || check.origin !== slot.id) {
+    if (!check || (check.origin !== slot.id && check.receiver !== slot.id)) {
       this.log.event('effect_report_unmatched', { client: slot.id, id: body.id });
       return;
     }
-    check.sender = body.value;
+    if (check.origin === slot.id) check.sender = body.value;
+    else check.received = body.value;
     this.completeEffectCheck(check, false);
   }
 
@@ -1172,6 +1295,7 @@ export class Session {
     if (!check) return;
     clearTimeout(check.timer);
     this.effectChecks.delete(id);
+    if (this.effectByVar.get(check.var) === check) this.effectByVar.delete(check.var);
   }
 
   private completeEffectCheck(check: EffectCheck, timedOut: boolean): void {
@@ -1292,9 +1416,17 @@ function reportKey(d: { var: string; class: string; button?: string; report_as?:
   return d.var;
 }
 
+/** The red line of a deny-list control (gate test 2 section 7). */
+function notMirroredText(label: string, seat: string | undefined): string {
+  return seat
+    ? `${label} pressed in the ${seat} cockpit – not mirrored (irreversible). Do the same in the other cockpit if intended.`
+    : `${label} differs between the cockpits – not mirrored (irreversible). Do the same in the other cockpit if intended.`;
+}
+
 function desyncText(name: string, reason: DesyncReason): string {
   switch (reason) {
     case 'press_mismatch': return `${name}: held down in one cockpit only. Never pressed automatically.`;
+    case 'display_mismatch': return `${name}: the display differs between the cockpits. Turn the knob in the cockpit that is wrong (never corrected automatically).`;
     case 'toggle_mismatch': return `${name}: its light is on in one cockpit and off in the other. If nothing above it differs, press it on one side.`;
     case 'mode_mismatch': return `${name}: differs between the cockpits. It is not synced; set it by hand in the cockpit that is wrong.`;
     case 'observe_mismatch': return `${name}: the sims show different values (output, never written).`;

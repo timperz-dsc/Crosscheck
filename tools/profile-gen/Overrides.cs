@@ -9,12 +9,16 @@
 //       values: [0, 1]                 # only values backed by scan, probe or owner (range rule)
 //       range: [-3, 7]                 # analog: min and max backed by scan, pilot input or owner
 //       display: N_X                   # delta only
-//       verify: { lvar: I_X_L, settle_ms: 150 }    # or { graphql: path, settle_ms: 100 }
+//       verify: { lvar: I_X_L, settle_ms: 150 }    # or { graphql: path, settle_ms: 100 }, or none (drop it)
 //       value_labels: { "0": "OFF", "1": "ON" }
 //       press: edge                    # pulse: edge (default, Fenix push buttons) or momentary
 //       pulse_ms: 150                  # momentary only
 //       rest: 1                        # verified, spring-loaded: the position it returns to by itself
 //       alarm: { text: "...", as: S_X } # observe: red comparison (input tier) with this text
+//       never_write: true              # deny list: never written on any path, watched and compared only
+//       compare_when: { powered: B_X, same: [I_A, I_B] }  # delta: compare the display only then
+//       review: "..."                  # take a generated entry out of the profile again (back on the
+//                                      # review list, amber "not synced yet"); the reason is the text
 //       note: "..."                    # replaces the rule notes after "label generated"
 //       comment: "..."                 # written as a comment line above the entry
 //       evidence: "..."                # what backs it (not written to the profile)
@@ -31,7 +35,8 @@ namespace ProfileGen;
 sealed record Override(
     string Name, string? Class, string? Group, double[]? Values, double[]? Range, string? Display, Verify? Verify,
     Dictionary<string, string>? ValueLabels, int? PulseMs, string? Press, string? Note, string? Comment, string Evidence,
-    double? Rest = null, (string Text, string? As)? Alarm = null);
+    double? Rest = null, (string Text, string? As)? Alarm = null, bool NeverWrite = false,
+    (string? Powered, string[]? Same)? CompareWhen = null, bool NoVerify = false, string? Review = null);
 
 sealed record OpenItem(string What, IReadOnlyList<string> Vars, string Why);
 
@@ -62,6 +67,7 @@ sealed class OverrideFile
                 Dictionary<string, string>? labels = item.Children.TryGetValue("value_labels", out var ln) && ln is YamlMappingNode lm
                     ? lm.Children.ToDictionary(kv => ((YamlScalarNode)kv.Key).Value!, kv => ((YamlScalarNode)kv.Value).Value!) : null;
                 Verify? verify = null;
+                var noVerify = item.Children.TryGetValue("verify", out var vnone) && vnone is YamlScalarNode { Value: "none" };
                 if (item.Children.TryGetValue("verify", out var vfn) && vfn is YamlMappingNode vf)
                 {
                     string? V(string key) => vf.Children.TryGetValue(key, out var x) ? ((YamlScalarNode)x).Value : null;
@@ -76,6 +82,20 @@ sealed class OverrideFile
                     string? A(string key) => am.Children.TryGetValue(key, out var x) ? ((YamlScalarNode)x).Value : null;
                     alarm = (A("text") ?? throw new InvalidDataException($"{path}: {name}: alarm needs text"), A("as"));
                 }
+                (string?, string[]?)? compareWhen = null;
+                if (item.Children.TryGetValue("compare_when", out var cn) && cn is YamlMappingNode cm)
+                {
+                    var powered = cm.Children.TryGetValue("powered", out var pw) ? ((YamlScalarNode)pw).Value : null;
+                    var same = cm.Children.TryGetValue("same", out var sm) && sm is YamlSequenceNode ss
+                        ? ss.Children.Select(c => ((YamlScalarNode)c).Value!).ToArray() : null;
+                    compareWhen = (powered, same);
+                }
+                var neverWrite = S("never_write") switch
+                {
+                    null or "false" => false,
+                    "true" => true,
+                    var x => throw new InvalidDataException($"{path}: {name}: never_write is true or false, not '{x}'"),
+                };
                 file.Overrides.Add(new Override(
                     name, S("class"), S("group"), values, range, S("display"), verify, labels,
                     S("pulse_ms") is { } pm ? int.Parse(pm, CultureInfo.InvariantCulture) : null,
@@ -83,7 +103,8 @@ sealed class OverrideFile
                         : throw new InvalidDataException($"{path}: {name}: press is edge or momentary, not '{press}'") : null,
                     S("note"), S("comment"),
                     S("evidence") ?? throw new InvalidDataException($"{path}: {name}: every override needs evidence"),
-                    S("rest") is { } rest ? double.Parse(rest, CultureInfo.InvariantCulture) : null, alarm));
+                    S("rest") is { } rest ? double.Parse(rest, CultureInfo.InvariantCulture) : null, alarm,
+                    neverWrite, compareWhen, noVerify, S("review")));
             }
 
         if (root.Children.TryGetValue("open", out var open) && open is YamlSequenceNode os)
@@ -115,6 +136,15 @@ sealed class OverrideFile
             if (excluded(o.Name)) { problems.Add($"{o.Name}: excluded by the profile"); continue; }
 
             var i = entries.FindIndex(e => e.Name == o.Name);
+            if (o.Review is { } why)
+            {
+                // A generated entry goes back on the review list; a var already there gets this reason.
+                var provisional = i >= 0 ? entries[i].Class : reviews.FirstOrDefault(r => r.Name == o.Name)?.ProvisionalClass;
+                if (i >= 0) entries.RemoveAt(i);
+                reviews.RemoveAll(r => r.Name == o.Name);
+                reviews.Add(new Review(o.Name, scanValues[o.Name], "class", why, provisional));
+                continue;
+            }
             if (i < 0)
             {
                 if (o.Class is null || o.Group is null) { problems.Add($"{o.Name}: on the review list, promoting it needs class and group"); continue; }
@@ -149,9 +179,11 @@ sealed class OverrideFile
             Rest = cls == "verified" ? o.Rest ?? keep?.Rest : null,
             Alarm = cls == "observe" ? o.Alarm ?? keep?.Alarm : null,
             Comment = o.Comment ?? keep?.Comment,
+            NeverWrite = cls is "verified" or "pulse" && (o.NeverWrite || keep?.NeverWrite == true),
+            CompareWhen = cls == "delta" ? o.CompareWhen ?? keep?.CompareWhen : null,
         };
         e.Display = cls == "delta" ? o.Display ?? keep?.Display : null;
-        e.Verify = silent ? null : o.Verify ?? keep?.Verify;
+        e.Verify = silent || o.NoVerify ? null : o.Verify ?? keep?.Verify;
         if (o.Note is { } note) e.Notes.Add(note);
         else if (keep is not null) e.Notes.AddRange(keep.Notes.Skip(1));
         return e;

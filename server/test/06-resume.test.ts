@@ -57,10 +57,13 @@ describe('6. disconnect for 10 s → resume', () => {
     expect(body(resumed)).toMatchObject({ full_resync: true, replayed: 0 });
     await guest.waitFor('snapshot_request', (m) => body(m).reason === 'resync' && body(m).groups === null, { from });
 
-    // Switches and the encoder are corrected on the PM side to the PF's values...
-    await waitUntil(() => ['overhead', 'fcu'].every((g) => host.sim.hash(g) === guest.sim.hash(g)), 'overhead and fcu match');
-    expect(guest.sim.display('E_FCU_HEADING')).toBe(90);
+    // Switches are corrected on the PM side to the PF's values...
+    await waitUntil(() => host.sim.hash('overhead') === guest.sim.hash('overhead'), 'overhead matches');
     expect(host.sim.writesBy('correction')).toHaveLength(0);
+    // ...an encoder never is (CRO-33): its missed turn is one red line for the pilots to fix.
+    const heading = await guest.waitFor('desync', (m) => body(m).var === 'E_FCU_HEADING');
+    expect(body(heading)).toMatchObject({ reason: 'display_mismatch', tier: 'red', values: { pf: 90, pm: 100 } });
+    expect(guest.sim.writesBy('correction').filter((w) => w.name === 'E_FCU_HEADING')).toHaveLength(0);
     // ...but a missed key press cannot be replayed: the MCDU difference is a visible desync.
     const desync = await guest.waitFor('desync', (m) => body(m).var === 'MCDU1_SCREEN');
     expect(body(desync)).toMatchObject({ reason: 'observe_mismatch', values: { pf: 'A', pm: '' } });

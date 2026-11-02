@@ -78,6 +78,12 @@ public sealed class BridgeStatus
         get { lock (_gate) return _desyncs.Select(d => ((JsonObject)d.Value.DeepClone(), _desyncSince[d.Key])).ToList(); }
     }
 
+    /// <summary>The open desync of one var, or null.</summary>
+    public JsonObject? DesyncOf(string var)
+    {
+        lock (_gate) return _desyncs.TryGetValue(var, out var d) ? (JsonObject)d.DeepClone() : null;
+    }
+
     public void SetAdvisory(string key, JsonObject body)
     {
         lock (_gate) _advisories[key] = (JsonObject)body.DeepClone();

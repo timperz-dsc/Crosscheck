@@ -88,6 +88,8 @@ public sealed class LocalApi : IAsyncDisposable
         });
         app.MapPost("/api/press-here", async (HttpRequest req) =>
             await Body(req) is { } b && b["var"]?.GetValue<string>() is { } name ? Answer(await bridge.PressHereOnlyAsync(name)) : BadRequest("var needed"));
+        app.MapPost("/api/release", async (HttpRequest req) =>
+            await Body(req) is { } b && b["var"]?.GetValue<string>() is { } name ? Answer(await bridge.ReleaseItAsync(name)) : BadRequest("var needed"));
 
         if (File.Exists(Path.Combine(uiDir, "index.html")))
         {

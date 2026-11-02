@@ -80,7 +80,7 @@ public sealed class MemoryChannel : IProtocolChannel
 
     public void Send(string type, JsonObject body)
     {
-        var envelope = new JsonObject { ["v"] = 3, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
+        var envelope = new JsonObject { ["v"] = 4, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
         if (MessageValidator.Shared.Validate(envelope) is { } error) Invalid.Enqueue(error);
         Sent.Enqueue((type, (JsonObject)body.DeepClone()));
     }
@@ -91,7 +91,7 @@ public sealed class MemoryChannel : IProtocolChannel
 
     public void Inject(string type, JsonObject body, long? seq = null)
     {
-        var msg = new JsonObject { ["v"] = 3, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 0, ["body"] = body };
+        var msg = new JsonObject { ["v"] = 4, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 0, ["body"] = body };
         if (seq is not null) msg["seq"] = seq;
         MessageReceived?.Invoke(msg);
     }
@@ -103,7 +103,7 @@ public sealed class MemoryChannel : IProtocolChannel
 public sealed class EngineHarness : IAsyncDisposable
 {
     public const string OtherClient = "c_other0001";
-    public Profile Profile { get; } = Repo.LoadFixture();
+    public Profile Profile { get; }
     public FakeSimAdapter Sim { get; }
     public FakeFenixGraphQl Gql { get; }
     public MemoryChannel Channel { get; } = new();
@@ -111,9 +111,10 @@ public sealed class EngineHarness : IAsyncDisposable
     public BridgeStatus Status { get; } = new();
     public SyncEngine Engine { get; }
 
-    public EngineHarness(EngineOptions? options = null, bool withUnsynced = false)
+    public EngineHarness(EngineOptions? options = null, bool withUnsynced = false, Profile? profile = null, FakeSimOptions? simOptions = null)
     {
-        Sim = new FakeSimAdapter(Profile, new FakeSimOptions { FrameMs = 5, EffectLagMs = 20, McduLagMs = 30 });
+        Profile = profile ?? Repo.LoadFixture();
+        Sim = new FakeSimAdapter(Profile, simOptions ?? new FakeSimOptions { FrameMs = 5, EffectLagMs = 20, McduLagMs = 30 });
         Gql = new FakeFenixGraphQl(Sim);
         Unsynced = withUnsynced ? UnsyncedList.LoadNextTo(Repo.FixtureProfile, Profile) : UnsyncedList.Empty;
         Engine = new SyncEngine(Profile, Sim, Gql, Channel, Hub, new BridgeLog(null), Status, NullLogger.Instance, options: options, unsynced: Unsynced);

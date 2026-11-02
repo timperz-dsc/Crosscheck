@@ -187,6 +187,13 @@ function DesyncBlock({ desync: d, peerWord, actions, busy }: { desync: Desync; p
           </Button>
         </div>
       )}
+      {d.release_here && (
+        <div className="row">
+          <Button variant="primary" onClick={() => void actions.releaseIt(d.var)} disabled={busy}>
+            Release it
+          </Button>
+        </div>
+      )}
       {d.writable && d.options.length > 0 && (
         <div className="row">
           {d.options.map((o, i) => (

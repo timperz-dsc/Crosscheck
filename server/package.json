@@ -1,7 +1,7 @@
 {
   "name": "crosscheck-server",
-  "version": "0.1.0",
-  "description": "Crosscheck session server: relays and verifies changes between two pilots (protocol v3).",
+  "version": "0.2.0",
+  "description": "Crosscheck session server: relays and verifies changes between two pilots (protocol v4).",
   "private": true,
   "license": "MIT",
   "type": "module",

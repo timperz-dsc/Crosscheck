@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/counter_suspect.schema.json",
+  "title": "counter_suspect",
+  "description": "A verified var behaves like a press counter (its value keeps rising by 1, outside its allowed set). The bridge stops syncing it and blocks its writes; the server shows both pilots one amber counter_suspect line. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "counter_suspect"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "group",
+        "label"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

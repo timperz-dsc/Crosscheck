@@ -304,17 +304,18 @@ public class CorrectionTests
     }
 
     [Fact]
-    public async Task As_PM_corrections_are_applied_and_an_encoder_is_turned_to_the_target_display()
+    public async Task An_encoder_is_never_corrected_not_even_as_PM()
     {
+        // Gate test 2 cause F: a display difference written as clicks drove ALT to 49000. Never again.
         await using var h = new EngineHarness();
         await h.StartAsync(pf: false);
         h.Sim.Logic("E_FCU_ALTITUDE", 40);
         h.Sim.Logic("N_FCU_ALTITUDE", 7);
         await Task.Delay(30);
         var ack = await h.WaitAck(h.Correction("E_FCU_ALTITUDE", "delta", 10, "pf_reference"));
-        Assert.True(ack["ok"]!.GetValue<bool>());
-        Assert.Equal(43, h.Sim.Get("E_FCU_ALTITUDE")); // +3 clicks
-        await Wait.Until(() => h.Sim.Get("N_FCU_ALTITUDE") == 10, "display at target");
+        Assert.False(ack["ok"]!.GetValue<bool>());
+        Assert.Empty(h.Sim.Writes);
+        Assert.Equal(1, h.Engine.CorrectionsRefused);
     }
 
     [Fact]

@@ -10,6 +10,11 @@ public sealed record FakeSimOptions
     public int EffectLagMs { get; init; } = 110;
     /// <summary>Key press to MCDU screen change (Fenix: ~450 ms).</summary>
     public int McduLagMs { get; init; } = 150;
+    /// <summary>
+    /// A write lands in the sim (and can be read back) this long after it was sent, applied in order on a
+    /// later frame, like SimConnect's next-frame read-back (gate test 2 cause D). 0 = at once.
+    /// </summary>
+    public int ReadBackLagMs { get; init; }
 }
 
 /// <summary>
@@ -34,6 +39,10 @@ public sealed class FakeSimAdapter : ISimAdapter
     /// <summary>Hold buttons (FIRE TEST): lamp on only after the button was held this long, off on release.</summary>
     private readonly Dictionary<string, (string Lamp, int MinHoldMs)> _holdEffects = new(StringComparer.Ordinal);
     private HashSet<string> _watched = new(StringComparer.Ordinal);
+    /// <summary>Writes on their way into the sim (ReadBackLagMs), in send order.</summary>
+    private readonly List<(string Name, double Value, double DueMs)> _landing = [];
+    /// <summary>Written, no read-back reported since (like SimConnectAdapter: any read-back makes it fresh).</summary>
+    private readonly HashSet<string> _awaitingReadBack = new(StringComparer.Ordinal);
     private Timer? _frame;
     private SimState _state = SimState.Disconnected;
 
@@ -54,6 +63,12 @@ public sealed class FakeSimAdapter : ISimAdapter
     public GuardedStreamWriter Stream { get; } = new();
     /// <summary>Every write that reached this sim through the adapter (not pilot actions).</summary>
     public List<(string Name, double Value)> Writes { get; } = [];
+    /// <summary>The values written to one var so far (a copy, safe while the engine is still writing).</summary>
+    public List<double> WritesOf(string name)
+    {
+        lock (_gate) return Writes.Where(w => w.Name == name).Select(w => w.Value).ToList();
+    }
+
     /// <summary>The same writes with the time they reached the sim (ms, monotonic), for timing tests.</summary>
     public List<(string Name, double Value, double AtMs)> TimedWrites { get; } = [];
     private static readonly System.Diagnostics.Stopwatch Clock = System.Diagnostics.Stopwatch.StartNew();
@@ -86,8 +101,14 @@ public sealed class FakeSimAdapter : ISimAdapter
         }
     }
 
-    /// <summary>The fake stores writes at once, so reads are always fresh.</summary>
-    public bool IsFresh(string name) => true;
+    /// <summary>
+    /// Like SimConnectAdapter: fresh once any read-back of the var was reported after our last write, even
+    /// if later writes are still on their way (ReadBackLagMs; gate test 2 cause F).
+    /// </summary>
+    public bool IsFresh(string name)
+    {
+        lock (_gate) return !_awaitingReadBack.Contains(name);
+    }
 
     public Task WriteAsync(string name, double value)
     {
@@ -98,7 +119,12 @@ public sealed class FakeSimAdapter : ISimAdapter
             Writes.Add((name, value));
             TimedWrites.Add((name, value, Clock.Elapsed.TotalMilliseconds));
             if (_refused.Contains(name)) return Task.CompletedTask;
-            Set(name, value);
+            if (_options.ReadBackLagMs > 0)
+            {
+                _landing.Add((name, value, Clock.Elapsed.TotalMilliseconds + _options.ReadBackLagMs));
+                _awaitingReadBack.Add(name);
+            }
+            else Set(name, value);
         }
         return Task.CompletedTask;
     }
@@ -257,11 +283,19 @@ public sealed class FakeSimAdapter : ISimAdapter
         lock (_gate)
         {
             if (_state != SimState.Connected) return;
+            var now = Clock.Elapsed.TotalMilliseconds;
+            while (_landing.Count > 0 && _landing[0].DueMs <= now)
+            {
+                var (n, value, _) = _landing[0];
+                _landing.RemoveAt(0);
+                Set(n, value);
+            }
             foreach (var name in _watched)
             {
                 if (!_values.TryGetValue(name, out var v)) continue;
                 if (_reported.TryGetValue(name, out var r) && r == v) continue;
                 _reported[name] = v;
+                _awaitingReadBack.Remove(name);
                 changed.Add((name, v));
             }
         }

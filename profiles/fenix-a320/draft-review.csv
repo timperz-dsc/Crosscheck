@@ -1,4 +1,7 @@
 name,scan_value,kind,provisional_class,reason
+S_FCU_EFIS1_BARO_STD,0,class,verified,"a counter, not a latch (gate test 2 cause A: values -9 ... 1, counts down on pull); not synced until a read-only observe run"
+S_FCU_EFIS2_BARO_STD,0,class,verified,"a counter, not a latch (gate test 2 cause A: values -9 ... 1, counts down on pull); not synced until a read-only observe run"
+S_PED_COCKPIT_DOOR_VIDEO,0,class,verified,"a counter, not a switch (gate test 2 cause A: values 1 ... 86); not synced until a read-only observe run"
 FNX_FLT_LOADED,2,class,,"FNX_ var, no rule"
 FNX_SELCAL,0,class,,"FNX_ var, no rule"
 FNX_TAIL_HI,28,class,,"FNX_ var, no rule"
@@ -113,16 +116,6 @@ S_MIP_TRAFFIC_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_TRAFFIC_FO,0,class,verified,momentary or latching unknown
 S_OH_ELEC_EMER_GEN_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_EVAC_HORN_SHUTOFF,0,class,verified,momentary or latching unknown
-S_OH_FIRE_APU_AGENT,0,class,verified,momentary or latching unknown
-S_OH_FIRE_APU_BUTTON,0,class,verified,momentary or latching unknown
-S_OH_FIRE_ENG1_AGENT1,0,class,verified,momentary or latching unknown
-S_OH_FIRE_ENG1_AGENT2,0,class,verified,momentary or latching unknown
-S_OH_FIRE_ENG1_BUTTON,0,class,verified,momentary or latching unknown
-S_OH_FIRE_ENG2_AGENT1,0,class,verified,momentary or latching unknown
-S_OH_FIRE_ENG2_AGENT2,0,class,verified,momentary or latching unknown
-S_OH_FIRE_ENG2_BUTTON,0,class,verified,momentary or latching unknown
-S_OH_HYD_RAT_MAN_ON,0,class,verified,momentary or latching unknown
-S_OH_OXYGEN_MASK_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_RCRD_ERASE,0,class,verified,momentary or latching unknown
 S_PED_AIDS_PRINT,0,class,verified,momentary or latching unknown
 S_PED_DFDR_EVENT,0,class,verified,momentary or latching unknown

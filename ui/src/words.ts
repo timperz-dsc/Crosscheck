@@ -112,6 +112,20 @@ export function desyncExplanation(d: Desync, peer: string): string {
         return `${d.label} is ${d.you.text} for you and ${d.other.text} for the ${peer}. If nothing above it differs, press ${d.label} on one side with “Press ${d.label} here only”: a press in the cockpit is mirrored and would switch both. It is never pressed automatically.`;
       case 'press_mismatch':
         return `It is ${d.you.text} in your cockpit and ${d.other.text} in the ${peer}'s. It is never pressed or released automatically.`;
+      case 'stuck_pressed':
+        return d.receiver_is_you
+          ? `${d.label} is stuck pressed in your cockpit (up in the ${peer}'s). A click adds a press and a release, so it stays down. “Release it” lifts it once in your cockpit only; it is never released automatically.`
+          : `${d.label} is stuck pressed in the ${peer}'s cockpit (up in yours). The ${peer} can release it there; it is never released automatically.`;
+      case 'press_lost':
+        return d.receiver_is_you
+          ? `The ${peer} pressed it, but the press could not be applied in your cockpit (the button was already down). Check it in both cockpits.`
+          : `You pressed it, but the press could not be applied in the ${peer}'s cockpit (the button was already down there). Check it in both cockpits.`;
+      case 'not_mirrored':
+        return d.receiver_is_you
+          ? `${d.label} pressed in your cockpit – not mirrored (irreversible). Do the same in the ${peer}'s cockpit if intended.`
+          : `${d.label} pressed in the ${peer}'s cockpit – not mirrored (irreversible). Do the same in your cockpit if intended.`;
+      case 'display_mismatch':
+        return `${d.label} differs: yours ${d.you.text}, the ${peer}'s ${d.other.text}. Turn the knob in the cockpit that is wrong. It is never turned automatically.`;
       case 'safety_release':
         return d.receiver_is_you
           ? `Crosscheck released it in your cockpit because the ${peer}'s release never arrived (30 s, or the connection was lost). Check it in both cockpits.`

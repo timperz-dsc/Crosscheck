@@ -50,7 +50,7 @@ public sealed class NoSilentFailureEndToEndTests(ServerFixture server) : IAsyncL
         JsonNode.Parse(await _http.GetStringAsync($"http://127.0.0.1:{b.Api!.Port}/api/status"))!.AsObject();
 
     [Fact]
-    public async Task Replay_gate_test_1_counter_values_against_0_1_the_red_desync_stays_visible()
+    public async Task Replay_gate_test_1_counter_values_against_0_1_become_one_amber_not_synced_line()
     {
         // The ELEC PUMP clicks from gate test 1 (anonymised extract), on the fixture's [0, 1] switch.
         var data = JsonNode.Parse(File.ReadAllText(Path.Combine(Repo.Root, "server", "test", "fixtures", "gate-test-1.json")))!;
@@ -68,18 +68,24 @@ public sealed class NoSilentFailureEndToEndTests(ServerFixture server) : IAsyncL
             if (wait > TimeSpan.Zero) await Task.Delay(wait);
             Sim(host).PilotSet(name, c.Value);
         }
-        await Wait.Until(() => guest.Status.OpenDesyncs.Contains(name), "red desync on the guest", 10000);
-        await Task.Delay(5000); // more snapshot rounds: nothing may wipe it
+        // CRO-33 (gate test 2 cause A): values that keep rising by 1 past [0, 1] are a press counter. Both pilots
+        // get one amber line, the var is not synced any more, nothing is written outside [0, 1] and no
+        // correction fights it. Visible, never silent.
+        foreach (var b in new[] { host, guest })
+            await Wait.Until(() => b.Status.Advisories.Any(a => a["key"]?.GetValue<string>() == $"counter_suspect:{name}"), "amber counter line", 10000);
+        await Task.Delay(5000); // more snapshot rounds: no correction, no red loop
 
         foreach (var b in new[] { host, guest })
         {
             var s = await Status(b);
-            var red = s["desyncs"]!.AsArray().Single(d => d!["var"]!.GetValue<string>() == name)!;
-            Assert.Equal("red", red["tier"]!.GetValue<string>());
-            Assert.DoesNotContain(s["indicators"]!.AsArray(), d => d!["var"]!.GetValue<string>() == name);
+            Assert.Contains(s["advisories"]!.AsArray(), a => a!["key"]!.GetValue<string>() == $"counter_suspect:{name}");
+            Assert.DoesNotContain(s["desyncs"]!.AsArray(), d => d!["var"]!.GetValue<string>() == name);
+            Assert.False(b.Engine!.CanSetBoth(name)); // never offered "Set both"
         }
-        Assert.Equal(1, Sim(guest).Get(name)); // the guard never wrote a value outside [0, 1]
+        Assert.InRange(Sim(guest).Get(name), 0, 1); // the guard never wrote a value outside [0, 1]
+        Assert.DoesNotContain(Sim(guest).Writes, w => w.Name == name && w.Value > 1);
         Assert.Equal(28, Sim(host).Get(name));
+        Assert.DoesNotContain(Sim(host).Writes, w => w.Name == name); // never corrected back
     }
 
     [Fact]

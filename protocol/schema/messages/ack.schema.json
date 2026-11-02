@@ -41,9 +41,13 @@
           "minimum": 0,
           "maximum": 10
         },
-        "effect": {
-          "description": "Pulse commands with an effect check: the receiver's effect var value after settle. The server compares it with the sender's effect_report.",
-          "$ref": "../common.schema.json#/$defs/scalar"
+        "reason": {
+          "description": "ok false only. press_lost: a mirrored press could not be applied (the button was already down with no local press): red. not_synced: the var behaves like a press counter and is not synced (an amber line covers it): no red. display_check: an encoder click whose proof is its display, compared 2 s after the last click: no red per click.",
+          "enum": [
+            "press_lost",
+            "not_synced",
+            "display_check"
+          ]
         }
       }
     }

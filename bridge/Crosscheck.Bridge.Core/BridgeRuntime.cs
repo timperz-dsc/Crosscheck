@@ -412,6 +412,20 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         }
     }
 
+    public async Task<ApiResult> ReleaseItAsync(string name)
+    {
+        if (Engine is null) return ApiResult.Fail("Not in a session.");
+        try
+        {
+            await Engine.ReleaseItAsync(name);
+            return ApiResult.Success;
+        }
+        catch (InvalidOperationException e) // includes SafetyViolationException
+        {
+            return ApiResult.Fail(e.Message);
+        }
+    }
+
     public ApiResult ApplyUpdate() => Updater?.ApplyAndRestart() ?? ApiResult.Fail("This copy was not installed with the installer.");
 
     public JsonObject StatusJson() => UiStatus.Build(this);

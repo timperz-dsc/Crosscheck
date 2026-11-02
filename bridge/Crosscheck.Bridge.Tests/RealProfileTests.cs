@@ -17,7 +17,6 @@ public class RealProfileTests
 
     [Theory]
     [InlineData("S_OH_HYD_YELLOW_ELEC_PUMP")]
-    [InlineData("S_OH_HYD_BLUE_ELEC_PUMP")]
     [InlineData("S_OH_ELEC_BUSTIE")]
     [InlineData("S_OH_NAV_ADR1")]
     [InlineData("S_OH_NAV_IR3_SWITCH")]
@@ -70,9 +69,76 @@ public class RealProfileTests
     [InlineData("S_ASP_INTRAD")] // switch
     [InlineData("S_ASP_SPKR_REC")] // unclear
     [InlineData("S_OH_INT_LT_EMER")] // EMER EXIT LT: a 3-position switch (positions 0, 1, 2)
-    [InlineData("S_OH_FIRE_ENG1_BUTTON")] // never pressed in tests, stays unsynced
+    [InlineData("S_OH_HYD_BLUE_ELEC_PUMP")] // a 0/1 latch (gate test 2 cause B)
     public void Knobs_switches_and_unclear_controls_stay_off_the_edge_rule(string name) =>
         Assert.DoesNotContain(Real.Vars, v => v.Name == name && v.Class == SyncClass.Pulse);
+
+    [Fact]
+    public void Blue_elec_pump_is_a_latch_with_its_lamp_as_the_check()
+    {
+        var v = Var("S_OH_HYD_BLUE_ELEC_PUMP");
+        Assert.Equal(SyncClass.Verified, v.Class);
+        Assert.Equal([0.0, 1.0], v.Values);
+        Assert.Equal("I_OH_HYD_BLUE_ELEC_PUMP_L", v.Verify?.Lvar);
+    }
+
+    /// <summary>The owner's deny list (gate test 2 section 7): exactly these, never written on any path.</summary>
+    public static readonly string[] DenyList =
+    [
+        "S_OH_ELEC_IDG1", "S_OH_ELEC_IDG2",
+        "S_OH_FIRE_ENG1_BUTTON", "S_OH_FIRE_ENG2_BUTTON", "S_OH_FIRE_APU_BUTTON",
+        "S_OH_FIRE_ENG1_AGENT1", "S_OH_FIRE_ENG1_AGENT2", "S_OH_FIRE_ENG2_AGENT1", "S_OH_FIRE_ENG2_AGENT2", "S_OH_FIRE_APU_AGENT",
+        "S_OH_CARGO_DISC_1_OLD_LAYOUT", "S_OH_CARGO_DISC_2_OLD_LAYOUT",
+        "S_OH_HYD_RAT_MAN_ON", "S_OH_OXYGEN_MASK_MAN_ON",
+    ];
+
+    [Fact]
+    public void The_deny_list_is_exactly_the_owners_list_and_the_guard_refuses_every_value()
+    {
+        Assert.Equal(DenyList.Order(), Real.Vars.Where(v => v.NeverWrite).Select(v => v.Name).Order());
+        var guard = new SimSafetyGuard(Real);
+        foreach (var name in DenyList)
+        {
+            Assert.True(guard.IsDenied(name));
+            Assert.False(guard.IsWritable(name));
+            foreach (var value in new[] { 0.0, 1, 2, 3 })
+                Assert.Throws<SafetyViolationException>(() => guard.CheckWrite(name, value));
+        }
+        // Not on the list: reversible, they keep syncing (owner decision). Covers keep syncing too.
+        foreach (var name in new[] { "S_ENG_MASTER_1", "S_ENG_MASTER_2", "S_OH_PNEUMATIC_DITCHING", "S_OH_EVAC_COMMAND",
+                     "S_OH_ELEC_IDG1_Cover", "S_OH_FIRE_ENG1_BUTTON_Cover", "S_OH_HYD_RAT_MAN_ON_Cover", "S_OH_OXYGEN_MASK_MAN_ON_Cover" })
+        {
+            Assert.False(Var(name).NeverWrite, name);
+            Assert.True(guard.IsWritable(name), name);
+        }
+    }
+
+    [Theory]
+    [InlineData("S_PED_COCKPIT_DOOR_VIDEO")]
+    [InlineData("S_FCU_EFIS1_BARO_STD")]
+    [InlineData("S_FCU_EFIS2_BARO_STD")]
+    public void Counters_profiled_as_switches_are_not_synced_until_an_observe_run(string name)
+    {
+        Assert.DoesNotContain(Real.Vars, v => v.Name == name);
+        var list = UnsyncedList.LoadNextTo(Path.Combine(Repo.Root, "profiles", "fenix-a320", "profile.yaml"), Real);
+        Assert.Contains(name, list.Labels.Keys);
+    }
+
+    [Theory]
+    [InlineData("S_ECAM_CLR_LEFT")]
+    [InlineData("S_ECAM_CLR_RIGHT")]
+    public void Ecam_clr_lamps_are_no_toggle_check(string name) => Assert.Null(Var(name).Verify);
+
+    [Theory]
+    [InlineData("E_FCU_ALTITUDE", "B_FCU_POWER")]
+    [InlineData("E_FCU_HEADING", "B_FCU_POWER")]
+    [InlineData("E_FCU_SPEED", "B_FCU_POWER")]
+    [InlineData("E_FCU_VS", "B_FCU_POWER")]
+    [InlineData("E_FCU_EFIS1_BARO", "B_FCU_POWER")]
+    [InlineData("E_PED_RMP1_INNER", "B_PED_RMP1_POWER")]
+    [InlineData("E_PED_RMP2_OUTER", "B_PED_RMP2_POWER")]
+    public void Fcu_and_rmp_displays_are_compared_only_while_powered(string name, string power) =>
+        Assert.Equal(power, Var(name).CompareWhen?.Powered);
 
     [Theory]
     [InlineData("S_OH_ELEC_EXT_PWR", "I_OH_ELEC_EXT_PWR_L")] // scan value 2: one press and release counted
