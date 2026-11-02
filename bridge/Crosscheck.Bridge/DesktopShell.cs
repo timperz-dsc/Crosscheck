@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -62,13 +63,34 @@ public sealed class DesktopShell : IDisposable
             _tray.DoubleClick += (_, _) => Open();
         }
         if (_wantWindow) Open();
+        // The mark follows the Windows theme (dark or light taskbar), also while running.
+        SystemEvents.UserPreferenceChanged += OnThemeChanged;
         ready.Set();
         Application.Run(_context);
+        SystemEvents.UserPreferenceChanged -= OnThemeChanged;
         if (_tray is not null)
         {
             _tray.Visible = false;
             _tray.Dispose();
         }
+    }
+
+    private void OnThemeChanged(object? sender, UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category is not (UserPreferenceCategory.General or UserPreferenceCategory.Color or UserPreferenceCategory.VisualStyle)) return;
+        try
+        {
+            _invoker?.BeginInvoke(RefreshIcons);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)
+        {
+        }
+    }
+
+    private void RefreshIcons()
+    {
+        if (_tray is not null) _tray.Icon = Mark.Icon(32);
+        if (_window is { IsDisposed: false }) _window.Icon = Mark.Icon(64);
     }
 
     /// <summary>Shows the window (creating it the first time), or the browser without WebView2.</summary>
@@ -228,10 +250,31 @@ internal static class Browser
     }
 }
 
-/// <summary>The Crosscheck mark from the design (short dark stroke, long green stroke), drawn at runtime.</summary>
+/// <summary>The Crosscheck mark from the design (short stroke, long green stroke), drawn at runtime in the colours that suit the taskbar.</summary>
 internal static class Mark
 {
-    public static Icon Icon(int size)
+    /// <summary>True when the Windows taskbar is light (HKCU Personalize SystemUsesLightTheme = 1). Unknown = light.</summary>
+    public static bool TaskbarIsLight()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("SystemUsesLightTheme") is not int value || value != 0;
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>Dark taskbar: white + #3CB878. Light taskbar: #111315 + #138A52 (the brand colours).</summary>
+    public static (Color Short, Color Long) Colors(bool lightTaskbar) => lightTaskbar
+        ? (Color.FromArgb(0x11, 0x13, 0x15), Color.FromArgb(0x13, 0x8A, 0x52))
+        : (Color.FromArgb(0xFF, 0xFF, 0xFF), Color.FromArgb(0x3C, 0xB8, 0x78));
+
+    public static Icon Icon(int size) => Icon(size, TaskbarIsLight());
+
+    public static Icon Icon(int size, bool lightTaskbar)
     {
         using var bmp = new Bitmap(size, size);
         using (var g = Graphics.FromImage(bmp))
@@ -239,8 +282,9 @@ internal static class Mark
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Transparent);
             var s = size / 100f;
-            using var dark = new Pen(Color.FromArgb(0x11, 0x13, 0x15), 13 * s) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-            using var green = new Pen(Color.FromArgb(0x13, 0x8A, 0x52), 13 * s) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+            var (shortColor, longColor) = Colors(lightTaskbar);
+            using var dark = new Pen(shortColor, 13 * s) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+            using var green = new Pen(longColor, 13 * s) { StartCap = LineCap.Round, EndCap = LineCap.Round };
             g.DrawLine(dark, 20 * s, 50 * s, 36 * s, 66 * s);
             g.DrawLine(green, 50 * s, 65.5f * s, 82 * s, 30 * s);
         }

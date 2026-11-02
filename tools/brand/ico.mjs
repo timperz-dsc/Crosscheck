@@ -1,4 +1,5 @@
-// Builds assets/brand/crosscheck.ico (16-256 px, PNG inside) from crosscheck-mark.svg.
+// Builds assets/brand/crosscheck.ico (16-256 px, PNG inside) from crosscheck-avatar-dark.svg:
+// the mark on a dark rounded tile, so it reads on light and dark backgrounds (an .ico cannot follow the theme).
 // Run: npm run ico   (after npm install in tools/brand)
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -7,7 +8,7 @@ import { Resvg } from "@resvg/resvg-js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const brand = path.resolve(here, "../../assets/brand");
-const svg = readFileSync(path.join(brand, "crosscheck-mark.svg"), "utf8");
+const svg = readFileSync(path.join(brand, "crosscheck-avatar-dark.svg"), "utf8");
 
 const sizes = [16, 24, 32, 48, 64, 128, 256];
 const pngs = sizes.map((s) => new Resvg(svg, { fitTo: { mode: "width", value: s } }).render().asPng());
