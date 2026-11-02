@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../../profiles/schema/profile.schema.json
 # Test fixture for the bridge tests: the Fenix A320 starter profile from before CRO-8
-# (git 0caec65^), plus a press counter and an encoder without display. Test data, not the
+# (git 0caec65^), plus edge push buttons and an encoder without display. Test data, not the
 # real profile: changes to profiles/fenix-a320/profile.yaml never break the bridge tests.
 format: 1
 
@@ -72,13 +72,20 @@ vars:
     group: fcu
     display: N_FCU_ALTITUDE
 
-  # pulse: 1, then 0 after pulse_ms. Key to screen takes ~450 ms inside Fenix.
+  # pulse, press edge: Fenix counts +1 on press and +1 on release (odd = down, CRO-29).
   - name: S_CDU1_KEY_FPLN
     label: CDU 1 F-PLN
     class: pulse
     group: cdu1
-    pulse_ms: 150
+    press: edge
     verify: { mcdu: 1, settle_ms: 600 }
+
+  # Test data: a momentary key (1, then 0 after pulse_ms), the default press mode.
+  - name: S_CDU1_BRIGHTNESS_UP
+    label: CDU 1 BRT
+    class: pulse
+    group: cdu1
+    pulse_ms: 150
 
   # analog: 0.0 to 1.0 in the L: var; GraphQL shows value x 1024.
   - name: A_OH_PNEUMATIC_COCKPIT_TEMP
@@ -104,20 +111,19 @@ vars:
     class: observe
     group: overhead
 
-  # Test data: a press counter (Fenix counts press and release, odd = pressed).
+  # Test data: MASTER CAUTION is an edge push button like every other (no special case any more).
   - name: S_MIP_MASTER_CAUTION_CAPT
     label: Master caution
     class: pulse
     group: mip
-    pulse_ms: 150
-    press: counter
+    press: edge
 
   # Test data: a key with an effect lamp that toggles on each press (CRO-26 effect comparison).
   - name: S_FCU_EFIS1_FD
     label: FD
     class: pulse
     group: efis
-    pulse_ms: 40
+    press: edge
     verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 } # longer than the fake lamp lag (110 ms), as in the real profile
 
   - name: I_FCU_EFIS1_FD
@@ -131,8 +137,7 @@ vars:
     label: YELLOW ELEC PUMP
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     verify: { lvar: I_OH_HYD_YELLOW_ELEC_PUMP_L, settle_ms: 150 }
 
   - name: I_OH_HYD_YELLOW_ELEC_PUMP_L
@@ -154,21 +159,25 @@ vars:
     class: delta
     group: mip
 
-  # Sidestick takeover pushbuttons (see roles.takeover). Momentary: 1 while held.
-  # TODO(CRO-8): confirm names and values in the sim (scan: S_FC_*_INST_DISCONNECT).
+  # Test data (CRO-29/30): a hold button. Its lamp comes on only after ~1 s held (observe-report.md).
+  - name: S_OH_FIRE_ENG1_TEST
+    label: ENG 1 FIRE TEST
+    class: pulse
+    group: overhead
+    press: edge
+
+  # Sidestick takeover pushbuttons (see roles.takeover): edge push buttons like every other.
   - name: S_FC_CAPT_INST_DISCONNECT
     label: "Captain's takeover button"
-    value_labels: { "0": released, "1": pressed }
-    class: verified
+    class: pulse
     group: flightcontrols
-    values: [0, 1]
+    press: edge
 
   - name: S_FC_FO_INST_DISCONNECT
     label: "First officer's takeover button"
-    value_labels: { "0": released, "1": pressed }
-    class: verified
+    class: pulse
     group: flightcontrols
-    values: [0, 1]
+    press: edge
 
 datarefs:
   # Name confirmed in spike/VarTypes/GRAPHQL.md ("fuel per tank").

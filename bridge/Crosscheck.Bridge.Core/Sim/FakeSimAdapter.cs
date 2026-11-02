@@ -31,6 +31,8 @@ public sealed class FakeSimAdapter : ISimAdapter
     private readonly Dictionary<string, (double Value, int RevertMs)> _stuck = new(StringComparer.Ordinal);
     /// <summary>Keys whose effect lamp does not change on a press (system unpowered).</summary>
     private readonly HashSet<string> _unpowered = new(StringComparer.Ordinal);
+    /// <summary>Hold buttons (FIRE TEST): lamp on only after the button was held this long, off on release.</summary>
+    private readonly Dictionary<string, (string Lamp, int MinHoldMs)> _holdEffects = new(StringComparer.Ordinal);
     private HashSet<string> _watched = new(StringComparer.Ordinal);
     private Timer? _frame;
     private SimState _state = SimState.Disconnected;
@@ -52,6 +54,9 @@ public sealed class FakeSimAdapter : ISimAdapter
     public GuardedStreamWriter Stream { get; } = new();
     /// <summary>Every write that reached this sim through the adapter (not pilot actions).</summary>
     public List<(string Name, double Value)> Writes { get; } = [];
+    /// <summary>The same writes with the time they reached the sim (ms, monotonic), for timing tests.</summary>
+    public List<(string Name, double Value, double AtMs)> TimedWrites { get; } = [];
+    private static readonly System.Diagnostics.Stopwatch Clock = System.Diagnostics.Stopwatch.StartNew();
 
     public event Action<SimState>? StateChanged;
     public event Action<string, double>? ValueChanged;
@@ -91,6 +96,7 @@ public sealed class FakeSimAdapter : ISimAdapter
         lock (_gate)
         {
             Writes.Add((name, value));
+            TimedWrites.Add((name, value, Clock.Elapsed.TotalMilliseconds));
             if (_refused.Contains(name)) return Task.CompletedTask;
             Set(name, value);
         }
@@ -111,13 +117,26 @@ public sealed class FakeSimAdapter : ISimAdapter
         lock (_gate) Set(name, _values[name] + clicks);
     }
 
-    /// <summary>The pilot presses a momentary button (1, released after <paramref name="holdMs"/>).</summary>
+    /// <summary>
+    /// The pilot presses a button and releases it after <paramref name="holdMs"/>: an edge button counts +1
+    /// and +1 (Fenix push buttons), a momentary one goes 1 then 0.
+    /// </summary>
     public async Task PilotPress(string name, int holdMs = 100)
     {
-        var counter = _specs[name].Press == PressMode.Counter;
-        lock (_gate) Set(name, counter ? _values[name] + 1 : 1);
+        var edge = _specs[name].Press == PressMode.Edge;
+        lock (_gate) Set(name, edge ? _values[name] + 1 : 1);
         await Task.Delay(holdMs);
-        lock (_gate) Set(name, counter ? _values[name] + 1 : 0);
+        lock (_gate) Set(name, edge ? _values[name] + 1 : 0);
+    }
+
+    /// <summary>Like FIRE TEST: <paramref name="lamp"/> comes on only after the button was held <paramref name="minHoldMs"/>.</summary>
+    public void HoldEffect(string button, string lamp, int minHoldMs)
+    {
+        lock (_gate)
+        {
+            _holdEffects[button] = (lamp, minHoldMs);
+            _values.TryAdd(lamp, 0);
+        }
     }
 
     /// <summary>The aircraft's own logic changes a value (no write, no pilot).</summary>
@@ -192,19 +211,30 @@ public sealed class FakeSimAdapter : ISimAdapter
         else if (spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is { } lamp && _values.ContainsKey(lamp))
         {
             // A toggling key (FD): each press toggles its lamp, unless the system is unpowered.
-            var pressed = spec.Press == PressMode.Counter ? value > old && ((long)value & 1) == 1 : old == 0 && value != 0;
+            var pressed = Pressed(spec, old, value);
             if (pressed && !_unpowered.Contains(name)) Later(_options.EffectLagMs, () => _values[lamp] = _values[lamp] == 0 ? 1 : 0);
         }
         else if (spec.Verify?.Lvar is { } effect && _values.ContainsKey(effect))
         {
             Later(_options.EffectLagMs, () => _values[effect] = _values[name]);
         }
-        if (spec.Class == SyncClass.Pulse && spec.Verify?.Mcdu is int cdu && old == 0 && value != 0)
+        if (_holdEffects.TryGetValue(name, out var hold))
+        {
+            if (Pressed(spec, old, value))
+                Later(hold.MinHoldMs, () => { if (_values[name] == value) _values[hold.Lamp] = 1; });
+            else
+                Later(_options.EffectLagMs, () => _values[hold.Lamp] = 0);
+        }
+        if (spec.Class == SyncClass.Pulse && spec.Verify?.Mcdu is int cdu && Pressed(spec, old, value))
         {
             var key = KeyName(name);
             Later(_options.McduLagMs, () => _screens[cdu] += key, () => McduChanged?.Invoke(cdu));
         }
     }
+
+    /// <summary>A press (down edge): an edge button steps up to an odd value; a momentary one leaves 0.</summary>
+    private static bool Pressed(VarEntry spec, double old, double value) =>
+        spec.Press == PressMode.Edge ? value > old && ((long)value & 1) == 1 : old == 0 && value != 0;
 
     private static string KeyName(string name)
     {
@@ -236,7 +266,12 @@ public sealed class FakeSimAdapter : ISimAdapter
             }
         }
         foreach (var (name, v) in changed) ValueChanged?.Invoke(name, v);
+        Interlocked.Increment(ref _framesDelivered);
     }
+
+    private long _framesDelivered;
+    /// <summary>Frames whose changes were delivered to ValueChanged (tests wait for the first one).</summary>
+    public long FramesDelivered => Interlocked.Read(ref _framesDelivered);
 
     public ValueTask DisposeAsync()
     {

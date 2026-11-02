@@ -22,6 +22,15 @@ public sealed record EngineOptions
     public SeatSide? SeatSide { get; init; }
     /// <summary>Acks kept for answering re-sends. Pulse and delta ids are remembered beyond this (never applied twice).</summary>
     public int AckCacheSize { get; init; } = 5000;
+    /// <summary>
+    /// Safety release (CLAUDE.md, protocol.md §5): a push button Crosscheck pressed down for the other pilot is
+    /// released after this long if their "up" never arrives. Below Fenix's 40 s takeover latch.
+    /// </summary>
+    public int SafetyReleaseMs { get; init; } = 30_000;
+    /// <summary>A mirrored "up" is never written sooner than this after its "down" (shortest real click gap, observe-report.md).</summary>
+    public int EdgeFloorMs { get; init; } = 50;
+    /// <summary>A pilot monitoring's takeover press is dropped if control is not granted within this time.</summary>
+    public int TakeoverGrantTimeoutMs { get; init; } = 5000;
 }
 
 /// <summary>Cockpit seat: left (captain) or right (first officer). Not the same as the session seat host/guest.</summary>
@@ -60,7 +69,21 @@ public sealed class SyncEngine : IAsyncDisposable
     private readonly Dictionary<string, JsonObject> _ackCache = new(StringComparer.Ordinal);
     private readonly Queue<string> _ackOrder = new();
     private readonly HashSet<string> _inFlight = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, double> _pressCounter = new(StringComparer.Ordinal);
+    /// <summary>Sender: time of the last edge per push button (gap_ms of the next one).</summary>
+    private readonly Dictionary<string, double> _edgeAt = new(StringComparer.Ordinal);
+    /// <summary>
+    /// Receiver: push buttons Crosscheck itself pressed down in this sim for the other pilot. Only these may
+    /// ever be released by Crosscheck (the pilot's "up", or the safety release). A local touch removes them.
+    /// </summary>
+    private readonly Dictionary<string, MirroredDown> _mirroredDown = new(StringComparer.Ordinal);
+    /// <summary>safety_release messages not sent yet (the link was down); sent after resume.</summary>
+    private readonly List<JsonObject> _pendingSafety = [];
+    /// <summary>A pilot monitoring's takeover press, held back until control is granted (protocol.md §8).</summary>
+    private readonly List<(VarEntry Spec, string Edge, int GapMs)> _takeoverHeld = [];
+    private bool _takeoverRequested;
+    private Timer? _takeoverTimer;
+    /// <summary>Lamp of an edge button → the button: the lamp is the button's state (toggle snapshot item).</summary>
+    private readonly Dictionary<string, string> _toggleLamps;
     /// <summary>
     /// Ids of pulse and delta commands already applied. Never evicted during the session: a duplicate
     /// can never press or click twice (the ack cache only keeps the last 5000).
@@ -83,8 +106,6 @@ public sealed class SyncEngine : IAsyncDisposable
     private bool _sessionActive;
     private string? _pfClientId;
     private int _dropIncoming;
-    /// <summary>The takeover pushbutton on this pilot's own seat (profile roles.takeover), once the seat is known.</summary>
-    private string? _takeoverVar;
 
     public SyncEngine(Profile profile, ISimAdapter sim, IFenixGraphQl gql, IProtocolChannel client, EventHub hub,
         BridgeLog log, BridgeStatus status, ILogger logger, IClock? clock = null, EngineOptions? options = null,
@@ -104,6 +125,8 @@ public sealed class SyncEngine : IAsyncDisposable
         _clock = clock ?? SystemClock.Instance;
         _echo = new EchoTracker(_clock);
         _vars = profile.Vars.ToDictionary(v => v.Name, StringComparer.Ordinal);
+        _toggleLamps = profile.Vars.Where(IsEdge).Where(v => v.Verify?.Lvar is not null && _vars.ContainsKey(v.Verify.Lvar))
+            .GroupBy(v => v.Verify!.Lvar!).ToDictionary(g => g.Key, g => g.First().Name, StringComparer.Ordinal);
         Labels = new Labels(profile);
     }
 
@@ -234,6 +257,7 @@ public sealed class SyncEngine : IAsyncDisposable
         _sim.StateChanged += OnSimState;
         _client.MessageReceived += OnMessage;
         _client.Resumed += OnResumed;
+        _client.StateChanged += OnServerState;
         _applyLoop = Task.Run(ApplyLoop);
     }
 
@@ -264,8 +288,8 @@ public sealed class SyncEngine : IAsyncDisposable
             if (_unsynced.TryGetValue(name, out var label)) OnUnsyncedValue(name, value, label);
             return;
         }
-        JsonObject? command = null;
-        var takeover = false;
+        var commands = new List<JsonObject>();
+        var requestControl = false;
         lock (_gate)
         {
             var hadPrev = _lastSeen.TryGetValue(name, out var prev);
@@ -274,11 +298,7 @@ public sealed class SyncEngine : IAsyncDisposable
             {
                 case SyncClass.Verified or SyncClass.Analog:
                     if (_echo.TryConsume(name, value)) { LogEcho(name, value); break; }
-                    if (hadPrev && _sessionActive && value != prev)
-                    {
-                        command = NewCommand(spec, value, null);
-                        takeover = name == _takeoverVar && prev == 0;
-                    }
+                    if (hadPrev && _sessionActive && value != prev) commands.Add(NewCommand(spec, value, null));
                     break;
                 case SyncClass.Delta:
                     if (!_baseline.TryGetValue(name, out var baseline) || !_sessionActive)
@@ -291,36 +311,121 @@ public sealed class SyncEngine : IAsyncDisposable
                     if (value == baseline) break;
                     _log.Event("local_delta", new JsonObject { ["var"] = name, ["value"] = value, ["baseline"] = baseline });
                     _baseline[name] = value;
-                    command = NewCommand(spec, null, value - baseline);
+                    commands.Add(NewCommand(spec, null, value - baseline));
+                    break;
+                case SyncClass.Pulse when IsEdge(spec):
+                    if (_echo.TryConsume(name, value)) { LogEcho(name, value); break; }
+                    // The local pilot touched a button Crosscheck holds down: it is theirs now, never released by us.
+                    if (_mirroredDown.Remove(name, out var held))
+                    {
+                        held.Cap.Dispose();
+                        _log.Event("mirrored_button_taken", new JsonObject { ["var"] = name, ["value"] = value });
+                    }
+                    if (!hadPrev || !_sessionActive) break;
+                    var edges = Edges(prev, value);
+                    if (edges.Count == 0) _log.Event("edge_ignored", new JsonObject { ["var"] = name, ["from"] = prev, ["to"] = value });
+                    foreach (var edge in edges)
+                    {
+                        var now = _clock.NowMs;
+                        var gap = _edgeAt.TryGetValue(name, out var last) ? (int)Math.Clamp(now - last, 0, int.MaxValue) : 0;
+                        _edgeAt[name] = now;
+                        // A takeover press is never written into the flying pilot's sim: as PM it waits for control.
+                        if (IsTakeoverVar(name) && !IsPf)
+                        {
+                            // Only a press starts a request; the release of a press that was dropped is dropped too.
+                            if (!_takeoverRequested && edge == "up")
+                            {
+                                _log.Event("takeover_edge_dropped", new JsonObject { ["var"] = name, ["edge"] = edge });
+                                continue;
+                            }
+                            _takeoverHeld.Add((spec, edge, gap));
+                            if (!_takeoverRequested)
+                            {
+                                _takeoverRequested = true;
+                                requestControl = true;
+                                _takeoverTimer?.Dispose();
+                                _takeoverTimer = new Timer(_ => DropTakeover("control was not granted in time"), null, _options.TakeoverGrantTimeoutMs, Timeout.Infinite);
+                            }
+                            continue;
+                        }
+                        commands.Add(NewCommand(spec, edge == "down" ? 1 : 0, null, edge, gap));
+                    }
                     break;
                 case SyncClass.Pulse:
                     if (_echo.TryConsume(name, value)) { LogEcho(name, value); break; }
-                    if (!hadPrev || !_sessionActive) break;
-                    var pressed = spec.Press == PressMode.Counter
-                        ? value > prev && ((long)value & 1) == 1
-                        : prev == 0 && value != 0;
-                    if (pressed)
-                    {
-                        command = NewCommand(spec, 1, null);
-                        takeover = name == _takeoverVar;
-                    }
+                    if (hadPrev && _sessionActive && prev == 0 && value != 0) commands.Add(NewCommand(spec, 1, null));
                     break;
                 // observe and owned: never sent, only reported in snapshots.
             }
         }
-        if (command is not null)
-        {
-            _client.Send("command", command);
-            if (command["effect"] is JsonObject effect) _ = ReportEffectAsync(command["id"]!.GetValue<string>(), effect["var"]!.GetValue<string>(), command["settle_ms"]!.GetValue<int>());
-        }
-        // The press is synced like any other var (above). On the PM's own seat it also means
-        // "I have control". Only pilot presses get here: our own writes are echoes.
-        if (takeover && !IsPf)
+        foreach (var command in commands) SendCommand(command);
+        if (requestControl)
         {
             _log.Event("takeover_pressed", new JsonObject { ["var"] = name });
-            _hub.Publish("takeover_pressed", "Takeover pushbutton pressed: requesting control.", new JsonObject { ["var"] = name });
+            _hub.Publish("takeover_pressed", "Takeover pushbutton pressed: requesting control. The press is mirrored once you have control.", new JsonObject { ["var"] = name });
             RequestControl();
         }
+    }
+
+    private void SendCommand(JsonObject command)
+    {
+        _client.Send("command", command);
+        if (command["effect"] is JsonObject effect) _ = ReportEffectAsync(command["id"]!.GetValue<string>(), effect["var"]!.GetValue<string>(), command["settle_ms"]!.GetValue<int>());
+    }
+
+    private static bool IsEdge(VarEntry spec) => spec.Class == SyncClass.Pulse && spec.Press == PressMode.Edge;
+
+    private bool IsTakeoverVar(string name) => _profile.Roles?.Takeover is { } t && (name == t.Captain || name == t.Fo);
+
+    /// <summary>
+    /// Fenix push buttons count +1 on press and +1 on release (odd = down). Each step is one edge, so +2
+    /// in one frame is down and up. A decrease (a binding that writes 0/1) is one edge if the parity
+    /// changed. A jump of more than 8 steps is not a click: one edge from the new parity at most.
+    /// </summary>
+    public static List<string> Edges(double prev, double value)
+    {
+        long p = (long)Math.Round(prev), v = (long)Math.Round(value);
+        var edges = new List<string>();
+        if (v > p && v - p <= 8)
+            for (var k = p + 1; k <= v; k++) edges.Add((k & 1) == 1 ? "down" : "up");
+        else if (((p ^ v) & 1) == 1)
+            edges.Add((v & 1) == 1 ? "down" : "up");
+        return edges;
+    }
+
+    /// <summary>Control was granted: the held takeover press goes out as a normal press of the new PF.</summary>
+    private void FlushTakeover()
+    {
+        var commands = new List<JsonObject>();
+        lock (_gate)
+        {
+            if (!_takeoverRequested) return;
+            _takeoverRequested = false;
+            _takeoverTimer?.Dispose();
+            _takeoverTimer = null;
+            foreach (var (spec, edge, gap) in _takeoverHeld) commands.Add(NewCommand(spec, edge == "down" ? 1 : 0, null, edge, gap));
+            _takeoverHeld.Clear();
+        }
+        if (commands.Count == 0) return;
+        _log.Event("takeover_mirrored", new JsonObject { ["edges"] = commands.Count });
+        foreach (var c in commands) SendCommand(c);
+    }
+
+    /// <summary>Control was not granted: the takeover press is not mirrored at all.</summary>
+    private void DropTakeover(string why)
+    {
+        int dropped;
+        lock (_gate)
+        {
+            if (!_takeoverRequested) return;
+            _takeoverRequested = false;
+            _takeoverTimer?.Dispose();
+            _takeoverTimer = null;
+            dropped = _takeoverHeld.Count;
+            _takeoverHeld.Clear();
+        }
+        _log.Event("takeover_dropped", new JsonObject { ["why"] = why, ["edges"] = dropped });
+        _hub.Publish("takeover_dropped", $"Takeover press not mirrored to the other cockpit: {why}.", new JsonObject { ["why"] = why });
     }
 
     /// <summary>
@@ -362,7 +467,7 @@ public sealed class SyncEngine : IAsyncDisposable
         _log.Event("echo_suppressed", new JsonObject { ["var"] = name, ["value"] = value });
 
     /// <summary>Builds a command and remembers it until accepted (lock held).</summary>
-    private JsonObject NewCommand(VarEntry spec, double? value, double? delta)
+    private JsonObject NewCommand(VarEntry spec, double? value, double? delta, string? edge = null, int gapMs = 0)
     {
         var id = $"{_client.ClientId}-{++_commandCounter}";
         var body = new JsonObject
@@ -375,11 +480,17 @@ public sealed class SyncEngine : IAsyncDisposable
         else body["value"] = value;
         body["group"] = spec.Group;
         body["settle_ms"] = (spec.Verify?.SettleMs ?? _options.DefaultSettleMs) + (spec.Class == SyncClass.Pulse ? spec.PulseMs ?? 0 : 0);
-        // A key with an effect lamp: the server compares the lamp of both sims after settle.
-        if (spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is { } lamp)
+        if (edge is not null)
+        {
+            body["edge"] = edge;
+            body["gap_ms"] = gapMs;
+        }
+        // A key with an effect lamp: the server compares the lamp of both sims after settle (after the down edge).
+        if (spec.Class == SyncClass.Pulse && edge != "up" && spec.Verify?.Lvar is { } lamp)
             body["effect"] = new JsonObject { ["var"] = lamp, ["expect"] = spec.Verify.Expect == VerifyExpect.Parity ? "parity" : "same" };
         _pendingOwn[id] = (spec.Name, Absolute.Contains(spec.Class), body);
-        _sentText[id] = Labels.Action(spec.Name, spec.Class, value, delta);
+        // One line per press in the recent list: the release is not a separate action.
+        if (edge != "up") _sentText[id] = Labels.Action(spec.Name, spec.Class, value, delta);
         if (_sentText.Count > 2000) _sentText.Remove(_sentText.Keys.First());
         CommandsSent++;
         return body;
@@ -391,6 +502,13 @@ public sealed class SyncEngine : IAsyncDisposable
         List<JsonObject> resend;
         lock (_gate) resend = _pendingOwn.Values.Select(p => (JsonObject)p.Body.DeepClone()).ToList();
         foreach (var body in resend) _client.Send("command", body);
+        List<JsonObject> safety;
+        lock (_gate)
+        {
+            safety = [.. _pendingSafety];
+            _pendingSafety.Clear();
+        }
+        foreach (var body in safety) _client.Send("safety_release", body);
         // The server forgets a lost client's sim state; say again if the sim is gone.
         if (_sim.State != SimState.Connected) _client.Send("sim_state", new JsonObject { ["connected"] = false });
         _hub.Publish("resumed", fullResync ? "Reconnected; full snapshot resync." : "Reconnected; missed changes replayed.",
@@ -423,6 +541,9 @@ public sealed class SyncEngine : IAsyncDisposable
                 break;
             case "control_changed":
                 SetPf(body["pf_client_id"]!.GetValue<string>());
+                // A held takeover press goes out only if this pilot is now PF; otherwise it is dropped.
+                if (IsPf) FlushTakeover();
+                else DropTakeover("the other pilot has control");
                 _client.Send("control_ack", new JsonObject { ["epoch"] = body["epoch"]!.DeepClone() });
                 if (IsPf)
                 {
@@ -436,6 +557,7 @@ public sealed class SyncEngine : IAsyncDisposable
                 _hub.Publish("control_handover", "Control is changing hands.", body);
                 break;
             case "control_denied":
+                DropTakeover("control was not granted");
                 _hub.Publish("control_denied", body["message"]!.GetValue<string>(), body);
                 break;
             case "desync":
@@ -452,6 +574,8 @@ public sealed class SyncEngine : IAsyncDisposable
                 _status.PeerState = state;
                 if (body["name"] is JsonValue pn) PeerName = pn.GetValue<string>();
                 PeerLostAt = state == "lost" ? DateTimeOffset.UtcNow : null;
+                // Their "up" cannot arrive in time: release what Crosscheck holds down for them.
+                if (state is "lost" or "left") ReleaseAllMirrored("peer_lost");
                 _hub.Publish("peer_" + state, $"Other pilot ({body["seat"]}): {state}.", body);
                 foreach (var w in body["warnings"] as JsonArray ?? [])
                     _hub.Publish("warning", w!["message"]!.GetValue<string>(), w.AsObject());
@@ -498,8 +622,6 @@ public sealed class SyncEngine : IAsyncDisposable
         _status.Seat = body["seat"]!.GetValue<string>();
         var side = _options.SeatSide ?? (_status.Seat == "guest" ? SeatSide.Fo : SeatSide.Captain);
         _status.SeatSide = side == SeatSide.Fo ? "fo" : "captain";
-        if (_profile.Roles?.Takeover is { } t)
-            lock (_gate) _takeoverVar = side == SeatSide.Fo ? t.Fo : t.Captain;
         if (body["join_code"] is JsonValue code) _status.JoinCode = code.GetValue<string>();
         if (body["peer"] is JsonObject peer)
         {
@@ -566,6 +688,14 @@ public sealed class SyncEngine : IAsyncDisposable
                 SendAck(id, false, null);
                 return;
             }
+            // Defence in depth: a takeover press is never written into the flying pilot's sim (protocol.md §8).
+            if (IsTakeoverVar(name) && IsPf)
+            {
+                _inFlight.Remove(id);
+                _log.Event("takeover_refused", new JsonObject { ["id"] = id, ["var"] = name, ["why"] = "this sim is flying" });
+                SendAck(id, false, _sim.TryGet(name, out var tv) ? tv : null);
+                return;
+            }
             if (Absolute.Contains(spec.Class))
             {
                 var ownPending = _pendingOwn.Values.Any(p => p.Absolute && p.Var == name);
@@ -582,7 +712,11 @@ public sealed class SyncEngine : IAsyncDisposable
             _appliedSeq = Math.Max(_appliedSeq, seq);
             if (spec.Class is SyncClass.Pulse or SyncClass.Delta) _appliedEvents.Add(id);
             var settle = body["settle_ms"]!.GetValue<int>();
-            _applyQueue.Writer.TryWrite(new ApplyJob(id, spec, false, body["value"]?.GetValue<double>(), body["delta"]?.GetValue<double>(), settle, null));
+            _applyQueue.Writer.TryWrite(new ApplyJob(id, spec, false, body["value"]?.GetValue<double>(), body["delta"]?.GetValue<double>(), settle, null)
+            {
+                Edge = body["edge"]?.GetValue<string>(),
+                GapMs = body["gap_ms"]?.GetValue<int>() ?? 0,
+            });
         }
     }
 
@@ -636,7 +770,15 @@ public sealed class SyncEngine : IAsyncDisposable
 
     // ---------------------------------------------------------------- applying (write, verify, ack)
 
-    private sealed record ApplyJob(string Id, VarEntry Spec, bool IsCorrection, double? Value, double? Delta, int SettleMs, double? Target);
+    private sealed record ApplyJob(string Id, VarEntry Spec, bool IsCorrection, double? Value, double? Delta, int SettleMs, double? Target)
+    {
+        /// <summary>Edge buttons: "down" or "up" (protocol.md §5).</summary>
+        public string? Edge { get; init; }
+        /// <summary>Edge buttons: the sender's time since the previous edge of this button.</summary>
+        public int GapMs { get; init; }
+    }
+
+    private sealed record MirroredDown(double WrittenAtMs, string Id, double Value, Timer Cap);
 
     private sealed record Written(bool Ok, double? StoredTarget, bool StoredSeen, string? Error);
 
@@ -744,31 +886,164 @@ public sealed class SyncEngine : IAsyncDisposable
                 await WriteGuarded(name, target);
                 return new Written(true, target, true, null);
             }
+            case SyncClass.Pulse when IsEdge(spec):
+                return await WriteEdge(job, window);
             case SyncClass.Pulse:
             {
-                var counter = spec.Press == PressMode.Counter;
-                _sim.TryGet(name, out var c);
                 lock (_gate)
                 {
-                    if (counter && _pressCounter.TryGetValue(name, out var last)) c = Math.Max(c, last);
-                    if (counter) _pressCounter[name] = c + 2;
+                    _echo.Expect(name, 1, window + (spec.PulseMs ?? 150));
+                    _echo.Expect(name, 0, window + (spec.PulseMs ?? 150));
                 }
-                var press = counter ? c + 1 : 1;
-                var release = counter ? c + 2 : 0;
-                lock (_gate)
-                {
-                    _echo.Expect(name, press, window + (spec.PulseMs ?? 150));
-                    _echo.Expect(name, release, window + (spec.PulseMs ?? 150));
-                }
-                await WriteGuarded(name, press);
+                await WriteGuarded(name, 1);
                 await Task.Delay(spec.PulseMs ?? 150);
-                var seen = _sim.TryGet(name, out var during) && during == press;
-                await WriteGuarded(name, release);
-                return new Written(true, release, seen, null);
+                var seen = _sim.TryGet(name, out var during) && during == 1;
+                await WriteGuarded(name, 0);
+                return new Written(true, 0, seen, null);
             }
             default:
                 return new Written(false, null, false, $"class {spec.Class} is never written");
         }
+    }
+
+    /// <summary>
+    /// One mirrored edge (protocol.md §5). Always own value + 1, never the sender's number.
+    /// Down: only from up (even); a button the local pilot already holds is left alone.
+    /// Up: only for a button Crosscheck itself pressed down, after its down was read back and never
+    /// sooner than max(50 ms, the sender's gap) after it, so a hold is mirrored for as long as it lasts.
+    /// </summary>
+    private async Task<Written> WriteEdge(ApplyJob job, int window)
+    {
+        var name = job.Spec.Name;
+        if (!_sim.TryGet(name, out var own)) return new Written(false, null, false, "button value unknown");
+        if (job.Edge == "down")
+        {
+            if (((long)Math.Round(own) & 1) == 1)
+            {
+                _log.Event("edge_already_down", new JsonObject { ["id"] = job.Id, ["var"] = name, ["value"] = own });
+                return new Written(true, own, true, null);
+            }
+            var target = Math.Round(own) + 1;
+            lock (_gate)
+            {
+                _echo.Expect(name, target, window);
+                if (_mirroredDown.Remove(name, out var old)) old.Cap.Dispose();
+                var cap = new Timer(_ => SafetyRelease(name, "cap"), null, _options.SafetyReleaseMs, Timeout.Infinite);
+                _mirroredDown[name] = new MirroredDown(_clock.NowMs, job.Id, target, cap);
+            }
+            try
+            {
+                await WriteGuarded(name, target);
+            }
+            catch
+            {
+                lock (_gate)
+                    if (_mirroredDown.Remove(name, out var failed)) failed.Cap.Dispose();
+                throw;
+            }
+            return new Written(true, target, true, null);
+        }
+
+        MirroredDown? down;
+        lock (_gate) _mirroredDown.TryGetValue(name, out down);
+        if (down is null)
+        {
+            // Not pressed by Crosscheck (the local pilot holds it, or it was released already): never released here.
+            _log.Event("edge_up_skipped", new JsonObject { ["id"] = job.Id, ["var"] = name, ["value"] = own });
+            return new Written(true, own, true, null);
+        }
+        await WaitFor(name, down.Value, _options.StoredTimeoutMs);
+        var wait = down.WrittenAtMs + Math.Max(_options.EdgeFloorMs, job.GapMs) - _clock.NowMs;
+        if (wait > 0) await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(wait, _options.SafetyReleaseMs)));
+        double release;
+        lock (_gate)
+        {
+            // The cap or the local pilot may have taken it meanwhile.
+            if (!_mirroredDown.TryGetValue(name, out var still) || !ReferenceEquals(still, down))
+                return new Written(true, _sim.TryGet(name, out var now) ? now : own, true, null);
+            _mirroredDown.Remove(name);
+            down.Cap.Dispose();
+            if (!_sim.TryGet(name, out var cur) || cur != down.Value)
+                return new Written(true, cur, true, null);
+            release = cur + 1;
+            _echo.Expect(name, release, window);
+        }
+        await WriteGuarded(name, release);
+        return new Written(true, release, true, null);
+    }
+
+    /// <summary>
+    /// The only write no pilot made (CLAUDE.md, protocol.md §5): an "up" for a button Crosscheck itself
+    /// pressed down in this sim, when the other pilot's "up" never arrived. Never a down, never another
+    /// var, never a button the local pilot touched; always a red desync.
+    /// </summary>
+    private void SafetyRelease(string name, string cause)
+    {
+        MirroredDown? down;
+        double release;
+        lock (_gate)
+        {
+            if (!_mirroredDown.Remove(name, out down)) return;
+            down.Cap.Dispose();
+            if (!_sim.TryGet(name, out var cur) || cur != down.Value || ((long)Math.Round(cur) & 1) == 0)
+            {
+                _log.Event("safety_release_skipped", new JsonObject { ["var"] = name, ["cause"] = cause, ["value"] = _sim.TryGet(name, out var v) ? v : null });
+                return;
+            }
+            release = cur + 1;
+            _echo.Expect(name, release, _options.EchoWindowMs);
+        }
+        var label = Labels.Var(name);
+        var why = cause switch
+        {
+            "cap" => $"after {_options.SafetyReleaseMs / 1000.0:0.#} s without a release from the {PeerWord}",
+            "link_lost" => "because the connection to the server was lost",
+            _ => $"because the {PeerWord} was lost",
+        };
+        var message = $"Crosscheck released {label} {why}.";
+        var body = new JsonObject { ["var"] = name, ["group"] = _vars[name].Group, ["cause"] = cause, ["observed"] = release };
+        _log.Event("safety_release", new JsonObject { ["var"] = name, ["cause"] = cause, ["id"] = down.Id, ["from"] = down.Value, ["to"] = release });
+        // Shown at once, before the server knows (the link may be down).
+        _status.SetDesync(name, new JsonObject
+        {
+            ["var"] = name, ["reason"] = "safety_release", ["tier"] = "red", ["blocking"] = false, ["group"] = _vars[name].Group,
+            ["message"] = message,
+        });
+        _hub.Publish("safety_release", message, (JsonObject)body.DeepClone());
+        _ = WriteSafely(name, release);
+        lock (_gate)
+        {
+            if (_client.State != ServerState.Connected)
+            {
+                _pendingSafety.Add(body);
+                return;
+            }
+        }
+        _client.Send("safety_release", body);
+    }
+
+    private async Task WriteSafely(string name, double value)
+    {
+        try
+        {
+            await WriteGuarded(name, value);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Safety release of {Var} failed", name);
+        }
+    }
+
+    private void ReleaseAllMirrored(string cause)
+    {
+        List<string> names;
+        lock (_gate) names = [.. _mirroredDown.Keys];
+        foreach (var n in names) SafetyRelease(n, cause);
+    }
+
+    private void OnServerState(ServerState state)
+    {
+        if (state is ServerState.Reconnecting or ServerState.Disconnected) ReleaseAllMirrored("link_lost");
     }
 
     private async Task WriteGuarded(string name, double value)
@@ -824,11 +1099,12 @@ public sealed class SyncEngine : IAsyncDisposable
         {
             // An encoder without a display var is verified by read-back only: its own counter.
             SyncClass.Delta => spec.Display is { } disp ? (_sim.TryGet(disp, out var dv) ? dv : null) : (_sim.TryGet(name, out var cv) ? cv : null),
+            SyncClass.Pulse when IsEdge(spec) => written.StoredTarget,
             SyncClass.Pulse => written.StoredSeen ? (job.Value ?? 1) : null,
             _ => _sim.TryGet(name, out var v) ? v : null,
         };
         CommandsApplied++;
-        if (!job.IsCorrection)
+        if (!job.IsCorrection && job.Edge != "up")
         {
             var what = Labels.Action(name, spec.Class, job.Value, job.Delta);
             _hub.Publish("action_applied", ok ? $"{what} by {PeerWord}. Confirmed." : $"{what} by {PeerWord}. Not confirmed in your sim.",
@@ -840,7 +1116,7 @@ public sealed class SyncEngine : IAsyncDisposable
         });
         // A key with an effect lamp: the ack carries this sim's lamp; the server compares it with the sender's.
         // ok stays "the press was stored": no effect on both sides (unpowered) is not a failure.
-        var withEffect = spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is not null;
+        var withEffect = spec.Class == SyncClass.Pulse && job.Edge != "up" && spec.Verify?.Lvar is not null;
         SendAck(job.Id, ok, observed, effect: effect, withEffect: withEffect);
     }
 
@@ -870,8 +1146,16 @@ public sealed class SyncEngine : IAsyncDisposable
             // The display of an encoder is an input: it is compared under the encoder name (class delta), so a
             // difference is corrected or red, never a quiet indicator.
             if (v.Class == SyncClass.Observe && _deltaDisplays.Contains(v.Name)) continue;
+            // The lamp of an edge button is that button's state: reported as a toggle item next to the button.
+            if (v.Class == SyncClass.Observe && _toggleLamps.ContainsKey(v.Name)) continue;
             switch (v.Class)
             {
+                case SyncClass.Pulse when IsEdge(v):
+                    // Parity only: the counters differ between the sims by design. Odd = held down.
+                    list.Add((v.Name, "pulse", _sim.TryGet(v.Name, out var pv) ? (double)((long)Math.Round(pv) & 1) : null));
+                    if (v.Verify?.Lvar is { } lamp && _toggleLamps.GetValueOrDefault(lamp) == v.Name)
+                        list.Add((lamp, "toggle", _sim.TryGet(lamp, out var lv) ? lv : null));
+                    break;
                 case SyncClass.Verified or SyncClass.Analog or SyncClass.Owned or SyncClass.Observe:
                     list.Add((v.Name, v.Class.ToString().ToLowerInvariant(), _sim.TryGet(v.Name, out var x) ? x : null));
                     break;
@@ -930,6 +1214,7 @@ public sealed class SyncEngine : IAsyncDisposable
                 {
                     var item = new JsonObject { ["var"] = v.Var, ["class"] = v.Class, ["value"] = Node(v.Value) };
                     if (v.Class == "owned" && _driftSteps.TryGetValue(v.Var, out var step)) item["step"] = step;
+                    if (v.Class == "toggle") item["button"] = _toggleLamps[v.Var];
                     return (JsonNode)item;
                 }).ToArray()),
             });
@@ -970,6 +1255,35 @@ public sealed class SyncEngine : IAsyncDisposable
         _log.Event("pilot_set", new JsonObject { ["var"] = name, ["value"] = value, ["source"] = "ui" });
         _client.Send("command", command);
         if (write) await WriteGuarded(name, value);
+    }
+
+    /// <summary>
+    /// "Press X here only" from the UI, for a toggle button whose light differs between the cockpits
+    /// (toggle_mismatch): a press in the cockpit would be mirrored and flip both lights. One click (down,
+    /// then up) in this pilot's own sim, not mirrored. A pilot action, never automatic; only edge buttons
+    /// whose light is their state, and only while the button is up.
+    /// </summary>
+    public async Task PressHereOnlyAsync(string name)
+    {
+        if (!_vars.TryGetValue(name, out var spec) || !IsEdge(spec) || spec.Verify?.Lvar is null || IsTakeoverVar(name))
+            throw new SafetyViolationException($"{name} cannot be pressed from here (only push buttons whose light shows their state).");
+        if (_sim.State != SimState.Connected) throw new InvalidOperationException("The sim is not connected.");
+        double down;
+        lock (_gate)
+        {
+            if (!_sessionActive) throw new InvalidOperationException("Not in a session.");
+            if (!_sim.TryGet(name, out var own)) throw new InvalidOperationException($"{Labels.Var(name)} cannot be read.");
+            if (((long)Math.Round(own) & 1) == 1) throw new InvalidOperationException($"{Labels.Var(name)} is held down right now.");
+            down = Math.Round(own) + 1;
+            var window = (spec.Verify.SettleMs) + _options.EchoWindowMs + 500;
+            _echo.Expect(name, down, window); // our own click: never sent as a pilot press
+            _echo.Expect(name, down + 1, window);
+        }
+        _log.Event("press_here_only", new JsonObject { ["var"] = name, ["from"] = down - 1, ["source"] = "ui" });
+        _hub.Publish("press_here_only", $"{Labels.Var(name)} pressed in your cockpit only (not mirrored).", new JsonObject { ["var"] = name });
+        await WriteGuarded(name, down);
+        await Task.Delay(150);
+        await WriteGuarded(name, down + 1);
     }
 
     /// <summary>"You have control" (as PF): hands control to the other pilot.</summary>
@@ -1014,5 +1328,12 @@ public sealed class SyncEngine : IAsyncDisposable
         _sim.StateChanged -= OnSimState;
         _client.MessageReceived -= OnMessage;
         _client.Resumed -= OnResumed;
+        _client.StateChanged -= OnServerState;
+        lock (_gate)
+        {
+            foreach (var d in _mirroredDown.Values) d.Cap.Dispose();
+            _mirroredDown.Clear();
+            _takeoverTimer?.Dispose();
+        }
     }
 }

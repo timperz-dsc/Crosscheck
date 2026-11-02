@@ -66,13 +66,21 @@ public sealed class MemoryChannel : IProtocolChannel
 
     public event Action<JsonObject>? MessageReceived;
     public event Action<bool>? Resumed;
+    public event Action<ServerState>? StateChanged;
+
+    /// <summary>The link drops or comes back (raises StateChanged like the real client).</summary>
+    public void SetState(ServerState state)
+    {
+        State = state;
+        StateChanged?.Invoke(state);
+    }
 
     /// <summary>Outgoing messages that do not match the protocol schema. Must stay empty.</summary>
     public ConcurrentQueue<string> Invalid { get; } = new();
 
     public void Send(string type, JsonObject body)
     {
-        var envelope = new JsonObject { ["v"] = 2, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
+        var envelope = new JsonObject { ["v"] = 3, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
         if (MessageValidator.Shared.Validate(envelope) is { } error) Invalid.Enqueue(error);
         Sent.Enqueue((type, (JsonObject)body.DeepClone()));
     }
@@ -83,7 +91,7 @@ public sealed class MemoryChannel : IProtocolChannel
 
     public void Inject(string type, JsonObject body, long? seq = null)
     {
-        var msg = new JsonObject { ["v"] = 2, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 0, ["body"] = body };
+        var msg = new JsonObject { ["v"] = 3, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 0, ["body"] = body };
         if (seq is not null) msg["seq"] = seq;
         MessageReceived?.Invoke(msg);
     }
@@ -118,7 +126,9 @@ public sealed class EngineHarness : IAsyncDisposable
     {
         Engine.Start();
         await Sim.StartAsync(Engine.Plan, CancellationToken.None);
-        await Task.Delay(30); // first frame: initial values, no commands
+        // First frame: initial values, no commands. Wait for it, so a test's first press is never taken as a start value.
+        await Wait.Until(() => Sim.FramesDelivered >= 1, "first frame");
+        await Task.Delay(10);
         Channel.Inject(pf ? "created" : "joined", new JsonObject
         {
             ["session_id"] = "s_test0001",
@@ -135,12 +145,18 @@ public sealed class EngineHarness : IAsyncDisposable
     public JsonObject? AckFor(string id) => Channel.SentOf("ack").LastOrDefault(a => a["id"]!.GetValue<string>() == id);
 
     /// <summary>A command from the other pilot, as the server relays it.</summary>
-    public string Remote(string var, string cls, double? value = null, double? delta = null, int settleMs = 30, string? id = null)
+    public string Remote(string var, string cls, double? value = null, double? delta = null, int settleMs = 30, string? id = null,
+        string? edge = null, int gapMs = 0)
     {
         id ??= $"{OtherClient}-{Guid.NewGuid():N}"[..40];
         var body = new JsonObject { ["id"] = id, ["var"] = var, ["class"] = cls };
         if (delta is not null) body["delta"] = delta;
         else body["value"] = value;
+        if (edge is not null)
+        {
+            body["edge"] = edge;
+            body["gap_ms"] = gapMs;
+        }
         body["group"] = Profile.Vars.First(v => v.Name == var).Group;
         body["settle_ms"] = settleMs;
         body["origin"] = new JsonObject { ["client_id"] = OtherClient, ["seat"] = "guest", ["role"] = "pm" };
@@ -148,6 +164,10 @@ public sealed class EngineHarness : IAsyncDisposable
         Channel.Inject("command", body, Channel.NextSeq());
         return id;
     }
+
+    /// <summary>One edge of the other pilot's push button (protocol.md section 5).</summary>
+    public string Edge(string var, string edge, int gapMs = 0, int settleMs = 30) =>
+        Remote(var, "pulse", edge == "down" ? 1 : 0, settleMs: settleMs, edge: edge, gapMs: gapMs);
 
     public string Correction(string var, string cls, double target, string source, string? id = null)
     {

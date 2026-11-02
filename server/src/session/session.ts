@@ -8,10 +8,10 @@ import {
   type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
   type EffectReportBody, type EffectSpec, type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
   type Seat, type SimStateBody, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Tier, type Timing,
-  type UnsyncedInputBody,
+  type SafetyReleaseBody, type UnsyncedInputBody,
 } from '../protocol/types.js';
 import { CorrectionGuard } from './correctionGuard.js';
-import { decideCorrections, diffValues, type LoggedCommand, type RawDecision } from './corrections.js';
+import { buttonDecision, decideCorrections, diffValues, type LoggedCommand, type RawDecision } from './corrections.js';
 import { newClientId, newResumeToken } from './joinCode.js';
 import { PendingAcks, type PendingEntry } from './pendingAcks.js';
 import { comparePreflight } from './preflight.js';
@@ -83,6 +83,8 @@ interface GroupState {
   driftVars: string[];
   /** Observe vars that differ, since when (raised only after config.indicatorHoldMs). */
   observeSince: Map<string, number>;
+  /** Edge buttons (pulse parity, toggle lamp) that differ: since when and in how many comparisons in a row. */
+  buttonSince: Map<string, { at: number; rounds: number }>;
   /** Owned drift as last sent to the pilots (rate limit), and when. */
   driftSent: Map<string, number>;
   driftSentAt: number;
@@ -298,6 +300,7 @@ export class Session {
       case 'sim_state': return this.onSimState(slot, body);
       case 'unsynced_input': return this.onUnsyncedInput(slot, body);
       case 'effect_report': return this.onEffectReport(slot, body);
+      case 'safety_release': return this.onSafetyRelease(slot, body);
       default:
         this.sendError(slot, 'forbidden', `${msg.type} is not allowed from a client in a session`);
     }
@@ -335,6 +338,7 @@ export class Session {
       ...(body.delta !== undefined ? { delta: body.delta } : {}),
       group: body.group, settle_ms: body.settle_ms,
       ...(body.effect ? { effect: body.effect } : {}),
+      ...(body.edge ? { edge: body.edge, gap_ms: body.gap_ms ?? 0 } : {}),
       origin: { client_id: slot.id, seat: slot.seat, role: this.role(slot) }, attempt: 0,
     };
     let seq: number;
@@ -508,7 +512,7 @@ export class Session {
     if (!g) {
       g = {
         reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [], driftVars: [],
-        observeSince: new Map(), driftSent: new Map(), driftSentAt: 0,
+        observeSince: new Map(), buttonSince: new Map(), driftSent: new Map(), driftSentAt: 0,
       };
       this.groups.set(name, g);
     }
@@ -538,6 +542,7 @@ export class Session {
       if (g.driftVars.length > 0) this.sendDrift(name, g, []);
       for (const d of [...this.desyncs.values()]) if (d.group === name && d.matchVar !== null) this.clearDesync(d.var, 'match');
       for (const v of g.observeSince.keys()) g.observeSince.delete(v);
+      g.buttonSince.clear();
       return;
     }
     g.mismatchCount++;
@@ -625,6 +630,7 @@ export class Session {
     }
     const now = Date.now();
     for (const v of [...g.observeSince.keys()]) if (!differing.has(v)) g.observeSince.delete(v);
+    for (const v of [...g.buttonSince.keys()]) if (!differing.has(v)) g.buttonSince.delete(v);
     const hasOwned = [...refValues, ...otherValues].some((v) => v.class === 'owned');
     if (hasOwned) this.sendDrift(group, g, drift);
     if (diffs.length === 0) {
@@ -634,14 +640,16 @@ export class Session {
 
     const raw: RawDecision[] = pf
       ? decideCorrections(diffs, (n) => this.lastLogged(n))
-      : diffs.map((d) => ({ ...d, action: 'desync' as const, reason: 'no_pf' as const }));
+      : diffs.map((d) => buttonDecision(d) ?? { ...d, action: 'desync' as const, reason: 'no_pf' as const });
 
     const decisions: DiffDecision[] = [];
     const toCorrect: Extract<RawDecision, { action: 'correct' }>[] = [];
     const toRaise: { d: RawDecision; reason: DesyncReason; blocking: boolean; text: string }[] = [];
 
     for (const d of raw) {
-      const open = this.desyncs.get(d.var);
+      // A toggle lamp is reported under its button (the control the pilots press).
+      const key = d.class === 'toggle' && d.button ? d.button : d.var;
+      const open = this.desyncs.get(key);
       const base = { var: d.var, class: d.class, pf: d.pf, pm: d.pm };
       if (d.action === 'desync') {
         const tier = tierFor(d.class);
@@ -649,6 +657,9 @@ export class Session {
           decisions.push({ ...base, action: 'held', reason: d.reason });
         } else if (tier === 'quiet' && now - (g.observeSince.get(d.var) ?? (g.observeSince.set(d.var, now), now)) < this.config.indicatorHoldMs) {
           // An indicator must differ for a while before it counts (it may just lag the input).
+          decisions.push({ ...base, action: 'held', reason: d.reason });
+        } else if ((d.class === 'pulse' || d.class === 'toggle') && !this.buttonPersists(g, d.var, now)) {
+          // A snapshot taken mid-mirror must never raise a false red: 2 comparisons in a row or buttonHoldMs.
           decisions.push({ ...base, action: 'held', reason: d.reason });
         } else {
           decisions.push({ ...base, action: 'desync', reason: d.reason });
@@ -680,9 +691,11 @@ export class Session {
       this.emit(this.slots, 'snapshot_diff', { request_id: requestId, group, pf_client_id: this.pfClientId, differences: decisions });
     }
     for (const r of toRaise) {
+      const toggle = r.d.class === 'toggle' && r.d.button;
       this.raiseDesync({
-        var: r.d.var, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm }, message: r.text,
-      }, r.blocking, tierFor(r.d.class));
+        var: toggle ? r.d.button! : r.d.var, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm },
+        message: toggle ? desyncText(r.d.button!, r.reason) : r.text,
+      }, r.blocking, tierFor(r.d.class), r.d.var);
     }
     for (const d of toCorrect) this.sendCorrection(d, group, requestId, ref, other);
   }
@@ -1076,6 +1089,32 @@ export class Session {
   }
 
   /** A pilot moved a control that is watched read-only (not synced yet). One line per control. */
+  /** An edge button differs in this comparison: true once it differed 2 times in a row or for buttonHoldMs. */
+  private buttonPersists(g: GroupState, name: string, now: number): boolean {
+    const seen = g.buttonSince.get(name);
+    if (!seen) {
+      g.buttonSince.set(name, { at: now, rounds: 1 });
+      return false;
+    }
+    seen.rounds++;
+    return seen.rounds >= 2 || now - seen.at >= this.config.buttonHoldMs;
+  }
+
+  /**
+   * A receiver released an edge button that Crosscheck had pressed down in its sim, because the up never
+   * arrived (protocol.md section 5): the only write no pilot made. Always red, to both pilots; it clears
+   * when the button state matches again in a snapshot.
+   */
+  private onSafetyRelease(slot: ClientSlot, body: SafetyReleaseBody): void {
+    this.log.event('safety_release', { client: slot.id, var: body.var, cause: body.cause, observed: body.observed });
+    const why = body.cause === 'cap' ? 'no release arrived within 30 s'
+      : body.cause === 'link_lost' ? `the ${slot.seat}'s connection was lost` : 'the other pilot was lost';
+    this.raiseDesync({
+      var: body.var, group: body.group, reason: 'safety_release', expected: null, observed: body.observed, client_id: slot.id,
+      message: `${body.var}: Crosscheck released this button in the ${slot.seat}'s cockpit because ${why}. Check it on both sides.`,
+    }, false, 'red', body.var);
+  }
+
   private onUnsyncedInput(slot: ClientSlot, body: UnsyncedInputBody): void {
     const key = `not_synced:${body.var}`;
     const prev = this.advisories.get(key);
@@ -1248,6 +1287,8 @@ export function driftShouldSend(
 
 function desyncText(name: string, reason: DesyncReason): string {
   switch (reason) {
+    case 'press_mismatch': return `${name}: held down in one cockpit only. Never pressed automatically.`;
+    case 'toggle_mismatch': return `${name}: its light is on in one cockpit and off in the other. If nothing above it differs, press it on one side.`;
     case 'observe_mismatch': return `${name}: the sims show different values (output, never written).`;
     case 'log_conflict': return `${name}: neither sim has the last pilot command's value; not corrected.`;
     case 'missing_value': return `${name}: value unknown on one side; not corrected.`;

@@ -11,8 +11,8 @@
 //       display: N_X                   # delta only
 //       verify: { lvar: I_X_L, settle_ms: 150 }    # or { graphql: path, settle_ms: 100 }
 //       value_labels: { "0": "OFF", "1": "ON" }
-//       pulse_ms: 150
-//       press: counter
+//       press: edge                    # pulse: edge (default, Fenix push buttons) or momentary
+//       pulse_ms: 150                  # momentary only
 //       note: "..."                    # replaces the rule notes after "label generated"
 //       comment: "..."                 # written as a comment line above the entry
 //       evidence: "..."                # what backs it (not written to the profile)
@@ -28,7 +28,7 @@ namespace ProfileGen;
 
 sealed record Override(
     string Name, string? Class, string? Group, double[]? Values, double[]? Range, string? Display, Verify? Verify,
-    Dictionary<string, string>? ValueLabels, int? PulseMs, bool? Counter, string? Note, string? Comment, string Evidence);
+    Dictionary<string, string>? ValueLabels, int? PulseMs, string? Press, string? Note, string? Comment, string Evidence);
 
 sealed record OpenItem(string What, IReadOnlyList<string> Vars, string Why);
 
@@ -70,7 +70,8 @@ sealed class OverrideFile
                 file.Overrides.Add(new Override(
                     name, S("class"), S("group"), values, range, S("display"), verify, labels,
                     S("pulse_ms") is { } pm ? int.Parse(pm, CultureInfo.InvariantCulture) : null,
-                    S("press") is { } press ? press == "counter" : null,
+                    S("press") is { } press ? press is "edge" or "momentary" ? press
+                        : throw new InvalidDataException($"{path}: {name}: press is edge or momentary, not '{press}'") : null,
                     S("note"), S("comment"),
                     S("evidence") ?? throw new InvalidDataException($"{path}: {name}: every override needs evidence")));
             }
@@ -123,13 +124,17 @@ sealed class OverrideFile
     static Entry Build(Override o, string cls, string group, string value, Entry? keep)
     {
         var silent = cls is "observe" or "ignore";
+        // Fenix push buttons default to edge (observe-report.md, CRO-29); momentary only on request.
+        var press = cls == "pulse" ? o.Press ?? keep?.Press ?? "edge" : null;
+        if (o.PulseMs is not null && press != "momentary")
+            throw new InvalidDataException($"{o.Name}: pulse_ms is only used with press: momentary");
         var e = new Entry
         {
             Name = o.Name, Class = cls, Group = group, Value = value,
             Values = silent ? null : o.Values ?? keep?.Values,
             Range = silent ? null : o.Range ?? keep?.Range,
-            PulseMs = cls == "pulse" ? o.PulseMs ?? keep?.PulseMs ?? 150 : null,
-            Counter = cls == "pulse" && (o.Counter ?? keep?.Counter ?? false),
+            Press = press,
+            PulseMs = press == "momentary" ? o.PulseMs ?? keep?.PulseMs ?? 150 : null,
             ValueLabels = o.ValueLabels ?? keep?.ValueLabels,
             Comment = o.Comment ?? keep?.Comment,
         };

@@ -12,4 +12,6 @@ public interface IProtocolChannel
     event Action<JsonObject>? MessageReceived;
     /// <summary>Raised after a resume; true = full resync.</summary>
     event Action<bool>? Resumed;
+    /// <summary>The link to the server changed (connected, reconnecting, ...).</summary>
+    event Action<ServerState>? StateChanged;
 }

@@ -5,6 +5,8 @@ export interface VarDiff {
   class: SnapshotClass;
   pf: Scalar;
   pm: Scalar;
+  /** Toggle items: the edge button whose lamp differs. */
+  button?: string;
 }
 
 /** The latest logged pilot command for a var, as far as the safety rule needs it. */
@@ -36,9 +38,20 @@ export function diffValues(pfValues: SnapshotValue[], pmValues: SnapshotValue[])
     const a = pf.get(name);
     const b = pm.get(name);
     if (a && b && sameValue(a.value, b.value)) continue;
-    out.push({ var: name, class: (a ?? b)!.class, pf: a?.value ?? null, pm: b?.value ?? null });
+    const button = (a ?? b)!.button;
+    out.push({ var: name, class: (a ?? b)!.class, pf: a?.value ?? null, pm: b?.value ?? null, ...(button ? { button } : {}) });
   }
   return out;
+}
+
+/**
+ * Edge push buttons are never corrected (protocol.md section 7): a button held down on one side
+ * only (pulse, parity) or a toggle lamp that differs (toggle) is a red desync for the pilots to fix.
+ */
+export function buttonDecision(d: VarDiff): RawDecision | null {
+  if (d.class === 'pulse') return { ...d, action: 'desync', reason: 'press_mismatch' };
+  if (d.class === 'toggle') return { ...d, action: 'desync', reason: 'toggle_mismatch' };
+  return null;
 }
 
 /**
@@ -54,6 +67,9 @@ export function diffValues(pfValues: SnapshotValue[], pmValues: SnapshotValue[])
  */
 export function decideCorrections(diffs: VarDiff[], lastCommand: (name: string) => LoggedCommand | undefined): RawDecision[] {
   return diffs.map((d): RawDecision => {
+    // Edge push buttons: never corrected, an automatic press would be a write no pilot made.
+    const button = buttonDecision(d);
+    if (button) return button;
     if (d.class === 'observe') return { ...d, action: 'desync', reason: 'observe_mismatch' };
     if (d.pf === null || d.pm === null) return { ...d, action: 'desync', reason: 'missing_value' };
 

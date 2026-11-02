@@ -16,8 +16,9 @@ sealed class Entry
     public string Label { get; set; } = "";
     public double[]? Values { get; init; }
     public double[]? Range { get; init; }
+    /// <summary>pulse only: momentary (1 then 0 after PulseMs) or edge (Fenix push buttons, CRO-29/30).</summary>
     public int? PulseMs { get; init; }
-    public bool Counter { get; init; }
+    public string? Press { get; init; }
     public string? Display { get; set; }
     public Verify? Verify { get; set; }
     public Dictionary<string, string>? ValueLabels { get; init; }
@@ -147,11 +148,9 @@ static class Rules
             return Make(v, group, "verified", values: [0, 1],
                 valueLabels: new() { ["0"] = "closed", ["1"] = "open" });
 
+        // Every Fenix S_ push button counts +1 on press and +1 on release (observe-report.md, CRO-29).
         if (PulseName.IsMatch(name))
-        {
-            var counter = Regex.IsMatch(name, "^S_MIP_MASTER_(CAUTION|WARNING)");
-            return Make(v, group, "pulse", pulseMs: 150, counter: counter);
-        }
+            return Make(v, group, "pulse", press: "edge");
 
         if (KnownPositions.TryGetValue(name, out var known))
             return Make(v, group, "verified", values: known, note: "positions proven in spike/VarTypes");
@@ -172,14 +171,14 @@ static class Rules
         group is null ? Undecided(v, null, cls, null) : New(v, cls, group, note);
 
     static (Entry?, Review?) Make(ScanVar v, string? group, string cls,
-        double[]? values = null, double[]? range = null, int? pulseMs = null, bool counter = false,
+        double[]? values = null, double[]? range = null, string? press = null,
         Verify? verify = null, Dictionary<string, string>? valueLabels = null, string? note = null)
     {
         if (group is null) return Undecided(v, null, cls, null);
         var e = new Entry
         {
             Name = v.Name, Class = cls, Group = group, Value = v.Value, Values = values, Range = range,
-            PulseMs = pulseMs, Counter = counter, Verify = verify, ValueLabels = valueLabels,
+            Press = press, Verify = verify, ValueLabels = valueLabels,
         };
         if (note is not null) e.Notes.Add(note);
         return (e, null);

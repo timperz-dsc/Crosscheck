@@ -212,4 +212,51 @@ public sealed class NoSilentFailureEndToEndTests(ServerFixture server) : IAsyncL
         var mip = s["groups"]!.AsArray().Single(g => g!["id"]!.GetValue<string>() == "mip")!;
         Assert.Equal(0, mip["differs"]!.GetValue<int>());
     }
+    [Fact]
+    public async Task A_toggle_light_that_differs_is_red_never_pressed_automatically_and_press_here_only_fixes_it()
+    {
+        var (host, guest) = await Pair();
+        const string Fd = "S_FCU_EFIS1_FD", Lamp = "I_FCU_EFIS1_FD";
+        // As if the guest joined with FD in the other state (or missed a press while reconnecting).
+        Sim(guest).Logic(Lamp, Sim(host).Get(Lamp) == 0 ? 1 : 0);
+
+        JsonObject? Toggle(JsonObject s) => s["desyncs"]!.AsArray().OfType<JsonObject>()
+            .FirstOrDefault(d => d["var"]!.GetValue<string>() == Fd && d["reason"]!.GetValue<string>() == "toggle_mismatch");
+        JsonObject? item = null;
+        await Wait.Until(() => (item = Toggle(Status(guest).GetAwaiter().GetResult())) is not null, "red toggle_mismatch", 20_000);
+        Assert.Equal("red", item!["tier"]!.GetValue<string>());
+        Assert.True(item["press_here"]!.GetValue<bool>());
+        Assert.Equal(Sim(guest).Get(Lamp) == 1 ? ("on", "off") : ("off", "on"), (item["you"]!["text"]!.GetValue<string>(), item["other"]!["text"]!.GetValue<string>()));
+        // Never pressed automatically, on either side.
+        Assert.DoesNotContain(Sim(host).Writes, w => w.Name == Fd);
+        Assert.DoesNotContain(Sim(guest).Writes, w => w.Name == Fd);
+
+        // The guest uses "Press FD here only": one click in the guest's cockpit, not mirrored.
+        var sent = guest.Engine!.CommandsSent;
+        var r = await _http.PostAsync($"http://127.0.0.1:{guest.Api!.Port}/api/press-here",
+            new StringContent("""{"var":"S_FCU_EFIS1_FD"}""", System.Text.Encoding.UTF8, "application/json"));
+        Assert.True(r.IsSuccessStatusCode, await r.Content.ReadAsStringAsync());
+        await Wait.Until(() => Sim(guest).Get(Lamp) == Sim(host).Get(Lamp), "lights match");
+        await Wait.Until(() => !guest.Status.OpenDesyncs.Contains(Fd) && !host.Status.OpenDesyncs.Contains(Fd), "cleared on both", 20_000);
+        Assert.Equal(sent, guest.Engine!.CommandsSent); // not mirrored
+        Assert.DoesNotContain(Sim(host).Writes, w => w.Name == Fd);
+    }
+
+    [Fact]
+    public async Task A_toggle_light_is_listed_after_the_other_red_items_of_its_group()
+    {
+        var (_, guest) = await Pair();
+        JsonObject D(string var, string reason) => new()
+        {
+            ["var"] = var, ["group"] = "efis", ["reason"] = reason, ["tier"] = "red", ["expected"] = 1, ["observed"] = 0,
+            ["values"] = new JsonObject { ["pf"] = 1, ["pm"] = 0 }, ["message"] = var,
+        };
+        // FD went dark first (as with an unaligned IRS); the upstream input that differs was found later.
+        guest.Status.SetDesync("S_FCU_EFIS1_FD", D("S_FCU_EFIS1_FD", "toggle_mismatch"));
+        await Task.Delay(20);
+        guest.Status.SetDesync("S_FCU_EFIS1_ND_MODE", D("S_FCU_EFIS1_ND_MODE", "refused"));
+        var s = await Status(guest);
+        var red = s["desyncs"]!.AsArray().Select(d => d!["var"]!.GetValue<string>()).ToList();
+        Assert.Equal(["S_FCU_EFIS1_ND_MODE", "S_FCU_EFIS1_FD"], red);
+    }
 }

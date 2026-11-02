@@ -8,7 +8,7 @@ export const at = (secondsAgo: number) => new Date(NOW - secondsAgo * 1000).toIS
 export function idle(over: Partial<Status> = {}): Status {
   return {
     phase: 'idle',
-    bridge_version: '0.2.0',
+    bridge_version: '0.3.0',
     last_error: null,
     log: { folder: 'C:\Users\pilot\AppData\Local\Crosscheck\logs', file: 'C:\Users\pilot\AppData\Local\Crosscheck\logs\bridge-1.jsonl' },
     this_computer: {
@@ -80,7 +80,7 @@ type Mocked = { [K in keyof Actions]: ReturnType<typeof vi.fn> & Actions[K] };
 export function actions(): Mocked {
   const ok = () => vi.fn(async () => {});
   return {
-    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), setServer: ok(),
+    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), pressHere: ok(), setServer: ok(),
   } as unknown as Mocked;
 }
 

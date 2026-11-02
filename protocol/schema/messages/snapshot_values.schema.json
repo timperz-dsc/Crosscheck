@@ -48,6 +48,29 @@
                 "description": "Owned values only: a drift change smaller than this is sent at most every 10 s.",
                 "type": "number",
                 "exclusiveMinimum": 0
+              },
+              "button": {
+                "description": "Toggle items only: the edge push button whose lamp this is.",
+                "$ref": "../common.schema.json#/$defs/varName"
+              }
+            },
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "toggle"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "button"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "button"
+                ]
               }
             }
           }

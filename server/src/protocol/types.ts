@@ -1,7 +1,7 @@
-// TypeScript view of protocol v2. The JSON Schema in protocol/schema is the source of truth;
+// TypeScript view of protocol v3. The JSON Schema in protocol/schema is the source of truth;
 // every inbound message is validated against it before these types are trusted.
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Shown to a client that speaks another protocol version (for example the 0.1.0 zip). */
 export const OUTDATED_MESSAGE = 'Your Crosscheck is out of date. Download the latest version.';
@@ -13,7 +13,7 @@ export type Scalar = number | string | null;
 export type AbsoluteClass = 'verified' | 'analog' | 'owned';
 export type EventClass = 'delta' | 'pulse';
 export type CommandClass = AbsoluteClass | EventClass;
-export type SnapshotClass = AbsoluteClass | 'delta' | 'observe';
+export type SnapshotClass = AbsoluteClass | 'delta' | 'observe' | 'pulse' | 'toggle';
 
 export const ABSOLUTE_CLASSES: ReadonlySet<string> = new Set(['verified', 'analog', 'owned']);
 export const isAbsolute = (cls: string): cls is AbsoluteClass => ABSOLUTE_CLASSES.has(cls);
@@ -50,7 +50,8 @@ export interface DiffEntry {
 
 export type DesyncReason =
   | 'no_ack' | 'refused' | 'observe_mismatch' | 'log_conflict' | 'missing_value'
-  | 'correction_failed' | 'correction_loop' | 'no_pf' | 'effect_mismatch';
+  | 'correction_failed' | 'correction_loop' | 'no_pf' | 'effect_mismatch'
+  | 'safety_release' | 'press_mismatch' | 'toggle_mismatch';
 
 /** Where a desync is shown: red (an input did not arrive, sticky, at the top) or quiet (an indicator differs). */
 export type Tier = 'red' | 'quiet';
@@ -116,6 +117,10 @@ export interface CommandBody {
   attempt?: number;
   /** Pulse only: compare this effect var between the sims after settle. */
   effect?: EffectSpec;
+  /** Edge push buttons (press: edge): this command is one down or up edge. */
+  edge?: 'down' | 'up';
+  /** With edge: the sender's time since the previous edge of this button. */
+  gap_ms?: number;
 }
 export interface EffectSpec { var: string; expect: 'same' | 'parity' }
 export interface AckBody {
@@ -129,7 +134,9 @@ export interface AckBody {
   effect?: Scalar;
 }
 export interface SnapshotHashBody { group: string; hash: string; applied_seq: number }
-export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar; step?: number }
+export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar; step?: number; button?: string }
+/** A receiver released an edge button Crosscheck had pressed down, because the up never arrived. */
+export interface SafetyReleaseBody { var: string; group: string; cause: 'cap' | 'link_lost' | 'peer_lost'; observed: Scalar }
 export interface SnapshotValuesBody { request_id: string; group: string; values: SnapshotValue[] }
 export type ControlConfirm = '@peer_lost';
 export type ControlKind = 'take' | 'give';

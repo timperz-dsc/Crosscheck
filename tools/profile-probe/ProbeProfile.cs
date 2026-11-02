@@ -27,7 +27,7 @@ static partial class ProbeProfile
     static VarEntry Writable(Target t)
     {
         if (t.Delta) return new VarEntry(t.Name, SyncClass.Delta, "probe");
-        if (t.Counter) return new VarEntry(t.Name, SyncClass.Pulse, "probe", PulseMs: 150, Press: PressMode.Counter);
+        if (t.Counter) return new VarEntry(t.Name, SyncClass.Pulse, "probe", Press: PressMode.Edge);
         return new VarEntry(t.Name, SyncClass.Verified, "probe", Values: t.Values);
     }
 }

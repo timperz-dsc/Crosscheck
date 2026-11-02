@@ -1,12 +1,12 @@
 {
-  "v": 2,
+  "v": 3,
   "type": "preflight_result",
   "session": null,
   "ts": 1793520000000,
   "body": {
     "join_code": "K7RX2M",
     "reference": {
-      "bridge_version": "0.2.0",
+      "bridge_version": "0.3.0",
       "profile_id": "fenix-a320",
       "profile_hash": "sha256:7f3a9c1e2b4d5f60",
       "aircraft": {

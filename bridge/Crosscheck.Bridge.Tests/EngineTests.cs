@@ -45,14 +45,30 @@ public class ChangeDetectionTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Pulse_sends_one_command_per_press()
+    public async Task An_edge_button_sends_a_down_and_an_up_per_click()
     {
-        await _h.Sim.PilotPress("S_CDU1_KEY_FPLN", holdMs: 30);
+        await _h.Sim.PilotPress("S_CDU1_KEY_FPLN", holdMs: 60);
+        await Wait.Until(() => _h.Commands.Count == 2, "down and up");
+        await Task.Delay(60);
+        Assert.Equal(2, _h.Commands.Count);
+        var (down, up) = (_h.Commands[0], _h.Commands[1]);
+        Assert.Equal(("pulse", "down", 1.0), (down["class"]!.GetValue<string>(), down["edge"]!.GetValue<string>(), down["value"]!.GetValue<double>()));
+        Assert.Equal(("up", 0.0), (up["edge"]!.GetValue<string>(), up["value"]!.GetValue<double>()));
+        Assert.Equal(0, down["gap_ms"]!.GetValue<int>());
+        // The hold as the sender saw it; 0 if press and release landed in one frame (a stalled frame under load).
+        Assert.InRange(up["gap_ms"]!.GetValue<int>(), 0, 2000);
+        Assert.Equal(600, down["settle_ms"]!.GetValue<int>()); // verify settle only: no pulse timer
+    }
+
+    [Fact]
+    public async Task A_momentary_key_sends_one_command_per_press()
+    {
+        await _h.Sim.PilotPress("S_CDU1_BRIGHTNESS_UP", holdMs: 30);
         await Task.Delay(60);
         var c = Assert.Single(_h.Commands);
-        Assert.Equal("pulse", c["class"]!.GetValue<string>());
         Assert.Equal(1, c["value"]!.GetValue<double>());
-        Assert.Equal(600 + 150, c["settle_ms"]!.GetValue<int>()); // verify settle + pulse_ms
+        Assert.Null(c["edge"]);
+        Assert.Equal(100 + 150, c["settle_ms"]!.GetValue<int>()); // default settle + pulse_ms
     }
 
     [Fact]
@@ -117,26 +133,38 @@ public class ApplyAndEchoTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Remote_pulse_writes_1_then_0_after_pulse_ms_and_is_not_echoed()
+    public async Task Remote_momentary_key_writes_1_then_0_after_pulse_ms_and_is_not_echoed()
     {
-        var id = _h.Remote("S_CDU1_KEY_FPLN", "pulse", 1);
+        var id = _h.Remote("S_CDU1_BRIGHTNESS_UP", "pulse", 1);
         var ack = await _h.WaitAck(id, 3000);
         Assert.True(ack["ok"]!.GetValue<bool>());
-        Assert.Equal([1.0, 0.0], _h.Sim.Writes.Where(w => w.Name == "S_CDU1_KEY_FPLN").Select(w => w.Value));
-        Assert.Equal("FPLN", _h.Sim.McduText(1));
-        Assert.Equal(0, _h.Sim.Get("S_CDU1_KEY_FPLN"));
+        Assert.Equal([1.0, 0.0], _h.Sim.Writes.Where(w => w.Name == "S_CDU1_BRIGHTNESS_UP").Select(w => w.Value));
+        Assert.Equal(0, _h.Sim.Get("S_CDU1_BRIGHTNESS_UP"));
         await Task.Delay(100);
         Assert.Empty(_h.Commands);
     }
 
     [Fact]
-    public async Task Remote_press_counter_only_ever_counts_up()
+    public async Task Remote_key_edges_write_own_value_plus_one_and_are_not_echoed()
     {
-        _h.Sim.Logic("S_MIP_MASTER_CAUTION_CAPT", 6); // three earlier presses
-        await Wait.Until(() => _h.Sim.Get("S_MIP_MASTER_CAUTION_CAPT") == 6, "start value");
+        var down = await _h.WaitAck(_h.Edge("S_CDU1_KEY_FPLN", "down"), 3000);
+        var up = await _h.WaitAck(_h.Edge("S_CDU1_KEY_FPLN", "up", gapMs: 80), 3000);
+        Assert.True(down["ok"]!.GetValue<bool>() && up["ok"]!.GetValue<bool>());
+        Assert.Equal([1.0, 2.0], _h.Sim.Writes.Where(w => w.Name == "S_CDU1_KEY_FPLN").Select(w => w.Value));
+        Assert.Equal("FPLN", _h.Sim.McduText(1));
+        await Task.Delay(100);
+        Assert.Empty(_h.Commands);
+    }
+
+    [Fact]
+    public async Task Remote_edges_only_ever_count_up_from_the_own_value()
+    {
+        _h.Sim.Logic("S_MIP_MASTER_CAUTION_CAPT", 6); // three earlier presses (sent as 6 edges)
+        await Wait.Until(() => _h.Commands.Count == 6, "the earlier presses");
         await Task.Delay(50);
         var before = _h.Commands.Count;
-        var ack = await _h.WaitAck(_h.Remote("S_MIP_MASTER_CAUTION_CAPT", "pulse", 1), 3000);
+        Assert.True((await _h.WaitAck(_h.Edge("S_MIP_MASTER_CAUTION_CAPT", "down"), 3000))["ok"]!.GetValue<bool>());
+        var ack = await _h.WaitAck(_h.Edge("S_MIP_MASTER_CAUTION_CAPT", "up", gapMs: 100), 3000);
         Assert.True(ack["ok"]!.GetValue<bool>());
         var writes = _h.Sim.Writes.Where(w => w.Name == "S_MIP_MASTER_CAUTION_CAPT").Select(w => w.Value).ToList();
         Assert.Equal([7.0, 8.0], writes); // press, release: never a decrement

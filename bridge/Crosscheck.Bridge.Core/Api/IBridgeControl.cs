@@ -26,4 +26,6 @@ public interface IBridgeControl
     ApiResult TakeControl(bool confirmPeerLost);
     ApiResult GiveControl();
     Task<ApiResult> PilotSetAsync(string name, double value);
+    /// <summary>One click of a toggle button in this pilot's own sim only, not mirrored (toggle_mismatch).</summary>
+    Task<ApiResult> PressHereOnlyAsync(string name);
 }

@@ -389,6 +389,20 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         }
     }
 
+    public async Task<ApiResult> PressHereOnlyAsync(string name)
+    {
+        if (Engine is null) return ApiResult.Fail("Not in a session.");
+        try
+        {
+            await Engine.PressHereOnlyAsync(name);
+            return ApiResult.Success;
+        }
+        catch (InvalidOperationException e) // includes SafetyViolationException
+        {
+            return ApiResult.Fail(e.Message);
+        }
+    }
+
     public JsonObject StatusJson() => UiStatus.Build(this);
 
     public JsonArray Recent() => UiStatus.Recent(Events);

@@ -13,6 +13,9 @@
     { "name": "switch differs without a pilot flying", "class": "verified", "reason": "no_pf", "delta_display": false, "tier": "red" },
     { "name": "lamp differs", "class": "observe", "reason": "observe_mismatch", "delta_display": false, "tier": "quiet" },
     { "name": "lamp unknown on one side", "class": "observe", "reason": "missing_value", "delta_display": false, "tier": "quiet" },
-    { "name": "FCU speed display differs", "class": "observe", "reason": "observe_mismatch", "delta_display": true, "tier": "red" }
+    { "name": "FCU speed display differs", "class": "observe", "reason": "observe_mismatch", "delta_display": true, "tier": "red" },
+    { "name": "button held down in one cockpit only", "class": "pulse", "reason": "press_mismatch", "delta_display": false, "tier": "red" },
+    { "name": "toggle lamp differs (reported under its button)", "class": "pulse", "reason": "toggle_mismatch", "delta_display": false, "tier": "red" },
+    { "name": "button released by the safety cap", "class": "pulse", "reason": "safety_release", "delta_display": false, "tier": "red" }
   ]
 }

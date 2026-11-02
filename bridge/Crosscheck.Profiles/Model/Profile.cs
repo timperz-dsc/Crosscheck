@@ -14,8 +14,13 @@ public enum SyncClass
 
 public enum PressMode
 {
+    /// <summary>Default: write 1, then 0 after pulse_ms.</summary>
+    Momentary,
+    /// <summary>
+    /// Fenix push buttons (CRO-29/30): the var counts +1 on press and +1 on release (odd = down).
+    /// Each down/up edge is mirrored on its own; the receiver writes its own value + 1.
+    /// </summary>
     Edge,
-    Counter,
 }
 
 public enum VerifyExpect

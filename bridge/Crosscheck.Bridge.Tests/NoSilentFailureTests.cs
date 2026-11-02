@@ -20,8 +20,9 @@ public sealed class PulseEffectTests : IAsyncLifetime
     public async Task A_key_with_a_lamp_sends_an_effect_check_and_reports_its_own_lamp_after_settle()
     {
         await _h.Sim.PilotPress("S_FCU_EFIS1_FD", holdMs: 20);
-        await Wait.Until(() => _h.Commands.Count == 1, "command");
+        await Wait.Until(() => _h.Commands.Count == 2, "down and up");
         var c = _h.Commands[0];
+        Assert.Null(_h.Commands[1]["effect"]); // the lamp is compared after the down edge only
         Assert.Equal("I_FCU_EFIS1_FD", c["effect"]!["var"]!.GetValue<string>());
         Assert.Equal("same", c["effect"]!["expect"]!.GetValue<string>());
 
@@ -35,21 +36,23 @@ public sealed class PulseEffectTests : IAsyncLifetime
     public async Task A_key_without_a_lamp_has_no_effect_check()
     {
         await _h.Sim.PilotPress("S_CDU1_KEY_FPLN", holdMs: 20);
-        await Wait.Until(() => _h.Commands.Count == 1, "command");
+        await Wait.Until(() => _h.Commands.Count == 2, "down and up");
         Assert.Null(_h.Commands[0]["effect"]);
     }
 
     [Fact]
     public async Task The_receiver_acks_with_its_lamp_and_does_not_judge_it()
     {
-        var id = _h.Remote("S_FCU_EFIS1_FD", "pulse", 1, settleMs: 100);
+        var id = _h.Edge("S_FCU_EFIS1_FD", "down", settleMs: 100);
         var ack = await _h.WaitAck(id);
         Assert.True(ack["ok"]!.GetValue<bool>());
         Assert.Equal(1, ack["effect"]!.GetValue<double>());
+        var up = await _h.WaitAck(_h.Edge("S_FCU_EFIS1_FD", "up", gapMs: 60, settleMs: 100));
+        Assert.Null(up["effect"]); // no lamp check after an up edge
 
         // Unpowered: the press is stored, the lamp does not change. Still ok: the server compares both sims.
         _h.Sim.Unpower("S_FCU_EFIS1_FD");
-        var id2 = _h.Remote("S_FCU_EFIS1_FD", "pulse", 1, settleMs: 100);
+        var id2 = _h.Edge("S_FCU_EFIS1_FD", "down", settleMs: 100);
         var ack2 = await _h.WaitAck(id2);
         Assert.True(ack2["ok"]!.GetValue<bool>());
         Assert.Equal(1, ack2["effect"]!.GetValue<double>());
@@ -172,7 +175,8 @@ public sealed class UnsyncedListTests
         var profile = Crosscheck.Profiles.ProfileLoader.LoadFile(path).Profile!;
         var list = UnsyncedList.LoadNextTo(path, profile);
         Assert.True(list.Labels.Count > 200);
-        Assert.Contains("S_FCU_AP1", list.Labels.Keys);
+        Assert.Contains("S_OH_ELEC_APU_START", list.Labels.Keys);
+        Assert.DoesNotContain("S_FCU_AP1", list.Labels.Keys); // observed in CRO-29, now an edge button
         var inProfile = profile.Vars.Select(v => v.Name).ToHashSet();
         Assert.DoesNotContain(list.Labels.Keys, inProfile.Contains);
     }

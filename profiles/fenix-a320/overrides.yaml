@@ -105,8 +105,7 @@ overrides:
   - name: S_OH_HYD_BLUE_ELEC_PUMP
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     verify: { lvar: I_OH_HYD_BLUE_ELEC_PUMP_L, settle_ms: 150 }
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "owner confirmation (CRO-27): same push button as YELLOW ELEC PUMP (counter 1…28 in gate test 1); the probe stored 2 with no effect, as a counter release does"
@@ -521,29 +520,25 @@ overrides:
   - name: S_OH_LIGHTING_AVIONICS_COMPT
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…20"
   - name: S_OH_NAV_ADR1
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…4"
   - name: S_OH_NAV_ADR2
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…4"
   - name: S_OH_NAV_ADR3
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…4"
   - name: S_OH_NAV_DATA_DISP
@@ -556,22 +551,19 @@ overrides:
   - name: S_OH_NAV_IR1_SWITCH
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…4"
   - name: S_OH_NAV_IR2_SWITCH
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…4"
   - name: S_OH_NAV_IR3_SWITCH
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…4"
   - name: S_OH_NAV_SYS_DISP
@@ -626,57 +618,49 @@ overrides:
   - name: S_PED_ATC_0
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1, 2"
   - name: S_PED_ATC_1
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "owner confirmation (CRO-27): same transponder keypad as ATC 0/4/5/6/7, which counted 1, 2 in gate test 1"
   - name: S_PED_ATC_2
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "owner confirmation (CRO-27): same transponder keypad as ATC 0/4/5/6/7, which counted 1, 2 in gate test 1"
   - name: S_PED_ATC_3
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "owner confirmation (CRO-27): same transponder keypad as ATC 0/4/5/6/7, which counted 1, 2 in gate test 1"
   - name: S_PED_ATC_4
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1, 2"
   - name: S_PED_ATC_5
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1, 2"
   - name: S_PED_ATC_6
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1, 2"
   - name: S_PED_ATC_7
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1, 2"
   - name: S_TCAS_HORIZONTAL_RANGE
@@ -745,8 +729,7 @@ overrides:
   - name: S_WR_GCS
     class: pulse
     group: pedestal
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…8"
   - name: S_WR_MODE
@@ -866,99 +849,83 @@ overrides:
   - name: S_CDU1_BRIGHTNESS_DOWN
     class: pulse
     group: cdu1
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_CDU1_BRIGHTNESS_UP
     class: pulse
     group: cdu1
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_CDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_CDU2_BRIGHTNESS_DOWN
     class: pulse
     group: cdu2
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_CDU2_BRIGHTNESS_UP
     class: pulse
     group: cdu2
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_CDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_DCDU1_BRT
     class: pulse
     group: mip
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_DCDU1_DIM
     class: pulse
     group: mip
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_DCDU2_BRT
     class: pulse
     group: mip
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_DCDU2_DIM
     class: pulse
     group: mip
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_EFIS1_LS
     class: pulse
     group: efis
-    pulse_ms: 150
     verify: { lvar: I_FCU_EFIS1_LS, settle_ms: 150 }
     note: "class from step 2: edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_EFIS2_LS
     class: pulse
     group: efis
-    pulse_ms: 150
     verify: { lvar: I_FCU_EFIS2_LS, settle_ms: 150 }
     note: "class from step 2: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_HDGVS_TRKFPA
     class: pulse
     group: fcu
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_SPD_MACH
     class: pulse
     group: fcu
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_MIP_ISFD_BARO_BUTTON
     class: pulse
     group: mip
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP1_XFER
     class: pulse
     group: pedestal
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP2_XFER
     class: pulse
     group: pedestal
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP3_XFER
     class: pulse
     group: pedestal
-    pulse_ms: 150
     note: "class from step 2: edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
     evidence: "probe momentary: edge-triggered: the press toggled B_PED_RMP3_DATA_DISPLAYED_ACT B_PED_RMP3_DATA_DISPLAYED_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
 
@@ -1367,7 +1334,6 @@ overrides:
   - name: S_ASP2_VOICE
     class: pulse
     group: pedestal
-    pulse_ms: 150
     verify: { lvar: I_ASP2_VOICE, settle_ms: 150 }
     note: "a cockpit click moves this key, not S_ASP2_VOICE_LATCH; edge-triggered: 1 then 0 toggles I_ASP2_VOICE (CRO-27)"
     evidence: "owner confirmation (CRO-27): same as ASP 1 VOICE in gate test 1; probe the press toggled I_ASP2_VOICE (edge-triggered)"
@@ -1449,7 +1415,6 @@ overrides:
   - name: S_ASP3_VOICE
     class: pulse
     group: pedestal
-    pulse_ms: 150
     verify: { lvar: I_ASP3_VOICE, settle_ms: 150 }
     note: "a cockpit click moves this key, not S_ASP3_VOICE_LATCH; edge-triggered: 1 then 0 toggles I_ASP3_VOICE (CRO-27)"
     evidence: "owner confirmation (CRO-27): same as ASP 1 VOICE in gate test 1; probe the press toggled I_ASP3_VOICE (edge-triggered)"
@@ -1531,7 +1496,6 @@ overrides:
   - name: S_ASP_VOICE
     class: pulse
     group: pedestal
-    pulse_ms: 150
     verify: { lvar: I_ASP_VOICE, settle_ms: 150 }
     note: "a cockpit click moves this key, not S_ASP_VOICE_LATCH; edge-triggered: 1 then 0 toggles I_ASP_VOICE (CRO-27)"
     evidence: "pilot input, gate test 1: host log 19.10.19, I_ASP_VOICE went to 1 while S_ASP_VOICE_LATCH stayed 0; probe: the press toggled I_ASP_VOICE (edge-triggered)"
@@ -1550,23 +1514,20 @@ overrides:
   - name: S_FCU_EFIS1_FD
     class: pulse
     group: efis
-    pulse_ms: 150
-    press: counter
+    press: edge
     verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 }
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
     evidence: "owner decision 2 (press counter): edge-triggered: the press toggled I_FCU_EFIS1_FD I_FCU_EFIS2_FD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterw"
   - name: S_MIP_CLOCK_CHR
     class: pulse
     group: mip
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
     evidence: "owner decision 2 (press counter): edge-triggered: the press toggled N_MIP_CLOCK_CHRONO and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0; the probe could not restore it, the pilot did or confirmed the cockpit afterwards: effec"
   - name: S_FCU_EFIS2_FD
     class: pulse
     group: efis
-    pulse_ms: 150
-    press: counter
+    press: edge
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
     evidence: "owner decision 2 (press counter): same type as EFIS1 FD; a pilot click read 2 in the first run"
 
@@ -1610,12 +1571,12 @@ overrides:
     note: "class from step 2: effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
     evidence: "owner decision 3 (latching): effect follows the value (I_MIP_NORTH_REF_L): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
   - name: S_OH_SVCE_INT_OVRD
-    class: verified
+    class: pulse
     group: overhead
-    values: [0, 1]
+    press: edge
     verify: { lvar: I_OH_SVCE_INT_OVRD, settle_ms: 150 }
-    note: "class from step 2: effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
-    evidence: "owner decision 3 (latching): effect follows the value (I_OH_SVCE_INT_OVRD): latching, or momentary with an effect only while held; GraphQL 0 -> 1 -> 0"
+    note: "momentary: the lamp is on only while held; a hold is mirrored for as long as it lasts (CRO-29/30)"
+    evidence: "observed (observe-report.md, CRO-29): +1 on press and release, I_OH_SVCE_INT_OVRD on only while held; replaces owner decision 3 (latching)"
   - name: S_PED_RMP1_POWER
     class: verified
     group: pedestal
@@ -1672,16 +1633,14 @@ overrides:
   - name: S_OH_HYD_YELLOW_ELEC_PUMP
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     verify: { lvar: I_OH_HYD_YELLOW_ELEC_PUMP_L, settle_ms: 150 }
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…28 (press and release each +1); the guest refused 2…28 against [0, 1]"
   - name: S_OH_ELEC_BUSTIE
     class: pulse
     group: overhead
-    pulse_ms: 150
-    press: counter
+    press: edge
     verify: { lvar: I_OH_ELEC_BUSTIE_L, settle_ms: 150 }
     note: "press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
     evidence: "pilot input, gate test 1: counter values 1…8"
@@ -1867,6 +1826,322 @@ overrides:
     evidence: "gate test 1 section 4: desync panel noise"
 
 # Still open (listed in draft-report.md).
+  # CRO-29/30: push buttons on the observed panels (observe-report.md). Owner choice: clear push buttons only;
+  # knobs, switches and the unclear audio parts (INT, RAD, MASK, loudspeaker, *_REC, *_LATCH) stay on the review list.
+  - name: S_FCU_AP1
+    class: pulse
+    group: fcu
+    press: edge
+    verify: { lvar: I_FCU_AP1, settle_ms: 150 }
+    evidence: "observed (observe-report.md, CRO-29)"
+  - name: S_FCU_AP2
+    class: pulse
+    group: fcu
+    press: edge
+    verify: { lvar: I_FCU_AP2, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_ATHR
+    class: pulse
+    group: fcu
+    press: edge
+    verify: { lvar: I_FCU_ATHR, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_LOC
+    class: pulse
+    group: fcu
+    press: edge
+    verify: { lvar: I_FCU_LOC, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_APPR
+    class: pulse
+    group: fcu
+    press: edge
+    verify: { lvar: I_FCU_APPR, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EXPED
+    class: pulse
+    group: fcu
+    press: edge
+    verify: { lvar: I_FCU_EXPED, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_METRIC_ALT
+    class: pulse
+    group: fcu
+    press: edge
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS1_CSTR
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS1_CSTR, settle_ms: 150 }
+    evidence: "observed (observe-report.md, CRO-29)"
+  - name: S_FCU_EFIS1_WPT
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS1_WPT, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS1_VORD
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS1_VORD, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS1_NDB
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS1_NDB, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS1_ARPT
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS1_ARPT, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS2_CSTR
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS2_CSTR, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS2_WPT
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS2_WPT, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS2_VORD
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS2_VORD, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS2_NDB
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS2_NDB, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_FCU_EFIS2_ARPT
+    class: pulse
+    group: efis
+    press: edge
+    verify: { lvar: I_FCU_EFIS2_ARPT, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_MIP_CHRONO_CAPT
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_MIP_CHRONO_FO
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_MIP_CLOCK_RST
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_VHF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_VHF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_VHF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_VHF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_VHF_3_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_VHF_3_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_HF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_HF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_HF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_HF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_INT_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_INT_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_CAB_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_CAB_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP_PA_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP_PA_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_VHF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_VHF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_VHF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_VHF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_VHF_3_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_VHF_3_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_HF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_HF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_HF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_HF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_INT_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_INT_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_CAB_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_CAB_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP2_PA_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP2_PA_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_VHF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_VHF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_VHF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_VHF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_VHF_3_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_VHF_3_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_HF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_HF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_HF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_HF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_INT_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_INT_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_CAB_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_CAB_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP3_PA_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP3_PA_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_VHF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_VHF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_VHF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_VHF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_VHF_3_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_VHF_3_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_HF_1_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_HF_1_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_HF_2_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_HF_2_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_INT_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_INT_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_CAB_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_CAB_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_PA_SEND
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_PA_SEND, settle_ms: 150 }
+    evidence: "same panel type as observed (observe-report.md), owner confirmation (CRO-29)"
+  - name: S_ASP4_VOICE
+    class: pulse
+    group: pedestal
+    press: edge
+    verify: { lvar: I_ASP4_VOICE, settle_ms: 150 }
+    evidence: "observed (observe-report.md, CRO-29)"
 open:
   - what: "Audio SEND keys"
     vars: [S_ASP2_CAB_SEND, S_ASP2_HF_1_SEND]
@@ -1894,9 +2169,6 @@ open:
     why: "neither lamp half changed at the gate; lower-half rule kept"
   - what: "Unconfirmed [0,1] guesses"
     why: "switches with the note 'confirm in step 2': the probe skipped them (deny list, safety skip) or saw no effect at the gate; see probe-report.md"
-  - what: "Hold buttons"
-    vars: [S_OH_FIRE_APU_TEST, S_OH_FIRE_ENG1_TEST, S_OH_FIRE_ENG2_TEST, S_OH_SVCE_INT_OVRD, S_FC_FO_INST_DISCONNECT]
-    why: "a held button must be mirrored press and release (press: hold); counter mode only sends a fixed pulse. SVCE INT OVRD counted 1…37, FO takeover reached 2 (gate test 1)"
   - what: "Analog GraphQL scale (CRO-28)"
     why: "system.analog.* did not follow value x 1024 (LDG ELEV read ~200-250 for 0…1); analog entries are confirmed by L: var read-back only until calibrated"
   - what: "Aircraft title"

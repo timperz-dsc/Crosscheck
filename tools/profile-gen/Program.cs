@@ -9,6 +9,8 @@ using Crosscheck.Profiles;
 using Crosscheck.Profiles.Model;
 using ProfileGen;
 
+if (args is ["diff", var oldProfile, var newProfile]) return ProfileDiff.Run(oldProfile, newProfile, Console.Out);
+
 var repo = FindRepoRoot();
 var dir = Path.Combine(repo, "profiles", "fenix-a320");
 string? scanPath = null, profilePath = null;

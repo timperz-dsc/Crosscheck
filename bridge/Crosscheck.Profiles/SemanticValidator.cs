@@ -117,8 +117,8 @@ internal sealed class SemanticValidator
             var at = $"/roles/takeover/{seat}";
             if (!varsByName.TryGetValue(name, out var i))
                 Add(at, $"takeover var '{name}' is not defined in this profile");
-            else if (_profile.Vars[i].Class is not (SyncClass.Verified or SyncClass.Pulse))
-                Add(at, $"takeover var '{name}' must be a pilot input (class verified or pulse), it has {Lower(_profile.Vars[i].Class)}");
+            else if (_profile.Vars[i] is not { Class: SyncClass.Pulse, Press: PressMode.Edge })
+                Add(at, $"takeover var '{name}' must be a push button with press: edge (its press is held back until control is granted)");
         }
         if (takeover.Captain == takeover.Fo)
             Add("/roles/takeover/fo", "captain and fo need different takeover vars");
@@ -136,8 +136,11 @@ internal sealed class SemanticValidator
             case SyncClass.Analog when v.Range is null:
                 Add(at, "class analog needs 'range'");
                 break;
-            case SyncClass.Pulse when v.PulseMs is null:
-                Add(at, "class pulse needs 'pulse_ms'");
+            case SyncClass.Pulse when v.Press == PressMode.Edge && v.PulseMs is not null:
+                Add($"{at}/pulse_ms", "press edge mirrors each press and release as it happens; 'pulse_ms' is not used");
+                break;
+            case SyncClass.Pulse when v.Press != PressMode.Edge && v.PulseMs is null:
+                Add(at, "class pulse needs 'pulse_ms' (or press: edge)");
                 break;
         }
 

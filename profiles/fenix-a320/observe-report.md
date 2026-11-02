@@ -137,11 +137,16 @@ How:
   3. If control is not granted (`control_denied`), the edges are dropped and nothing is mirrored.
 - Written into `docs/protocol.md` section 8 (takeover pushbutton).
 
-## Next steps
+## Status
 
-1. CRO-29/30: implement the edge rule in the bridge (sender, receiver, verify, safety cap, parity snapshot) and
-   replay this CSV in the bridge tests.
-2. Profile: move SVCE INT OVRD, FIRE TEST and the takeover buttons into the edge rule. Move AP1, CSTR and VOICE off
-   the review list.
-3. Protocol: add the desync reason `safety_release` to the schema (with a protocol version step) when the edge rule
-   is implemented.
+Implemented in CRO-29/30 (protocol 3, bridge 0.3.0): the edge rule, the safety release and the takeover hold-back
+as above, and in the profile every push button with `press: edge` (`profile-gen diff` lists the changes).
+
+- **Owner additions during the implementation:**
+  - An edge-button difference is raised only after 2 snapshot comparisons in a row or 2 s.
+  - A toggle button's lamp is its state, so a lamp that differs is a red `toggle_mismatch`.
+- **Owner decision 3 (2026-11-02):** a press in the cockpit is mirrored and flips both lamps, so it can never fix a
+  `toggle_mismatch`. The red line offers "Press X here only": one click in that pilot's own sim, not mirrored. It
+  is a pilot action and is never automatic.
+- **Next:** the overhead push buttons on the review list (EXT PWR, APU START, GND CTL, …) and the unclear audio-panel
+  parts.

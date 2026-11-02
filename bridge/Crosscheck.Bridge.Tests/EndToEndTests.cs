@@ -156,13 +156,13 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
         var (host, guest) = await Pair();
         await Sim(host).PilotPress("S_CDU1_KEY_FPLN");
         await Wait.Until(() => Sim(guest).McduText(1) == "FPLN", "guest MCDU");
-        await Wait.Until(() => host.Engine!.AcksOk == 1, "ack");
+        await Wait.Until(() => host.Engine!.AcksOk == 2, "acks for down and up");
         await Task.Delay(500);
         Assert.Equal("FPLN", Sim(guest).McduText(1));
         Assert.Equal("FPLN", Sim(host).McduText(1));
-        Assert.Equal(0, Sim(guest).Get("S_CDU1_KEY_FPLN"));
+        Assert.Equal(2, Sim(guest).Get("S_CDU1_KEY_FPLN")); // pressed and released, like the host's
         Assert.Equal(0, guest.Engine!.CommandsSent);
-        Assert.Equal(1, host.Engine!.CommandsSent);
+        Assert.Equal(2, host.Engine!.CommandsSent); // one down, one up
     }
 
     [Fact]
@@ -276,18 +276,36 @@ public sealed class EndToEndTests(ServerFixture server) : IAsyncLifetime
     }
 
     [Fact]
-    public async Task The_PMs_takeover_pushbutton_takes_control_and_is_synced()
+    public async Task The_PMs_takeover_pushbutton_takes_control_and_is_mirrored_only_after_the_grant()
     {
         var (host, guest) = await Pair(); // guest sits right (fo) by default
-        Sim(guest).PilotSet("S_FC_FO_INST_DISCONNECT", 1);
+        var hostWritesBefore = 0;
+        host.Events.Published += e =>
+        {
+            // When the host learns it is PM, nothing may have been written into its sim yet.
+            if (e.Type == "control_changed") hostWritesBefore = Sim(host).Writes.Count(w => w.Name == "S_FC_FO_INST_DISCONNECT");
+        };
+        Sim(guest).PilotSet("S_FC_FO_INST_DISCONNECT", 1); // held down
         await Wait.Until(() => guest.Status.Role == "pf" && host.Status.Role == "pm", "roles swapped", 3000);
-        await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 1, "press synced to the other sim");
+        await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 1, "press mirrored as a press of the new PF");
+        Assert.Equal(0, hostWritesBefore);
 
-        Sim(guest).PilotSet("S_FC_FO_INST_DISCONNECT", 0);
-        await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 0, "release synced");
+        Sim(guest).PilotSet("S_FC_FO_INST_DISCONNECT", 2); // released
+        await Wait.Until(() => Sim(host).Get("S_FC_FO_INST_DISCONNECT") == 2, "release mirrored");
         await Task.Delay(300);
         Assert.Equal("pf", guest.Status.Role); // the release is not a second request, and the host did not take it back
         Assert.Equal(0, host.Engine!.CommandsSent);
+    }
+
+    [Fact]
+    public async Task The_PFs_takeover_pushbutton_is_mirrored_to_the_PM()
+    {
+        var (host, guest) = await Pair();
+        await Sim(host).PilotPress("S_FC_CAPT_INST_DISCONNECT", holdMs: 300);
+        await Wait.Until(() => Sim(guest).Get("S_FC_CAPT_INST_DISCONNECT") == 2, "press and release mirrored");
+        Assert.Equal([1.0, 2.0], Sim(guest).Writes.Where(w => w.Name == "S_FC_CAPT_INST_DISCONNECT").Select(w => w.Value));
+        Assert.Equal("pf", host.Status.Role);
+        Assert.Empty(host.Status.OpenDesyncs);
     }
 
     [Fact]

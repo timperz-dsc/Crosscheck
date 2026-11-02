@@ -83,7 +83,7 @@ describe('preflight (joiner)', () => {
   type Row = Preflight['rows'][number];
   const rows = (over: Partial<Record<Row['field'], [string, string, Row['result']]>> = {}): Row[] => {
     const base: [Row['field'], string, string, string][] = [
-      ['bridge_version', 'Crosscheck bridge', '0.2.0', '0.2.0'],
+      ['bridge_version', 'Crosscheck bridge', '0.3.0', '0.3.0'],
       ['profile', 'Profile', 'fenix-a320 · 7f3a9c', 'fenix-a320 · 7f3a9c'],
       ['aircraft.package_version', 'Fenix A320 package', '3.0.0.7613', '3.0.0.7613'],
       ['aircraft.app_version', 'Fenix A320 app', '3.0.0.330', '3.0.0.330'],
@@ -322,5 +322,32 @@ describe('session: three tiers (CRO-26)', () => {
     })));
     expect(screen.getByText(/The captain pressed it. The press arrived, but its light shows a different result in your cockpit/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Set both/ })).toBeNull();
+  });
+
+  it('a toggle light that differs: on for you, off for the other pilot, and a press-here-only button', async () => {
+    const b = bridge(inSession({
+      desyncs: [{
+        ...BLEED, var: 'S_FCU_EFIS1_FD', label: 'FD', group: 'efis', group_label: 'EFIS', reason: 'toggle_mismatch', tier: 'red',
+        you: { value: 1, text: 'on' }, other: { value: 0, text: 'off' }, writable: false, options: [], press_here: true,
+      }],
+    }));
+    show(b);
+    const block = screen.getByRole('region', { name: 'FD' });
+    expect(within(block).getByText(/FD is on for you and off for the captain\. If nothing above it differs, press FD on one side with “Press FD here only”: a press in the cockpit is mirrored and would switch both\. It is never pressed automatically\./)).toBeInTheDocument();
+    expect(within(block).queryByRole('button', { name: /Set both/ })).toBeNull();
+    await userEvent.click(within(block).getByRole('button', { name: 'Press FD here only' }));
+    expect(b.actions.pressHere).toHaveBeenCalledWith('S_FCU_EFIS1_FD');
+  });
+
+  it('a button held down on one side only, and a safety release, are explained', () => {
+    show(bridge(inSession({
+      desyncs: [
+        { ...BLEED, var: 'S_OH_FIRE_ENG1_TEST', label: 'ENG 1 FIRE TEST', reason: 'press_mismatch', tier: 'red', you: { value: 1, text: 'held down' }, other: { value: 0, text: 'up' }, writable: false, options: [] },
+        { ...BLEED, var: 'S_OH_SVCE_INT_OVRD', label: 'SVCE INT OVRD', reason: 'safety_release', tier: 'red', receiver_is_you: true, writable: false, options: [] },
+      ],
+    })));
+    expect(screen.getByText(/It is held down in your cockpit and up in the captain's\. It is never pressed or released automatically\./)).toBeInTheDocument();
+    expect(screen.getByText(/Crosscheck released it in your cockpit because the captain's release never arrived \(30 s, or the connection was lost\)\. Check it in both cockpits\./)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /here only/ })).toBeNull();
   });
 });

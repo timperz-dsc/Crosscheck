@@ -46,8 +46,8 @@ public sealed partial class SimSafetyGuard
         {
             case SyncClass.Delta:
                 return null; // encoder counters: Fenix only uses the change
-            case SyncClass.Pulse when spec.Press == PressMode.Counter:
-                return value >= 0 && value == Math.Floor(value) ? null : "press counter must be a whole number";
+            case SyncClass.Pulse when spec.Press == PressMode.Edge:
+                return value >= 0 && value == Math.Floor(value) ? null : "an edge button counts in whole steps";
             case SyncClass.Pulse:
                 return value is 0 or 1 ? null : "a pulse writes only 1 and 0";
         }

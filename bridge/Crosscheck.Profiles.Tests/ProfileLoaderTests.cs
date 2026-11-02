@@ -289,8 +289,8 @@ public class ProfileLoaderTests
     // --- roles ---
 
     private static readonly string WithTakeover = Valid.Replace("  - name: I_LAMP\n",
-        "  - name: S_TAKEOVER_L\n    class: verified\n    group: overhead\n    values: [0, 1]\n" +
-        "  - name: S_TAKEOVER_R\n    class: pulse\n    group: overhead\n    pulse_ms: 100\n  - name: I_LAMP\n")
+        "  - name: S_TAKEOVER_L\n    class: pulse\n    group: overhead\n    press: edge\n" +
+        "  - name: S_TAKEOVER_R\n    class: pulse\n    group: overhead\n    press: edge\n  - name: I_LAMP\n")
         + "\nroles:\n  takeover: { captain: S_TAKEOVER_L, fo: S_TAKEOVER_R }\n";
 
     [Fact]
@@ -317,10 +317,13 @@ public class ProfileLoaderTests
     }
 
     [Fact]
-    public void Takeover_var_must_be_a_pilot_input()
+    public void Takeover_var_must_be_an_edge_push_button()
     {
-        var issue = Single(Load(WithTakeover.Replace("captain: S_TAKEOVER_L", "captain: I_LAMP")));
-        Assert.Contains("must be a pilot input", issue.Message);
+        Assert.Contains("must be a push button with press: edge", Single(Load(WithTakeover.Replace("captain: S_TAKEOVER_L", "captain: I_LAMP"))).Message);
+        // A takeover press is held back until control is granted: only the edge rule can do that.
+        var momentary = WithTakeover.Replace("  - name: S_TAKEOVER_R\n    class: pulse\n    group: overhead\n    press: edge\n",
+            "  - name: S_TAKEOVER_R\n    class: pulse\n    group: overhead\n    pulse_ms: 100\n");
+        Assert.Contains("must be a push button with press: edge", Single(Load(momentary)).Message);
     }
 
     [Fact]
@@ -430,6 +433,20 @@ public class ProfileLoaderTests
 
         Assert.Equal(LineOf(yaml, "name: S_KEY"), issue.Line);
         Assert.Contains("pulse needs 'pulse_ms'", issue.Message);
+    }
+
+    [Fact]
+    public void Edge_push_button_needs_no_length_and_takes_none()
+    {
+        // CRO-29/30: an edge button mirrors each press and release as it happens.
+        var edge = Valid.Replace("    pulse_ms: 150\n", "    press: edge\n");
+        var result = Load(edge);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        Assert.Equal(PressMode.Edge, result.Profile!.Vars.Single(v => v.Name == "S_KEY").Press);
+
+        var both = Valid.Replace("    pulse_ms: 150\n", "    press: edge\n    pulse_ms: 150\n");
+        Assert.Contains("'pulse_ms' is not used", Single(Load(both)).Message);
+        Assert.False(Load(Valid.Replace("    pulse_ms: 150\n", "    press: counter\n")).IsValid); // counter is gone
     }
 
     [Fact]

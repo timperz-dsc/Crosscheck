@@ -16,8 +16,8 @@
       ],
       "properties": {
         "v": {
-          "description": "Protocol version. Always 2 (bridge 0.2.0 and later). The server answers a message with another version with error unsupported_version, in that version's envelope.",
-          "const": 2
+          "description": "Protocol version. Always 3 (bridge 0.3.0 and later). The server answers a message with another version with error unsupported_version, in that version's envelope.",
+          "const": 3
         },
         "type": {
           "description": "Message type (snake_case).",
@@ -104,13 +104,15 @@
       ]
     },
     "snapshotClass": {
-      "description": "Sync classes that appear in snapshots. For delta the value is the display value, reported under the encoder name.",
+      "description": "Sync classes that appear in snapshots. For delta the value is the display value, reported under the encoder name. pulse: an edge push button, value = its parity (1 = held down). toggle: the lamp of an edge push button, its on/off state (with the button).",
       "enum": [
         "verified",
         "analog",
         "owned",
         "delta",
-        "observe"
+        "observe",
+        "pulse",
+        "toggle"
       ]
     },
     "scalar": {
@@ -243,7 +245,10 @@
         "correction_failed",
         "correction_loop",
         "no_pf",
-        "effect_mismatch"
+        "effect_mismatch",
+        "safety_release",
+        "press_mismatch",
+        "toggle_mismatch"
       ]
     },
     "activeDesync": {

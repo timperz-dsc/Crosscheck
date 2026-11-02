@@ -85,6 +85,8 @@ public sealed class LocalApi : IAsyncDisposable
                 return BadRequest("var and value needed");
             return Answer(await bridge.PilotSetAsync(name, value));
         });
+        app.MapPost("/api/press-here", async (HttpRequest req) =>
+            await Body(req) is { } b && b["var"]?.GetValue<string>() is { } name ? Answer(await bridge.PressHereOnlyAsync(name)) : BadRequest("var needed"));
 
         if (File.Exists(Path.Combine(uiDir, "index.html")))
         {

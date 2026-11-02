@@ -111,6 +111,9 @@
     },
     {
       "$ref": "messages/effect_report.schema.json"
+    },
+    {
+      "$ref": "messages/safety_release.schema.json"
     }
   ]
 }

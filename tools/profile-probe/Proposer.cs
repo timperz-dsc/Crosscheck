@@ -470,8 +470,7 @@ static class Proposer
         yield return "    class: " + e.Class;
         yield return "    group: " + e.Group;
         if (e.Values is { } v) yield return "    values: " + ListText(v);
-        if (e.Class == "pulse") yield return "    pulse_ms: " + (e.PulseMs ?? 150);
-        if (e.Counter) yield return "    press: counter";
+        if (e.Class == "pulse") yield return "    press: edge"; // every Fenix push button (CRO-29)
         if (e.Display is { } d) yield return "    display: " + d;
         if (e.Verify is { } vf) yield return "    verify: " + vf;
         yield return "    note: " + Q("label generated; " + e.Note);

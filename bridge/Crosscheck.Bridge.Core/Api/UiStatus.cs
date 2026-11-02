@@ -149,7 +149,7 @@ internal static class UiStatus
 
     /// <summary>Reasons that mean a pilot's input did not arrive or had another result: always red.</summary>
     private static readonly HashSet<string> InputReasons =
-        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch"];
+        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch", "safety_release", "press_mismatch", "toggle_mismatch"];
 
     /// <summary>
     /// Where a desync is shown. The server sends the tier; as defence in depth only an indicator may be
@@ -175,7 +175,7 @@ internal static class UiStatus
         var red = new JsonArray();
         var indicators = new JsonArray();
         var attached = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var (body, since, tier) in all.Where(d => d.Tier == "red"))
+        foreach (var (body, since, tier) in UpstreamFirst(all.Where(d => d.Tier == "red").ToList()))
         {
             var item = Item(r, engine, client, body, since, tier);
             // Lamps that differ in the same group are most likely effects of this input: listed under it.
@@ -197,6 +197,23 @@ internal static class UiStatus
         return (red, indicators);
     }
 
+    /// <summary>
+    /// A toggle lamp that differs can have an upstream cause (FD goes dark with unaligned IRS, a lamp is dark
+    /// on an unpowered bus): it is listed after every other red item of its group, which comes first.
+    /// </summary>
+    private static IEnumerable<(JsonObject Body, DateTimeOffset Since, string Tier)> UpstreamFirst(List<(JsonObject Body, DateTimeOffset Since, string Tier)> red)
+    {
+        static string? Group(JsonObject b) => b["group"]?.GetValue<string>();
+        static bool Toggle(JsonObject b) => b["reason"]?.GetValue<string>() == "toggle_mismatch";
+        DateTimeOffset Key((JsonObject Body, DateTimeOffset Since, string Tier) d)
+        {
+            if (!Toggle(d.Body) || Group(d.Body) is not { } g) return d.Since;
+            var upstream = red.Where(x => !Toggle(x.Body) && Group(x.Body) == g).Select(x => x.Since).DefaultIfEmpty(d.Since).Max();
+            return upstream > d.Since ? upstream : d.Since;
+        }
+        return red.OrderBy(Key).ThenBy(d => Toggle(d.Body) ? 1 : 0).ThenBy(d => d.Since);
+    }
+
     /// <summary>Effects go under the first red item of a group only (never listed twice).</summary>
     private static bool FirstRedOfGroup(JsonArray red, string group) => !red.Any(x => x!["group"]?.GetValue<string>() == group);
 
@@ -206,8 +223,9 @@ internal static class UiStatus
         var group = body["group"]?.GetValue<string>();
         var reason = body["reason"]!.GetValue<string>();
         var spec = r.Profile.Vars.FirstOrDefault(v => v.Name == name);
-        var effectCompare = reason == "effect_mismatch";
-        // An effect desync compares the key's lamp, not the key itself: its values come from the message.
+        // An effect or toggle desync compares the key's lamp, a press desync the key's up/down state (parity),
+        // not the key's own counter: their values come from the message.
+        var effectCompare = reason is "effect_mismatch" or "toggle_mismatch" or "press_mismatch";
         double? mine = !effectCompare && r.Sim.TryGet(name, out var m) ? m : null;
         var receiverIsYou = body["client_id"]?.GetValue<string>() is { } c && c == client.ClientId;
         double? other = body["values"] is JsonObject values
@@ -219,7 +237,14 @@ internal static class UiStatus
         if (writable)
             foreach (var value in new[] { mine, other }.OfType<double>().Distinct().Where(x => r.Sim.Guard.IsAllowedValue(name, x)))
                 options.Add(new JsonObject { ["value"] = value, ["text"] = r.Labels.Value(name, value) });
-        string Text(double? v) => effectCompare ? (v is null ? "unknown" : Sync.Labels.Number(v.Value)) : r.Labels.Value(name, v);
+        string Text(double? v) => reason switch
+        {
+            _ when v is null && effectCompare => "unknown",
+            "toggle_mismatch" => v > 0 ? "on" : "off",
+            "press_mismatch" => ((long)Math.Round(v!.Value) & 1) == 1 ? "held down" : "up",
+            "effect_mismatch" => Sync.Labels.Number(v!.Value),
+            _ => r.Labels.Value(name, v),
+        };
         return new JsonObject
         {
             ["var"] = name,
@@ -235,6 +260,8 @@ internal static class UiStatus
             ["other"] = new JsonObject { ["value"] = other, ["text"] = Text(other) },
             ["writable"] = writable,
             ["options"] = options,
+            // A toggle light that differs: a cockpit press is mirrored and flips both, so the fix is one click here only.
+            ["press_here"] = reason == "toggle_mismatch" && spec is { Class: SyncClass.Pulse, Press: PressMode.Edge, Verify.Lvar: not null },
             ["message"] = body["message"]?.GetValue<string>(),
         };
     }

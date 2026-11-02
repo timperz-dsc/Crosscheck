@@ -150,14 +150,14 @@
         },
         "verify": { "$ref": "#/$defs/verify" },
         "pulse_ms": {
-          "description": "pulse: time between writing 1 and writing 0.",
+          "description": "pulse with press momentary: time between writing 1 and writing 0. Not used with press edge.",
           "type": "integer",
           "minimum": 20,
           "maximum": 2000
         },
         "press": {
-          "description": "pulse: edge (default) = 1 then 0. counter = Fenix counts press and release, odd = pressed.",
-          "enum": ["edge", "counter"]
+          "description": "pulse: momentary (default) = write 1, then 0 after pulse_ms. edge = Fenix counts press and release (odd = down); each down and up edge is mirrored as it happens.",
+          "enum": ["momentary", "edge"]
         },
         "display": {
           "description": "delta: the var that shows the value the encoder changes.",

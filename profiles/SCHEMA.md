@@ -37,7 +37,7 @@ Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels
 |---|---|---|---|
 | verified | absolute value | `values` or `range`, and `verify` where an effect source exists | |
 | delta | the change only | | `display` (a var in this profile), `verify` |
-| pulse | 1, then 0 | `pulse_ms` | `press: counter`, `verify` |
+| pulse | 1, then 0 (`press: momentary`), or each press and release as it happens (`press: edge`) | `pulse_ms` (momentary only) | `press`, `verify` |
 | analog | absolute value | `range` | `verify` |
 | stream | none (PF streams it) | | `rate_hz` |
 | owned | once at session start | | `verify` |
@@ -45,7 +45,7 @@ Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels
 | ignore | never | | |
 
 - `values: [0, 1, 2]` is the allowed set. `range: [0, 1]` is min and max. Give one, not both. Both are hard limits: Crosscheck never writes outside them.
-- `pulse_ms`: time between writing 1 and writing 0 (20 to 2000). `press: counter` is for master caution/warning, where Fenix counts press and release (odd = pressed).
+- `press`: `momentary` (default) writes 1, then 0 after `pulse_ms` (20 to 2000). `edge` is for Fenix push buttons, which count +1 on press and +1 on release (odd = down, `profiles/fenix-a320/observe-report.md`). Each down and up edge is sent on its own; the receiver writes its own value + 1, so a hold is mirrored for as long as it lasts. `edge` takes no `pulse_ms`. With `verify.lvar`, the lamp is also the button's state: a lamp that differs between the sims for 2 s is a red `toggle_mismatch` (never pressed automatically).
 - `display`: for an encoder (`E_*`), the var that shows the result (`N_*`). A corrective delta is sent when it differs between the sims. Without `display` the encoder is verified by read-back only: the bridge confirms its own L: var took the change, sends no corrective delta, and the encoder is not compared between the sims (its counter values differ per sim).
 - `observe` and `ignore` take no write or verify fields.
 
@@ -63,7 +63,7 @@ Exactly one source, plus `settle_ms` (wait before comparing):
 - `mcdu: 1|2`: the screen hash of that CDU must be equal on both sims. There is no expected text, because the product cannot know what a screen should show. `contains: "TEXT"` is optional and for local tests only.
 - `graphql`: `system.<switches|indicators|numerical|analog>.<NAME>` where `NAME` is a var in this profile, or any path listed in `datarefs`.
 
-`expect: same` (default) means the effect source is compared between the sims, never against a fixed value. `expect: parity` compares odd/even only (press counters). `scale` is the factor between the written value and the source, for example 1024 for analog knobs in GraphQL.
+`expect: same` (default) means the effect source is compared between the sims, never against a fixed value. `expect: parity` compares odd/even only. `scale` is the factor between the written value and the source, for example 1024 for analog knobs in GraphQL.
 
 ## Datarefs
 
@@ -112,7 +112,7 @@ roles:
   takeover: { captain: S_FC_CAPT_INST_DISCONNECT, fo: S_FC_FO_INST_DISCONNECT }
 ```
 
-- `takeover`: the sidestick takeover pushbutton of each seat (class `verified` or `pulse`). When the pilot monitoring presses the button on their own seat, the bridge sends "I have control". The press is synced like any other var. Which seat a pilot sits in is set with the bridge option `--seat-side` (default: host = captain, guest = fo).
+- `takeover`: the sidestick takeover pushbutton of each seat (class `verified` or `pulse`). When the pilot monitoring presses it, the bridge sends "I have control" and holds the press back; it is mirrored only once control is granted, as a press of the new pilot flying. A takeover press is never written into the sim of the pilot who is flying at that moment. Which seat a pilot sits in is set with the bridge option `--seat-side` (default: host = captain, guest = fo).
 
 ## Exclude
 

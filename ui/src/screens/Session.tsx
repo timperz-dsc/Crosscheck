@@ -180,6 +180,13 @@ function DesyncBlock({ desync: d, peerWord, actions, busy }: { desync: Desync; p
       </dl>
       <p className="prose">{desyncExplanation(d, peerWord)}</p>
       {d.effects && d.effects.length > 0 && <p className="muted prose">{effectsText(d.effects)}</p>}
+      {d.press_here && (
+        <div className="row">
+          <Button variant="primary" onClick={() => void actions.pressHere(d.var)} disabled={busy}>
+            Press {d.label} here only
+          </Button>
+        </div>
+      )}
       {d.writable && d.options.length > 0 && (
         <div className="row">
           {d.options.map((o, i) => (

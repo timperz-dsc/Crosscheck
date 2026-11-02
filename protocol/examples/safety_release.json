@@ -1,0 +1,12 @@
+{
+  "v": 3,
+  "type": "safety_release",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "var": "S_OH_FIRE_ENG1_TEST",
+    "group": "overhead",
+    "cause": "cap",
+    "observed": 8
+  }
+}

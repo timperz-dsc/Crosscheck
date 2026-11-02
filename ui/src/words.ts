@@ -108,6 +108,14 @@ export function desyncExplanation(d: Desync, peer: string): string {
         return d.receiver_is_you
           ? `The ${peer} pressed it. The press arrived, but its light shows a different result in your cockpit.`
           : `You pressed it. The press arrived, but its light shows a different result in the ${peer}'s cockpit.`;
+      case 'toggle_mismatch':
+        return `${d.label} is ${d.you.text} for you and ${d.other.text} for the ${peer}. If nothing above it differs, press ${d.label} on one side with “Press ${d.label} here only”: a press in the cockpit is mirrored and would switch both. It is never pressed automatically.`;
+      case 'press_mismatch':
+        return `It is ${d.you.text} in your cockpit and ${d.other.text} in the ${peer}'s. It is never pressed or released automatically.`;
+      case 'safety_release':
+        return d.receiver_is_you
+          ? `Crosscheck released it in your cockpit because the ${peer}'s release never arrived (30 s, or the connection was lost). Check it in both cockpits.`
+          : `Crosscheck released it in the ${peer}'s cockpit because your release never arrived there (30 s, or the connection was lost). Check it in both cockpits.`;
       case 'correction_failed':
         return 'It was set to match the pilot flying, but the change did not take effect.';
       case 'correction_loop':

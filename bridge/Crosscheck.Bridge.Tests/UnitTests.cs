@@ -113,7 +113,9 @@ public class SafetyGuardTests
     [InlineData("I_OH_ELEC_APU_MASTER_L", 1)] // observe: never written
     [InlineData("S_OH_ELEC_APU_MASTER", 2)] // not in values [0, 1]
     [InlineData("A_OH_PNEUMATIC_COCKPIT_TEMP", 1.5)] // outside range [0, 1]
-    [InlineData("S_CDU1_KEY_FPLN", 2)] // a pulse writes only 1 and 0
+    [InlineData("S_CDU1_BRIGHTNESS_UP", 2)] // a momentary key writes only 1 and 0
+    [InlineData("S_CDU1_KEY_FPLN", 1.5)] // an edge button counts in whole steps
+    [InlineData("S_CDU1_KEY_FPLN", -1)]
     [InlineData("S_OH_ELEC_APU_MASTER", double.NaN)]
     [InlineData("A:PLANE LATITUDE", 0)] // not an L: var name
     [InlineData("K:PAUSE_ON", 1)]
@@ -187,9 +189,9 @@ public class MessageValidatorTests
     [Fact]
     public void Rejects_malformed_messages()
     {
-        var bad = JsonNode.Parse("""{"v":2,"type":"command","session":"s_abcdefg","ts":1,"body":{"id":"a","var":"X","class":"delta","value":1,"group":"g","settle_ms":1}}""")!;
+        var bad = JsonNode.Parse("""{"v":3,"type":"command","session":"s_abcdefg","ts":1,"body":{"id":"a","var":"X","class":"delta","value":1,"group":"g","settle_ms":1}}""")!;
         Assert.NotNull(MessageValidator.Shared.Validate(bad));
-        var unknown = JsonNode.Parse("""{"v":2,"type":"nope","session":null,"ts":1,"body":{}}""")!;
+        var unknown = JsonNode.Parse("""{"v":3,"type":"nope","session":null,"ts":1,"body":{}}""")!;
         Assert.NotNull(MessageValidator.Shared.Validate(unknown));
     }
 }

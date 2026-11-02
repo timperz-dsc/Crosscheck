@@ -104,10 +104,11 @@ describe('preflight', () => {
     expect(comparePreflight(PREFLIGHT, PREFLIGHT)).toEqual({ rejects: [], warnings: [] });
   });
   it('major version compare: patch and pre-release may differ; before 1.0 the minor counts as the major', () => {
-    const ref = { ...PREFLIGHT, bridge_version: '0.2.0' };
-    expect(comparePreflight(ref, { ...ref, bridge_version: '0.2.5-beta.2' }).rejects).toEqual([]);
+    const ref = { ...PREFLIGHT, bridge_version: '0.3.0' };
+    expect(comparePreflight(ref, { ...ref, bridge_version: '0.3.5-beta.2' }).rejects).toEqual([]);
     expect(comparePreflight(ref, { ...ref, bridge_version: '0.1.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
-    expect(comparePreflight(ref, { ...ref, bridge_version: '0.3.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
+    expect(comparePreflight(ref, { ...ref, bridge_version: '0.2.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
+    expect(comparePreflight(ref, { ...ref, bridge_version: '0.4.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
     expect(comparePreflight(ref, { ...ref, bridge_version: '2.0.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
     const one = { ...PREFLIGHT, bridge_version: '1.2.0' };
     expect(comparePreflight(one, { ...one, bridge_version: '1.3.4' }).rejects).toEqual([]);
@@ -133,7 +134,7 @@ describe('join codes', () => {
 });
 
 describe('replay log', () => {
-  const env = (seq: number): Envelope => ({ v: 2, type: 'command', session: 's_abcdefg', seq, ts: 0, body: {} });
+  const env = (seq: number): Envelope => ({ v: 3, type: 'command', session: 's_abcdefg', seq, ts: 0, body: {} });
   it('replays per client after last_seq and reports a gap once entries were evicted', () => {
     const log = new ReplayLog(3);
     log.add(1, 'a', env(1));

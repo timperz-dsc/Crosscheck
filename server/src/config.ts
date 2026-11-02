@@ -53,6 +53,11 @@ export interface ServerConfig {
   trustProxy: boolean;
   /** An indicator (observe var) must differ this long before it is raised as a quiet desync. */
   indicatorHoldMs: number;
+  /**
+   * An edge button held on one side only, or a toggle lamp that differs, is raised (red) after it
+   * differed in 2 consecutive snapshot comparisons or for this long, whichever comes first.
+   */
+  buttonHoldMs: number;
   /** Owned drift that changed by less than its step is sent at most this often. */
   driftMinIntervalMs: number;
   /** This many overrides on one var within fightWindowMs → "hardware fighting" advisory. */
@@ -88,6 +93,7 @@ export const DEFAULT_CONFIG: ServerConfig = {
   logDir: null,
   echoEvents: false,
   indicatorHoldMs: 10 * 1000,
+  buttonHoldMs: 2 * 1000,
   driftMinIntervalMs: 10 * 1000,
   fightCount: 3,
   fightWindowMs: 30 * 1000,
@@ -105,7 +111,7 @@ const TIME_KEYS = [
   'snapshotIntervalMs', 'snapshotRequestTimeoutMs', 'freezeMs', 'controlAckTimeoutMs',
   'correctionSettleMs', 'correctionLoopWindowMs', 'streamNoticeIntervalMs', 'streamIdleMs',
   'summaryIntervalMs', 'handshakeTimeoutMs', 'createWindowMs', 'joinWindowMs',
-  'indicatorHoldMs', 'driftMinIntervalMs', 'fightWindowMs',
+  'indicatorHoldMs', 'buttonHoldMs', 'driftMinIntervalMs', 'fightWindowMs',
 ] as const satisfies readonly (keyof ServerConfig)[];
 
 /**

@@ -16,6 +16,11 @@ export interface VarDef {
   toggles?: string;
   /** owned: drift step reported in snapshot values. */
   step?: number;
+  /**
+   * pulse with press edge (Fenix push buttons, +1 on press and release): reported in snapshots as its
+   * parity, and its toggles lamp (when not a var of its own) as a toggle item with the button.
+   */
+  edge?: boolean;
 }
 
 /** A small stand-in profile with one var of each kind. */
@@ -31,6 +36,8 @@ export const TEST_VARS: VarDef[] = [
   { name: 'MCDU1_SCREEN', cls: 'observe', group: 'mcdu', init: '' },
   { name: 'S_FCU_EFIS1_FD', cls: 'pulse', group: 'efis', init: 0, toggles: 'I_FCU_EFIS1_FD' },
   { name: 'I_FCU_EFIS1_FD', cls: 'observe', group: 'efis', init: 1 },
+  { name: 'S_FCU_EFIS2_FD', cls: 'pulse', group: 'efis', init: 0, edge: true, toggles: 'I_FCU_EFIS2_FD' },
+  { name: 'S_OH_FIRE_ENG1_TEST', cls: 'pulse', group: 'overhead', init: 0, edge: true },
 ];
 
 export type WriteSource = 'pilot' | 'remote' | 'correction';
@@ -72,6 +79,7 @@ export class FakeSim {
       this.values.set(d.name, d.init);
       if (d.display) this.values.set(d.display, d.displayInit ?? 0);
     }
+    for (const d of defs) if (d.toggles && !this.values.has(d.toggles)) this.values.set(d.toggles, 0);
   }
 
   get(name: string): number | string {
@@ -157,7 +165,13 @@ export class FakeSim {
   snapshot(group: string): SnapshotValue[] {
     const out: SnapshotValue[] = [];
     for (const d of this.defs.values()) {
-      if (d.group !== group || d.cls === 'pulse') continue;
+      if (d.group !== group) continue;
+      if (d.cls === 'pulse' && d.edge) {
+        out.push({ var: d.name, class: 'pulse', value: Math.round(this.get(d.name) as number) & 1 });
+        if (d.toggles && !this.defs.has(d.toggles)) out.push({ var: d.toggles, class: 'toggle', value: this.get(d.toggles), button: d.name });
+        continue;
+      }
+      if (d.cls === 'pulse') continue;
       out.push({
         var: d.name, class: d.cls, value: d.cls === 'delta' ? this.display(d.name) : this.get(d.name),
         ...(d.cls === 'owned' && d.step !== undefined ? { step: d.step } : {}),

@@ -37,7 +37,7 @@
         },
         {
           "var": "A_SMALL",
-          "value": 4e-7
+          "value": 4e-07
         },
         {
           "var": "A_ROUND",
@@ -134,6 +134,29 @@
       "values": [],
       "formatted": [],
       "hash": "e3b0c44298fc1c14"
+    },
+    {
+      "name": "edge buttons: parity and toggle lamp (pulse/toggle items hash like any value)",
+      "values": [
+        {
+          "var": "S_FCU_AP1",
+          "value": 1
+        },
+        {
+          "var": "I_FCU_AP1",
+          "value": 1
+        },
+        {
+          "var": "S_CDU1_KEY_S",
+          "value": 0
+        }
+      ],
+      "formatted": [
+        "1",
+        "1",
+        "0"
+      ],
+      "hash": "ddb752d9f8ad0ef1"
     }
   ]
 }

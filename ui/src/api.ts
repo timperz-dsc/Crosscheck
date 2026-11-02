@@ -116,6 +116,7 @@ export function useBridge(pollMs = 1000): BridgeState {
     })(),
     giveControl: () => run(() => post('/api/control/give'))(),
     setBoth: (variable, value) => run(() => post('/api/set', { var: variable, value }))(),
+    pressHere: (variable) => run(() => post('/api/press-here', { var: variable }))(),
     setServer: (url) => run(() => post('/api/settings/server', { url }))(),
   };
 

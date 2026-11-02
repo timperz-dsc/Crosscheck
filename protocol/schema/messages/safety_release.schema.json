@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/safety_release.schema.json",
+  "title": "safety_release",
+  "description": "The receiver released an edge push button that Crosscheck had pressed down in its sim, because the other pilot's up never arrived (30 s cap) or the link was lost. The only write no pilot made (docs/protocol.md section 5). The server raises a red desync safety_release to both pilots. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "safety_release"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "group",
+        "cause",
+        "observed"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "cause": {
+          "description": "cap: no up within 30 s. link_lost: this bridge lost the server. peer_lost: the other pilot was lost.",
+          "enum": [
+            "cap",
+            "link_lost",
+            "peer_lost"
+          ]
+        },
+        "observed": {
+          "description": "The button's value after the release (even = up).",
+          "$ref": "../common.schema.json#/$defs/scalar"
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

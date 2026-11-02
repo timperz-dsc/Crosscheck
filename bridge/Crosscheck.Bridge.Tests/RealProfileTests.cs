@@ -25,13 +25,50 @@ public class RealProfileTests
     [InlineData("S_WR_GCS")]
     [InlineData("S_PED_ATC_0")]
     [InlineData("S_PED_ATC_3")]
-    public void Latching_push_buttons_are_press_counters(string name)
+    public void Latching_push_buttons_are_edge_buttons(string name)
     {
         var v = Var(name);
         Assert.Equal(SyncClass.Pulse, v.Class);
-        Assert.Equal(PressMode.Counter, v.Press);
+        Assert.Equal(PressMode.Edge, v.Press);
         Assert.Null(v.Values);
+        Assert.Null(v.PulseMs);
     }
+
+    [Fact]
+    public void Every_push_button_in_the_profile_mirrors_edges()
+    {
+        // CRO-29: every Fenix S_ push button counts +1 on press and +1 on release (observe-report.md).
+        var pulses = Real.Vars.Where(v => v.Class == SyncClass.Pulse).ToList();
+        Assert.True(pulses.Count > 400);
+        Assert.All(pulses, v => Assert.Equal(PressMode.Edge, v.Press));
+        Assert.All(pulses, v => Assert.Null(v.PulseMs));
+    }
+
+    [Theory]
+    [InlineData("S_FCU_AP1", "I_FCU_AP1")]
+    [InlineData("S_FCU_EFIS1_CSTR", "I_FCU_EFIS1_CSTR")]
+    [InlineData("S_FCU_EFIS2_CSTR", "I_FCU_EFIS2_CSTR")]
+    [InlineData("S_ASP4_VOICE", "I_ASP4_VOICE")]
+    [InlineData("S_ASP_VHF_1_SEND", "I_ASP_VHF_1_SEND")]
+    [InlineData("S_MIP_CLOCK_RST", null)]
+    [InlineData("S_MIP_CHRONO_CAPT", null)]
+    public void Observed_and_same_panel_push_buttons_left_the_review_list(string name, string? lamp)
+    {
+        var v = Var(name);
+        Assert.Equal(PressMode.Edge, v.Press);
+        Assert.Equal(lamp, v.Verify?.Lvar);
+    }
+
+    [Theory]
+    [InlineData("S_FCU_SPEED")] // push/pull knob
+    [InlineData("S_FCU_ALTITUDE_SCALE")] // switch
+    [InlineData("S_FCU_EFIS1_NAV1")] // ADF/VOR switch
+    [InlineData("S_MIP_CLOCK_ET")] // switch
+    [InlineData("S_ASP_INTRAD")] // switch
+    [InlineData("S_ASP_SPKR_REC")] // unclear
+    [InlineData("S_OH_ELEC_EXT_PWR")] // overhead: the next step
+    public void Knobs_switches_and_unclear_controls_stay_off_the_edge_rule(string name) =>
+        Assert.DoesNotContain(Real.Vars, v => v.Name == name && v.Class == SyncClass.Pulse);
 
     [Fact]
     public void The_guard_lets_every_counter_value_from_gate_test_1_through()
@@ -96,16 +133,29 @@ public class RealProfileTests
     {
         var v = Var(name);
         Assert.Equal(SyncClass.Pulse, v.Class);
-        Assert.NotEqual(PressMode.Counter, v.Press);
+        Assert.Equal(PressMode.Edge, v.Press);
         Assert.Equal(lamp, v.Verify?.Lvar);
         Assert.Equal(SyncClass.Verified, Var(name + "_LATCH").Class);
     }
 
-    [Fact]
-    public void Hold_buttons_are_left_for_the_hold_step()
+    [Theory]
+    [InlineData("S_OH_SVCE_INT_OVRD")] // momentary: the lamp is on only while held (observe-report.md)
+    [InlineData("S_OH_FIRE_ENG1_TEST")]
+    [InlineData("S_OH_FIRE_APU_TEST")]
+    [InlineData("S_OH_FIRE_ENG2_TEST")]
+    [InlineData("S_FC_CAPT_INST_DISCONNECT")]
+    [InlineData("S_FC_FO_INST_DISCONNECT")]
+    [InlineData("S_MIP_MASTER_WARNING_CAPT")]
+    public void Hold_buttons_are_mirrored_for_as_long_as_they_are_held(string name)
     {
-        // Counter mode would turn a held button into a fixed 150 ms press on the other side.
-        Assert.Equal(SyncClass.Verified, Var("S_OH_SVCE_INT_OVRD").Class);
-        Assert.NotEqual(PressMode.Counter, Var("S_OH_FIRE_ENG1_TEST").Press);
+        var v = Var(name);
+        Assert.Equal(SyncClass.Pulse, v.Class);
+        Assert.Equal(PressMode.Edge, v.Press);
+    }
+
+    [Fact]
+    public void The_takeover_buttons_are_edge_push_buttons()
+    {
+        Assert.Equal(new TakeoverRole("S_FC_CAPT_INST_DISCONNECT", "S_FC_FO_INST_DISCONNECT"), Real.Roles!.Takeover);
     }
 }
