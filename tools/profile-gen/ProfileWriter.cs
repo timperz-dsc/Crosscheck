@@ -34,6 +34,9 @@ static class ProfileWriter
             sb.Append("    group: ").Append(e.Group).Append('\n');
             if (e.Values is { } v) sb.Append("    values: ").Append(List(v)).Append('\n');
             if (e.Range is { } r) sb.Append("    range: ").Append(List(r)).Append('\n');
+            if (e.Rest is { } rest) sb.Append("    rest: ").Append(N(rest)).Append('\n');
+            if (e.Alarm is { } al)
+                sb.Append("    alarm: { text: ").Append(Q(al.Text)).Append(al.As is { } at ? $", as: {at}" : "").Append(" }\n");
             if (e.Press is { } pr) sb.Append("    press: ").Append(pr).Append('\n');
             if (e.PulseMs is { } p) sb.Append("    pulse_ms: ").Append(p).Append('\n');
             if (e.Display is { } d) sb.Append("    display: ").Append(d).Append('\n');

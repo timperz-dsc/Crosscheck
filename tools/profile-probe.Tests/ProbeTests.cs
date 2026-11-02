@@ -426,7 +426,8 @@ public class RepoInputTests
             }
         }
         Assert.Equal(11, Targets.For(Phase.Breakers, inputs).Targets.Count);
-        Assert.Equal(65, inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null));
+        // 67: profile vars that stay on the probe deny list (ENG MODE, EMER EXIT LT ... joined in gate test 2 prep).
+        Assert.Equal(67, inputs.Profile.Vars.Count(v => inputs.Deny.Denies(v.Name) is not null));
     }
 
     [Fact]

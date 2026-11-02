@@ -22,6 +22,10 @@ sealed class Entry
     public string? Display { get; set; }
     public Verify? Verify { get; set; }
     public Dictionary<string, string>? ValueLabels { get; init; }
+    /// <summary>verified, spring-loaded: the position it returns to by itself.</summary>
+    public double? Rest { get; init; }
+    /// <summary>observe: red comparison text, and the control it is reported under.</summary>
+    public (string Text, string? As)? Alarm { get; init; }
     /// <summary>Written as a comment line above the entry (from overrides.yaml).</summary>
     public string? Comment { get; init; }
     public List<string> Notes { get; } = ["label generated"];

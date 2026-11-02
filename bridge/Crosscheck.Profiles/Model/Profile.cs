@@ -62,7 +62,16 @@ public sealed record VarEntry(
     double? RateHz = null,
     string? Note = null,
     string? Label = null,
-    IReadOnlyDictionary<string, string>? ValueLabels = null);
+    IReadOnlyDictionary<string, string>? ValueLabels = null,
+    double? Rest = null,
+    AlarmSpec? Alarm = null);
+
+/// <summary>
+/// observe only: this indicator shows a pilot input that Crosscheck cannot sync (yet). A difference
+/// between the sims is red (input tier) after 2 s, never quiet, with this text. Never written.
+/// </summary>
+/// <param name="As">Report the difference under this control (several indicators of one knob share one line).</param>
+public sealed record AlarmSpec(string Text, string? As = null);
 
 public sealed record DatarefEntry(
     string Path,

@@ -179,6 +179,28 @@ vars:
     group: flightcontrols
     press: edge
 
+  # Spring-loaded rotary: springs back to 1. A position Crosscheck wrote is returned to rest if its
+  # release never arrives (protocol.md section 5).
+  - name: S_FC_RUDDER_TRIM
+    label: RUD TRIM
+    value_labels: { "0": L, "1": neutral, "2": R }
+    class: verified
+    group: flightcontrols
+    values: [0, 1, 2]
+    rest: 1
+
+  # Indicators of an input that is not synced: compared as inputs (red), one line per knob.
+  - name: I_FCU_SPEED_MANAGED
+    label: SPD managed
+    class: observe
+    group: fcu
+    alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+
+  - name: B_FCU_SPEED_DASHED
+    class: observe
+    group: fcu
+    alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+
 datarefs:
   # Name confirmed in spike/VarTypes/GRAPHQL.md ("fuel per tank").
   - path: aircraft.fuel.left.amount.kg

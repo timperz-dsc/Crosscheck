@@ -13,6 +13,8 @@
 //       value_labels: { "0": "OFF", "1": "ON" }
 //       press: edge                    # pulse: edge (default, Fenix push buttons) or momentary
 //       pulse_ms: 150                  # momentary only
+//       rest: 1                        # verified, spring-loaded: the position it returns to by itself
+//       alarm: { text: "...", as: S_X } # observe: red comparison (input tier) with this text
 //       note: "..."                    # replaces the rule notes after "label generated"
 //       comment: "..."                 # written as a comment line above the entry
 //       evidence: "..."                # what backs it (not written to the profile)
@@ -28,7 +30,8 @@ namespace ProfileGen;
 
 sealed record Override(
     string Name, string? Class, string? Group, double[]? Values, double[]? Range, string? Display, Verify? Verify,
-    Dictionary<string, string>? ValueLabels, int? PulseMs, string? Press, string? Note, string? Comment, string Evidence);
+    Dictionary<string, string>? ValueLabels, int? PulseMs, string? Press, string? Note, string? Comment, string Evidence,
+    double? Rest = null, (string Text, string? As)? Alarm = null);
 
 sealed record OpenItem(string What, IReadOnlyList<string> Vars, string Why);
 
@@ -67,13 +70,20 @@ sealed class OverrideFile
                         : V("graphql") is { } gp ? new Verify("graphql", gp, settle, V("scale") is { } sc ? double.Parse(sc, CultureInfo.InvariantCulture) : null)
                         : throw new InvalidDataException($"{path}: {name}: verify needs lvar or graphql");
                 }
+                (string, string?)? alarm = null;
+                if (item.Children.TryGetValue("alarm", out var an) && an is YamlMappingNode am)
+                {
+                    string? A(string key) => am.Children.TryGetValue(key, out var x) ? ((YamlScalarNode)x).Value : null;
+                    alarm = (A("text") ?? throw new InvalidDataException($"{path}: {name}: alarm needs text"), A("as"));
+                }
                 file.Overrides.Add(new Override(
                     name, S("class"), S("group"), values, range, S("display"), verify, labels,
                     S("pulse_ms") is { } pm ? int.Parse(pm, CultureInfo.InvariantCulture) : null,
                     S("press") is { } press ? press is "edge" or "momentary" ? press
                         : throw new InvalidDataException($"{path}: {name}: press is edge or momentary, not '{press}'") : null,
                     S("note"), S("comment"),
-                    S("evidence") ?? throw new InvalidDataException($"{path}: {name}: every override needs evidence")));
+                    S("evidence") ?? throw new InvalidDataException($"{path}: {name}: every override needs evidence"),
+                    S("rest") is { } rest ? double.Parse(rest, CultureInfo.InvariantCulture) : null, alarm));
             }
 
         if (root.Children.TryGetValue("open", out var open) && open is YamlSequenceNode os)
@@ -136,6 +146,8 @@ sealed class OverrideFile
             Press = press,
             PulseMs = press == "momentary" ? o.PulseMs ?? keep?.PulseMs ?? 150 : null,
             ValueLabels = o.ValueLabels ?? keep?.ValueLabels,
+            Rest = cls == "verified" ? o.Rest ?? keep?.Rest : null,
+            Alarm = cls == "observe" ? o.Alarm ?? keep?.Alarm : null,
             Comment = o.Comment ?? keep?.Comment,
         };
         e.Display = cls == "delta" ? o.Display ?? keep?.Display : null;

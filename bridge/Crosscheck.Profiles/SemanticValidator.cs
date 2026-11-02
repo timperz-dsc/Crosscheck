@@ -154,6 +154,13 @@ internal sealed class SemanticValidator
         Unused(v.Press is not null, "press", [SyncClass.Pulse]);
         Unused(v.Display is not null, "display", [SyncClass.Delta]);
         Unused(v.RateHz is not null, "rate_hz", [SyncClass.Stream]);
+        Unused(v.Rest is not null, "rest", [SyncClass.Verified]);
+        Unused(v.Alarm is not null, "alarm", [SyncClass.Observe]);
+        if (v is { Class: SyncClass.Verified, Rest: { } rest })
+        {
+            var ok = v.Values?.Contains(rest) ?? (v.Range is { Count: 2 } r && rest >= r[0] && rest <= r[1]);
+            if (!ok) Add($"{at}/rest", $"rest {rest} must be one of the allowed values");
+        }
 
         void Unused(bool present, string field, SyncClass[] allowed)
         {

@@ -104,7 +104,7 @@
       ]
     },
     "snapshotClass": {
-      "description": "Sync classes that appear in snapshots. For delta the value is the display value, reported under the encoder name. pulse: an edge push button, value = its parity (1 = held down). toggle: the lamp of an edge push button, its on/off state (with the button).",
+      "description": "Sync classes that appear in snapshots. For delta the value is the display value, reported under the encoder name. pulse: an edge push button, value = its parity (1 = held down). toggle: the lamp of an edge push button, its on/off state (with the button). mode: an indicator of a pilot input Crosscheck cannot sync (yet), compared as an input: red, never quiet (with the pilots' text).",
       "enum": [
         "verified",
         "analog",
@@ -112,7 +112,8 @@
         "delta",
         "observe",
         "pulse",
-        "toggle"
+        "toggle",
+        "mode"
       ]
     },
     "scalar": {
@@ -248,7 +249,8 @@
         "effect_mismatch",
         "safety_release",
         "press_mismatch",
-        "toggle_mismatch"
+        "toggle_mismatch",
+        "mode_mismatch"
       ]
     },
     "activeDesync": {

@@ -76,6 +76,11 @@ public sealed class SyncEngine : IAsyncDisposable
     /// ever be released by Crosscheck (the pilot's "up", or the safety release). A local touch removes them.
     /// </summary>
     private readonly Dictionary<string, MirroredDown> _mirroredDown = new(StringComparer.Ordinal);
+    /// <summary>
+    /// Receiver: spring-loaded switches (verified with rest) Crosscheck itself moved away from rest in this sim.
+    /// Only these may ever be returned to rest by Crosscheck (safety release). A local touch removes them.
+    /// </summary>
+    private readonly Dictionary<string, MirroredDown> _springHeld = new(StringComparer.Ordinal);
     /// <summary>safety_release messages not sent yet (the link was down); sent after resume.</summary>
     private readonly List<JsonObject> _pendingSafety = [];
     /// <summary>A pilot monitoring's takeover press, held back until control is granted (protocol.md §8).</summary>
@@ -298,6 +303,12 @@ public sealed class SyncEngine : IAsyncDisposable
             {
                 case SyncClass.Verified or SyncClass.Analog:
                     if (_echo.TryConsume(name, value)) { LogEcho(name, value); break; }
+                    // The local pilot moved a spring switch Crosscheck holds away from rest: it is theirs now.
+                    if (_springHeld.Remove(name, out var spring))
+                    {
+                        spring.Cap.Dispose();
+                        _log.Event("mirrored_spring_taken", new JsonObject { ["var"] = name, ["value"] = value });
+                    }
                     if (hadPrev && _sessionActive && value != prev) commands.Add(NewCommand(spec, value, null));
                     break;
                 case SyncClass.Delta:
@@ -838,6 +849,7 @@ public sealed class SyncEngine : IAsyncDisposable
                 // Skip only if the sim already shows it and none of our own writes is still on its way.
                 bool already;
                 lock (_gate) already = _echo.Pending(name) == 0 && _sim.TryGet(name, out var current) && current == target;
+                if (spec.Rest is not null) TrackSpring(spec, job.Id, target);
                 if (!already)
                 {
                     lock (_gate) _echo.Expect(name, target, window);
@@ -972,6 +984,74 @@ public sealed class SyncEngine : IAsyncDisposable
         return new Written(true, release, true, null);
     }
 
+    /// <summary>A spring switch written away from rest is tracked (30 s cap); written back to rest, it is not.</summary>
+    private void TrackSpring(VarEntry spec, string id, double target)
+    {
+        var name = spec.Name;
+        lock (_gate)
+        {
+            if (_springHeld.Remove(name, out var old)) old.Cap.Dispose();
+            if (target == spec.Rest) return;
+            var cap = new Timer(_ => SpringRelease(name, "cap"), null, _options.SafetyReleaseMs, Timeout.Infinite);
+            _springHeld[name] = new MirroredDown(_clock.NowMs, id, target, cap);
+        }
+    }
+
+    /// <summary>
+    /// The same narrow exception for spring-loaded switches (owner decision, gate test 2 prep): the rest
+    /// value for a switch Crosscheck itself moved away from rest in this sim, when the other pilot's
+    /// release never arrived. Never another value, never a switch the local pilot touched; always red.
+    /// </summary>
+    private void SpringRelease(string name, string cause)
+    {
+        MirroredDown? held;
+        double rest;
+        lock (_gate)
+        {
+            if (!_springHeld.Remove(name, out held)) return;
+            held.Cap.Dispose();
+            rest = _vars[name].Rest!.Value;
+            if (!_sim.TryGet(name, out var cur) || cur != held.Value)
+            {
+                _log.Event("safety_release_skipped", new JsonObject { ["var"] = name, ["cause"] = cause, ["value"] = _sim.TryGet(name, out var v) ? v : null });
+                return;
+            }
+            _echo.Expect(name, rest, _options.EchoWindowMs);
+        }
+        var message = $"Crosscheck returned {Labels.Var(name)} to {Labels.Value(name, rest)} {ReleaseWhy(cause)}.";
+        _log.Event("safety_release", new JsonObject { ["var"] = name, ["cause"] = cause, ["id"] = held.Id, ["from"] = held.Value, ["to"] = rest });
+        ReportRelease(name, cause, rest, message);
+    }
+
+    private string ReleaseWhy(string cause) => cause switch
+    {
+        "cap" => $"after {_options.SafetyReleaseMs / 1000.0:0.#} s without a release from the {PeerWord}",
+        "link_lost" => "because the connection to the server was lost",
+        _ => $"because the {PeerWord} was lost",
+    };
+
+    /// <summary>Red desync at once (the link may be down), the write, and safety_release to the server.</summary>
+    private void ReportRelease(string name, string cause, double value, string message)
+    {
+        var body = new JsonObject { ["var"] = name, ["group"] = _vars[name].Group, ["cause"] = cause, ["observed"] = value };
+        _status.SetDesync(name, new JsonObject
+        {
+            ["var"] = name, ["reason"] = "safety_release", ["tier"] = "red", ["blocking"] = false, ["group"] = _vars[name].Group,
+            ["message"] = message,
+        });
+        _hub.Publish("safety_release", message, (JsonObject)body.DeepClone());
+        _ = WriteSafely(name, value);
+        lock (_gate)
+        {
+            if (_client.State != ServerState.Connected)
+            {
+                _pendingSafety.Add(body);
+                return;
+            }
+        }
+        _client.Send("safety_release", body);
+    }
+
     /// <summary>
     /// The only write no pilot made (CLAUDE.md, protocol.md §5): an "up" for a button Crosscheck itself
     /// pressed down in this sim, when the other pilot's "up" never arrived. Never a down, never another
@@ -993,33 +1073,9 @@ public sealed class SyncEngine : IAsyncDisposable
             release = cur + 1;
             _echo.Expect(name, release, _options.EchoWindowMs);
         }
-        var label = Labels.Var(name);
-        var why = cause switch
-        {
-            "cap" => $"after {_options.SafetyReleaseMs / 1000.0:0.#} s without a release from the {PeerWord}",
-            "link_lost" => "because the connection to the server was lost",
-            _ => $"because the {PeerWord} was lost",
-        };
-        var message = $"Crosscheck released {label} {why}.";
-        var body = new JsonObject { ["var"] = name, ["group"] = _vars[name].Group, ["cause"] = cause, ["observed"] = release };
+        var message = $"Crosscheck released {Labels.Var(name)} {ReleaseWhy(cause)}.";
         _log.Event("safety_release", new JsonObject { ["var"] = name, ["cause"] = cause, ["id"] = down.Id, ["from"] = down.Value, ["to"] = release });
-        // Shown at once, before the server knows (the link may be down).
-        _status.SetDesync(name, new JsonObject
-        {
-            ["var"] = name, ["reason"] = "safety_release", ["tier"] = "red", ["blocking"] = false, ["group"] = _vars[name].Group,
-            ["message"] = message,
-        });
-        _hub.Publish("safety_release", message, (JsonObject)body.DeepClone());
-        _ = WriteSafely(name, release);
-        lock (_gate)
-        {
-            if (_client.State != ServerState.Connected)
-            {
-                _pendingSafety.Add(body);
-                return;
-            }
-        }
-        _client.Send("safety_release", body);
+        ReportRelease(name, cause, release, message);
     }
 
     private async Task WriteSafely(string name, double value)
@@ -1037,8 +1093,14 @@ public sealed class SyncEngine : IAsyncDisposable
     private void ReleaseAllMirrored(string cause)
     {
         List<string> names;
-        lock (_gate) names = [.. _mirroredDown.Keys];
+        List<string> springs;
+        lock (_gate)
+        {
+            names = [.. _mirroredDown.Keys];
+            springs = [.. _springHeld.Keys];
+        }
         foreach (var n in names) SafetyRelease(n, cause);
+        foreach (var n in springs) SpringRelease(n, cause);
     }
 
     private void OnServerState(ServerState state)
@@ -1156,6 +1218,10 @@ public sealed class SyncEngine : IAsyncDisposable
                     if (v.Verify?.Lvar is { } lamp && _toggleLamps.GetValueOrDefault(lamp) == v.Name)
                         list.Add((lamp, "toggle", _sim.TryGet(lamp, out var lv) ? lv : null));
                     break;
+                case SyncClass.Observe when v.Alarm is not null:
+                    // An indicator of an input Crosscheck cannot sync (yet): compared as an input (red), never quiet.
+                    list.Add((v.Name, "mode", _sim.TryGet(v.Name, out var mv) ? mv : null));
+                    break;
                 case SyncClass.Verified or SyncClass.Analog or SyncClass.Owned or SyncClass.Observe:
                     list.Add((v.Name, v.Class.ToString().ToLowerInvariant(), _sim.TryGet(v.Name, out var x) ? x : null));
                     break;
@@ -1215,6 +1281,11 @@ public sealed class SyncEngine : IAsyncDisposable
                     var item = new JsonObject { ["var"] = v.Var, ["class"] = v.Class, ["value"] = Node(v.Value) };
                     if (v.Class == "owned" && _driftSteps.TryGetValue(v.Var, out var step)) item["step"] = step;
                     if (v.Class == "toggle") item["button"] = _toggleLamps[v.Var];
+                    if (v.Class == "mode" && _vars[v.Var].Alarm is { } alarm)
+                    {
+                        item["message"] = alarm.Text;
+                        if (alarm.As is { } at) item["report_as"] = at;
+                    }
                     return (JsonNode)item;
                 }).ToArray()),
             });
@@ -1331,8 +1402,9 @@ public sealed class SyncEngine : IAsyncDisposable
         _client.StateChanged -= OnServerState;
         lock (_gate)
         {
-            foreach (var d in _mirroredDown.Values) d.Cap.Dispose();
+            foreach (var d in _mirroredDown.Values.Concat(_springHeld.Values)) d.Cap.Dispose();
             _mirroredDown.Clear();
+            _springHeld.Clear();
             _takeoverTimer?.Dispose();
         }
     }

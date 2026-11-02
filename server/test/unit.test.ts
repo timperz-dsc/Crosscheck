@@ -179,9 +179,9 @@ describe('canonical hash test vectors (protocol/test-vectors, also checked by th
 describe('desync tiers (protocol/test-vectors/desync-tiers.json, also checked by the C# bridge)', () => {
   it('only an indicator may be quiet; every failed pilot input is red', () => {
     const file = new URL('../../protocol/test-vectors/desync-tiers.json', import.meta.url);
-    const { cases } = JSON.parse(readFileSync(file, 'utf8')) as { cases: { name: string; class: string; delta_display: boolean; tier: string }[] };
+    const { cases } = JSON.parse(readFileSync(file, 'utf8')) as { cases: { name: string; class: string; snapshot_class?: string; delta_display: boolean; tier: string }[] };
     // The server never sees a delta display as observe: the bridge reports it under the encoder (class delta).
-    for (const c of cases) expect(tierFor(c.delta_display ? 'delta' : c.class), c.name).toBe(c.tier);
+    for (const c of cases) expect(tierFor(c.delta_display ? 'delta' : c.snapshot_class ?? c.class), c.name).toBe(c.tier);
     for (const cls of ['verified', 'analog', 'delta', 'pulse']) expect(tierFor(cls)).toBe('red');
   });
 });

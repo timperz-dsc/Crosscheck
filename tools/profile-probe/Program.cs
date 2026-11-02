@@ -24,7 +24,7 @@ static class Program
         {
             // First Ctrl+C: stop after restoring the current var. A second one kills the process;
             // the checkpoint then restores the var on the next start.
-            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine(args[0] == "observe" ? "Ctrl+C: saving what was recorded, then stopping..." : "Ctrl+C: restoring the current var, then stopping..."); }
+            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine(args[0] is "observe" or "positions" ? "Ctrl+C: saving what was recorded, then stopping..." : "Ctrl+C: restoring the current var, then stopping..."); }
         };
 
         try
@@ -57,10 +57,9 @@ static class Program
                     return 0;
                 case "takeover": return await SimCommand(paths, Phase.Takeover, opts, cts.Token);
                 case "hold": return await SimCommand(paths, Phase.Hold, opts, cts.Token);
-                case "positions":
-                    // Switched off: writing positions that do not exist most likely crashed the Fenix WASM.
-                    Console.WriteLine($"the position test is switched off: {Targets.PositionsOff}");
-                    return ExitError;
+                // Read only: the pilot moves the controls (CRO-24). The old write test of this name stays off:
+                // writing positions that do not exist most likely crashed the Fenix WASM.
+                case "positions": return await PositionsCommand(paths, opts, cts.Token);
                 default:
                     if (Enum.TryParse<Phase>(args[0], true, out var phase) && AutoPhases.Contains(phase))
                         return await SimCommand(paths, phase, opts, cts.Token);
@@ -80,7 +79,7 @@ static class Program
           readonly                  item 7 + d/e: 30 s noise sample, TITLE, fuel (no writes)
           verified | buttons | encoders | breakers   items 1+4, 2, 5, 6
           auto                      verified, buttons, encoders, breakers back to back
-          (positions is switched off: position counts are learned from pilot input, CRO-24)
+          positions [--only ID]     CRO-24: read only; you move each control through its positions, it records and classifies every value
           takeover --side capt|fo   supervised a: press 1 s, release
           hold --var NAME --value N [--seconds 60]   supervised b: hold a known ND value, then restore
           release                   ends a running hold
@@ -267,6 +266,32 @@ static class Program
         };
         var lines = new ConsoleLines();
         return await new ObservePhase(source, simvars, gql, Console.Out, lines.ReadAsync, settings).Run(ct);
+    }
+
+    /// <summary>
+    /// Read only (CRO-24), like observe: only ObserveReader and SimvarReader, no SimConnectAdapter.
+    /// </summary>
+    static async Task<int> PositionsCommand(RepoPaths paths, Options opts, CancellationToken ct)
+    {
+        Directory.CreateDirectory(paths.WorkDir);
+        FileStream runLock;
+        try { runLock = new FileStream(Path.Combine(paths.WorkDir, "run.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+        catch (IOException) { Console.WriteLine("another profile-probe run is active; not starting"); return ExitError; }
+        using var heldLock = runLock;
+
+        await using var source = new ObserveReader(PositionsVars.All);
+        await using var simvars = new SimvarReader();
+        var suffix = opts.Only is { } o ? "-" + o.ToLowerInvariant() : "";
+        var settings = new PositionsSettings
+        {
+            ResultsPath = Path.Combine(paths.ProfileDir, $"positions-results{suffix}.csv"),
+            ChangesPath = Path.Combine(paths.ProfileDir, $"positions-changes{suffix}.csv"),
+            SummaryPath = Path.Combine(paths.WorkDir, $"positions-summary{suffix}.txt"),
+            RawDir = paths.WorkDir,
+            Only = opts.Only,
+        };
+        var lines = new ConsoleLines();
+        return await new PositionsPhase(source, simvars, Console.Out, lines.ReadAsync, settings).Run(ct);
     }
 
     /// <summary>

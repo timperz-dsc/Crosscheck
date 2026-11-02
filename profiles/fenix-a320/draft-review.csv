@@ -85,42 +85,23 @@ S_EXT_DOOR_R2_INSIDE_HANDLE,0,class,verified,momentary or latching unknown
 S_EXT_GPU_APU_SHUTOFF,0,class,verified,momentary or latching unknown
 S_EXT_REFUELING_AMOUNT,1,class,verified,momentary or latching unknown
 S_FCU_ALTITUDE,0,class,verified,momentary or latching unknown
-S_FCU_ALTITUDE_SCALE,1,class,verified,momentary or latching unknown
-S_FCU_EFIS1_NAV1,1,class,verified,momentary or latching unknown
-S_FCU_EFIS1_NAV2,1,class,verified,momentary or latching unknown
-S_FCU_EFIS2_NAV1,1,class,verified,momentary or latching unknown
-S_FCU_EFIS2_NAV2,1,class,verified,momentary or latching unknown
 S_FCU_HEADING,0,class,verified,momentary or latching unknown
 S_FCU_SPEED,0,class,verified,momentary or latching unknown
 S_FCU_VERTICAL_SPEED,0,class,verified,momentary or latching unknown
 S_FC_CAPT_PRIORITY,0,class,verified,momentary or latching unknown
 S_FC_CAPT_TILLER_PEDAL_DISCONNECT,0,class,verified,momentary or latching unknown
-S_FC_FLAPS,0,class,verified,momentary or latching unknown
 S_FC_FLAPS_LATCH,0,class,verified,momentary or latching unknown
 S_FC_FO_PRIORITY,0,class,verified,momentary or latching unknown
 S_FC_FO_TILLER_PEDAL_DISCONNECT,0,class,verified,momentary or latching unknown
-S_FC_MIP_ANTI_SKID,1,class,verified,momentary or latching unknown
-S_FC_RUDDER_TRIM,1,class,verified,momentary or latching unknown
 S_FC_THROTTLE_LEFT_MAX_REVERSE,0,class,verified,momentary or latching unknown
 S_FC_THROTTLE_RIGHT_MAX_REVERSE,0,class,verified,momentary or latching unknown
 S_FC_THR_INST_DISCONNECT1,0,class,verified,momentary or latching unknown
 S_FC_THR_INST_DISCONNECT2,0,class,verified,momentary or latching unknown
-S_MIP_ATC_MSG_CAPT,0,class,verified,momentary or latching unknown
-S_MIP_ATC_MSG_FO,0,class,verified,momentary or latching unknown
-S_MIP_AUTOBRAKE_LO,0,class,verified,momentary or latching unknown
 S_MIP_AUTOBRAKE_MAX,0,class,verified,momentary or latching unknown
 S_MIP_AUTOBRAKE_MED,0,class,verified,momentary or latching unknown
-S_MIP_AUTOLAND_CAPT,0,class,verified,momentary or latching unknown
-S_MIP_AUTOLAND_FO,0,class,verified,momentary or latching unknown
 S_MIP_BKUP_SPD_ALT_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_BKUP_SPD_ALT_FO,0,class,verified,momentary or latching unknown
-S_MIP_CLOCK_ET,1,class,verified,momentary or latching unknown
 S_MIP_CLOCK_SET,0,class,verified,momentary or latching unknown
-S_MIP_CLOCK_UTC,0,class,verified,momentary or latching unknown
-S_MIP_GPWS_TERRAIN_ON_ND_CAPT,0,class,verified,momentary or latching unknown
-S_MIP_GPWS_TERRAIN_ON_ND_FO,0,class,verified,momentary or latching unknown
-S_MIP_GPWS_VISUAL_ALERT_CAPT,0,class,verified,momentary or latching unknown
-S_MIP_GPWS_VISUAL_ALERT_FO,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_BUGS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_LS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_MINUS,0,class,verified,momentary or latching unknown
@@ -130,7 +111,6 @@ S_MIP_RDME_NEEDLE_1,0,class,verified,momentary or latching unknown
 S_MIP_RDME_NEEDLE_2,0,class,verified,momentary or latching unknown
 S_MIP_TRAFFIC_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_TRAFFIC_FO,0,class,verified,momentary or latching unknown
-S_OH_ELEC_APU_START,0,class,verified,momentary or latching unknown
 S_OH_ELEC_EMER_GEN_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_EVAC_HORN_SHUTOFF,0,class,verified,momentary or latching unknown
 S_OH_FIRE_APU_AGENT,0,class,verified,momentary or latching unknown
@@ -144,7 +124,6 @@ S_OH_FIRE_ENG2_BUTTON,0,class,verified,momentary or latching unknown
 S_OH_HYD_RAT_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_OXYGEN_MASK_MAN_ON,0,class,verified,momentary or latching unknown
 S_OH_RCRD_ERASE,0,class,verified,momentary or latching unknown
-S_OH_RCRD_GND_CTL,0,class,verified,momentary or latching unknown
 S_PED_AIDS_PRINT,0,class,verified,momentary or latching unknown
 S_PED_DFDR_EVENT,0,class,verified,momentary or latching unknown
 S_PED_RMP1_ADF,0,class,verified,momentary or latching unknown
@@ -155,9 +134,6 @@ S_PED_RMP1_HF2,0,class,verified,momentary or latching unknown
 S_PED_RMP1_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP1_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP1_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP1_VHF1,0,class,verified,momentary or latching unknown
-S_PED_RMP1_VHF2,0,class,verified,momentary or latching unknown
-S_PED_RMP1_VHF3,0,class,verified,momentary or latching unknown
 S_PED_RMP1_VOR,0,class,verified,momentary or latching unknown
 S_PED_RMP2_ADF,0,class,verified,momentary or latching unknown
 S_PED_RMP2_AM,0,class,verified,momentary or latching unknown
@@ -167,9 +143,6 @@ S_PED_RMP2_HF2,0,class,verified,momentary or latching unknown
 S_PED_RMP2_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP2_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP2_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP2_VHF1,0,class,verified,momentary or latching unknown
-S_PED_RMP2_VHF2,0,class,verified,momentary or latching unknown
-S_PED_RMP2_VHF3,0,class,verified,momentary or latching unknown
 S_PED_RMP2_VOR,0,class,verified,momentary or latching unknown
 S_PED_RMP3_ADF,0,class,verified,momentary or latching unknown
 S_PED_RMP3_AM,0,class,verified,momentary or latching unknown
@@ -179,14 +152,10 @@ S_PED_RMP3_HF2,0,class,verified,momentary or latching unknown
 S_PED_RMP3_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP3_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP3_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP3_VHF1,0,class,verified,momentary or latching unknown
-S_PED_RMP3_VHF2,0,class,verified,momentary or latching unknown
-S_PED_RMP3_VHF3,0,class,verified,momentary or latching unknown
 S_PED_RMP3_VOR,0,class,verified,momentary or latching unknown
 S_WINDOW_CAPT_LEVER_BUTTON,0,class,verified,momentary or latching unknown
 S_WINDOW_FO_LEVER_BUTTON,0,class,verified,momentary or latching unknown
 S_HYD_GRAVITY_GEAR_HANDLE,0,class,verified,momentary or latching unknown; panel group unclear
-S_ENG_MODE,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L1_INSIDE_GUST_STATE,0,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L1_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L2E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
@@ -202,10 +171,6 @@ S_EXT_DOOR_R3E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position
 S_EXT_REFUELING_MODE,1,class,verified,"name looks multi-position, position count unknown"
 S_OH_ENG_N1_MODE_1,0,class,verified,"name looks multi-position, position count unknown"
 S_OH_ENG_N1_MODE_2,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_INT_LT_EMER,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_IR1_MODE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_IR2_MODE,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_NAV_IR3_MODE,0,class,verified,"name looks multi-position, position count unknown"
 S_PED_COCKPIT_DOOR,1,class,verified,"name looks multi-position, position count unknown"
 B_CONFIG_ADIRS,1,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 B_CONFIG_ASU,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
@@ -265,7 +230,6 @@ N_CONFIG_WINDOW_PLUGS_RF,0,class,ignore,"per-pilot setup, not cockpit state; pan
 N_CONFIG_WINDOW_PLUGS_RR,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 N_CONFIG_WINDOW_PLUG_TYPE,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 S_EXT_REFUELING_ACT_FQI,2,class,verified,"scan value 2, position count unknown"
-S_OH_ELEC_EXT_PWR,2,class,verified,"scan value 2, position count unknown"
 N_STANDBY_ATTITUDE_BANK,327.9896013526183,class,observe,"value changes without input, would raise false alarms; panel group unclear"
 N_STANDBY_ATTITUDE_PITCH,1.2283758025480427,class,observe,"value changes without input, would raise false alarms; panel group unclear"
 N_STANDBY_COMPASS,190.7661194138168,class,observe,"value changes without input, would raise false alarms; panel group unclear"
@@ -382,12 +346,6 @@ N_STANDBY_DDRMI_DME2,90,group,observe,panel group unclear
 N_STANDBY_HORIZON_RPM,100,group,observe,panel group unclear
 S_CCTV,0,group,verified,panel group unclear
 S_CCTV_SWITCH,0,group,verified,panel group unclear
-S_DISPLAY_AIR_DATA,1,group,verified,panel group unclear
-S_DISPLAY_ATT_HDG,1,group,verified,panel group unclear
-S_DISPLAY_ECAM_ND_XFR,1,group,verified,panel group unclear
-S_DISPLAY_EIS_DMC,1,group,verified,panel group unclear
-S_DISPLAY_PFDND_XFER_CAPT,0,group,verified,panel group unclear
-S_DISPLAY_PFDND_XFER_FO,0,group,verified,panel group unclear
 S_EFB_CHARGING_CABLE_CAPT,1,group,verified,panel group unclear
 S_EFB_CHARGING_CABLE_FO,1,group,verified,panel group unclear
 S_EFB_VISIBLE_CAPT,1,group,verified,panel group unclear

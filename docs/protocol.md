@@ -8,8 +8,8 @@ truth; the C# bridge and the server validate against the same files.
 The core rule is the same as everywhere in Crosscheck: every change is confirmed, and no
 desync is ever silent. The server orders, relays, tracks acks, compares snapshots and raises
 visible desyncs. It never invents a value and never writes into the pilot flying's (PF's) sim
-what no pilot did. The one narrow exception is the safety release of a mirrored push button
-(section 5).
+what no pilot did. The one narrow exception is the safety release of a mirrored push button or
+spring-loaded switch (section 5).
 
 ## 1. Transport
 
@@ -205,6 +205,16 @@ mirrored "down" edge and the "up" never arrives, it releases the button itself:
 A button the local pilot is holding, or touched after the mirrored down, is never released by
 Crosscheck. The other pilot being lost (`peer_status lost`) counts like a lost link.
 
+**Spring-loaded switches (profile `rest`, owner decision for gate test 2).** RUD TRIM and MAN V/S
+CTL spring back to their middle position. They are `verified`: every change is a command with the
+absolute value, so a hold is mirrored for as long as it lasts (the release is its own command back
+to `rest`). The same safety release applies, with the same limits: if a receiver wrote a position
+other than `rest` for the other pilot and the command back to `rest` never arrives (30 s cap, link
+lost, other pilot lost), it writes the `rest` value itself, only for a switch Crosscheck itself
+moved in that sim and only while it still shows the value Crosscheck wrote. Never another value,
+never another var, never a switch the local pilot touched; always the red `safety_release` above
+("Crosscheck returned RUD TRIM to neutral ...").
+
 A command id that is already logged is not relayed again: the origin gets `accepted
 {duplicate: true}` with the original seq (resend after reconnect).
 
@@ -229,12 +239,15 @@ and corrections on that var, so a stale value is never re-sent.
 
 **Hash.** Every ~2 s (`snapshot_interval_ms`) each client sends per panel group
 `snapshot_hash {group, hash, applied_seq}`. The hash covers the vars of the group with a
-snapshot class (`verified`, `analog`, `owned`, `delta`, `observe`, `pulse`, `toggle`; never
-`ignore`). For a `delta` var the bridge reports the display value (e.g. `N_FCU_HEADING`) under
+snapshot class (`verified`, `analog`, `owned`, `delta`, `observe`, `pulse`, `toggle`, `mode`;
+never `ignore`). For a `delta` var the bridge reports the display value (e.g. `N_FCU_HEADING`) under
 the encoder's name. An edge push button is reported as `pulse` with its parity only (1 = held
 down), because its counter differs between the sims by design. Its lamp (`verify.lvar`) is the
 button's state and is reported as `{var: <lamp>, class: "toggle", value, button: <button>}`
-instead of an `observe` item. Canonical form, so both bridges get the same hash:
+instead of an `observe` item. An indicator with a profile `alarm` (an input Crosscheck cannot sync
+yet, e.g. the FCU managed lamps while the knob push is invisible) is reported as
+`{var, class: "mode", value, message, report_as?}` instead of an `observe` item. The class does
+not change the hash. Canonical form, so both bridges get the same hash:
 
 1. One line per var: `NAME=VALUE\n`, sorted by name (ordinal).
 2. Numbers: integers as is; other numbers with up to 6 decimals, trailing zeros removed,
@@ -260,6 +273,13 @@ cause can be upstream (FD goes dark with an unaligned IRS, a lamp is dark on an 
 the UI lists a toggle item after the other red items of its group. A press in the cockpit would
 be mirrored and flip both lamps, so the fix is the UI action "Press X here only": one click in
 that pilot's own sim, not mirrored, a pilot action that is never automatic.
+
+**Mode items are inputs, never corrected.** A `mode` difference is a red `mode_mismatch`, never
+quiet and never written, with the same 2 comparisons / 2 s rule. It is raised under `report_as`
+(several indicators of one knob give one line) with the profile's text as `message`, e.g. "SPD
+managed differs between the cockpits – push or pull the knob in the cockpit that is wrong."
+Because the control itself is not synced, a pilot's fix in the cockpit stays local. It clears
+when the values match again.
 
 **PF safety rule.** Per differing var, the target is either a logged pilot command's value or
 the PF's current value. Nothing else.

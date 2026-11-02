@@ -7,6 +7,9 @@ export interface VarDiff {
   pm: Scalar;
   /** Toggle items: the edge button whose lamp differs. */
   button?: string;
+  /** Mode items: the pilots' text, and the control the difference is reported under. */
+  message?: string;
+  report_as?: string;
 }
 
 /** The latest logged pilot command for a var, as far as the safety rule needs it. */
@@ -38,8 +41,11 @@ export function diffValues(pfValues: SnapshotValue[], pmValues: SnapshotValue[])
     const a = pf.get(name);
     const b = pm.get(name);
     if (a && b && sameValue(a.value, b.value)) continue;
-    const button = (a ?? b)!.button;
-    out.push({ var: name, class: (a ?? b)!.class, pf: a?.value ?? null, pm: b?.value ?? null, ...(button ? { button } : {}) });
+    const { button, message, report_as } = (a ?? b)!;
+    out.push({
+      var: name, class: (a ?? b)!.class, pf: a?.value ?? null, pm: b?.value ?? null,
+      ...(button ? { button } : {}), ...(message ? { message } : {}), ...(report_as ? { report_as } : {}),
+    });
   }
   return out;
 }
@@ -51,6 +57,8 @@ export function diffValues(pfValues: SnapshotValue[], pmValues: SnapshotValue[])
 export function buttonDecision(d: VarDiff): RawDecision | null {
   if (d.class === 'pulse') return { ...d, action: 'desync', reason: 'press_mismatch' };
   if (d.class === 'toggle') return { ...d, action: 'desync', reason: 'toggle_mismatch' };
+  // An indicator of an input Crosscheck cannot sync: never written, red for the pilots to fix.
+  if (d.class === 'mode') return { ...d, action: 'desync', reason: 'mode_mismatch' };
   return null;
 }
 

@@ -156,6 +156,36 @@ public class ProfileLoaderTests
         Assert.Equal(1, issue.Line);
     }
 
+    // --- rest (spring-loaded switches) and alarm (indicators compared as inputs) ---
+
+    [Fact]
+    public void Rest_and_alarm_load_when_they_fit_their_class()
+    {
+        var yaml = Valid.Replace("values: [0, 1]\n", "values: [0, 1]\n    rest: 0\n")
+            .Replace("  - name: I_LAMP\n    class: observe\n    group: overhead\n",
+                     "  - name: I_LAMP\n    class: observe\n    group: overhead\n    alarm: { text: \"LAMP differs\", as: S_SWITCH }\n");
+        var result = Load(yaml);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        Assert.Equal(0, result.Profile!.Vars.Single(v => v.Name == "S_SWITCH").Rest);
+        Assert.Equal(new AlarmSpec("LAMP differs", "S_SWITCH"), result.Profile.Vars.Single(v => v.Name == "I_LAMP").Alarm);
+    }
+
+    [Fact]
+    public void Rest_must_be_one_of_the_values()
+    {
+        var issue = Single(Load(Valid.Replace("values: [0, 1]\n", "values: [0, 1]\n    rest: 2\n")));
+        Assert.Contains("rest 2 must be one of the allowed values", issue.Message);
+    }
+
+    [Fact]
+    public void Alarm_is_only_for_observe_and_rest_only_for_verified()
+    {
+        var alarm = Single(Load(Valid.Replace("display: N_DISPLAY\n", "display: N_DISPLAY\n    alarm: { text: x }\n")));
+        Assert.Contains("'alarm' is not used by class delta", alarm.Message);
+        var rest = Single(Load(Valid.Replace("range: [0, 1]\n", "range: [0, 1]\n    rest: 0\n")));
+        Assert.Contains("'rest' is not used by class analog", rest.Message);
+    }
+
     // --- schema errors ---
 
     [Fact]

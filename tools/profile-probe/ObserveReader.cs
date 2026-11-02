@@ -1,5 +1,5 @@
-// Read-only SimConnect client for the `observe` command (CRO-29 part 1). It defines one data
-// definition with every observed L: var and asks for it every sim frame. It does nothing else:
+// Read-only SimConnect client for the `observe` and `positions` commands. It defines data
+// definitions (64 L: vars each) and asks for them every sim frame. It does nothing else:
 // no writes, no events, no client data. ObserveTests checks this file for write calls.
 
 using System.Diagnostics;
@@ -28,14 +28,16 @@ static class ObserveClock
 
 sealed class ObserveReader : IObserveSource
 {
-    /// <summary>Fixed struct size. Unused slots repeat a harmless sim var so the sizes match.</summary>
+    /// <summary>Fixed struct size per data definition. Unused slots repeat a harmless sim var so the sizes match.</summary>
     public const int Slots = 64;
+    /// <summary>At most this many definitions (chunks of <see cref="Slots"/> vars).</summary>
+    public const int MaxChunks = 4;
+    public const int MaxVars = Slots * MaxChunks;
     const string Filler = "SIM ON GROUND";
-
-    enum Def { Observe = 11 }
-    enum Req { Observe = 11 }
+    const int FirstId = 11;
 
     readonly IReadOnlyList<string> _vars;
+    readonly int _chunks;
     readonly AutoResetEvent _wake = new(false);
     volatile bool _stop;
     Thread? _pump;
@@ -45,8 +47,9 @@ sealed class ObserveReader : IObserveSource
 
     public ObserveReader(IReadOnlyList<string> vars)
     {
-        if (vars.Count > Slots) throw new ArgumentException($"at most {Slots} vars, got {vars.Count}");
+        if (vars.Count > MaxVars) throw new ArgumentException($"at most {MaxVars} vars, got {vars.Count}");
         _vars = vars;
+        _chunks = Math.Max(1, (vars.Count + Slots - 1) / Slots);
     }
 
     public Task StartAsync(CancellationToken ct)
@@ -82,23 +85,39 @@ sealed class ObserveReader : IObserveSource
         SC sc;
         try { sc = new SC("Crosscheck Profile Probe observe (read-only)", IntPtr.Zero, 0, _wake, 0); }
         catch (COMException) { return null; }
-        for (var i = 0; i < Slots; i++)
+        // One definition per chunk of 64 vars. SimConnect sends every chunk each frame in request
+        // order, so a frame is complete when the last chunk arrives.
+        var merged = new double[_vars.Count];
+        var seen = new bool[_chunks];
+        for (var c = 0; c < _chunks; c++)
         {
-            var (name, unit) = i < _vars.Count ? ("L:" + _vars[i], "number") : (Filler, "bool");
-            sc.AddToDataDefinition(Def.Observe, name, unit, SIMCONNECT_DATATYPE.FLOAT64, 0, SC.SIMCONNECT_UNUSED);
+            for (var i = 0; i < Slots; i++)
+            {
+                var k = c * Slots + i;
+                var (name, unit) = k < _vars.Count ? ("L:" + _vars[k], "number") : (Filler, "bool");
+                sc.AddToDataDefinition((Def)(FirstId + c), name, unit, SIMCONNECT_DATATYPE.FLOAT64, 0, SC.SIMCONNECT_UNUSED);
+            }
+            sc.RegisterDataDefineStruct<Values>((Def)(FirstId + c));
         }
-        sc.RegisterDataDefineStruct<Values>(Def.Observe);
         sc.OnRecvSimobjectData += (_, data) =>
         {
-            if (data.dwRequestID != (uint)Req.Observe) return;
-            var t = ObserveClock.NowMs;
+            var c = (int)data.dwRequestID - FirstId;
+            if (c < 0 || c >= _chunks) return;
             var all = ((Values)data.dwData[0]).V;
-            FrameReceived?.Invoke(new ObserveFrame(Interlocked.Increment(ref _frame), t, all[.._vars.Count]));
+            var n = Math.Min(Slots, _vars.Count - c * Slots);
+            Array.Copy(all, 0, merged, c * Slots, n);
+            seen[c] = true;
+            if (c != _chunks - 1 || !seen.All(x => x)) return;
+            FrameReceived?.Invoke(new ObserveFrame(Interlocked.Increment(ref _frame), ObserveClock.NowMs, (double[])merged.Clone()));
         };
-        // Every sim frame (interval 0), always sent: one message is one frame.
-        sc.RequestDataOnSimObject(Req.Observe, Def.Observe, SC.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
+        // Every sim frame (interval 0), always sent: one message per chunk per frame.
+        for (var c = 0; c < _chunks; c++)
+            sc.RequestDataOnSimObject((Req)(FirstId + c), (Def)(FirstId + c), SC.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.SIM_FRAME, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
         return sc;
     }
+
+    enum Def { }
+    enum Req { }
 
     public ValueTask DisposeAsync()
     {

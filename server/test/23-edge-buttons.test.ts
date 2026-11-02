@@ -78,6 +78,22 @@ describe('23. edge push buttons (CRO-29/30): edges are relayed, button state is 
     await guest.waitFor('notice', (m) => body(m).kind === 'desync_cleared' && body(m).var === FD2);
   });
 
+  it('an indicator of an unsynced input (mode) is red under its control after the second comparison, with the profile text, never corrected', async () => {
+    pair = await startPair({ server: { buttonHoldMs: 60_000 } });
+    const { host, guest } = pair;
+    host.sim.logic('I_FCU_SPEED_MANAGED', 1); // SPD pushed in the host's cockpit only
+    await waitUntil(() => heldFor(pair, 'I_FCU_SPEED_MANAGED') >= 1, 'first comparison held');
+    expect(guest.messages('desync', (m) => body(m).reason === 'mode_mismatch')).toHaveLength(0);
+    const d = await guest.waitFor('desync', (m) => body(m).reason === 'mode_mismatch');
+    expect(body(d)).toMatchObject({ var: 'S_FCU_SPEED', tier: 'red', values: { pf: 1, pm: 0 } });
+    expect(String(body(d).message)).toBe('SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.');
+    expect(host.messages('correction')).toHaveLength(0);
+    expect(guest.sim.writesBy('correction')).toHaveLength(0);
+    // The pilot fixes it in the cockpit that is wrong: the lamps match → cleared.
+    guest.sim.logic('I_FCU_SPEED_MANAGED', 1);
+    await guest.waitFor('notice', (m) => body(m).kind === 'desync_cleared' && body(m).var === 'S_FCU_SPEED');
+  });
+
   it('safety_release is a red desync to both pilots and clears when the button state matches', async () => {
     pair = await startPair();
     const { host, guest } = pair;

@@ -52,27 +52,70 @@
               "button": {
                 "description": "Toggle items only: the edge push button whose lamp this is.",
                 "$ref": "../common.schema.json#/$defs/varName"
+              },
+              "message": {
+                "description": "Mode items only: what the pilots see when it differs.",
+                "type": "string",
+                "minLength": 1
+              },
+              "report_as": {
+                "description": "Mode items only: show the difference under this control (several indicators of one knob give one line).",
+                "$ref": "../common.schema.json#/$defs/varName"
               }
             },
-            "if": {
-              "properties": {
-                "class": {
-                  "const": "toggle"
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "toggle"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "button"
+                  ]
+                },
+                "else": {
+                  "not": {
+                    "required": [
+                      "button"
+                    ]
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "mode"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "message"
+                  ]
+                },
+                "else": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "message"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "report_as"
+                        ]
+                      }
+                    ]
+                  }
                 }
               }
-            },
-            "then": {
-              "required": [
-                "button"
-              ]
-            },
-            "else": {
-              "not": {
-                "required": [
-                  "button"
-                ]
-              }
-            }
+            ]
           }
         }
       }

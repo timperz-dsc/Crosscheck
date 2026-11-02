@@ -13,7 +13,7 @@ export type Scalar = number | string | null;
 export type AbsoluteClass = 'verified' | 'analog' | 'owned';
 export type EventClass = 'delta' | 'pulse';
 export type CommandClass = AbsoluteClass | EventClass;
-export type SnapshotClass = AbsoluteClass | 'delta' | 'observe' | 'pulse' | 'toggle';
+export type SnapshotClass = AbsoluteClass | 'delta' | 'observe' | 'pulse' | 'toggle' | 'mode';
 
 export const ABSOLUTE_CLASSES: ReadonlySet<string> = new Set(['verified', 'analog', 'owned']);
 export const isAbsolute = (cls: string): cls is AbsoluteClass => ABSOLUTE_CLASSES.has(cls);
@@ -51,7 +51,7 @@ export interface DiffEntry {
 export type DesyncReason =
   | 'no_ack' | 'refused' | 'observe_mismatch' | 'log_conflict' | 'missing_value'
   | 'correction_failed' | 'correction_loop' | 'no_pf' | 'effect_mismatch'
-  | 'safety_release' | 'press_mismatch' | 'toggle_mismatch';
+  | 'safety_release' | 'press_mismatch' | 'toggle_mismatch' | 'mode_mismatch';
 
 /** Where a desync is shown: red (an input did not arrive, sticky, at the top) or quiet (an indicator differs). */
 export type Tier = 'red' | 'quiet';
@@ -134,7 +134,8 @@ export interface AckBody {
   effect?: Scalar;
 }
 export interface SnapshotHashBody { group: string; hash: string; applied_seq: number }
-export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar; step?: number; button?: string }
+/** mode: an indicator of an input Crosscheck cannot sync (yet), compared as an input (red, never quiet). */
+export interface SnapshotValue { var: string; class: SnapshotClass; value: Scalar; step?: number; button?: string; message?: string; report_as?: string }
 /** A receiver released an edge button Crosscheck had pressed down, because the up never arrived. */
 export interface SafetyReleaseBody { var: string; group: string; cause: 'cap' | 'link_lost' | 'peer_lost'; observed: Scalar }
 export interface SnapshotValuesBody { request_id: string; group: string; values: SnapshotValue[] }

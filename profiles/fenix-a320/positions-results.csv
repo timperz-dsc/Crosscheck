@@ -1,0 +1,69 @@
+control,label,kind,var,class,values,start,end,changes,back_to_start,notes
+FLAPS,FLAPS lever,Move,S_FC_FLAPS,positions,0 1 2 3 4,0,0,8,yes,"longest hold: 1 839 ms, 2 852 ms, 3 737 ms, 4 861 ms"
+FCU_SPD,FCU SPD knob,PushPull,S_FCU_SPEED,positions,-1 0,0,0,2,yes,longest hold: -1 1617 ms
+FCU_HDG,FCU HDG knob,PushPull,S_FCU_HEADING,positions,-1 0,0,0,2,yes,longest hold: -1 1308 ms
+FCU_ALT,FCU ALT knob,PushPull,S_FCU_ALTITUDE,positions,-1 0,0,0,2,yes,longest hold: -1 1641 ms
+FCU_VS,FCU V/S knob,PushPull,S_FCU_VERTICAL_SPEED,positions,-1 0,0,0,2,yes,longest hold: -1 1475 ms
+FCU_ALT_SCALE,FCU ALT 100/1000 switch,Move,S_FCU_ALTITUDE_SCALE,positions,0 1,1,1,2,yes,longest hold: 0 12979 ms
+ENG_MODE,ENG MODE selector (pedestal),Move,S_ENG_MODE,positions,0 1 2,1,1,4,yes,"longest hold: 0 883 ms, 2 1982 ms"
+AUTOBRK_LO,AUTO BRK LO button,Click,S_MIP_AUTOBRAKE_LO,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+ANTI_SKID,A/SKID & N/W STRG switch,Move,S_FC_MIP_ANTI_SKID,positions,0 1,1,1,2,yes,longest hold: 0 665 ms
+RUD_TRIM,RUD TRIM knob (pedestal),Move,S_FC_RUDDER_TRIM,positions,0 1 2,1,1,4,yes,"longest hold: 0 1259 ms, 2 1312 ms"
+XPDR_MODE,transponder mode selector (STBY / AUTO / ON),Move,S_XPDR_MODE,positions,0 1 2,0,0,4,yes,"longest hold: 1 480 ms, 2 873 ms"
+TCAS_MODE,TCAS mode selector (STBY / TA / TA/RA),Move,S_XPDR_OPERATION,none,0,0,0,0,yes,no change
+TCAS_MODE,TCAS mode selector (STBY / TA / TA/RA),Move,S_XPDR_MODE,positions,0 1 2,0,0,4,yes,"longest hold: 1 421 ms, 2 870 ms"
+STROBE,STROBE switch,Move,S_OH_EXT_LT_STROBE,positions,0 1 2,0,0,4,yes,"longest hold: 1 370 ms, 2 769 ms"
+BEACON,BEACON switch,Move,S_OH_EXT_LT_BEACON,positions,0 1,0,0,2,yes,longest hold: 1 1037 ms
+WING,WING lights switch,Move,S_OH_EXT_LT_WING,positions,0 1,0,0,2,yes,longest hold: 1 976 ms
+NAV_LOGO,NAV & LOGO switch,Move,S_OH_EXT_LT_NAV_LOGO,positions,0 1 2,0,0,4,yes,"longest hold: 1 349 ms, 2 1174 ms"
+RWY_TURNOFF,RWY TURN OFF switch,Move,S_OH_EXT_LT_RWY_TURNOFF,positions,0 1,0,0,2,yes,longest hold: 1 1074 ms
+LAND_L,left LAND switch,Move,S_OH_EXT_LT_LANDING_L,positions,0 1 2,0,0,4,yes,"longest hold: 1 418 ms, 2 904 ms"
+LAND_R,right LAND switch,Move,S_OH_EXT_LT_LANDING_R,positions,0 1 2,0,0,4,yes,"longest hold: 1 386 ms, 2 713 ms"
+NOSE,NOSE light switch (T.O / TAXI / OFF),Move,S_OH_EXT_LT_NOSE,positions,0 1 2,0,0,4,yes,"longest hold: 1 598 ms, 2 1054 ms"
+SEAT_BELTS,SEAT BELTS switch,Move,S_OH_SIGNS,positions,0 1,0,0,2,yes,longest hold: 1 1386 ms
+NO_SMOKING,NO SMOKING switch,Move,S_OH_SIGNS_SMOKING,positions,0 1 2,0,0,4,yes,"longest hold: 1 412 ms, 2 1209 ms"
+EMER_EXIT_LT,EMER EXIT LT switch,Move,S_OH_INT_LT_EMER,positions,0 1 2,0,0,4,yes,"longest hold: 1 727 ms, 2 1253 ms"
+IR1,IR 1 mode selector (ADIRS),Move,S_OH_NAV_IR1_MODE,positions,0 1 2,1,1,4,yes,"longest hold: 0 780 ms, 2 720 ms"
+IR2,IR 2 mode selector (ADIRS),Move,S_OH_NAV_IR2_MODE,positions,0 1 2,1,1,4,yes,"longest hold: 0 841 ms, 2 839 ms"
+IR3,IR 3 mode selector (ADIRS),Move,S_OH_NAV_IR3_MODE,positions,0 1 2,1,1,4,yes,"longest hold: 0 1000 ms, 2 1150 ms"
+EFIS1_NAV1,captain EFIS ADF/VOR 1 switch,Move,S_FCU_EFIS1_NAV1,positions,0 1 2,1,1,4,yes,"longest hold: 0 1266 ms, 2 1042 ms"
+EFIS1_NAV2,captain EFIS ADF/VOR 2 switch,Move,S_FCU_EFIS1_NAV2,positions,0 1 2,1,1,4,yes,"longest hold: 0 957 ms, 2 851 ms"
+EFIS2_NAV1,first officer EFIS ADF/VOR 1 switch,Move,S_FCU_EFIS2_NAV1,positions,0 1 2,1,1,4,yes,"longest hold: 0 775 ms, 2 759 ms"
+EFIS2_NAV2,first officer EFIS ADF/VOR 2 switch,Move,S_FCU_EFIS2_NAV2,positions,0 1 2,1,1,4,yes,"longest hold: 0 767 ms, 2 826 ms"
+WX_SYS,weather radar SYS switch,Move,S_WR_SYS,positions,0 1 2,1,1,4,yes,"longest hold: 0 646 ms, 2 608 ms"
+WX_MODE,weather radar mode selector,Move,S_WR_MODE,positions,0 1 2 3,2,2,6,yes,"longest hold: 0 628 ms, 1 666 ms, 3 649 ms"
+WX_GAIN,weather radar GAIN knob,Move,S_WR_GAIN,none,0,0,0,0,yes,no change
+WX_MULTISCAN,weather radar MULTISCAN switch,Move,S_WR_MULTISCAN,positions,0 1,1,1,2,yes,longest hold: 0 1181 ms
+WX_PWS,weather radar PWS switch,Move,S_WR_PRED_WS,positions,0 1,0,0,2,yes,longest hold: 1 1001 ms
+ATC_SEL,ATC 1/2 selector,Move,S_XPDR_ATC,positions,0 1,0,0,2,yes,longest hold: 1 1019 ms
+TCAS_TRAFFIC,TCAS traffic selector (THRT / ALL / ABV / BLW),Move,S_TCAS_RANGE,positions,0 1 2 3,2,2,6,yes,"longest hold: 0 545 ms, 1 512 ms, 3 736 ms"
+TCAS_OTHER,"other TCAS selector, if the panel has a second one (s = skip if not)",Move,S_TCAS_HORIZONTAL_RANGE,skipped,,,,,,
+ATT_HDG,ATT HDG selector (pedestal SWITCHING panel),Move,S_DISPLAY_ATT_HDG,positions,0 1 2,1,1,4,yes,"longest hold: 0 757 ms, 2 484 ms"
+AIR_DATA,AIR DATA selector (SWITCHING panel),Move,S_DISPLAY_AIR_DATA,positions,0 1 2,1,1,4,yes,"longest hold: 0 478 ms, 2 453 ms"
+EIS_DMC,EIS DMC selector (SWITCHING panel),Move,S_DISPLAY_EIS_DMC,positions,0 1 2,1,1,4,yes,"longest hold: 0 489 ms, 2 510 ms"
+ECAM_ND_XFR,ECAM/ND XFR selector (SWITCHING panel),Move,S_DISPLAY_ECAM_ND_XFR,positions,0 1 2,1,1,4,yes,"longest hold: 0 504 ms, 2 526 ms"
+AUDIO_SW,AUDIO SWITCHING selector (overhead),Move,S_AUDIO_SWITCHING,positions,0 1 2,1,1,4,yes,"longest hold: 0 597 ms, 2 622 ms"
+APU_START,APU START button,Click,S_OH_ELEC_APU_START,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+GND_CTL,RCRD GND CTL button,Click,S_OH_RCRD_GND_CTL,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_VHF,"RMP 1 VHF2 key, then VHF1",Click,S_PED_RMP1_VHF2,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_VHF,"RMP 1 VHF2 key, then VHF1",Click,S_PED_RMP1_VHF1,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+TERR_ND,captain TERR ON ND button,Click,S_MIP_GPWS_TERRAIN_ON_ND_CAPT,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+GS_ALERT,captain GPWS G/S button (next to the PFD),Click,S_MIP_GPWS_VISUAL_ALERT_CAPT,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+AUTOLAND,captain AUTOLAND button,Click,S_MIP_AUTOLAND_CAPT,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+PFDND_XFER,captain PFD/ND XFER button,Click,S_DISPLAY_PFDND_XFER_CAPT,pushbutton,0 1 2 3 4,0,4,4,no,"4 edges, ends up (even)"
+ATC_MSG,captain ATC MSG button,Click,S_MIP_ATC_MSG_CAPT,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+ISFD_LS,LS button on the standby instrument (ISFD),Click,S_MIP_ISFD_LS,none,0,0,0,0,yes,no change
+XBLEED,X BLEED selector (SHUT / AUTO / OPEN),Move,S_OH_PNEUMATIC_XBLEED_SELECTOR,positions,0 1 2,1,1,4,yes,"longest hold: 0 1259 ms, 2 494 ms"
+MAN_VS,"MAN V/S CTL switch (UP, then DN; it springs back)",Move,S_OH_PNEUMATIC_PRESS_MAN,positions,0 1 2,1,1,4,yes,"longest hold: 0 553 ms, 2 480 ms"
+PRESS_MODE,cabin pressure MODE SEL button,Click,S_OH_PNEUMATIC_PRESS_MODE,positions,0 1,1,0,1,no,"one change only: a latching button (two states), or the control was not moved back"
+HOT_AIR,HOT AIR button (AIR COND panel),Click,S_OH_PNEUMATIC_HOT_AIR,positions,0 1,1,0,1,no,"one change only: a latching button (two states), or the control was not moved back"
+FUEL_XFEED,fuel X FEED button,Click,S_OH_FUEL_XFEED,positions,0 1,0,1,1,no,"one change only: a latching button (two states), or the control was not moved back"
+FUEL_MODE,fuel MODE SEL button,Click,S_OH_FUEL_MODE_SEL,positions,0 1,1,0,1,no,"one change only: a latching button (two states), or the control was not moved back"
+GPWS_FLAP,GPWS FLAP MODE button,Click,S_OH_GPWS_FLAP_MODE,positions,0 1,1,0,1,no,"one change only: a latching button (two states), or the control was not moved back"
+GPWS_SYS,GPWS SYS button,Click,S_OH_GPWS_SYS,positions,0 1,1,0,1,no,"one change only: a latching button (two states), or the control was not moved back"
+GPWS_GS,GPWS G/S MODE button (overhead),Click,S_OH_GPWS_GS_MODE,positions,0 1,1,0,1,no,"one change only: a latching button (two states), or the control was not moved back"
+ANN_LT,ANN LT switch (TEST / BRT / DIM),Move,S_OH_IN_LT_ANN_LT,positions,0 1 2,1,1,4,yes,"longest hold: 0 1305 ms, 2 1375 ms"
+WIPER_CAPT,captain WIPER selector,Move,S_MISC_WIPER_CAPT,positions,0 1 2,0,0,4,yes,"longest hold: 1 1105 ms, 2 1081 ms"
+WIPER_FO,first officer WIPER selector,Move,S_MISC_WIPER_FO,positions,0 1 2,0,0,4,yes,"longest hold: 1 1053 ms, 2 1080 ms"
+CLOCK_ET,captain clock ET selector (RUN / STP / RST),Move,S_MIP_CLOCK_ET,positions,0 1 2,1,1,4,yes,"longest hold: 0 1123 ms, 2 593 ms"
+CLOCK_UTC,captain clock UTC selector (GPS / INT / SET),Move,S_MIP_CLOCK_UTC,positions,0 1 2,0,0,4,yes,"longest hold: 1 977 ms, 2 1032 ms"

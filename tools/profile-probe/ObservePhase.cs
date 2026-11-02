@@ -126,9 +126,12 @@ sealed class ObservePhase(
         output.WriteLine("\nall steps done");
     }
 
+    void CheckSetup() => CheckParkedSetup(Recorder, simvars);
+
     /// <summary>Read-only check of the parked setup, like SafetyMonitor.TakeBaseline. Stops, never fixes.</summary>
-    void CheckSetup()
+    internal static void CheckParkedSetup(ObserveRecorder rec, ISimvarReader simvars)
     {
+        double Lvar(string name) => rec.TryGet(name, out var v) ? v : throw new SafetyStopException($"cannot read {name}");
         var s = simvars.Latest ?? throw new SafetyStopException("no data from the sim (SIM ON GROUND, N1)");
         if (s.OnGround < 0.5) throw new SafetyStopException("not on the ground");
         if (s.GroundSpeedKt > 1) throw new SafetyStopException($"moving ({s.GroundSpeedKt:0.0} kt)");
@@ -140,11 +143,11 @@ sealed class ObservePhase(
             if (Lvar(v) < 0.5) throw new SafetyStopException($"{v} is off: aircraft not on external power");
     }
 
-    double Lvar(string name) => Recorder.TryGet(name, out var v) ? v : throw new SafetyStopException($"cannot read {name}");
+    void LinkCheck() => WarnIfNoData(Recorder, output);
 
-    void LinkCheck()
+    internal static void WarnIfNoData(ObserveRecorder rec, TextWriter output)
     {
-        var age = ObserveClock.NowMs - Recorder.LastMs;
+        var age = ObserveClock.NowMs - rec.LastMs;
         if (age > 3000) output.WriteLine($"   warning: no data from the sim for {age / 1000:0} s; this step may be incomplete (r = redo)");
     }
 

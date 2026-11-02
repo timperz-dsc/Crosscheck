@@ -21,7 +21,7 @@ dotnet run --project tools/profile-probe -- <command>
 | `readonly` | 30 s noise sample of every watched var, TITLE, fuel datarefs (AIRAC is not read: preflight asks the pilots) | no |
 | `verified` | brief item 1 + 4: `[0,1]` guesses (tries 2 only where 2 is known); which lamp half reacts | yes |
 | `buttons` | item 2: momentary vs latching | yes |
-| `positions` | item 3: **switched off** (see range rule); position counts come from pilot input (CRO-24) | no |
+| `positions [--only ID]` | CRO-24: guided, the pilot moves each control through its positions (FCU knobs: push, then pull; unsure buttons: one click); every value is recorded and classified; see below | no |
 | `encoders` | item 5: +1/-1, which `N_` var follows | yes |
 | `breakers` | item 6: the 11 sampled `E_CB_`, 0 and 1 only | yes |
 | `auto` | verified, buttons, encoders, breakers back to back | yes |
@@ -50,6 +50,28 @@ time in ms and the frame number, plus MCDU1 screen changes from Fenix GraphQL.
   a summary per step in `.probe/observe-summary.txt`, and a timestamped raw copy in `.probe/`.
 - At the end it lists lamps and values that are not back at their start value, so the pilot
   can put them back by hand.
+
+## positions (CRO-24, prep for gate test 2)
+
+Read only, same safety as `observe` (same read-only reader, same parked-setup check, same
+`ObserveTests` check for write calls). One step per control in `PositionsVars.cs`, most important
+for flight first, about 19 minutes in total:
+
+- selectors, switches, levers: "Move <label> through every position and back to where it started"
+- FCU knobs: "Push <label>, then pull it"
+- push buttons we are not sure of: "Click <label> once"
+
+Enter = done, `s` = skip, `r` = redo, `q` = stop and save. Each step watches the control's var and
+its neighbours (so a wrong label still shows which var moved) and classifies every var that moved:
+
+- **positions**: every distinct value, gaps, jumps of more than one position in one frame, whether it
+  ended where it started, and how long each value was held (spring-loaded or latching)
+- **push button**: only +1 steps (Fenix counts press and release)
+- **analog**: fractions or more than 12 values; min..max
+
+Output: `profiles/fenix-a320/positions-results.csv` (one row per control and var),
+`positions-changes.csv` (every change, frame by frame), `.probe/positions-summary.txt`, and
+timestamped raw copies in `.probe/`. The old write test of this name stays off.
 
 ## Range rule
 

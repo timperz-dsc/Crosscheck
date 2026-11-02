@@ -1,5 +1,5 @@
 {
-  "description": "Which tier a desync is shown in (docs/protocol.md section 5). Only an indicator (class observe) may be quiet; a failed pilot input is always red. delta_display: the var is the display of a delta (encoder) entry, which counts as an input (the bridge reports it under the encoder, and its UI treats it as red). Read by server/test/unit.test.ts and bridge/Crosscheck.Bridge.Tests/UnitTests.cs.",
+  "description": "Which tier a desync is shown in (docs/protocol.md section 5). Only an indicator (class observe) may be quiet; a failed pilot input is always red. snapshot_class (optional): the class the server sees in snapshots when it differs from the profile class. delta_display: the var is the display of a delta (encoder) entry, which counts as an input (the bridge reports it under the encoder, and its UI treats it as red). Read by server/test/unit.test.ts and bridge/Crosscheck.Bridge.Tests/UnitTests.cs.",
   "cases": [
     { "name": "switch value refused", "class": "verified", "reason": "refused", "delta_display": false, "tier": "red" },
     { "name": "switch command not acked", "class": "verified", "reason": "no_ack", "delta_display": false, "tier": "red" },
@@ -16,6 +16,7 @@
     { "name": "FCU speed display differs", "class": "observe", "reason": "observe_mismatch", "delta_display": true, "tier": "red" },
     { "name": "button held down in one cockpit only", "class": "pulse", "reason": "press_mismatch", "delta_display": false, "tier": "red" },
     { "name": "toggle lamp differs (reported under its button)", "class": "pulse", "reason": "toggle_mismatch", "delta_display": false, "tier": "red" },
+    { "name": "indicator of an input that is not synced differs (FCU managed lamp, sent as snapshot class mode)", "class": "observe", "snapshot_class": "mode", "reason": "mode_mismatch", "delta_display": false, "tier": "red" },
     { "name": "button released by the safety cap", "class": "pulse", "reason": "safety_release", "delta_display": false, "tier": "red" }
   ]
 }

@@ -60,15 +60,45 @@ public class RealProfileTests
     }
 
     [Theory]
-    [InlineData("S_FCU_SPEED")] // push/pull knob
+    [InlineData("S_FCU_SPEED")] // push/pull knob: one direction is invisible, stays unsynced
+    [InlineData("S_PED_RMP1_NAV")] // no evidence yet: a button family is not always a counter
+    [InlineData("S_FC_THR_INST_DISCONNECT1")]
+    [InlineData("S_OH_FUEL_XFEED")] // a 0/1 latch (positions run)
     [InlineData("S_FCU_ALTITUDE_SCALE")] // switch
     [InlineData("S_FCU_EFIS1_NAV1")] // ADF/VOR switch
     [InlineData("S_MIP_CLOCK_ET")] // switch
     [InlineData("S_ASP_INTRAD")] // switch
     [InlineData("S_ASP_SPKR_REC")] // unclear
-    [InlineData("S_OH_ELEC_EXT_PWR")] // overhead: the next step
+    [InlineData("S_OH_INT_LT_EMER")] // EMER EXIT LT: a 3-position switch (positions 0, 1, 2)
+    [InlineData("S_OH_FIRE_ENG1_BUTTON")] // never pressed in tests, stays unsynced
     public void Knobs_switches_and_unclear_controls_stay_off_the_edge_rule(string name) =>
         Assert.DoesNotContain(Real.Vars, v => v.Name == name && v.Class == SyncClass.Pulse);
+
+    [Theory]
+    [InlineData("S_OH_ELEC_EXT_PWR", "I_OH_ELEC_EXT_PWR_L")] // scan value 2: one press and release counted
+    [InlineData("S_OH_ELEC_APU_START", null)] // lamps follow the start sequence, not the press
+    [InlineData("S_OH_RCRD_GND_CTL", "I_OH_RCRD_GND_CTL_L")] // positions run: the lamp came on with the press
+    [InlineData("S_PED_RMP1_VHF1", null)] // radio group: no toggle check
+    [InlineData("S_PED_RMP3_VHF3", null)]
+    [InlineData("S_MIP_AUTOBRAKE_LO", null)]
+    [InlineData("S_MISC_WIPER_REPELLENT_CAPT", null)] // gate test 1 counted 0 -> 1 -> 2 for one click
+    public void Overhead_and_pedestal_push_buttons_left_the_review_list(string name, string? lamp)
+    {
+        var v = Var(name);
+        Assert.Equal(PressMode.Edge, v.Press);
+        Assert.Equal(lamp, v.Verify?.Lvar);
+    }
+
+    [Fact]
+    public void Spring_switches_have_a_rest_value_and_the_FCU_indicators_are_inputs()
+    {
+        Assert.Equal(1, Var("S_FC_RUDDER_TRIM").Rest);
+        Assert.Equal(1, Var("S_OH_PNEUMATIC_PRESS_MAN").Rest);
+        Assert.Equal([0.0, 1, 2, 3, 4], Var("S_FC_FLAPS").Values);
+        foreach (var n in new[] { "I_FCU_SPEED_MANAGED", "B_FCU_SPEED_DASHED", "I_FCU_HEADING_MANAGED", "B_FCU_HEADING_DASHED", "I_FCU_ALTITUDE_MANAGED", "B_FCU_VERTICALSPEED_DASHED" })
+            Assert.Contains("managed differs between the cockpits", Var(n).Alarm!.Text);
+        Assert.DoesNotContain(Real.Vars, v => v.Name is "S_FCU_SPEED" or "S_FCU_HEADING" or "S_FCU_ALTITUDE" or "S_FCU_VERTICAL_SPEED");
+    }
 
     [Fact]
     public void The_guard_lets_every_counter_value_from_gate_test_1_through()
@@ -107,7 +137,7 @@ public class RealProfileTests
     [InlineData("S_OH_EXT_LT_STROBE", new double[] { 0, 1, 2 })]
     [InlineData("S_OH_SIGNS_SMOKING", new double[] { 0, 1, 2 })]
     [InlineData("S_TCAS_RANGE", new double[] { 0, 1, 2, 3 })]
-    [InlineData("S_WR_MODE", new double[] { 1, 2, 3 })]
+    [InlineData("S_WR_MODE", new double[] { 0, 1, 2, 3 })] // 0 added by the positions run
     [InlineData("S_COCKPIT_DOOR", new double[] { 0, 1 })]
     [InlineData("S_OH_CARGO_DISC_1_OLD_LAYOUT", new double[] { 0, 1, 2 })]
     [InlineData("S_OH_CARGO_DISC_2_OLD_LAYOUT", new double[] { 0, 1, 2 })]

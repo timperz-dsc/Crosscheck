@@ -338,10 +338,12 @@ overrides:
 
   # --- Position count unknown: only the values seen in the scan and probe (range rule)
   - name: S_OH_PNEUMATIC_PRESS_MAN
+    value_labels: { "1": "neutral" }
+    class: verified
+    group: overhead
     values: [0, 1, 2]
-    note: "step 2: 2 is a distinct state; values [0, 1, 2] are only those seen; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    rest: 1
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2; springs back to 1 (owner); returned to 1 if the release never arrives (owner decision, protocol.md section 5)"
   - name: S_COCKPIT_DOOR
     class: verified
     group: cabin
@@ -408,10 +410,8 @@ overrides:
   - name: S_OH_EXT_LT_BEACON
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_OH_EXT_LT_LANDING_BOTH
     class: verified
     group: overhead
@@ -423,93 +423,72 @@ overrides:
     class: verified
     group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_EXT_LT_LANDING_R
     class: verified
     group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_EXT_LT_NAV_LOGO
     class: verified
     group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_EXT_LT_NOSE
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_EXT_LT_RWY_TURNOFF
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_OH_EXT_LT_STROBE
     class: verified
     group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_EXT_LT_WING
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_OH_FUEL_MODE_SEL
     class: verified
     group: overhead
-    values: [1]
-    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    verify: { lvar: I_OH_FUEL_MODE_SEL_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_FUEL_MODE_SEL_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_FUEL_XFEED
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    verify: { lvar: I_OH_FUEL_XFEED_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_FUEL_XFEED_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_GPWS_FLAP_MODE
     class: verified
     group: overhead
-    values: [1]
-    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    verify: { lvar: I_OH_GPWS_FLAP_MODE_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_GPWS_FLAP_MODE_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_GPWS_GS_MODE
     class: verified
     group: overhead
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    verify: { lvar: I_OH_GPWS_GS_MODE_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_GPWS_GS_MODE_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_GPWS_SYS
     class: verified
     group: overhead
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    verify: { lvar: I_OH_GPWS_SYS_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_GPWS_SYS_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_IN_LT_ANN_LT
     class: verified
     group: overhead
-    values: [1]
-    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_IN_LT_ICE
     class: verified
     group: overhead
@@ -576,10 +555,9 @@ overrides:
   - name: S_OH_PNEUMATIC_HOT_AIR
     class: verified
     group: overhead
-    values: [1]
-    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    verify: { lvar: I_OH_PNEUMATIC_HOT_AIR_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_PNEUMATIC_HOT_AIR_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO
     class: verified
     group: overhead
@@ -591,30 +569,23 @@ overrides:
     class: verified
     group: overhead
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    verify: { lvar: I_OH_PNEUMATIC_PRESS_MODE_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click toggled the value (0/1) and I_OH_PNEUMATIC_PRESS_MODE_L changed; owner confirmation: a 0/1 state, not a counter"
   - name: S_OH_PNEUMATIC_XBLEED_SELECTOR
     class: verified
     group: overhead
-    values: [1]
-    note: "values [1] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_OH_SIGNS
     class: verified
     group: overhead
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_OH_SIGNS_SMOKING
     class: verified
     group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_PED_ATC_0
     class: pulse
     group: pedestal
@@ -674,9 +645,7 @@ overrides:
     class: verified
     group: pedestal
     values: [0, 1, 2, 3]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2, 3 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2, 3"
   - name: S_WINDOW_BLINDS_CAPT
     class: verified
     group: cabin
@@ -735,45 +704,33 @@ overrides:
   - name: S_WR_MODE
     class: verified
     group: pedestal
-    values: [1, 2, 3]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 1, 2, 3 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    values: [0, 1, 2, 3]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2, 3"
   - name: S_WR_MULTISCAN
     class: verified
     group: pedestal
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_WR_PRED_WS
     class: verified
     group: pedestal
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_WR_SYS
     class: verified
     group: pedestal
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_XPDR_ATC
     class: verified
     group: pedestal
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
   - name: S_XPDR_MODE
     class: verified
     group: pedestal
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2; also moved in the TCAS mode step (the transponder knob again, owner)"
   - name: S_XPDR_OPERATION
     class: verified
     group: pedestal
@@ -785,30 +742,22 @@ overrides:
     class: verified
     group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: owner decision 7 (group), values seen in the scan"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_MISC_WIPER_FO
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "owner decision 7 (group), values seen in the scan"
-  - name: S_MISC_WIPER_REPELLENT_CAPT
-    class: verified
-    group: overhead
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 1, 2 seen in the logs; before: owner decision 7 (group), values seen in the scan"
-  - name: S_MISC_WIPER_REPELLENT_FO
-    class: verified
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_MISC_WIPER_REPELLENT_CAPT
+    class: pulse
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "owner decision 7 (group), values seen in the scan"
+    press: edge
+    evidence: "observe-report.md rule: gate test 1 counted 0 -> 1 -> 2 for one click (press +1, release +1); group: owner decision 7"
+  - name: S_MISC_WIPER_REPELLENT_FO
+    class: pulse
+    group: overhead
+    press: edge
+    evidence: "observe-report.md rule; same button as S_MISC_WIPER_REPELLENT_CAPT (counted +1/+1 in gate test 1); group: owner decision 7"
   - name: S_CHART_LIGHT_TEMP_CAPT
     class: verified
     group: mip
@@ -827,9 +776,7 @@ overrides:
     class: verified
     group: pedestal
     values: [0, 1, 2]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1, 2 seen in the logs; before: owner decision 7 (group), values seen in the scan"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
   - name: S_MIP_LIGHT_CONSOLEFLOOR_CAPT
     class: verified
     group: mip
@@ -2142,13 +2089,272 @@ overrides:
     press: edge
     verify: { lvar: I_ASP4_VOICE, settle_ms: 150 }
     evidence: "observed (observe-report.md, CRO-29)"
+  # --- push buttons from the review list (gate test 2 prep): only with evidence (scan, gate test or the
+  #     positions run); every Fenix S_ push button counts +1 on press and +1 on release (observe-report.md)
+  - name: S_OH_ELEC_EXT_PWR
+    class: pulse
+    group: overhead
+    press: edge
+    verify: { lvar: I_OH_ELEC_EXT_PWR_L, settle_ms: 150 }
+    evidence: "observe-report.md rule, owner confirmation; scan value 2 = one press and one release counted"
+  - name: S_OH_ELEC_APU_START
+    class: pulse
+    group: overhead
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: the START lamps did not change at the gate (APU MASTER off)"
+  - name: S_OH_RCRD_GND_CTL
+    class: pulse
+    group: overhead
+    press: edge
+    verify: { lvar: I_OH_RCRD_GND_CTL_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); I_OH_RCRD_GND_CTL_L came on with the press"
+  - name: S_PED_RMP1_VHF1
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_VHF2
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_VHF3
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_VHF1
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_VHF2
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_VHF3
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_VHF1
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_VHF2
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_VHF3
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "observe-report.md rule; the same VHF selection key as S_PED_RMP1_VHF1/VHF2 (counted +1/+1 in the observe positions run 2026-11-02) on identical RMPs; no lamp check: radio selection keys are a group"
+  # --- positions run 2026-11-02 (gate test 2 prep): positions report in profiles/fenix-a320/positions-report.md
+  - name: S_FC_FLAPS
+    value_labels: { "0": "0", "1": "1", "2": "2", "3": "3", "4": "FULL" }
+    class: verified
+    group: flightcontrols
+    values: [0, 1, 2, 3, 4]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2, 3, 4 (0 -> 1 -> 2 -> 3 -> 4 -> 3 -> 2 -> 1 -> 0)"
+  - name: S_FCU_ALTITUDE_SCALE
+    class: verified
+    group: fcu
+    values: [0, 1]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
+  - name: S_ENG_MODE
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2; rests at 1 (NORM) at the gate"
+  - name: S_FC_MIP_ANTI_SKID
+    class: verified
+    group: flightcontrols
+    values: [0, 1]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
+  - name: S_FC_RUDDER_TRIM
+    value_labels: { "1": "neutral" }
+    class: verified
+    group: flightcontrols
+    values: [0, 1, 2]
+    rest: 1
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2; springs back to 1 (owner); a hold is mirrored as long as it lasts; returned to 1 if the release never arrives (owner decision, protocol.md section 5)"
+  - name: S_OH_INT_LT_EMER
+    class: verified
+    group: overhead
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_OH_NAV_IR1_MODE
+    class: verified
+    group: overhead
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_OH_NAV_IR2_MODE
+    class: verified
+    group: overhead
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_OH_NAV_IR3_MODE
+    class: verified
+    group: overhead
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_FCU_EFIS1_NAV1
+    class: verified
+    group: efis
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_FCU_EFIS1_NAV2
+    class: verified
+    group: efis
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_FCU_EFIS2_NAV1
+    class: verified
+    group: efis
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_FCU_EFIS2_NAV2
+    class: verified
+    group: efis
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_DISPLAY_ATT_HDG
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_DISPLAY_AIR_DATA
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_DISPLAY_EIS_DMC
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_DISPLAY_ECAM_ND_XFR
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_MIP_CLOCK_ET
+    class: verified
+    group: mip
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_MIP_CLOCK_UTC
+    class: verified
+    group: mip
+    values: [0, 1, 2]
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2"
+  - name: S_MIP_AUTOBRAKE_LO
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: its lamps did not change at the gate"
+  - name: S_MIP_GPWS_TERRAIN_ON_ND_CAPT
+    class: pulse
+    group: mip
+    press: edge
+    verify: { lvar: I_MIP_GPWS_TERRAIN_ON_ND_CAPT_L, settle_ms: 150 }
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); I_MIP_GPWS_TERRAIN_ON_ND_CAPT_L came on with the press"
+  - name: S_MIP_GPWS_TERRAIN_ON_ND_FO
+    class: pulse
+    group: mip
+    press: edge
+    note: "no lamp check until the FO lamp is seen"
+    evidence: "observe-report.md rule; the first officer twin of S_MIP_GPWS_TERRAIN_ON_ND_CAPT, which counted +1/+1 in the observe positions run 2026-11-02"
+  - name: S_MIP_GPWS_VISUAL_ALERT_CAPT
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: its lamps flash (a warning light)"
+  - name: S_MIP_GPWS_VISUAL_ALERT_FO
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "observe-report.md rule; the first officer twin of S_MIP_GPWS_VISUAL_ALERT_CAPT, which counted +1/+1 in the observe positions run 2026-11-02"
+  - name: S_MIP_AUTOLAND_CAPT
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: the AUTOLAND lamps flash (a warning light)"
+  - name: S_MIP_AUTOLAND_FO
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "observe-report.md rule; the first officer twin of S_MIP_AUTOLAND_CAPT, which counted +1/+1 in the observe positions run 2026-11-02"
+  - name: S_MIP_ATC_MSG_CAPT
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: one click counted 0 -> 1 -> 2 (press +1, release +1); no lamp check: its lamps did not change at the gate"
+  - name: S_MIP_ATC_MSG_FO
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "observe-report.md rule; the first officer twin of S_MIP_ATC_MSG_CAPT, which counted +1/+1 in the observe positions run 2026-11-02"
+  - name: S_DISPLAY_PFDND_XFER_CAPT
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, observe positions run 2026-11-02: two clicks counted 0 -> 1 -> 2 -> 3 -> 4 (press +1, release +1)"
+  - name: S_DISPLAY_PFDND_XFER_FO
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "observe-report.md rule; the first officer twin of S_DISPLAY_PFDND_XFER_CAPT, which counted +1/+1 in the observe positions run 2026-11-02"
+  - name: I_FCU_SPEED_MANAGED
+    class: observe
+    group: fcu
+    alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+    evidence: "owner decision (gate test 2 prep): the FCU SPD knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
+  - name: B_FCU_SPEED_DASHED
+    class: observe
+    group: fcu
+    alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+    evidence: "owner decision (gate test 2 prep): the FCU SPD knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
+  - name: I_FCU_HEADING_MANAGED
+    class: observe
+    group: fcu
+    alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
+    evidence: "owner decision (gate test 2 prep): the FCU HDG knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
+  - name: B_FCU_HEADING_DASHED
+    class: observe
+    group: fcu
+    alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
+    evidence: "owner decision (gate test 2 prep): the FCU HDG knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
+  - name: I_FCU_ALTITUDE_MANAGED
+    class: observe
+    group: fcu
+    alarm: { text: "ALT managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_ALTITUDE_MANAGED }
+    evidence: "owner decision (gate test 2 prep): the FCU ALT knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
+  - name: B_FCU_VERTICALSPEED_DASHED
+    class: observe
+    group: fcu
+    alarm: { text: "VS managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: B_FCU_VERTICALSPEED_DASHED }
+    evidence: "owner decision (gate test 2 prep): the FCU VS knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
 open:
   - what: "Audio SEND keys"
     vars: [S_ASP2_CAB_SEND, S_ASP2_HF_1_SEND]
     why: "radio group (one deselects another); needs group handling before sync"
-  - what: "AUTOLAND / BKUP SPD ALT"
-    vars: [S_MIP_AUTOLAND_FO, S_MIP_BKUP_SPD_ALT_CAPT, S_MIP_BKUP_SPD_ALT_FO]
-    why: "all lit the same autoland lamps; latching vs momentary unclear (owner decision 3)"
+  - what: "BKUP SPD ALT"
+    vars: [S_MIP_BKUP_SPD_ALT_CAPT, S_MIP_BKUP_SPD_ALT_FO]
+    why: "lit the same autoland lamps as AUTOLAND; AUTOLAND is a +1/+1 push button (positions run), BKUP SPD ALT was not clicked"
+  - what: "FCU knob push/pull"
+    vars: [S_FCU_SPEED, S_FCU_HEADING, S_FCU_ALTITUDE, S_FCU_VERTICAL_SPEED]
+    why: "only -1 is visible: the other direction is set and reset inside one frame. Unsynced for gate test 2; their managed lamps and dashed flags are red when they differ. Proposed detector (after gate test 2): read-only run with the FMGS set up, watching I_FCU_*_MANAGED, B_FCU_*_DASHED and N_FCU_*; a change of these with no visible knob change = the hidden direction"
+  - what: "Not moved in the positions run"
+    vars: [S_XPDR_OPERATION, S_WR_GAIN, S_MIP_ISFD_LS, S_TCAS_HORIZONTAL_RANGE, S_OH_EXT_LT_LANDING_BOTH, S_MIP_CLOCK_SET, S_FC_FLAPS_LATCH]
+    why: "kept as they were (S_XPDR_OPERATION: values from gate test 1); learn in CRO-24"
+  - what: "Push buttons without evidence"
+    vars: [S_PED_RMP1_HF1, S_PED_RMP1_NAV, S_PED_RMP1_AM, S_MIP_AUTOBRAKE_MED, S_MIP_AUTOBRAKE_MAX, S_FC_THR_INST_DISCONNECT1, S_FC_THR_INST_DISCONNECT2]
+    why: "the overhead latches showed that a button family is not always a counter: these wait for a click each (CRO-24); all RMP keys but VHF1/2/3 are in this group"
   - what: "Position counts"
     why: "switches with `# positions to be learned (CRO-24)` have only the values seen; learn the rest from real pilot input (CRO-24)"
   - what: "Encoders without display"

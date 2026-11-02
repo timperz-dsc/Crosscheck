@@ -150,7 +150,7 @@ internal static class UiStatus
 
     /// <summary>Reasons that mean a pilot's input did not arrive or had another result: always red.</summary>
     private static readonly HashSet<string> InputReasons =
-        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch", "safety_release", "press_mismatch", "toggle_mismatch"];
+        ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch", "safety_release", "press_mismatch", "toggle_mismatch", "mode_mismatch"];
 
     /// <summary>
     /// Where a desync is shown. The server sends the tier; as defence in depth only an indicator may be
@@ -226,7 +226,7 @@ internal static class UiStatus
         var spec = r.Profile.Vars.FirstOrDefault(v => v.Name == name);
         // An effect or toggle desync compares the key's lamp, a press desync the key's up/down state (parity),
         // not the key's own counter: their values come from the message.
-        var effectCompare = reason is "effect_mismatch" or "toggle_mismatch" or "press_mismatch";
+        var effectCompare = reason is "effect_mismatch" or "toggle_mismatch" or "press_mismatch" or "mode_mismatch";
         double? mine = !effectCompare && r.Sim.TryGet(name, out var m) ? m : null;
         var receiverIsYou = body["client_id"]?.GetValue<string>() is { } c && c == client.ClientId;
         double? other = body["values"] is JsonObject values
@@ -241,7 +241,7 @@ internal static class UiStatus
         string Text(double? v) => reason switch
         {
             _ when v is null && effectCompare => "unknown",
-            "toggle_mismatch" => v > 0 ? "on" : "off",
+            "toggle_mismatch" or "mode_mismatch" => v > 0 ? "on" : "off",
             "press_mismatch" => ((long)Math.Round(v!.Value) & 1) == 1 ? "held down" : "up",
             "effect_mismatch" => Sync.Labels.Number(v!.Value),
             _ => r.Labels.Value(name, v),

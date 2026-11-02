@@ -174,8 +174,10 @@ public sealed class UnsyncedListTests
         var path = Path.Combine(Repo.Root, "profiles", "fenix-a320", "profile.yaml");
         var profile = Crosscheck.Profiles.ProfileLoader.LoadFile(path).Profile!;
         var list = UnsyncedList.LoadNextTo(path, profile);
-        Assert.True(list.Labels.Count > 200);
-        Assert.Contains("S_OH_ELEC_APU_START", list.Labels.Keys);
+        Assert.True(list.Labels.Count > 150);
+        Assert.Contains("S_FCU_SPEED", list.Labels.Keys); // one direction is invisible: unsynced (amber) for gate test 2
+        Assert.Contains("S_OH_FIRE_ENG1_BUTTON", list.Labels.Keys); // never pressed in tests, stays unsynced
+        Assert.DoesNotContain("S_OH_ELEC_APU_START", list.Labels.Keys); // an edge button since gate test 2 prep
         Assert.DoesNotContain("S_FCU_AP1", list.Labels.Keys); // observed in CRO-29, now an edge button
         var inProfile = profile.Vars.Select(v => v.Name).ToHashSet();
         Assert.DoesNotContain(list.Labels.Keys, inProfile.Contains);

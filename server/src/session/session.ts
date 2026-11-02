@@ -647,8 +647,8 @@ export class Session {
     const toRaise: { d: RawDecision; reason: DesyncReason; blocking: boolean; text: string }[] = [];
 
     for (const d of raw) {
-      // A toggle lamp is reported under its button (the control the pilots press).
-      const key = d.class === 'toggle' && d.button ? d.button : d.var;
+      // A toggle lamp is reported under its button (the control the pilots press), a mode item under report_as.
+      const key = reportKey(d);
       const open = this.desyncs.get(key);
       const base = { var: d.var, class: d.class, pf: d.pf, pm: d.pm };
       if (d.action === 'desync') {
@@ -658,7 +658,7 @@ export class Session {
         } else if (tier === 'quiet' && now - (g.observeSince.get(d.var) ?? (g.observeSince.set(d.var, now), now)) < this.config.indicatorHoldMs) {
           // An indicator must differ for a while before it counts (it may just lag the input).
           decisions.push({ ...base, action: 'held', reason: d.reason });
-        } else if ((d.class === 'pulse' || d.class === 'toggle') && !this.buttonPersists(g, d.var, now)) {
+        } else if ((d.class === 'pulse' || d.class === 'toggle' || d.class === 'mode') && !this.buttonPersists(g, d.var, now)) {
           // A snapshot taken mid-mirror must never raise a false red: 2 comparisons in a row or buttonHoldMs.
           decisions.push({ ...base, action: 'held', reason: d.reason });
         } else {
@@ -691,10 +691,10 @@ export class Session {
       this.emit(this.slots, 'snapshot_diff', { request_id: requestId, group, pf_client_id: this.pfClientId, differences: decisions });
     }
     for (const r of toRaise) {
-      const toggle = r.d.class === 'toggle' && r.d.button;
+      const key = reportKey(r.d);
+      const message = r.d.class === 'mode' && r.d.message ? r.d.message : key !== r.d.var ? desyncText(key, r.reason) : r.text;
       this.raiseDesync({
-        var: toggle ? r.d.button! : r.d.var, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm },
-        message: toggle ? desyncText(r.d.button!, r.reason) : r.text,
+        var: key, group, reason: r.reason, expected: r.d.pf, observed: r.d.pm, values: { pf: r.d.pf, pm: r.d.pm }, message,
       }, r.blocking, tierFor(r.d.class), r.d.var);
     }
     for (const d of toCorrect) this.sendCorrection(d, group, requestId, ref, other);
@@ -1285,10 +1285,18 @@ export function driftShouldSend(
   return changed && now - sentAt >= minIntervalMs;
 }
 
+/** The control a difference is shown under: a toggle lamp under its button, a mode item under report_as. */
+function reportKey(d: { var: string; class: string; button?: string; report_as?: string }): string {
+  if (d.class === 'toggle' && d.button) return d.button;
+  if (d.class === 'mode' && d.report_as) return d.report_as;
+  return d.var;
+}
+
 function desyncText(name: string, reason: DesyncReason): string {
   switch (reason) {
     case 'press_mismatch': return `${name}: held down in one cockpit only. Never pressed automatically.`;
     case 'toggle_mismatch': return `${name}: its light is on in one cockpit and off in the other. If nothing above it differs, press it on one side.`;
+    case 'mode_mismatch': return `${name}: differs between the cockpits. It is not synced; set it by hand in the cockpit that is wrong.`;
     case 'observe_mismatch': return `${name}: the sims show different values (output, never written).`;
     case 'log_conflict': return `${name}: neither sim has the last pilot command's value; not corrected.`;
     case 'missing_value': return `${name}: value unknown on one side; not corrected.`;

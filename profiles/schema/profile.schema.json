@@ -170,6 +170,20 @@
           "exclusiveMinimum": 0,
           "maximum": 60
         },
+        "rest": {
+          "description": "verified, spring-loaded switches only: the position the switch returns to by itself (one of values). If the release of a position Crosscheck wrote never arrives (30 s cap, link lost), Crosscheck writes this value back, with a red desync (protocol.md section 5).",
+          "type": "number"
+        },
+        "alarm": {
+          "description": "observe only: this indicator shows a pilot input Crosscheck cannot sync (yet). A difference between the sims is red after 2 s, never quiet, with this text. Never written.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text"],
+          "properties": {
+            "text": { "type": "string", "minLength": 1 },
+            "as": { "description": "Report it under this control, so several indicators of one knob give one line.", "type": "string", "minLength": 1 }
+          }
+        },
         "note": { "type": "string" },
         "label": { "description": "Name as the pilots see it, for example ENG 1 BLEED.", "type": "string", "minLength": 1 },
         "value_labels": {

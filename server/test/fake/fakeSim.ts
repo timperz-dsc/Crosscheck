@@ -21,6 +21,9 @@ export interface VarDef {
    * parity, and its toggles lamp (when not a var of its own) as a toggle item with the button.
    */
   edge?: boolean;
+  /** mode: the pilots' text and the control the difference is shown under. */
+  message?: string;
+  reportAs?: string;
 }
 
 /** A small stand-in profile with one var of each kind. */
@@ -38,6 +41,10 @@ export const TEST_VARS: VarDef[] = [
   { name: 'I_FCU_EFIS1_FD', cls: 'observe', group: 'efis', init: 1 },
   { name: 'S_FCU_EFIS2_FD', cls: 'pulse', group: 'efis', init: 0, edge: true, toggles: 'I_FCU_EFIS2_FD' },
   { name: 'S_OH_FIRE_ENG1_TEST', cls: 'pulse', group: 'overhead', init: 0, edge: true },
+  {
+    name: 'I_FCU_SPEED_MANAGED', cls: 'mode', group: 'fcu', init: 0, reportAs: 'S_FCU_SPEED',
+    message: 'SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.',
+  },
 ];
 
 export type WriteSource = 'pilot' | 'remote' | 'correction';
@@ -175,6 +182,7 @@ export class FakeSim {
       out.push({
         var: d.name, class: d.cls, value: d.cls === 'delta' ? this.display(d.name) : this.get(d.name),
         ...(d.cls === 'owned' && d.step !== undefined ? { step: d.step } : {}),
+        ...(d.cls === 'mode' ? { message: d.message!, ...(d.reportAs ? { report_as: d.reportAs } : {}) } : {}),
       });
     }
     return out;
