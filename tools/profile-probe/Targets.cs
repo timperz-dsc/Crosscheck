@@ -6,7 +6,7 @@ using Crosscheck.Profiles.Model;
 
 namespace ProfileProbe;
 
-enum Phase { Readonly, Verified, Buttons, Positions, Encoders, Breakers, Takeover, Hold }
+enum Phase { Readonly, Verified, Buttons, Positions, Encoders, Breakers, Takeover, Hold, WriteTest }
 
 sealed record Target(string Name, Phase Phase, IReadOnlyList<double>? Values, bool Delta = false, bool Counter = false);
 
@@ -43,7 +43,7 @@ static class Targets
         ("S_PED_RMP*_MLS", "RMP radio selection keys are a group"),
         ("S_PED_RMP*_ADF", "RMP radio selection keys are a group"),
         ("S_PED_RMP*_BFO", "RMP radio selection keys are a group"),
-        ("S_COCKPIT_DOOR", "cockpit door switch: its lights did not come back after the switch was restored"),
+        ("S_COCKPIT_DOOR", "cockpit door (0 closed, 1 open): its lights did not come back after a restore in the first run; only the supervised writetest writes it"),
         ("S_PED_COCKPIT_DOOR", "cockpit door switch: its lights did not come back after the switch was restored"),
         ("S_MIP_CLOCK_*","clock: CHR starts/stops the chrono, RST resets it; one key cannot put it back"),
         ("S_FCU_EFIS*_FD","FD key: a press switched both FDs off and a second press did not bring them back"),

@@ -86,6 +86,24 @@ timestamped raw copies in `.probe/`. The old write test of this name stays off.
     profile detects it, mechanism only).
 - `gate2`: the run before gate test 2 (`positions-results.csv`).
 
+## writetest (gate test 3 prep, owner approved 2026-11-03)
+
+Supervised, writes to the sim. `WriteTest.cs` lists the five controls and the only values each may get, all seen
+in the owner's cockpit: flaps lever 0 → 1 → 0 (only with no hydraulic pressure), speed brake RET → half
+(2.0234375, sent in gate test 2) → RET and ARM (0) → RET, A/SKID & N/W STRG 1 → 0 → 1, cockpit door
+closed (0) → open (1) → closed, or from open the other way round, and FCU SPD own + 1 then own − 1 from 0 (the owner's counter model; if the step
+does not stick or the managed lamp and dashes do not follow, no other value is tried). The door and the
+rudder trim stay on the extra-skip list of the automatic phases; only this command writes the door, and
+only 0 and 1.
+
+- Before each write it says what it writes and what to watch, and waits: Enter = write, s = skip the rest of
+  the control, q = stop. After the write it reads back for 2.5 s: stuck or not, the watched vars before and
+  after, any expected lamp, and every other var that changed.
+- Each control is put back where it started (the probe restore, also on q or Ctrl+C), and a control that does
+  not rest at its start is skipped. It stops at once on a value nobody wrote, when Fenix stops answering, or
+  on the usual safety check (on ground, parking brake, engines, BAT, EXT PWR, bus power).
+- Results are appended to `profiles/fenix-a320/writetest-results.md`.
+
 ## Range rule
 
 A test tool may only write values that are already known to exist for that var (`KnownValues.cs`):

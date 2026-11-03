@@ -59,7 +59,7 @@ public class RealProfileTests
     }
 
     [Theory]
-    [InlineData("S_FCU_SPEED")] // push/pull knob: one direction is invisible, stays unsynced
+    [InlineData("S_FCU_SPEED")] // push/pull knob: a counter mirrored as a change (delta), never an edge button
     [InlineData("S_FC_THR_INST_DISCONNECT1")]
     [InlineData("S_OH_FUEL_XFEED")] // a 0/1 latch (positions run)
     [InlineData("S_FCU_ALTITUDE_SCALE")] // switch
@@ -161,7 +161,29 @@ public class RealProfileTests
         Assert.Equal([0.0, 1, 2, 3, 4], Var("S_FC_FLAPS").Values);
         foreach (var n in new[] { "I_FCU_SPEED_MANAGED", "B_FCU_SPEED_DASHED", "I_FCU_HEADING_MANAGED", "B_FCU_HEADING_DASHED", "I_FCU_ALTITUDE_MANAGED", "B_FCU_VERTICALSPEED_DASHED" })
             Assert.Contains("managed differs between the cockpits", Var(n).Alarm!.Text);
-        Assert.DoesNotContain(Real.Vars, v => v.Name is "S_FCU_SPEED" or "S_FCU_HEADING" or "S_FCU_ALTITUDE" or "S_FCU_VERTICAL_SPEED");
+        // CRO-32 (supervised write test 2026-11-03): the push/pull is a counter, pull +1 and push -1. Mirrored as
+        // the change only (delta), never corrected, checked by read-back of the own var; one line with its knob.
+        foreach (var (knob, encoder) in new[] { ("S_FCU_SPEED", "E_FCU_SPEED"), ("S_FCU_HEADING", "E_FCU_HEADING"),
+                     ("S_FCU_ALTITUDE", "E_FCU_ALTITUDE"), ("S_FCU_VERTICAL_SPEED", "E_FCU_VS") })
+        {
+            var v = Var(knob);
+            Assert.Equal(SyncClass.Delta, v.Class);
+            Assert.Null(v.Display); // no per-click lamp or display check (ALT: read-back only, owner)
+            Assert.Null(v.Verify);
+            Assert.Equal(encoder, v.Control);
+        }
+    }
+
+    [Fact]
+    public void Write_test_2026_11_03_door_and_switch_labels()
+    {
+        // The door: 0 closed, 1 open (the owner saw it); the OPEN light follows and is its check.
+        var door = Var("S_COCKPIT_DOOR");
+        Assert.Equal("CLOSED", door.ValueLabels!["0"]);
+        Assert.Equal("OPEN", door.ValueLabels!["1"]);
+        Assert.Equal("I_PED_COCKPIT_DOOR_U", door.Verify!.Lvar);
+        Assert.Equal("OFF", Var("S_FC_MIP_ANTI_SKID").ValueLabels!["0"]);
+        Assert.Equal([0, 3], Var("A_FC_SPEEDBRAKE").Range!);
     }
 
     [Fact]
@@ -176,7 +198,7 @@ public class RealProfileTests
 
     [Theory]
     [InlineData("A_OH_PNEUMATIC_LDG_ELEV", -3, 9.75)] // gate test 2 (interim, owner confirmed)
-    [InlineData("A_FC_SPEEDBRAKE", 1, 3)]
+    [InlineData("A_FC_SPEEDBRAKE", 0, 3)]             // 0 = ARM (positions runs 2026-11-03)
     [InlineData("A_WR_TILT", -15, 15)]                // gate test 2
     [InlineData("A_WR_GAIN", -5, 4)]                  // gate test 2
     public void Analog_ranges_come_from_the_gate_tests(string name, double min, double max)
@@ -211,6 +233,8 @@ public class RealProfileTests
             Assert.True(v is { Class: SyncClass.Pulse, Press: PressMode.Edge, Verify: null }, name);
         }
         Assert.Equal([0, 1, 2], Var("S_DCDU1_DIM_BRT").Values!);
+        Assert.Equal([0, 1, 2], Var("S_PED_COCKPIT_DOOR").Values!); // gate3b: LOCK 0, NORM 1, UNLOCK 2, springs back
+        Assert.Equal(1, Var("S_PED_COCKPIT_DOOR").Rest);
         Assert.Equal(1, Var("S_DCDU1_DIM_BRT").Rest);
         foreach (var b in new[] { "ECAM_U", "ECAM_L", "CO", "CI", "CI_OUTER", "FO", "FI", "FI_OUTER" })
         {

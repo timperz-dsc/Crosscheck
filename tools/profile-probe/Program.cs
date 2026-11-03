@@ -57,6 +57,8 @@ static class Program
                     return 0;
                 case "takeover": return await SimCommand(paths, Phase.Takeover, opts, cts.Token);
                 case "hold": return await SimCommand(paths, Phase.Hold, opts, cts.Token);
+                // Supervised write test (gate test 3 prep, owner approved): one control at a time, Enter per write.
+                case "writetest": return await SimCommand(paths, Phase.WriteTest, opts, cts.Token);
                 // Read only: the pilot moves the controls (CRO-24). The old write test of this name stays off:
                 // writing positions that do not exist most likely crashed the Fenix WASM.
                 case "positions": return await PositionsCommand(paths, opts, cts.Token);
@@ -84,6 +86,7 @@ static class Program
                                     (gate3, the default: the gate test 3 prep run; gate2: the run before gate test 2)
           takeover --side capt|fo   supervised a: press 1 s, release
           hold --var NAME --value N [--seconds 60]   supervised b: hold a known ND value, then restore
+          writetest [--only ID]     supervised: flaps, speed brake, A/SKID, cockpit door, FCU SPD; Enter before each write, read back 2.5 s, put back
           release                   ends a running hold
           label --var NAME --value N --text LABEL    record what the ND showed
           info --var NAME --text TEXT                record a manual finding (smoke test, surprise, crash-start/crash-end...)
@@ -154,10 +157,12 @@ static class Program
         var inputs = Inputs.Load(paths);
         var checkpoint = new Checkpoint(paths.Checkpoint);
         var log = new ResultLog(paths.Details);
-        if (phase is Phase.Takeover or Phase.Hold || opts.Redo && phase is { } rp) checkpoint.ResetPhase(phase!.Value);
+        if (phase is Phase.Takeover or Phase.Hold or Phase.WriteTest || opts.Redo && phase is { } rp) checkpoint.ResetPhase(phase!.Value);
 
         var known = KnownValues.Build(inputs, log.ReadLatest());
-        var (targets, skipped) = phase is { } p ? Targets.For(p, inputs, Rejects(log), known) : ([], []);
+        var writeControls = WriteTest.Selected(opts.Only);
+        var (targets, skipped) = phase == Phase.WriteTest ? (WriteTest.Targets(writeControls), [])
+            : phase is { } p ? Targets.For(p, inputs, Rejects(log), known) : ([], []);
         if (phase == Phase.Takeover)
         {
             var side = opts.Side?.ToLowerInvariant() switch { "capt" => "S_FC_CAPT_INST_DISCONNECT", "fo" => "S_FC_FO_INST_DISCONNECT", _ => null };
@@ -171,7 +176,7 @@ static class Program
             targets = targets.Where(t => t.Name == opts.Var).ToList();
             if (targets.Count == 0) { Console.WriteLine($"{opts.Var} is not an ND MODE/ZOOM var"); return ExitError; }
         }
-        if (opts.Only is { } only) targets = targets.Where(t => t.Name == only).ToList();
+        if (opts.Only is { } only && phase != Phase.WriteTest) targets = targets.Where(t => t.Name == only).ToList();
         foreach (var s in skipped) log.Add(new ProbeResult { Var = s.Name, Phase = s.Phase, Test = s.Phase.ToString().ToLowerInvariant(), Result = "skipped", Notes = s.Why });
 
         var pending = checkpoint.Data.Pending;
@@ -212,6 +217,13 @@ static class Program
             Console.WriteLine($"  {pending.Var} restored");
         }
         if (phase is null) return Summary(checkpoint);
+
+        if (phase == Phase.WriteTest)
+        {
+            if (writeControls.Count == 0) { Console.WriteLine($"no control matches --only {opts.Only}; ids: {string.Join(" ", WriteTest.Controls.Select(c => c.Id))}"); return ExitError; }
+            var lines = new ConsoleLines();
+            return await WriteTest.Run(session, writeControls, lines.ReadAsync, Path.Combine(paths.ProfileDir, "writetest-results.md"), ct);
+        }
 
         if (phase == Phase.Readonly)
         {

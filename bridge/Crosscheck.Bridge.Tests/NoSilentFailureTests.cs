@@ -179,7 +179,7 @@ public sealed class UnsyncedListTests
         var profile = Crosscheck.Profiles.ProfileLoader.LoadFile(path).Profile!;
         var list = UnsyncedList.LoadNextTo(path, profile);
         Assert.True(list.Labels.Count > 120); // 146 after the positions run 2026-11-03 moved 59 controls into the profile
-        Assert.Contains("S_FCU_SPEED", list.Labels.Keys); // one direction is invisible: unsynced (amber) for gate test 2
+        Assert.DoesNotContain("S_FCU_SPEED", list.Labels.Keys); // a push/pull counter since the write test 2026-11-03 (CRO-32)
         Assert.DoesNotContain("S_OH_FIRE_ENG1_BUTTON", list.Labels.Keys); // on the deny list (CRO-33): watched, never written
         Assert.DoesNotContain("S_PED_COCKPIT_DOOR_VIDEO", list.Labels.Keys); // a counter: an edge button since the positions run 2026-11-03
         Assert.Contains("S_SUNSHADE_CAPT", list.Labels.Keys); // did not move in that run: still on the list

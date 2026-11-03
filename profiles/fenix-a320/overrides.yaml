@@ -355,9 +355,10 @@ overrides:
     class: verified
     group: cabin
     values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    value_labels: { "0": CLOSED, "1": OPEN }
+    verify: { lvar: I_PED_COCKPIT_DOOR_U, settle_ms: 150 }
+    note: "0 = closed, 1 = open (the scan and the positions run found the door open at the gate); the OPEN light I_PED_COCKPIT_DOOR_U follows"
+    evidence: "supervised write test 2026-11-03: 0 -> 1 -> 0 stuck, the door moved and I_PED_COCKPIT_DOOR_U followed both ways; the owner saw 1 open the door and 0 close it; gate test 1: 0 seen"
   - name: S_EXT_CARGO_BAY_AFT_LT
     class: verified
     group: ground
@@ -1597,9 +1598,9 @@ overrides:
     note: "interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
     evidence: "pilot input, gate test 2: -3 … 9.75 in 0.25 steps; owner confirmed (gate test 3 prep)"
   - name: A_FC_SPEEDBRAKE
-    range: [1, 3]
-    note: "range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
-    evidence: "pilot input, gate test 1: 1 … 3; scan 1; owner confirmed (CRO-27)"
+    range: [0, 3]
+    note: "0 = ARM, 1 = RET, up to 3 = full; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
+    evidence: "pilot input, gate test 1: 1 … 3; positions runs 2026-11-03 (gate3, gate3b): ARM reads 0; supervised write test 2026-11-03: RET -> 2.0234375 -> RET and ARM -> RET all stuck, B_FC_SPEEDBRAKE followed, half lit MASTER CAUTION; scan 1; owner confirmed (CRO-27)"
   - name: A_WR_TILT
     range: [-15, 15]
     note: "interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
@@ -2148,7 +2149,7 @@ overrides:
     class: verified
     group: flightcontrols
     values: [0, 1, 2, 3, 4]
-    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2, 3, 4 (0 -> 1 -> 2 -> 3 -> 4 -> 3 -> 2 -> 1 -> 0)"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0 … 4; supervised write test 2026-11-03: 0 -> 1 -> 0 stuck, the lever moved (no hydraulic pressure)"
   - name: S_FCU_ALTITUDE_SCALE
     class: verified
     group: fcu
@@ -2161,10 +2162,11 @@ overrides:
     priority: 2
     evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2; rests at 1 (NORM) at the gate"
   - name: S_FC_MIP_ANTI_SKID
+    value_labels: { "0": OFF, "1": ON }
     class: verified
     group: flightcontrols
     values: [0, 1]
-    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1"
+    evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1; supervised write test 2026-11-03: 1 -> 0 -> 1 stuck, OFF lit MASTER CAUTION and ECAM CLR"
   - name: S_FC_RUDDER_TRIM
     value_labels: { "1": "neutral" }
     class: verified
@@ -2714,6 +2716,13 @@ overrides:
     range: [0, 1]
     evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
 
+  - name: S_PED_COCKPIT_DOOR
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    rest: 1
+    value_labels: { "0": LOCK, "1": NORM, "2": UNLOCK }
+    evidence: "pilot input, positions runs 2026-11-03 (gate3, gate3b): UNLOCK 2, LOCK 0, springs back to 1 (NORM) each time; B_DOORS_COCKPIT_LOCKED follows; gate test 2 section 5: should sync"
   # --- CRO-36: cockpit comfort items, synced now (owner decision 2026-11-03), from the same run
   - name: S_TRAY_TABLE_CAPT
     group: cabin
@@ -2802,6 +2811,36 @@ overrides:
     range: [0, 3]
     evidence: "pilot input, positions run 2026-11-03: 0 ... 3 in 0.05 steps (three turns and back); reversible system state (owner decision CRO-36)"
 
+  # --- CRO-32: FCU knob push/pull, a counter (pull +1, push -1); mirrored as the change only (supervised write test 2026-11-03)
+  - name: S_FCU_SPEED
+    class: delta
+    label: "FCU SPD push/pull"
+    group: fcu
+    control: E_FCU_SPEED
+    note: "push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
+    evidence: "supervised write test 2026-11-03: own + 1 (pull) and own - 1 (push) stuck; the managed lamp and dashes followed both ways"
+  - name: S_FCU_HEADING
+    class: delta
+    label: "FCU HDG push/pull"
+    group: fcu
+    control: E_FCU_HEADING
+    note: "push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
+    evidence: "positions runs 2026-11-03 (gate3, gate3b): 0 -> 1 -> 0 with the managed lamp and dashes; same part as SPD (write-tested)"
+  - name: S_FCU_VERTICAL_SPEED
+    class: delta
+    label: "FCU V/S push/pull"
+    group: fcu
+    control: E_FCU_VS
+    note: "push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
+    evidence: "positions runs 2026-11-03 (gate3, gate3b): 0 -> 1 -> 0, the dashes followed; same part as SPD (write-tested)"
+  - name: S_FCU_ALTITUDE
+    class: delta
+    label: "FCU ALT push/pull"
+    group: fcu
+    control: E_FCU_ALTITUDE
+    note: "push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
+    evidence: "positions runs 2026-11-03: -2 -> -1 -> -2 and -3 -> -2 -> -3 (pull +1, push -1, the resting value varies); same part as SPD (write-tested); read-back only, never the managed lamp (owner)"
+
 open:
   - what: "Audio SEND keys"
     vars: [S_ASP2_CAB_SEND, S_ASP2_HF_1_SEND]
@@ -2809,9 +2848,9 @@ open:
   - what: "BKUP SPD ALT"
     vars: [S_MIP_BKUP_SPD_ALT_CAPT, S_MIP_BKUP_SPD_ALT_FO]
     why: "lit the same autoland lamps as AUTOLAND; AUTOLAND is a +1/+1 push button (positions run), BKUP SPD ALT was not clicked"
-  - what: "FCU knob push/pull"
+  - what: "FCU knob push/pull in flight"
     vars: [S_FCU_SPEED, S_FCU_HEADING, S_FCU_ALTITUDE, S_FCU_VERTICAL_SPEED]
-    why: "only -1 is visible: the other direction is set and reset inside one frame. Unsynced for gate test 2; their managed lamps and dashed flags are red when they differ. Proposed detector (after gate test 2): read-only run with the FMGS set up, watching I_FCU_*_MANAGED, B_FCU_*_DASHED and N_FCU_*; a change of these with no visible knob change = the hidden direction"
+    why: "synced as counters since the write test 2026-11-03 (only SPD write-tested, at the gate). Gate test 3 checks a pull and a push of each knob in both cockpits; the gate test 2 prep run saw a push as -1 held while the mouse was down, so a long press must mirror as -1, then +1"
   - what: "Not moved in the positions run"
     vars: [S_XPDR_OPERATION, S_WR_GAIN, S_MIP_ISFD_LS, S_TCAS_HORIZONTAL_RANGE, S_OH_EXT_LT_LANDING_BOTH, S_MIP_CLOCK_SET, S_FC_FLAPS_LATCH]
     why: "kept as they were (S_XPDR_OPERATION: values from gate test 1); learn in CRO-24"

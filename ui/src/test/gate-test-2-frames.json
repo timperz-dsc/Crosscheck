@@ -3888,8 +3888,8 @@
           "count": 1,
           "items": [
             {
-              "control": "S_FCU_SPEED",
-              "label": "SPEED",
+              "control": "E_FCU_SPEED",
+              "label": "FCU SPD",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T19:59:57.0320000\u002B00:00"

@@ -2636,6 +2636,12 @@ vars:
     class: observe
     group: fcu
     note: "label generated"
+  - name: S_FCU_ALTITUDE
+    label: "FCU ALT push/pull"
+    class: delta
+    group: fcu
+    control: E_FCU_ALTITUDE
+    note: "label generated; push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
   - name: S_FCU_ALTITUDE_SCALE
     label: "ALTITUDE SCALE"
     class: verified
@@ -2683,6 +2689,12 @@ vars:
     group: fcu
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled B_FCU_TRACK_FPA_MODE I_FCU_HEADING_VS_MODE I_FCU_TRACK_FPA_MODE and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_HEADING
+    label: "FCU HDG push/pull"
+    class: delta
+    group: fcu
+    control: E_FCU_HEADING
+    note: "label generated; push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
   - name: S_FCU_LOC
     label: "LOC"
     class: pulse
@@ -2702,6 +2714,18 @@ vars:
     group: fcu
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_FCU_SPEED
+    label: "FCU SPD push/pull"
+    class: delta
+    group: fcu
+    control: E_FCU_SPEED
+    note: "label generated; push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
+  - name: S_FCU_VERTICAL_SPEED
+    label: "FCU V/S push/pull"
+    class: delta
+    group: fcu
+    control: E_FCU_VS
+    note: "label generated; push/pull counter: pull +1, push -1 from the current value; never corrected; checked by read-back of the own var"
   - name: B_FCU_EFIS1_BARO_INCH
     label: "BARO INCH (Capt)"
     class: observe
@@ -5991,6 +6015,14 @@ vars:
     class: pulse
     group: pedestal
     press: edge
+    note: "label generated"
+  - name: S_PED_COCKPIT_DOOR
+    label: "COCKPIT DOOR"
+    value_labels: { "0": LOCK, "1": NORM, "2": UNLOCK }
+    class: verified
+    group: pedestal
+    values: [0, 1, 2]
+    rest: 1
     note: "label generated"
   - name: S_PED_COCKPIT_DOOR_VIDEO
     label: "COCKPIT DOOR VIDEO"
@@ -10405,8 +10437,8 @@ vars:
     label: "FC SPEEDBRAKE knob"
     class: analog
     group: flightcontrols
-    range: [1, 3]
-    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
+    range: [0, 3]
+    note: "label generated; 0 = ARM, 1 = RET, up to 3 = full; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_FC_ELEVATOR_TRIM_MOTOR_POWER
     label: "FC ELEVATOR TRIM MOTOR POWER"
     class: observe
@@ -10451,6 +10483,7 @@ vars:
     note: "label generated"
   - name: S_FC_MIP_ANTI_SKID
     label: "FC MIP ANTI SKID"
+    value_labels: { "0": "OFF", "1": "ON" }
     class: verified
     group: flightcontrols
     values: [0, 1]
@@ -10513,13 +10546,14 @@ vars:
     group: cabin
     values: [0, 1]
     note: "label generated"
-  # positions to be learned (CRO-24)
   - name: S_COCKPIT_DOOR
     label: "COCKPIT DOOR"
+    value_labels: { "0": CLOSED, "1": OPEN }
     class: verified
     group: cabin
     values: [0, 1]
-    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
+    verify: { lvar: I_PED_COCKPIT_DOOR_U, settle_ms: 150 }
+    note: "label generated; 0 = closed, 1 = open (the scan and the positions run found the door open at the gate); the OPEN light I_PED_COCKPIT_DOOR_U follows"
   - name: S_GALLEY_AFT_BREAKERS_COVER
     label: "GALLEY AFT BREAKERS COVER"
     class: verified

@@ -86,10 +86,6 @@ S_EXT_DOOR_R2_INSIDE_GUST_BUTTON,0,class,verified,momentary or latching unknown
 S_EXT_DOOR_R2_INSIDE_HANDLE,0,class,verified,momentary or latching unknown
 S_EXT_GPU_APU_SHUTOFF,0,class,verified,momentary or latching unknown
 S_EXT_REFUELING_AMOUNT,1,class,verified,momentary or latching unknown
-S_FCU_ALTITUDE,0,class,verified,momentary or latching unknown
-S_FCU_HEADING,0,class,verified,momentary or latching unknown
-S_FCU_SPEED,0,class,verified,momentary or latching unknown
-S_FCU_VERTICAL_SPEED,0,class,verified,momentary or latching unknown
 S_FC_CAPT_PRIORITY,0,class,verified,momentary or latching unknown
 S_FC_CAPT_TILLER_PEDAL_DISCONNECT,0,class,verified,momentary or latching unknown
 S_FC_FLAPS_LATCH,0,class,verified,momentary or latching unknown
@@ -128,7 +124,6 @@ S_EXT_DOOR_R2_INSIDE_GUST_STATE,0,class,verified,"name looks multi-position, pos
 S_EXT_DOOR_R2_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_R3E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_REFUELING_MODE,1,class,verified,"name looks multi-position, position count unknown"
-S_PED_COCKPIT_DOOR,1,class,verified,"name looks multi-position, position count unknown"
 B_CONFIG_ADIRS,1,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 B_CONFIG_ASU,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 B_CONFIG_BARO_UNIT,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
