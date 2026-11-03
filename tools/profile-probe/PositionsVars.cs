@@ -19,13 +19,16 @@ enum PositionKind
 /// (so a step still tells the truth if the label points at the wrong var).</param>
 /// <param name="Effects">Lamps or displays that should follow; recorded, not classified.</param>
 /// <param name="Say">Replaces the standard instruction.</param>
+/// <param name="Before">Asked before the step, and waited for (Enter): a setup the pilot does first.</param>
+/// <param name="Time">Rough seconds for the step, instead of the default for its kind.</param>
 sealed record PositionControl(
-    string Id, string Label, PositionKind Kind, string[] Vars, string[]? Effects = null, string? Hint = null, string? Say = null)
+    string Id, string Label, PositionKind Kind, string[] Vars, string[]? Effects = null, string? Hint = null, string? Say = null,
+    string? Before = null, int? Time = null)
 {
     public string Var => Vars[0];
     public IEnumerable<string> Watched => Vars.Concat(Effects ?? []);
     /// <summary>Rough time for one step, reading the prompt included.</summary>
-    public int Seconds => Kind switch { PositionKind.Move => 20, PositionKind.PushPull => 15, _ => 10 };
+    public int Seconds => Time ?? Kind switch { PositionKind.Move => 20, PositionKind.PushPull => 15, _ => 10 };
 
     /// <summary>The observe recorder's view of this control (it only needs an id and the var names).</summary>
     public ObserveControl AsObserve() => new(Id, Label, Var, Watched.Skip(1).ToArray());
@@ -44,7 +47,8 @@ static class PositionsVars
     const string ExtLt = "Overhead EXT LT panel.";
     const string Ir = "OFF stops this IRS: it has to align again afterwards, and the ADIRS ON BAT light or the ground horn may come on for a moment. That is fine at the gate.";
 
-    public static readonly PositionControl[] Controls =
+    /// <summary>The gate test 2 prep run (CRO-24, 2026-11-02): positions-results.csv.</summary>
+    public static readonly PositionControl[] GateTest2 =
     [
         // --- flight controls and FCU
         new("FLAPS", "FLAPS lever", PositionKind.Move, ["S_FC_FLAPS", "S_FC_FLAPS_LATCH"],
@@ -141,9 +145,176 @@ static class PositionsVars
         new("CLOCK_UTC", "captain clock UTC selector (GPS / INT / SET)", PositionKind.Move, ["S_MIP_CLOCK_UTC", "S_MIP_CLOCK_SET"]),
     ];
 
-    /// <summary>Every L: var the reader reads: controls, effects, then the setup check.</summary>
-    public static IReadOnlyList<string> All { get; } =
-        Controls.SelectMany(c => c.Watched).Concat(SafetyVars.Lvars).Distinct(StringComparer.Ordinal).ToList();
+    static string A(string name) => SimVars.A(name);
+
+    const string Fmgs =
+        "Before the FCU steps, set up the FMGS so managed modes are available: INIT A (FROM/TO, FLT NBR, CRZ FL), " +
+        "a departure in F-PLN, PERF TAKE OFF (V1, VR, V2, FLEX). The ALT window should show managed (dot) after a push. " +
+        "Press Enter when done, or s + Enter at the step to skip the FCU knobs.";
+
+    const string Cover = "Lift the guard first and close it again at the end.";
+
+    /// <summary>
+    /// Gate test 3 prep (the last sim session before gate test 3): the writes that did not stick in gate
+    /// test 2 with candidate sim vars, the FCU push/pull with the FMGS set up, the buttons and selectors
+    /// still on the review list, the brightness and volume knobs, and the cockpit comfort items (CRO-36).
+    /// Most important first: stopping early (q) loses only the last steps.
+    /// </summary>
+    public static readonly PositionControl[] GateTest3 =
+    [
+        // --- writes that did not stick in gate test 2 (cause H): which var does Fenix really read?
+        new("FLAPS", "FLAPS lever", PositionKind.Move,
+            ["S_FC_FLAPS", "S_FC_FLAPS_LATCH", "FLAPS_INTERNAL_CONFIG", "A320_FC_L_FLAPS",
+             A("FLAPS HANDLE INDEX"), A("FLAPS HANDLE PERCENT"), A("TRAILING EDGE FLAPS LEFT PERCENT")],
+            Hint: "Through 1, 2, 3, FULL and back to 0, about a second in each position. The flaps may move; that is fine.", Time: 25),
+        new("SPOILERS", "speed brake lever", PositionKind.Move,
+            ["A_FC_SPEEDBRAKE", "B_FC_SPEEDBRAKE", "WT_SPEEDBRAKE_LEVER_POS",
+             A("SPOILERS HANDLE POSITION"), A("SPOILERS ARMED"), A("SPOILERS LEFT POSITION")],
+            Say: "Pull the speed brake lever up to ARM and push it back down; then pull it back to half, to full, and back to RET.", Time: 25),
+        new("ANTI_SKID", "A/SKID & N/W STRG switch", PositionKind.Move,
+            ["S_FC_MIP_ANTI_SKID", A("ANTISKID BRAKES ACTIVE"), A("NOSEWHEEL LOCK ON GROUND")]),
+        new("RUD_TRIM", "RUD TRIM knob (pedestal)", PositionKind.Move,
+            ["S_FC_RUDDER_TRIM", "B_FC_RUDDER_TRIM", "B_FC_RUDDER_TRIM_DASHED", "N_FC_RUDDER_TRIM_DECIMAL", A("RUDDER TRIM PCT")],
+            Say: "Turn the RUD TRIM knob left for 2 s, then right for 2 s, so the trim moves and ends near 0. Do not press RESET yet."),
+        new("RUD_TRIM_RESET", "RUD TRIM RESET button", PositionKind.Click,
+            ["S_FC_RUDDER_TRIM_RESET", "S_FC_RUDDER_TRIM", "N_FC_RUDDER_TRIM_DECIMAL", A("RUDDER TRIM PCT")],
+            Say: "Turn RUD TRIM left for 2 s, so the trim is off 0, then press RESET once.", Time: 20),
+        new("DOOR_SWITCH", "cockpit door switch (pedestal: UNLOCK / NORM / LOCK)", PositionKind.Move,
+            ["S_PED_COCKPIT_DOOR", "B_DOORS_COCKPIT_LOCKED", "S_COCKPIT_DOOR"], ["I_PED_COCKPIT_DOOR_L", "I_PED_COCKPIT_DOOR_U"],
+            Say: "Hold the cockpit door switch at UNLOCK for 2 s, let go, then hold it at LOCK for 2 s and let go (it springs back to NORM)."),
+        new("DOOR", "cockpit door", PositionKind.Move,
+            ["S_COCKPIT_DOOR", "B_DOORS_COCKPIT_LOCKED",
+             ..Enumerable.Range(0, 10).Select(i => A($"INTERACTIVE POINT OPEN:{i}"))],
+            Say: "Open the cockpit door (its handle, or the door itself), wait 2 s, and close it again.", Time: 25),
+
+        // --- FCU push and pull (CRO-32): can the hidden direction be seen with managed modes available?
+        new("FCU_SPD", "FCU SPD knob", PositionKind.PushPull,
+            ["S_FCU_SPEED", "E_FCU_SPEED", "I_FCU_SPEED_MANAGED", "B_FCU_SPEED_DASHED", "I_FCU_SPEED_MODE", "B_FCU_SPEED_MACH", "N_FCU_SPEED",
+             A("AUTOPILOT SPEED SLOT INDEX")],
+            Before: Fmgs, Say: "Pull the SPD knob, wait 2 s, push it, wait 2 s.", Time: 25),
+        new("FCU_HDG", "FCU HDG knob", PositionKind.PushPull,
+            ["S_FCU_HEADING", "E_FCU_HEADING", "I_FCU_HEADING_MANAGED", "B_FCU_HEADING_DASHED", "I_FCU_HEADING_VS_MODE", "N_FCU_HEADING",
+             A("AUTOPILOT HEADING SLOT INDEX")],
+            Say: "Pull the HDG knob, wait 2 s, push it, wait 2 s.", Time: 25),
+        new("FCU_ALT", "FCU ALT knob", PositionKind.PushPull,
+            ["S_FCU_ALTITUDE", "E_FCU_ALTITUDE", "I_FCU_ALTITUDE_MANAGED", "N_FCU_ALTITUDE", A("AUTOPILOT ALTITUDE SLOT INDEX")],
+            Say: "Pull the ALT knob, wait 2 s, push it, wait 2 s.", Time: 25),
+        new("FCU_VS", "FCU V/S knob", PositionKind.PushPull,
+            ["S_FCU_VERTICAL_SPEED", "E_FCU_VS", "B_FCU_VERTICALSPEED_DASHED", "N_FCU_VS", A("AUTOPILOT VS SLOT INDEX")],
+            Say: "Pull the V/S knob, wait 2 s, push it, wait 2 s.", Time: 25),
+        new("BARO_STD_CAPT", "captain BARO knob", PositionKind.PushPull,
+            ["S_FCU_EFIS1_BARO_STD", "B_FCU_EFIS1_BARO_STD", "S_FCU_EFIS1_BARO_MODE", "E_FCU_EFIS1_BARO", "N_FCU_EFIS1_BARO_HPA",
+             A("KOHLSMAN SETTING STD:1")],
+            Say: "Pull the captain BARO knob (STD), wait 2 s, push it (back to QNH)."),
+        new("BARO_STD_FO", "first officer BARO knob", PositionKind.PushPull,
+            ["S_FCU_EFIS2_BARO_STD", "B_FCU_EFIS2_BARO_STD", "S_FCU_EFIS2_BARO_MODE", "E_FCU_EFIS2_BARO", "N_FCU_EFIS2_BARO_HPA",
+             A("KOHLSMAN SETTING STD:2")],
+            Say: "Pull the first officer BARO knob (STD), wait 2 s, push it (back to QNH)."),
+
+        // --- buttons and selectors still on the review list
+        new("N1_MODE_1", "ENG 1 N1 MODE button (overhead)", PositionKind.Click,
+            ["S_OH_ENG_N1_MODE_1", "S_OH_ENG_N1_MODE_1_Cover", "S_OH_ENG_N1_MODE_2"], ["I_OH_ENG_N1_MODE_1_L"],
+            Hint: Cover, Say: "Click ENG 1 N1 MODE once, wait 2 s, click it once more (back to off).", Time: 20),
+        new("N1_MODE_2", "ENG 2 N1 MODE button (overhead)", PositionKind.Click,
+            ["S_OH_ENG_N1_MODE_2", "S_OH_ENG_N1_MODE_2_Cover", "S_OH_ENG_N1_MODE_1"], ["I_OH_ENG_N1_MODE_2_L"],
+            Hint: Cover, Say: "Click ENG 2 N1 MODE once, wait 2 s, click it once more (back to off).", Time: 20),
+        new("AUTOBRK_MED", "AUTO BRK MED button", PositionKind.Click,
+            ["S_MIP_AUTOBRAKE_MED", "S_MIP_AUTOBRAKE_LO", "S_MIP_AUTOBRAKE_MAX", A("AUTO BRAKE SWITCH CB")],
+            ["I_MIP_AUTOBRAKE_MED_L", "I_MIP_AUTOBRAKE_MED_U"], Say: "Click AUTO BRK MED once, wait 2 s, click it once more (off)."),
+        new("AUTOBRK_MAX", "AUTO BRK MAX button", PositionKind.Click,
+            ["S_MIP_AUTOBRAKE_MAX", "S_MIP_AUTOBRAKE_LO", "S_MIP_AUTOBRAKE_MED", A("AUTO BRAKE SWITCH CB")],
+            ["I_MIP_AUTOBRAKE_MAX_L", "I_MIP_AUTOBRAKE_MAX_U"], Say: "Click AUTO BRK MAX once, wait 2 s, click it once more (off)."),
+        new("RMP1_KEYS", "RMP 1 keys", PositionKind.Click,
+            ["S_PED_RMP1_HF1", "S_PED_RMP1_HF2", "S_PED_RMP1_AM", "S_PED_RMP1_NAV", "S_PED_RMP1_NAV_Cover", "S_PED_RMP1_VOR",
+             "S_PED_RMP1_ILS", "S_PED_RMP1_MLS", "S_PED_RMP1_ADF", "S_PED_RMP1_BFO", "S_PED_RMP1_VHF1", "B_PED_RMP1_COURSE_DISPLAYED"],
+            ["I_PED_RMP1_HF1", "I_PED_RMP1_HF2", "I_PED_RMP1_AM", "I_PED_RMP1_NAV", "I_PED_RMP1_VOR", "I_PED_RMP1_ILS", "I_PED_RMP1_MLS",
+             "I_PED_RMP1_ADF", "I_PED_RMP1_BFO", "I_PED_RMP1_VHF1", "I_PED_RMP1_SEL", "N_PED_RMP1_ACTIVE", "N_PED_RMP1_STDBY"],
+            Say: "On RMP 1, click each once, about a second apart: HF1, HF2, AM; lift the NAV guard, NAV, VOR, LS, GLS, ADF, BFO; " +
+                 "close the NAV guard; VHF1 last.",
+            Hint: "RMP 2 and 3 follow as the same part.", Time: 50),
+        new("CLOCK_SET", "clock SET selector (captain clock)", PositionKind.Move,
+            ["S_MIP_CLOCK_SET", "S_MIP_CLOCK_UTC", "E_MIP_CLOCK_SET"],
+            Hint: "Not the UTC selector: the SET selector or knob next to it. Back to where it started."),
+        new("DOOR_VIDEO", "cockpit door video button", PositionKind.Click,
+            ["S_PED_COCKPIT_DOOR_VIDEO", "S_OH_COCKPIT_DOOR_VIDEO"], ["I_OH_COCKPIT_DOOR_VIDEO"],
+            Say: "Click the cockpit door video button once, wait 2 s, click it once more.", Time: 15),
+
+        // --- brightness and volume knobs
+        new("ECAM_BRT", "ECAM brightness knobs", PositionKind.Move,
+            ["A_DISPLAY_BRIGHTNESS_ECAM_U", "A_DISPLAY_BRIGHTNESS_ECAM_L", "N_DISPLAY_BRIGHTNESS_ECAM_U", "N_DISPLAY_BRIGHTNESS_ECAM_L"],
+            Say: "Turn the upper ECAM brightness knob down a little and back; then the lower one."),
+        new("CAPT_BRT", "captain PFD and ND brightness knobs", PositionKind.Move,
+            ["A_DISPLAY_BRIGHTNESS_CO", "A_DISPLAY_BRIGHTNESS_CI", "A_DISPLAY_BRIGHTNESS_CI_OUTER", "N_DISPLAY_BRIGHTNESS_CO", "N_DISPLAY_BRIGHTNESS_CI"],
+            Say: "Captain: turn the PFD brightness knob down a little and back; then the ND knob, inner and outer ring."),
+        new("FO_BRT", "first officer PFD and ND brightness knobs", PositionKind.Move,
+            ["A_DISPLAY_BRIGHTNESS_FO", "A_DISPLAY_BRIGHTNESS_FI", "A_DISPLAY_BRIGHTNESS_FI_OUTER", "N_DISPLAY_BRIGHTNESS_FO", "N_DISPLAY_BRIGHTNESS_FI"],
+            Say: "First officer: turn the PFD brightness knob down a little and back; then the ND knob, inner and outer ring."),
+        new("DCDU_BRT", "captain DCDU BRT/DIM", PositionKind.Click,
+            ["S_DCDU1_BRT", "S_DCDU1_DIM", "S_DCDU1_DIM_BRT", "N_DCDU1_BRIGHTNESS"],
+            Say: "On the captain DCDU, press BRT twice, then DIM twice.", Time: 15),
+        new("ASP2_VOLUME", "ASP 2 VHF 1 volume knob (first officer audio panel)", PositionKind.Move,
+            ["A_ASP2_VHF_1_VOLUME", "A_ASP2_VHF_2_VOLUME", "A_ASP2_VHF_3_VOLUME", "A_ASP2_INT_VOLUME", "A_ASP2_CAB_VOLUME"],
+            Say: "On the first officer's audio panel (ASP 2), turn the VHF 1 volume knob down a little and back.",
+            Hint: "Open item J: this shows whether ASP 2 moves at all."),
+
+        // --- cockpit comfort items (CRO-36: sync later)
+        new("TRAY_TABLES", "tray tables", PositionKind.Move, ["S_TRAY_TABLE_CAPT", "S_TRAY_TABLE_FO"],
+            Say: "Open the captain tray table and stow it again; then the first officer's."),
+        new("SEATS", "captain seat", PositionKind.Move,
+            ["S_SEAT_DISTANCE_CAPT", "S_SEAT_HEIGHT_CAPT", "N_SEAT_DISTANCE_CAPT", "N_SEAT_HEIGHT_CAPT"],
+            Say: "Move the captain seat forward and back, then up and down, and back to where it was."),
+        new("ARMRESTS", "armrests", PositionKind.Move,
+            ["S_ARMREST_LEFT_CAPT", "S_ARMREST_RIGHT_CAPT", "S_ARMREST_LEFT_FO", "S_ARMREST_RIGHT_FO"],
+            Say: "Raise and lower one captain armrest, then one first officer armrest."),
+        new("SUNSHADES", "sunshades", PositionKind.Move, ["S_SUNSHADE_CAPT", "S_SUNSHADE_FO"],
+            Say: "Pull the captain sunshade out and stow it; then the first officer's."),
+        new("JUMPSEAT", "jumpseat", PositionKind.Move, ["S_JUMPSEAT", "S_JUMPSEAT_HEADREST"],
+            Say: "Unfold the jumpseat and fold it again (the headrest too, if it moves)."),
+        new("MASK_HATCH", "oxygen mask stowage doors", PositionKind.Move, ["S_OXYGEN_MASK_COVER_CAPT", "S_OXYGEN_MASK_COVER_FO"],
+            Say: "Open the captain oxygen mask stowage door and close it; then the first officer's.",
+            Hint: "Only the door: never the mask TEST or the overhead MASK MAN ON."),
+        new("GRAVITY_GEAR", "gravity gear extension handle (pedestal, rear)", PositionKind.Move,
+            ["S_HYD_GRAVITY_GEAR_HANDLE", "S_HYD_GRAVITY_GEAR_EXTEND", A("GEAR HANDLE POSITION"), A("GEAR EMERGENCY HANDLE POSITION")],
+            Say: "Unstow the gravity gear crank, turn it 3 turns clockwise, 3 turns back, and stow it.",
+            Hint: "The gear is down and locked at the gate, so nothing moves outside.", Time: 30),
+    ];
+
+    /// <summary>The runs, by name (--run). The latest is the default.</summary>
+    public static readonly IReadOnlyDictionary<string, PositionControl[]> Runs = new Dictionary<string, PositionControl[]>
+    {
+        ["gate2"] = GateTest2,
+        ["gate3"] = GateTest3,
+        // The first 12 steps again (writes that did not stick, door, FCU, BARO): their values were shifted in
+        // the gate3 run (a rejected sim var name in a shared definition); confirms the realigned reading.
+        ["gate3b"] = GateTest3.TakeWhile(c => c.Id != "BARO_STD_FO").ToArray(),
+    };
+
+    public const string DefaultRun = "gate3";
+
+    /// <summary>The default run's steps.</summary>
+    public static PositionControl[] Controls => Runs[DefaultRun];
+
+    /// <summary>
+    /// Every var the reader reads for these steps: controls, effects, the run's background vars (reported
+    /// whenever they move), then the setup check.
+    /// </summary>
+    public static IReadOnlyList<string> AllOf(IEnumerable<PositionControl> controls) =>
+        controls.SelectMany(c => c.Watched).Concat(Background(controls)).Concat(SafetyVars.Lvars).Distinct(StringComparer.Ordinal).ToList();
+
+    public static IReadOnlyList<string> All => AllOf(Controls);
+
+    /// <summary>A run with FCU push/pull steps watches the whole FCU family: any var that moves with a push or pull shows up.</summary>
+    static IEnumerable<string> Background(IEnumerable<PositionControl> controls) =>
+        controls.Any(c => c.Id.StartsWith("FCU_", StringComparison.Ordinal) && c.Kind == PositionKind.PushPull) ? FcuFamily : [];
+
+    static readonly string[] FcuFamily =
+    [
+        "B_FCU_HEADING_DASHED", "B_FCU_POWER", "B_FCU_SPEED_DASHED", "B_FCU_SPEED_MACH", "B_FCU_TRACK_FPA_MODE", "B_FCU_VERTICALSPEED_DASHED",
+        "I_FCU_ALTITUDE_MANAGED", "I_FCU_AP1", "I_FCU_AP2", "I_FCU_APPR", "I_FCU_ATHR", "I_FCU_EXPED", "I_FCU_HEADING_MANAGED",
+        "I_FCU_HEADING_VS_MODE", "I_FCU_LOC", "I_FCU_MACH_MODE", "I_FCU_SPEED_MANAGED", "I_FCU_SPEED_MODE", "I_FCU_TRACK_FPA_MODE",
+        "N_FCU_ALTITUDE", "N_FCU_HEADING", "N_FCU_SPEED", "N_FCU_VS", "E_FCU_ALTITUDE", "E_FCU_HEADING", "E_FCU_SPEED", "E_FCU_VS",
+        "S_FCU_SPEED", "S_FCU_HEADING", "S_FCU_ALTITUDE", "S_FCU_VERTICAL_SPEED",
+    ];
 
     public static string Instruction(PositionControl c) => c.Say ?? c.Kind switch
     {

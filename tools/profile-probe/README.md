@@ -21,7 +21,7 @@ dotnet run --project tools/profile-probe -- <command>
 | `readonly` | 30 s noise sample of every watched var, TITLE, fuel datarefs (AIRAC is not read: preflight asks the pilots) | no |
 | `verified` | brief item 1 + 4: `[0,1]` guesses (tries 2 only where 2 is known); which lamp half reacts | yes |
 | `buttons` | item 2: momentary vs latching | yes |
-| `positions [--only ID]` | CRO-24: guided, the pilot moves each control through its positions (FCU knobs: push, then pull; unsure buttons: one click); every value is recorded and classified; see below | no |
+| `positions [--run gate3\|gate2] [--only ID]` | CRO-24: guided, the pilot moves each control through its positions (FCU knobs: push, then pull; unsure buttons: one click); every value is recorded and classified; see below | no |
 | `encoders` | item 5: +1/-1, which `N_` var follows | yes |
 | `breakers` | item 6: the 11 sampled `E_CB_`, 0 and 1 only | yes |
 | `auto` | verified, buttons, encoders, breakers back to back | yes |
@@ -72,6 +72,19 @@ its neighbours (so a wrong label still shows which var moved) and classifies eve
 Output: `profiles/fenix-a320/positions-results.csv` (one row per control and var),
 `positions-changes.csv` (every change, frame by frame), `.probe/positions-summary.txt`, and
 timestamped raw copies in `.probe/`. The old write test of this name stays off.
+
+### Runs (`--run`)
+
+- `gate3` (default): the last sim session before gate test 3, 32 steps, about 11 minutes plus the FMGS
+  setup. Output files end in `-gate3` (`positions-results-gate3.csv`, ...), so earlier runs stay.
+  - The writes that did not stick in gate test 2 (flaps, spoilers, A/SKID, RUD TRIM and RESET, the cockpit
+    door switch and the door) also read candidate sim vars (`A:` names in `SimVars.cs`, e.g.
+    `A:FLAPS HANDLE INDEX`): the same read-only client reads them with their unit.
+  - Before the FCU knobs the tool asks the pilot to set up the FMGS and waits for Enter. Every FCU step
+    watches the whole FCU family; its summary says whether push and pull are both visible through some
+    var, or that the hidden direction is still not visible (next: how the public YourControls Fenix
+    profile detects it, mechanism only).
+- `gate2`: the run before gate test 2 (`positions-results.csv`).
 
 ## Range rule
 

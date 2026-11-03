@@ -60,7 +60,6 @@ public class RealProfileTests
 
     [Theory]
     [InlineData("S_FCU_SPEED")] // push/pull knob: one direction is invisible, stays unsynced
-    [InlineData("S_PED_RMP1_NAV")] // no evidence yet: a button family is not always a counter
     [InlineData("S_FC_THR_INST_DISCONNECT1")]
     [InlineData("S_OH_FUEL_XFEED")] // a 0/1 latch (positions run)
     [InlineData("S_FCU_ALTITUDE_SCALE")] // switch
@@ -114,10 +113,9 @@ public class RealProfileTests
     }
 
     [Theory]
-    [InlineData("S_PED_COCKPIT_DOOR_VIDEO")]
     [InlineData("S_FCU_EFIS1_BARO_STD")]
     [InlineData("S_FCU_EFIS2_BARO_STD")]
-    public void Counters_profiled_as_switches_are_not_synced_until_an_observe_run(string name)
+    public void Counters_profiled_as_switches_are_not_synced_until_an_observe_run(string name) // door video: done, now an edge button
     {
         Assert.DoesNotContain(Real.Vars, v => v.Name == name);
         var list = UnsyncedList.LoadNextTo(Path.Combine(Repo.Root, "profiles", "fenix-a320", "profile.yaml"), Real);
@@ -177,11 +175,11 @@ public class RealProfileTests
     }
 
     [Theory]
-    [InlineData("A_OH_PNEUMATIC_LDG_ELEV", -3, 7)]
+    [InlineData("A_OH_PNEUMATIC_LDG_ELEV", -3, 9.75)] // gate test 2 (interim, owner confirmed)
     [InlineData("A_FC_SPEEDBRAKE", 1, 3)]
-    [InlineData("A_WR_TILT", 3, 10)]
-    [InlineData("A_WR_GAIN", -5, 0)]
-    public void Analog_ranges_come_from_gate_test_1(string name, double min, double max)
+    [InlineData("A_WR_TILT", -15, 15)]                // gate test 2
+    [InlineData("A_WR_GAIN", -5, 4)]                  // gate test 2
+    public void Analog_ranges_come_from_the_gate_tests(string name, double min, double max)
     {
         Assert.Equal([min, max], Var(name).Range);
         var guard = new SimSafetyGuard(Real);
@@ -189,6 +187,56 @@ public class RealProfileTests
         guard.CheckWrite(name, max);
         Assert.Throws<SafetyViolationException>(() => guard.CheckWrite(name, max + 0.25));
         Assert.Throws<SafetyViolationException>(() => guard.CheckWrite(name, min - 0.25));
+    }
+
+    [Fact]
+    public void Positions_run_2026_11_03_clear_results()
+    {
+        // positions-report-gate3.md: blocks 2 and 3 of that run (read correctly).
+        foreach (var n in new[] { 1, 2 })
+        {
+            var mode = Var($"S_OH_ENG_N1_MODE_{n}");
+            Assert.Equal(SyncClass.Verified, mode.Class);
+            Assert.Equal([0, 1], mode.Values!);
+            Assert.Equal($"I_OH_ENG_N1_MODE_{n}_L", mode.Verify!.Lvar);
+        }
+        string[] edges =
+        [
+            "S_MIP_AUTOBRAKE_MED", "S_MIP_AUTOBRAKE_MAX", "S_MIP_CLOCK_SET", "S_PED_COCKPIT_DOOR_VIDEO",
+            .. new[] { 1, 2, 3 }.SelectMany(r => new[] { "HF1", "HF2", "AM", "NAV", "VOR", "ILS", "MLS", "ADF", "BFO" }.Select(k => $"S_PED_RMP{r}_{k}")),
+        ];
+        foreach (var name in edges)
+        {
+            var v = Var(name);
+            Assert.True(v is { Class: SyncClass.Pulse, Press: PressMode.Edge, Verify: null }, name);
+        }
+        Assert.Equal([0, 1, 2], Var("S_DCDU1_DIM_BRT").Values!);
+        Assert.Equal(1, Var("S_DCDU1_DIM_BRT").Rest);
+        foreach (var b in new[] { "ECAM_U", "ECAM_L", "CO", "CI", "CI_OUTER", "FO", "FI", "FI_OUTER" })
+        {
+            Assert.Equal(SyncClass.Analog, Var($"A_DISPLAY_BRIGHTNESS_{b}").Class);
+            Assert.Equal([0, 1], Var($"A_DISPLAY_BRIGHTNESS_{b}").Range!);
+        }
+    }
+
+    [Theory]
+    [InlineData("S_OH_IN_LT_ICE", new double[] { 0, 1 })]
+    [InlineData("S_MIP_LIGHT_CONSOLEFLOOR_CAPT", new double[] { 0, 1, 2 })]
+    [InlineData("S_MIP_LIGHT_CONSOLEFLOOR_FO", new double[] { 0, 1, 2 })]
+    [InlineData("S_CHART_LIGHT_TEMP_CAPT", new double[] { 0, 1 })]
+    [InlineData("S_CHART_LIGHT_TEMP_FO", new double[] { 0, 1 })]
+    [InlineData("S_EXT_CARGO_BAY_AFT_LT", new double[] { 0, 1 })]
+    [InlineData("S_EXT_CARGO_BAY_FWD_LT", new double[] { 0, 1 })]
+    [InlineData("S_EXT_CARGO_DOOR_SELECTOR_FWD", new double[] { 0, 1 })]
+    [InlineData("S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT", new double[] { 0, 1 })]
+    [InlineData("S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD", new double[] { 0, 1 })]
+    public void Interim_values_from_gate_test_2(string name, double[] values)
+    {
+        // Pilot input in gate test 2, owner confirmed (gate test 3 prep). None of them kept counting up.
+        Assert.Equal(values, Var(name).Values);
+        var guard = new SimSafetyGuard(Real);
+        foreach (var v in values) guard.CheckWrite(name, v);
+        Assert.Throws<SafetyViolationException>(() => guard.CheckWrite(name, values[^1] + 1));
     }
 
     [Fact]

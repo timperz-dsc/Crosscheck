@@ -211,8 +211,8 @@ vars:
     label: "LDG ELEV"
     class: analog
     group: overhead
-    range: [-3, 7]
-    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
+    range: [-3, 9.75]
+    note: "label generated; interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: I_OH_AFT_FADEC_GND_1_L
     label: "FADEC GND 1 light (lower)"
     class: observe
@@ -1642,12 +1642,28 @@ vars:
     values: [0, 1]
     verify: { lvar: I_OH_ENG_MANSTART_2_L, settle_ms: 150 }
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  - name: S_OH_ENG_N1_MODE_1
+    label: "N1 MODE 1"
+    value_labels: { "0": "OFF", "1": "ON" }
+    class: verified
+    group: overhead
+    values: [0, 1]
+    verify: { lvar: I_OH_ENG_N1_MODE_1_L, settle_ms: 150 }
+    note: "label generated"
   - name: S_OH_ENG_N1_MODE_1_Cover
     label: "N1 MODE 1 cover"
     value_labels: { "0": closed, "1": open }
     class: verified
     group: overhead
     values: [0, 1]
+    note: "label generated"
+  - name: S_OH_ENG_N1_MODE_2
+    label: "N1 MODE 2"
+    value_labels: { "0": "OFF", "1": "ON" }
+    class: verified
+    group: overhead
+    values: [0, 1]
+    verify: { lvar: I_OH_ENG_N1_MODE_2_L, settle_ms: 150 }
     note: "label generated"
   - name: S_OH_ENG_N1_MODE_2_Cover
     label: "N1 MODE 2 cover"
@@ -2115,14 +2131,13 @@ vars:
     values: [0, 1, 2]
     priority: 5
     note: "label generated"
-  # positions to be learned (CRO-24)
   - name: S_OH_IN_LT_ICE
     label: "IN LT ICE"
     class: verified
     group: overhead
-    values: [0]
+    values: [0, 1]
     priority: 5
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_OH_LIGHTING_AVIONICS_COMPT
     label: "LIGHTING AVIONICS COMPT"
     class: pulse
@@ -3015,6 +3030,42 @@ vars:
     verify: { lvar: I_FCU_EFIS2_WPT, settle_ms: 150 }
     control: efis2_nd_filter
     note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_CI
+    label: "DISPLAY BRIGHTNESS CI"
+    class: analog
+    group: mip
+    range: [0, 1]
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_CI_OUTER
+    label: "DISPLAY BRIGHTNESS CI OUTER"
+    class: analog
+    group: mip
+    range: [0, 1]
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_CO
+    label: "DISPLAY BRIGHTNESS CO"
+    class: analog
+    group: mip
+    range: [0, 1]
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_FI
+    label: "DISPLAY BRIGHTNESS FI"
+    class: analog
+    group: mip
+    range: [0, 1]
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_FI_OUTER
+    label: "DISPLAY BRIGHTNESS FI OUTER"
+    class: analog
+    group: mip
+    range: [0, 1]
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_FO
+    label: "DISPLAY BRIGHTNESS FO"
+    class: analog
+    group: mip
+    range: [0, 1]
+    note: "label generated"
   - name: A_MIP_AIR_VENT_CAPT_OPEN
     label: "AIR VENT CAPT OPEN"
     class: analog
@@ -3102,7 +3153,7 @@ vars:
     group: mip
     note: "label generated"
   - name: E_MIP_CLOCK_SET
-    label: "CLOCK SET"
+    label: "CLOCK SET encoder"
     class: delta
     group: mip
     note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
@@ -3342,22 +3393,20 @@ vars:
     class: observe
     group: mip
     note: "label generated"
-  # positions to be learned (CRO-24)
   - name: S_CHART_LIGHT_TEMP_CAPT
     label: "CHART LIGHT TEMP CAPT"
     class: verified
     group: mip
-    values: [0]
+    values: [0, 1]
     priority: 5
-    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
-  # positions to be learned (CRO-24)
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_CHART_LIGHT_TEMP_FO
     label: "CHART LIGHT TEMP FO"
     class: verified
     group: mip
-    values: [0]
+    values: [0, 1]
     priority: 5
-    note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_DCDU1_BRT
     label: "DCDU1 BRT"
     class: pulse
@@ -3370,6 +3419,14 @@ vars:
     group: mip
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled N_DCDU1_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU1_DIM_BRT
+    label: "DCDU1 DIM BRT"
+    value_labels: { "0": DIM, "2": BRT }
+    class: verified
+    group: mip
+    values: [0, 1, 2]
+    rest: 1
+    note: "label generated"
   - name: S_DCDU1_LSK1L
     label: "DCDU1 LSK1L"
     class: pulse
@@ -3436,6 +3493,14 @@ vars:
     group: mip
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled N_DCDU2_BRIGHTNESS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_DCDU2_DIM_BRT
+    label: "DCDU2 DIM BRT"
+    value_labels: { "0": DIM, "2": BRT }
+    class: verified
+    group: mip
+    values: [0, 1, 2]
+    rest: 1
+    note: "label generated"
   - name: S_DCDU2_LSK1L
     label: "DCDU2 LSK1L"
     class: pulse
@@ -3520,6 +3585,18 @@ vars:
     group: mip
     press: edge
     note: "label generated"
+  - name: S_MIP_AUTOBRAKE_MAX
+    label: "AUTOBRAKE MAX"
+    class: pulse
+    group: mip
+    press: edge
+    note: "label generated"
+  - name: S_MIP_AUTOBRAKE_MED
+    label: "AUTOBRAKE MED"
+    class: pulse
+    group: mip
+    press: edge
+    note: "label generated"
   - name: S_MIP_AUTOLAND_CAPT
     label: "AUTOLAND CAPT"
     class: pulse
@@ -3569,6 +3646,12 @@ vars:
     group: mip
     press: edge
     note: "label generated"
+  - name: S_MIP_CLOCK_SET
+    label: "CLOCK SET button"
+    class: pulse
+    group: mip
+    press: edge
+    note: "label generated"
   - name: S_MIP_CLOCK_UTC
     label: "CLOCK UTC"
     class: verified
@@ -3612,22 +3695,20 @@ vars:
     group: mip
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled B_MIP_ISFD_BARO_STD and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
-  # positions to be learned (CRO-24)
   - name: S_MIP_LIGHT_CONSOLEFLOOR_CAPT
     label: "LIGHT CONSOLEFLOOR CAPT"
     class: verified
     group: mip
-    values: [0, 1]
+    values: [0, 1, 2]
     priority: 5
-    note: "label generated; values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
-  # positions to be learned (CRO-24)
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_MIP_LIGHT_CONSOLEFLOOR_FO
     label: "LIGHT CONSOLEFLOOR FO"
     class: verified
     group: mip
-    values: [0, 1]
+    values: [0, 1, 2]
     priority: 5
-    note: "label generated; values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_MIP_MASTER_CAUTION_CAPT
     label: "MASTER CAUTION CAPT"
     class: pulse
@@ -4096,14 +4177,14 @@ vars:
     label: "WR GAIN knob"
     class: analog
     group: pedestal
-    range: [-5, 0]
-    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
+    range: [-5, 4]
+    note: "label generated; interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: A_WR_TILT
     label: "WR TILT"
     class: analog
     group: pedestal
-    range: [3, 10]
-    note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
+    range: [-15, 15]
+    note: "label generated; interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: B_PED_RMP1_COURSE_DISPLAYED
     label: "RMP 1 COURSE DISPLAYED"
     class: observe
@@ -5843,6 +5924,20 @@ vars:
     values: [0, 1, 2]
     priority: 2
     note: "label generated"
+  - name: S_HYD_GRAVITY_GEAR_EXTEND
+    label: "GRAVITY GEAR EXTEND"
+    class: analog
+    group: pedestal
+    range: [0, 3]
+    priority: 2
+    note: "label generated"
+  - name: S_HYD_GRAVITY_GEAR_HANDLE
+    label: "GRAVITY GEAR HANDLE"
+    class: verified
+    group: pedestal
+    values: [0, 1]
+    priority: 2
+    note: "label generated"
   - name: S_PED_ATC_0
     label: "ATC 0"
     class: pulse
@@ -5893,6 +5988,12 @@ vars:
     note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_PED_ATC_CLR
     label: "ATC CLR"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_COCKPIT_DOOR_VIDEO
+    label: "COCKPIT DOOR VIDEO"
     class: pulse
     group: pedestal
     press: edge
@@ -6455,6 +6556,54 @@ vars:
     group: pedestal
     press: edge
     note: "label generated"
+  - name: S_PED_RMP1_ADF
+    label: "RMP 1 ADF"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_AM
+    label: "RMP 1 AM"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_BFO
+    label: "RMP 1 BFO"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_HF1
+    label: "RMP 1 HF1"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_HF2
+    label: "RMP 1 HF2"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_ILS
+    label: "RMP 1 ILS"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_MLS
+    label: "RMP 1 MLS"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP1_NAV
+    label: "RMP 1 NAV"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
   - name: S_PED_RMP1_NAV_Cover
     label: "RMP 1 NAV cover"
     value_labels: { "0": closed, "1": open }
@@ -6486,12 +6635,66 @@ vars:
     group: pedestal
     press: edge
     note: "label generated"
+  - name: S_PED_RMP1_VOR
+    label: "RMP 1 VOR"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
   - name: S_PED_RMP1_XFER
     label: "RMP 1 XFER"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_PED_RMP2_ADF
+    label: "RMP 2 ADF"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_AM
+    label: "RMP 2 AM"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_BFO
+    label: "RMP 2 BFO"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_HF1
+    label: "RMP 2 HF1"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_HF2
+    label: "RMP 2 HF2"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_ILS
+    label: "RMP 2 ILS"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_MLS
+    label: "RMP 2 MLS"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP2_NAV
+    label: "RMP 2 NAV"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
   - name: S_PED_RMP2_NAV_Cover
     label: "RMP 2 NAV cover"
     value_labels: { "0": closed, "1": open }
@@ -6523,12 +6726,66 @@ vars:
     group: pedestal
     press: edge
     note: "label generated"
+  - name: S_PED_RMP2_VOR
+    label: "RMP 2 VOR"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
   - name: S_PED_RMP2_XFER
     label: "RMP 2 XFER"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
+  - name: S_PED_RMP3_ADF
+    label: "RMP 3 ADF"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_AM
+    label: "RMP 3 AM"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_BFO
+    label: "RMP 3 BFO"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_HF1
+    label: "RMP 3 HF1"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_HF2
+    label: "RMP 3 HF2"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_ILS
+    label: "RMP 3 ILS"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_MLS
+    label: "RMP 3 MLS"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_NAV
+    label: "RMP 3 NAV"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
   - name: S_PED_RMP3_NAV_Cover
     label: "RMP 3 NAV cover"
     value_labels: { "0": closed, "1": open }
@@ -6556,6 +6813,12 @@ vars:
     note: "label generated"
   - name: S_PED_RMP3_VHF3
     label: "RMP 3 VHF3"
+    class: pulse
+    group: pedestal
+    press: edge
+    note: "label generated"
+  - name: S_PED_RMP3_VOR
+    label: "RMP 3 VOR"
     class: pulse
     group: pedestal
     press: edge
@@ -7744,6 +8007,18 @@ vars:
     group: cdu2
     press: edge
     verify: { mcdu: 2, settle_ms: 600 }
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_ECAM_L
+    label: "DISPLAY BRIGHTNESS ECAM L"
+    class: analog
+    group: ecam
+    range: [0, 1]
+    note: "label generated"
+  - name: A_DISPLAY_BRIGHTNESS_ECAM_U
+    label: "DISPLAY BRIGHTNESS ECAM U"
+    class: analog
+    group: ecam
+    range: [0, 1]
     note: "label generated"
   - name: I_ECAM_APU
     label: "ECAM APU light"
@@ -10214,6 +10489,30 @@ vars:
     class: observe
     group: cabin
     note: "label generated"
+  - name: S_ARMREST_LEFT_CAPT
+    label: "ARMREST LEFT CAPT"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_ARMREST_LEFT_FO
+    label: "ARMREST LEFT FO"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_ARMREST_RIGHT_CAPT
+    label: "ARMREST RIGHT CAPT"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_ARMREST_RIGHT_FO
+    label: "ARMREST RIGHT FO"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
   # positions to be learned (CRO-24)
   - name: S_COCKPIT_DOOR
     label: "COCKPIT DOOR"
@@ -10233,12 +10532,76 @@ vars:
     group: cabin
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  - name: S_JUMPSEAT
+    label: "JUMPSEAT"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_JUMPSEAT_HEADREST
+    label: "JUMPSEAT HEADREST"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_OXYGEN_MASK_COVER_CAPT
+    label: "MASK COVER CAPT"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_OXYGEN_MASK_COVER_FO
+    label: "MASK COVER FO"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_SEAT_DISTANCE_CAPT
+    label: "SEAT DISTANCE CAPT"
+    class: verified
+    group: cabin
+    values: [0, 1, 2]
+    rest: 1
+    note: "label generated"
+  - name: S_SEAT_DISTANCE_FO
+    label: "SEAT DISTANCE FO"
+    class: verified
+    group: cabin
+    values: [0, 1, 2]
+    rest: 1
+    note: "label generated"
+  - name: S_SEAT_HEIGHT_CAPT
+    label: "SEAT HEIGHT CAPT"
+    class: verified
+    group: cabin
+    values: [0, 1, 2]
+    rest: 1
+    note: "label generated"
+  - name: S_SEAT_HEIGHT_FO
+    label: "SEAT HEIGHT FO"
+    class: verified
+    group: cabin
+    values: [0, 1, 2]
+    rest: 1
+    note: "label generated"
   - name: S_STAIRS_BLOCKER
     label: "STAIRS BLOCKER"
     class: verified
     group: cabin
     values: [0, 1]
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
+  - name: S_TRAY_TABLE_CAPT
+    label: "TRAY TABLE CAPT"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
+  - name: S_TRAY_TABLE_FO
+    label: "TRAY TABLE FO"
+    class: verified
+    group: cabin
+    values: [0, 1]
+    note: "label generated"
   # positions to be learned (CRO-24)
   - name: S_WINDOW_BLINDS_CAPT
     label: "WINDOW BLINDS CAPT"
@@ -10477,20 +10840,18 @@ vars:
     class: observe
     group: ground
     note: "label generated"
-  # positions to be learned (CRO-24)
   - name: S_EXT_CARGO_BAY_AFT_LT
     label: "EXT CARGO BAY AFT LT"
     class: verified
     group: ground
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    values: [0, 1]
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_EXT_CARGO_BAY_FWD_LT
     label: "EXT CARGO BAY FWD LT"
     class: verified
     group: ground
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_EXT_CARGO_DOOR_OPEN_AFT
     label: "EXT CARGO DOOR OPEN AFT"
     class: verified
@@ -10512,27 +10873,24 @@ vars:
     group: ground
     values: [0]
     note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
   - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
     label: "EXT CARGO DOOR SELECTOR FWD"
     class: verified
     group: ground
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    values: [0, 1]
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT
     label: "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT"
     class: verified
     group: ground
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-  # positions to be learned (CRO-24)
+    values: [0, 1]
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD
     label: "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD"
     class: verified
     group: ground
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
   # positions to be learned (CRO-24)
   - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT
     label: "EXT CARGO DOOR SELECTOR SWITCH AFT"

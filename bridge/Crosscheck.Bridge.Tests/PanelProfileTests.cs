@@ -65,19 +65,23 @@ public class PanelProfileTests
     }
 
     [Fact]
-    public void Owner_decisions_comfort_items_sync_later_and_windows_are_each_pilots_own()
+    public void Owner_decisions_comfort_items_sync_and_windows_are_each_pilots_own()
     {
-        // CRO-36: seats, armrests, jumpseat, tray tables and sunshades are not ignored: they are on the
-        // review list (amber "not synced yet" when moved) until they sync.
+        // CRO-36 (owner decision 2026-11-03, after the positions run): seats, armrests, jumpseat, tray tables,
+        // mask stowage doors and the gravity gear sync with the positions seen. The sunshades did not move in
+        // that run: they stay on the review list (amber "not synced yet" when moved).
         var unsynced = UnsyncedList.LoadNextTo(Path.Combine(Repo.Root, "profiles", "fenix-a320", "profile.yaml"), Real).Labels;
-        foreach (var name in new[] { "S_SEAT_HEIGHT_CAPT", "S_ARMREST_LEFT_FO", "S_JUMPSEAT", "S_TRAY_TABLE_CAPT", "S_SUNSHADE_FO" })
+        Assert.Equal([0, 1, 2], Var("S_SEAT_HEIGHT_CAPT").Values!);
+        Assert.Equal(1, Var("S_SEAT_DISTANCE_FO").Rest);
+        foreach (var name in new[] { "S_ARMREST_LEFT_FO", "S_JUMPSEAT", "S_TRAY_TABLE_CAPT", "S_OXYGEN_MASK_COVER_CAPT", "S_HYD_GRAVITY_GEAR_HANDLE" })
+            Assert.Equal([0, 1], Var(name).Values!);
+        Assert.Equal([0, 3], Var("S_HYD_GRAVITY_GEAR_EXTEND").Range!);
+        Assert.Equal(2, Controls.Priority("S_HYD_GRAVITY_GEAR_HANDLE"));
+        foreach (var name in new[] { "S_SUNSHADE_CAPT", "S_SUNSHADE_FO" })
         {
             Assert.DoesNotContain(Real.Vars, v => v.Name == name);
             Assert.True(unsynced.ContainsKey(name), name);
         }
-        // Oxygen mask hatch, cockpit door and gravity gear are untouched (review list or synced).
-        Assert.True(unsynced.ContainsKey("S_OXYGEN_MASK_COVER_CAPT"));
-        Assert.True(unsynced.ContainsKey("S_HYD_GRAVITY_GEAR_HANDLE"));
         Assert.Equal(SyncClass.Verified, Var("S_COCKPIT_DOOR").Class);
         // Windows: each pilot's own. Blinds keep syncing.
         foreach (var name in new[] { "S_WINDOW_CAPT_LEVER", "S_WINDOW_FO_LEVER", "S_WINDOW_FO_LATCH", "N_WINDOW_CAPT", "N_WINDOW_FO", "S_WINDOW_CAPT_LEVER_BUTTON" })
@@ -113,13 +117,13 @@ public class PanelProfileTests
     [Fact]
     public void A_desync_for_a_var_the_profile_does_not_sync_is_never_red_and_never_raw()
     {
-        var map = new ControlMap(Real, new Labels(Real), new Dictionary<string, string> { ["S_PED_COCKPIT_DOOR_VIDEO"] = "COCKPIT DOOR VIDEO" });
+        var map = new ControlMap(Real, new Labels(Real), new Dictionary<string, string> { ["S_FCU_EFIS1_BARO_STD"] = "BARO STD (Capt)" });
         var r = new PanelReplay();
         var at = PanelReplay.Start;
-        var body = new JsonObject { ["var"] = "S_PED_COCKPIT_DOOR_VIDEO", ["reason"] = "refused", ["tier"] = "red", ["expected"] = 86, ["observed"] = 7 };
+        var body = new JsonObject { ["var"] = "S_FCU_EFIS1_BARO_STD", ["reason"] = "refused", ["tier"] = "red", ["expected"] = -9, ["observed"] = 0 };
         var panel = PanelLines.Build(Real, map, r.Labels, r.Context,
             new PanelInput([(body, at)], new Dictionary<string, DateTimeOffset>(), [], [], at.AddSeconds(10)));
         Assert.Empty(panel["red"]!.AsArray());
-        Assert.Equal("COCKPIT DOOR VIDEO", panel["indicators"]!["items"]![0]!["label"]!.GetValue<string>());
+        Assert.Equal("BARO STD (Capt)", panel["indicators"]!["items"]![0]!["label"]!.GetValue<string>());
     }
 }

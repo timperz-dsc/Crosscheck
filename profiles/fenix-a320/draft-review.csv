@@ -1,21 +1,8 @@
 name,scan_value,kind,provisional_class,reason
 S_FCU_EFIS1_BARO_STD,0,class,verified,"a counter, not a latch (gate test 2 cause A: values -9 ... 1, counts down on pull); not synced until a read-only observe run"
 S_FCU_EFIS2_BARO_STD,0,class,verified,"a counter, not a latch (gate test 2 cause A: values -9 ... 1, counts down on pull); not synced until a read-only observe run"
-S_PED_COCKPIT_DOOR_VIDEO,0,class,verified,"a counter, not a switch (gate test 2 cause A: values 1 ... 86); not synced until a read-only observe run"
-S_ARMREST_LEFT_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_ARMREST_LEFT_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_ARMREST_RIGHT_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_ARMREST_RIGHT_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_JUMPSEAT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_JUMPSEAT_HEADREST,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_SEAT_DISTANCE_CAPT,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_SEAT_DISTANCE_FO,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_SEAT_HEIGHT_CAPT,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_SEAT_HEIGHT_FO,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
 S_SUNSHADE_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
 S_SUNSHADE_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_TRAY_TABLE_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
-S_TRAY_TABLE_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
 FNX_FLT_LOADED,2,class,,"FNX_ var, no rule"
 FNX_SELCAL,0,class,,"FNX_ var, no rule"
 FNX_TAIL_HI,28,class,,"FNX_ var, no rule"
@@ -76,8 +63,6 @@ S_ASP_MASK,0,class,verified,momentary or latching unknown
 S_ASP_RAD,0,class,verified,momentary or latching unknown
 S_ASP_SPKR_REC,0,class,verified,momentary or latching unknown
 S_ASP_SPKR_REC_LATCH,0,class,verified,momentary or latching unknown
-S_DCDU1_DIM_BRT,1,class,verified,momentary or latching unknown
-S_DCDU2_DIM_BRT,1,class,verified,momentary or latching unknown
 S_EXT_CARGO_DOOR_AFT_HANDLE,0,class,verified,momentary or latching unknown
 S_EXT_CARGO_DOOR_AFT_HANDLE_FLAP,0,class,verified,momentary or latching unknown
 S_EXT_CARGO_DOOR_BULK_HANDLE,0,class,verified,momentary or latching unknown
@@ -114,11 +99,8 @@ S_FC_THROTTLE_LEFT_MAX_REVERSE,0,class,verified,momentary or latching unknown
 S_FC_THROTTLE_RIGHT_MAX_REVERSE,0,class,verified,momentary or latching unknown
 S_FC_THR_INST_DISCONNECT1,0,class,verified,momentary or latching unknown
 S_FC_THR_INST_DISCONNECT2,0,class,verified,momentary or latching unknown
-S_MIP_AUTOBRAKE_MAX,0,class,verified,momentary or latching unknown
-S_MIP_AUTOBRAKE_MED,0,class,verified,momentary or latching unknown
 S_MIP_BKUP_SPD_ALT_CAPT,0,class,verified,momentary or latching unknown
 S_MIP_BKUP_SPD_ALT_FO,0,class,verified,momentary or latching unknown
-S_MIP_CLOCK_SET,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_BUGS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_LS,0,class,verified,momentary or latching unknown
 S_MIP_ISFD_MINUS,0,class,verified,momentary or latching unknown
@@ -133,34 +115,6 @@ S_OH_EVAC_HORN_SHUTOFF,0,class,verified,momentary or latching unknown
 S_OH_RCRD_ERASE,0,class,verified,momentary or latching unknown
 S_PED_AIDS_PRINT,0,class,verified,momentary or latching unknown
 S_PED_DFDR_EVENT,0,class,verified,momentary or latching unknown
-S_PED_RMP1_ADF,0,class,verified,momentary or latching unknown
-S_PED_RMP1_AM,0,class,verified,momentary or latching unknown
-S_PED_RMP1_BFO,0,class,verified,momentary or latching unknown
-S_PED_RMP1_HF1,0,class,verified,momentary or latching unknown
-S_PED_RMP1_HF2,0,class,verified,momentary or latching unknown
-S_PED_RMP1_ILS,0,class,verified,momentary or latching unknown
-S_PED_RMP1_MLS,0,class,verified,momentary or latching unknown
-S_PED_RMP1_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP1_VOR,0,class,verified,momentary or latching unknown
-S_PED_RMP2_ADF,0,class,verified,momentary or latching unknown
-S_PED_RMP2_AM,0,class,verified,momentary or latching unknown
-S_PED_RMP2_BFO,0,class,verified,momentary or latching unknown
-S_PED_RMP2_HF1,0,class,verified,momentary or latching unknown
-S_PED_RMP2_HF2,0,class,verified,momentary or latching unknown
-S_PED_RMP2_ILS,0,class,verified,momentary or latching unknown
-S_PED_RMP2_MLS,0,class,verified,momentary or latching unknown
-S_PED_RMP2_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP2_VOR,0,class,verified,momentary or latching unknown
-S_PED_RMP3_ADF,0,class,verified,momentary or latching unknown
-S_PED_RMP3_AM,0,class,verified,momentary or latching unknown
-S_PED_RMP3_BFO,0,class,verified,momentary or latching unknown
-S_PED_RMP3_HF1,0,class,verified,momentary or latching unknown
-S_PED_RMP3_HF2,0,class,verified,momentary or latching unknown
-S_PED_RMP3_ILS,0,class,verified,momentary or latching unknown
-S_PED_RMP3_MLS,0,class,verified,momentary or latching unknown
-S_PED_RMP3_NAV,0,class,verified,momentary or latching unknown
-S_PED_RMP3_VOR,0,class,verified,momentary or latching unknown
-S_HYD_GRAVITY_GEAR_HANDLE,0,class,verified,momentary or latching unknown; panel group unclear
 S_EXT_DOOR_L1_INSIDE_GUST_STATE,0,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L1_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L2E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
@@ -174,8 +128,6 @@ S_EXT_DOOR_R2_INSIDE_GUST_STATE,0,class,verified,"name looks multi-position, pos
 S_EXT_DOOR_R2_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_R3E_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"
 S_EXT_REFUELING_MODE,1,class,verified,"name looks multi-position, position count unknown"
-S_OH_ENG_N1_MODE_1,0,class,verified,"name looks multi-position, position count unknown"
-S_OH_ENG_N1_MODE_2,0,class,verified,"name looks multi-position, position count unknown"
 S_PED_COCKPIT_DOOR,1,class,verified,"name looks multi-position, position count unknown"
 B_CONFIG_ADIRS,1,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
 B_CONFIG_ASU,0,class,ignore,"per-pilot setup, not cockpit state; panel group unclear"
@@ -240,14 +192,6 @@ N_STANDBY_ATTITUDE_PITCH,1.2283758025480427,class,observe,"value changes without
 N_STANDBY_COMPASS,190.7661194138168,class,observe,"value changes without input, would raise false alarms; panel group unclear"
 A_CHART_LIGHT_TEMP_CAPT,1,group,analog,panel group unclear
 A_CHART_LIGHT_TEMP_FO,1,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_CI,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_CI_OUTER,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_CO,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_ECAM_L,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_ECAM_U,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_FI,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_FI_OUTER,0.5,group,analog,panel group unclear
-A_DISPLAY_BRIGHTNESS_FO,0.5,group,analog,panel group unclear
 B_DISABLE_REFUEL_PANEL_DOOR_INTERACTION,0,group,observe,panel group unclear
 B_EFB_MOUNT_TYPE,1,group,observe,panel group unclear
 B_GEAR_RETRACT_INHIBIT,1,group,observe,panel group unclear
@@ -355,13 +299,10 @@ S_EFB_CHARGING_CABLE_CAPT,1,group,verified,panel group unclear
 S_EFB_CHARGING_CABLE_FO,1,group,verified,panel group unclear
 S_EFB_VISIBLE_CAPT,1,group,verified,panel group unclear
 S_EFB_VISIBLE_FO,1,group,verified,panel group unclear
-S_HYD_GRAVITY_GEAR_EXTEND,0,group,verified,panel group unclear
 S_OXYGEN_MASK_1_TEST_CAPT,0,group,pulse,panel group unclear
 S_OXYGEN_MASK_1_TEST_FO,0,group,pulse,panel group unclear
 S_OXYGEN_MASK_2_TEST_CAPT,0,group,pulse,panel group unclear
 S_OXYGEN_MASK_2_TEST_FO,0,group,pulse,panel group unclear
-S_OXYGEN_MASK_COVER_CAPT,0,group,verified,panel group unclear
-S_OXYGEN_MASK_COVER_FO,0,group,verified,panel group unclear
 S_STANDBY_ATTITUDE_CAGE,0,group,verified,panel group unclear
 S_STANDBY_ATTITUDE_FLAG,0,group,verified,panel group unclear
 S_STANDBY_COMPASS,0,group,verified,panel group unclear

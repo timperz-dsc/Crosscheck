@@ -131,6 +131,11 @@ public sealed class PanelReplay
         var reason = body["reason"]?.GetValue<string>();
         if (!_vars.TryGetValue(name, out var spec)) return true;
         if (reason is "toggle_mismatch" or "effect_mismatch" && spec.Class == SyncClass.Pulse && spec.Verify?.Lvar is null) return false;
+        // A counter the old profile treated as a switch (door video, cause A): today it is an edge button,
+        // whose presses are mirrored as edges; a refused or corrected absolute value cannot happen any more.
+        // (Not the deny list: an IDG press is still a red "not mirrored" line, whatever the old reason.)
+        if (spec is { Class: SyncClass.Pulse, Press: PressMode.Edge, NeverWrite: false }
+            && reason is "refused" or "no_ack" or "correction_failed" or "correction_loop" or "log_conflict" or "missing_value") return false;
         if (spec.Verify?.Lvar is { } lamp && _vars.TryGetValue(lamp, out var lampSpec) && reason is "toggle_mismatch" or "effect_mismatch"
             && !Powered(lampSpec.Powered, t)) return false;
         if (!Powered(spec.Powered, t)) return false;

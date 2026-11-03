@@ -79,7 +79,9 @@ static class Program
           readonly                  item 7 + d/e: 30 s noise sample, TITLE, fuel (no writes)
           verified | buttons | encoders | breakers   items 1+4, 2, 5, 6
           auto                      verified, buttons, encoders, breakers back to back
-          positions [--only ID]     CRO-24: read only; you move each control through its positions, it records and classifies every value
+          positions [--run gate3|gate3b|gate2] [--only ID]
+                                    CRO-24: read only; you move each control through its positions, it records and classifies every value
+                                    (gate3, the default: the gate test 3 prep run; gate2: the run before gate test 2)
           takeover --side capt|fo   supervised a: press 1 s, release
           hold --var NAME --value N [--seconds 60]   supervised b: hold a known ND value, then restore
           release                   ends a running hold
@@ -92,13 +94,13 @@ static class Program
         exit codes: 0 ok, 1 error, 2 safety stop, 3 a var could not be restored, 4 Ctrl+C
         """);
 
-    sealed record Options(string? Only, bool Redo, string? Side, string? Var, double? Value, int Seconds, string? Text)
+    sealed record Options(string? Only, bool Redo, string? Side, string? Var, double? Value, int Seconds, string? Text, string? Run = null)
     {
         public static Options Parse(string[] a)
         {
             string? Get(string key) { var i = Array.IndexOf(a, key); return i >= 0 && i + 1 < a.Length ? a[i + 1] : null; }
             double? Num(string key) => Get(key) is { } s && double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null;
-            return new Options(Get("--only"), a.Contains("--redo"), Get("--side"), Get("--var"), Num("--value"), (int)(Num("--seconds") ?? 60), Get("--text"));
+            return new Options(Get("--only"), a.Contains("--redo"), Get("--side"), Get("--var"), Num("--value"), (int)(Num("--seconds") ?? 60), Get("--text"), Get("--run"));
         }
     }
 
@@ -279,11 +281,20 @@ static class Program
         catch (IOException) { Console.WriteLine("another profile-probe run is active; not starting"); return ExitError; }
         using var heldLock = runLock;
 
-        await using var source = new ObserveReader(PositionsVars.All);
+        var run = opts.Run ?? PositionsVars.DefaultRun;
+        if (!PositionsVars.Runs.TryGetValue(run, out var controls))
+        {
+            Console.WriteLine($"unknown run {run}; runs: {string.Join(" ", PositionsVars.Runs.Keys)}");
+            return ExitError;
+        }
+        await using var source = new ObserveReader(PositionsVars.AllOf(controls));
         await using var simvars = new SimvarReader();
-        var suffix = opts.Only is { } o ? "-" + o.ToLowerInvariant() : "";
+        // The gate test 2 run kept the plain file names; later runs never overwrite them.
+        var suffix = (run == "gate2" ? "" : "-" + run) + (opts.Only is { } o ? "-" + o.ToLowerInvariant() : "");
         var settings = new PositionsSettings
         {
+            Controls = controls,
+            MissingSimVars = () => source.MissingSimVars,
             ResultsPath = Path.Combine(paths.ProfileDir, $"positions-results{suffix}.csv"),
             ChangesPath = Path.Combine(paths.ProfileDir, $"positions-changes{suffix}.csv"),
             SummaryPath = Path.Combine(paths.WorkDir, $"positions-summary{suffix}.txt"),

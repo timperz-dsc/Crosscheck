@@ -361,17 +361,15 @@ overrides:
   - name: S_EXT_CARGO_BAY_AFT_LT
     class: verified
     group: ground
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 1, then 0 (walkaround); owner confirmed (gate test 3 prep)"
   - name: S_EXT_CARGO_BAY_FWD_LT
     class: verified
     group: ground
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 1, then 0 (walkaround); owner confirmed (gate test 3 prep)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_AFT
     class: verified
     group: ground
@@ -382,24 +380,21 @@ overrides:
   - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
     class: verified
     group: ground
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 1, then 0 (walkaround); owner confirmed (gate test 3 prep)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT
     class: verified
     group: ground
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 1, then 0 (walkaround); owner confirmed (gate test 3 prep)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD
     class: verified
     group: ground
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 1, then 0 (walkaround); owner confirmed (gate test 3 prep)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT
     class: verified
     group: ground
@@ -499,10 +494,9 @@ overrides:
   - name: S_OH_IN_LT_ICE
     class: verified
     group: overhead
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 0, 1 (8 changes, up and down, not a counter); owner confirmed (gate test 3 prep)"
   - name: S_OH_LIGHTING_AVIONICS_COMPT
     class: pulse
     group: overhead
@@ -764,17 +758,15 @@ overrides:
   - name: S_CHART_LIGHT_TEMP_CAPT
     class: verified
     group: mip
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "owner decision 7 (group), values seen in the scan"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 0, 1 (20 changes, up and down, not a counter); owner confirmed (gate test 3 prep)"
   - name: S_CHART_LIGHT_TEMP_FO
     class: verified
     group: mip
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "owner decision 7 (group), values seen in the scan"
+    values: [0, 1]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 0, 1 on the captain's twin (same part); owner confirmed (gate test 3 prep)"
   - name: S_AUDIO_SWITCHING
     class: verified
     group: pedestal
@@ -783,17 +775,15 @@ overrides:
   - name: S_MIP_LIGHT_CONSOLEFLOOR_CAPT
     class: verified
     group: mip
-    values: [0, 1]
-    note: "values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "owner decision 3 (console light): effect follows the value (B_LT_CONSOLE_CAPT): latching, or momentary with an effect only while held; GraphQL 0 -> 2 -> 0"
+    values: [0, 1, 2]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 0, 1, 2 (2 = BRT; up and down, not a counter); owner confirmed (gate test 3 prep)"
   - name: S_MIP_LIGHT_CONSOLEFLOOR_FO
     class: verified
     group: mip
-    values: [0, 1]
-    note: "values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "owner decision 3 (console light): effect follows the value (B_LT_CONSOLE_FO): latching, or momentary with an effect only while held; GraphQL 0 -> 2 -> 0"
+    values: [0, 1, 2]
+    note: "interim values from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: 0, 1, 2 on the captain's twin (same part); owner confirmed (gate test 3 prep)"
 
   # --- Momentary buttons (probe: edge-triggered or self-resetting)
   - name: S_CDU1_BRIGHTNESS_DOWN
@@ -1603,21 +1593,21 @@ overrides:
     note: "in-between animation values (0.1 seen); not compared (CRO-27)"
     evidence: "pilot input, gate test 1: values 0, 0.1, 1; 0.1 is an animation value, not a position"
   - name: A_OH_PNEUMATIC_LDG_ELEV
-    range: [-3, 7]
-    note: "range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
-    evidence: "pilot input, gate test 1: -3 … 7 in 0.25 steps; scan -3; owner confirmed (CRO-27)"
+    range: [-3, 9.75]
+    note: "interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: -3 … 9.75 in 0.25 steps; owner confirmed (gate test 3 prep)"
   - name: A_FC_SPEEDBRAKE
     range: [1, 3]
     note: "range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
     evidence: "pilot input, gate test 1: 1 … 3; scan 1; owner confirmed (CRO-27)"
   - name: A_WR_TILT
-    range: [3, 10]
-    note: "range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
-    evidence: "pilot input, gate test 1: 3 … 10; scan 8; owner confirmed (CRO-27)"
+    range: [-15, 15]
+    note: "interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: -15 … 15 in steps of 1, both directions; owner confirmed (gate test 3 prep)"
   - name: A_WR_GAIN
-    range: [-5, 0]
-    note: "range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
-    evidence: "pilot input, gate test 1: -5 … -1; scan and snapshots 0; owner confirmed (CRO-27)"
+    range: [-5, 4]
+    note: "interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 2: -5 … 4 in steps of 1, both directions; owner confirmed (gate test 3 prep)"
   - name: A_FC_THROTTLE_LEFT_INPUT
     class: ignore
     note: "hardware axis: never written or corrected; synced by the stream later (CRO-17)"
@@ -2435,10 +2425,12 @@ overrides:
     verify: none
     note: "lamp I_ECAM_CLR_RIGHT follows ECAM, not the button: no effect check (gate test 2, CRO-33)"
     evidence: "observe-report.md: the lamp lit during the fire test; gate test 2: 4 false toggle_mismatch lines"
-  # A counter profiled as a 0/1 switch: not synced until a read-only observe run (gate test 2 cause A).
+  # A counter profiled as a 0/1 switch in gate test 2 (cause A); confirmed +1/+1 in the positions run 2026-11-03.
   - name: S_PED_COCKPIT_DOOR_VIDEO
-    review: "a counter, not a switch (gate test 2 cause A: values 1 ... 86); not synced until a read-only observe run"
-    evidence: "gate test 2 (CRO-22) section 2 A; owner plan CRO-33"
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: two clicks counted 0 -> 4 (press +1, release +1); gate test 2 cause A; the lamp did not change"
   # FCU encoders: never corrected; the display is compared only while powered and in the same mode.
   - name: E_FCU_HEADING
     label: "FCU HDG"
@@ -2502,6 +2494,314 @@ overrides:
   - name: S_OH_APU_AUTOEXTING_RESET
     label: "APU AUTO EXTING RESET"
     evidence: "plain label for the panel (CRO-34)"
+  # --- gate test 3 prep: positions run 2026-11-03 (positions-report-gate3.md), clear results only
+  - name: S_OH_ENG_N1_MODE_1
+    class: verified
+    group: overhead
+    values: [0, 1]
+    value_labels: { "0": OFF, "1": ON }
+    verify: { lvar: I_OH_ENG_N1_MODE_1_L, settle_ms: 150 }
+    evidence: "pilot input, positions run 2026-11-03: one click 0 -> 1, the next 1 -> 0 (a latch); the lamp followed both"
+  - name: S_OH_ENG_N1_MODE_2
+    class: verified
+    group: overhead
+    values: [0, 1]
+    value_labels: { "0": OFF, "1": ON }
+    verify: { lvar: I_OH_ENG_N1_MODE_2_L, settle_ms: 150 }
+    evidence: "pilot input, positions run 2026-11-03: one click 0 -> 1, the next 1 -> 0 (a latch); the lamp followed both"
+  - name: S_MIP_AUTOBRAKE_MED
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: two clicks counted 0 -> 4 (press +1, release +1); the lamps did not light at the gate, so no lamp check"
+  - name: S_MIP_AUTOBRAKE_MAX
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: two clicks counted 0 -> 4 (press +1, release +1); the lamps did not light at the gate, so no lamp check"
+  - name: S_PED_RMP1_HF1
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_HF2
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_AM
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_NAV
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_VOR
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_ILS
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_MLS
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_ADF
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP1_BFO
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: one click counted 0 -> 2 (press +1, release +1); no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_HF1
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_HF2
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_AM
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_NAV
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_VOR
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_ILS
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_MLS
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_ADF
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP2_BFO
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 2 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_HF1
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_HF2
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_AM
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_NAV
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_VOR
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_ILS
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_MLS
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_ADF
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_PED_RMP3_BFO
+    class: pulse
+    group: pedestal
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03 on RMP 1 (counted +1/+1); RMP 3 is the same part; no lamp check: radio selection keys are a group"
+  - name: S_MIP_CLOCK_SET
+    class: pulse
+    group: mip
+    press: edge
+    evidence: "pilot input, positions run 2026-11-03: two clicks counted 0 -> 4 (press +1, release +1); the SET knob is the encoder E_MIP_CLOCK_SET"
+  - name: S_DCDU1_DIM_BRT
+    class: verified
+    group: mip
+    values: [0, 1, 2]
+    rest: 1
+    value_labels: { "0": DIM, "2": BRT }
+    evidence: "pilot input, positions run 2026-11-03: BRT 2, DIM 0, springs back to 1 each time"
+  - name: S_DCDU2_DIM_BRT
+    class: verified
+    group: mip
+    values: [0, 1, 2]
+    rest: 1
+    value_labels: { "0": DIM, "2": BRT }
+    evidence: "pilot input, positions run 2026-11-03 on the captain DCDU (BRT 2, DIM 0, rest 1); the first officer DCDU is the same part"
+  - name: A_DISPLAY_BRIGHTNESS_ECAM_U
+    class: analog
+    group: ecam
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_ECAM_L
+    class: analog
+    group: ecam
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_CO
+    class: analog
+    group: mip
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_CI
+    class: analog
+    group: mip
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_CI_OUTER
+    class: analog
+    group: mip
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_FO
+    class: analog
+    group: mip
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_FI
+    class: analog
+    group: mip
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+  - name: A_DISPLAY_BRIGHTNESS_FI_OUTER
+    class: analog
+    group: mip
+    range: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: analog, 0.05 steps, seen 0.25 ... 0.5; range 0 ... 1 owner confirmed (like the other knobs)"
+
+  # --- CRO-36: cockpit comfort items, synced now (owner decision 2026-11-03), from the same run
+  - name: S_TRAY_TABLE_CAPT
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1 (open, stowed)"
+  - name: S_TRAY_TABLE_FO
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1 (open, stowed)"
+  - name: S_SEAT_DISTANCE_CAPT
+    group: cabin
+    class: verified
+    values: [0, 1, 2]
+    rest: 1
+    evidence: "pilot input, positions run 2026-11-03: 0, 1, 2, springs back to 1; the seat position N_SEAT_* follows"
+  - name: S_SEAT_HEIGHT_CAPT
+    group: cabin
+    class: verified
+    values: [0, 1, 2]
+    rest: 1
+    evidence: "pilot input, positions run 2026-11-03: 0, 1, 2, springs back to 1; the seat position N_SEAT_* follows"
+  - name: S_SEAT_DISTANCE_FO
+    group: cabin
+    class: verified
+    values: [0, 1, 2]
+    rest: 1
+    evidence: "pilot input, positions run 2026-11-03 on the captain seat; the first officer seat is the same part"
+  - name: S_SEAT_HEIGHT_FO
+    group: cabin
+    class: verified
+    values: [0, 1, 2]
+    rest: 1
+    evidence: "pilot input, positions run 2026-11-03 on the captain seat; the first officer seat is the same part"
+  - name: S_ARMREST_LEFT_CAPT
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: right captain and left first officer armrest 0 and 1; the other two are the same part"
+  - name: S_ARMREST_RIGHT_CAPT
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: right captain and left first officer armrest 0 and 1; the other two are the same part"
+  - name: S_ARMREST_LEFT_FO
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: right captain and left first officer armrest 0 and 1; the other two are the same part"
+  - name: S_ARMREST_RIGHT_FO
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: right captain and left first officer armrest 0 and 1; the other two are the same part"
+  - name: S_JUMPSEAT
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1"
+  - name: S_JUMPSEAT_HEADREST
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1"
+  - name: S_OXYGEN_MASK_COVER_CAPT
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1 (the stowage door only, never the mask TEST)"
+  - name: S_OXYGEN_MASK_COVER_FO
+    group: cabin
+    class: verified
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1 (the stowage door only, never the mask TEST)"
+  - name: S_HYD_GRAVITY_GEAR_HANDLE
+    class: verified
+    group: pedestal
+    priority: 2
+    values: [0, 1]
+    evidence: "pilot input, positions run 2026-11-03: 0 and 1 (crank unstowed); reversible system state (owner decision CRO-36)"
+  - name: S_HYD_GRAVITY_GEAR_EXTEND
+    class: analog
+    group: pedestal
+    priority: 2
+    range: [0, 3]
+    evidence: "pilot input, positions run 2026-11-03: 0 ... 3 in 0.05 steps (three turns and back); reversible system state (owner decision CRO-36)"
+
 open:
   - what: "Audio SEND keys"
     vars: [S_ASP2_CAB_SEND, S_ASP2_HF_1_SEND]
@@ -2516,8 +2816,8 @@ open:
     vars: [S_XPDR_OPERATION, S_WR_GAIN, S_MIP_ISFD_LS, S_TCAS_HORIZONTAL_RANGE, S_OH_EXT_LT_LANDING_BOTH, S_MIP_CLOCK_SET, S_FC_FLAPS_LATCH]
     why: "kept as they were (S_XPDR_OPERATION: values from gate test 1); learn in CRO-24"
   - what: "Push buttons without evidence"
-    vars: [S_PED_RMP1_HF1, S_PED_RMP1_NAV, S_PED_RMP1_AM, S_MIP_AUTOBRAKE_MED, S_MIP_AUTOBRAKE_MAX, S_FC_THR_INST_DISCONNECT1, S_FC_THR_INST_DISCONNECT2]
-    why: "the overhead latches showed that a button family is not always a counter: these wait for a click each (CRO-24); all RMP keys but VHF1/2/3 are in this group"
+    vars: [S_FC_THR_INST_DISCONNECT1, S_FC_THR_INST_DISCONNECT2]
+    why: "the overhead latches showed that a button family is not always a counter: these wait for a click each (CRO-24); the RMP keys and AUTO BRK MED/MAX were clicked in the positions run 2026-11-03"
   - what: "Position counts"
     why: "switches with `# positions to be learned (CRO-24)` have only the values seen; learn the rest from real pilot input (CRO-24)"
   - what: "Encoders without display"

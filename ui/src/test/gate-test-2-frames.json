@@ -2735,22 +2735,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 1,
-          "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            }
-          ]
+          "count": 0,
+          "items": []
         },
         "log": [
           {
@@ -2932,7 +2918,7 @@
             "group_label": "Pedestal",
             "since": "2026-11-02T19:43:28.0700000\u002B00:00",
             "priority": 4,
-            "kind": "by_hand",
+            "kind": "set_both",
             "where": null,
             "you": {
               "value": 3,
@@ -2942,7 +2928,20 @@
               "value": 1,
               "text": "1"
             },
-            "action": null,
+            "action": {
+              "type": "set_both",
+              "var": "A_WR_TILT",
+              "options": [
+                {
+                  "value": 3,
+                  "text": "3"
+                },
+                {
+                  "value": 1,
+                  "text": "1"
+                }
+              ]
+            },
             "message": null,
             "reason": "correction_failed"
           }
@@ -3057,22 +3056,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 1,
-          "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            }
-          ]
+          "count": 0,
+          "items": []
         },
         "log": [
           {
@@ -3254,7 +3239,7 @@
             "group_label": "Pedestal",
             "since": "2026-11-02T19:43:28.0700000\u002B00:00",
             "priority": 4,
-            "kind": "by_hand",
+            "kind": "set_both",
             "where": null,
             "you": {
               "value": 3,
@@ -3264,7 +3249,20 @@
               "value": 1,
               "text": "1"
             },
-            "action": null,
+            "action": {
+              "type": "set_both",
+              "var": "A_WR_TILT",
+              "options": [
+                {
+                  "value": 3,
+                  "text": "3"
+                },
+                {
+                  "value": 1,
+                  "text": "1"
+                }
+              ]
+            },
             "message": null,
             "reason": "correction_failed"
           }
@@ -3386,22 +3384,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 1,
-          "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            }
-          ]
+          "count": 0,
+          "items": []
         },
         "log": [
           {
@@ -3582,7 +3566,7 @@
           "items": [
             {
               "control": "S_MIP_CLOCK_SET",
-              "label": "CLOCK SET",
+              "label": "CLOCK SET button",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T19:54:36.1000000\u002B00:00"
@@ -3687,22 +3671,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 1,
-          "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            }
-          ]
+          "count": 0,
+          "items": []
         },
         "log": [
           {
@@ -4024,22 +3994,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 1,
-          "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            }
-          ]
+          "count": 0,
+          "items": []
         },
         "log": [
           {
@@ -4404,21 +4360,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 2,
+          "count": 1,
           "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            },
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
               "label": "BARO INCH display (Capt)",
@@ -4866,21 +4809,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 2,
+          "count": 1,
           "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            },
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
               "label": "BARO INCH display (Capt)",
@@ -5259,21 +5189,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 2,
+          "count": 1,
           "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            },
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
               "label": "BARO INCH display (Capt)",
@@ -5652,21 +5569,8 @@
         },
         "amber": [],
         "indicators": {
-          "count": 2,
+          "count": 1,
           "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            },
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
               "label": "BARO INCH display (Capt)",
@@ -6047,21 +5951,8 @@
           }
         ],
         "indicators": {
-          "count": 2,
+          "count": 1,
           "items": [
-            {
-              "control": "S_PED_COCKPIT_DOOR_VIDEO",
-              "label": "COCKPIT DOOR VIDEO",
-              "you": {
-                "value": 7,
-                "text": "7"
-              },
-              "other": {
-                "value": 86,
-                "text": "86"
-              },
-              "since": "2026-11-02T19:39:03.8310000\u002B00:00"
-            },
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
               "label": "BARO INCH display (Capt)",

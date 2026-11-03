@@ -52,7 +52,7 @@ sealed class FakeObserveSource : IObserveSource
 public class ObserveTests
 {
     static readonly string[] ObserveFiles =
-        ["ObserveReader.cs", "ObservePhase.cs", "ObserveVars.cs", "ObserveAnalysis.cs", "PositionsPhase.cs", "PositionsVars.cs", "PositionsAnalysis.cs"];
+        ["ObserveReader.cs", "ObservePhase.cs", "ObserveVars.cs", "ObserveAnalysis.cs", "PositionsPhase.cs", "PositionsVars.cs", "PositionsAnalysis.cs", "SimVars.cs"];
 
     [Fact]
     public void Observe_sources_contain_no_write_calls()

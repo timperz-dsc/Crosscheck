@@ -105,6 +105,24 @@ static class PositionsAnalysis
         return list;
     }
 
+    /// <summary>
+    /// FCU knobs (CRO-32): one of push and pull is set and reset inside one frame on the knob's own var.
+    /// The step shows a detector when a var of the control (the knob var itself, managed lamp, dashes,
+    /// mode, slot index) went both ways during the push and the pull.
+    /// </summary>
+    public static string HiddenDirection(PositionControl c, IReadOnlyList<ChangeRow> rows)
+    {
+        var both = c.Vars.Where(v =>
+        {
+            var changes = rows.Where(r => r.Var == v && r.Old is not null && r.New is not null).ToList();
+            return changes.Any(r => r.New > r.Old) && changes.Any(r => r.New < r.Old);
+        }).ToList();
+        return both.Count > 0
+            ? $"  push and pull both visible through: {string.Join(", ", both)}"
+            : "  the hidden direction is still not visible. Next step: check how the public YourControls Fenix profile " +
+              "detects it (mechanism only, nothing copied).";
+    }
+
     public static string Verdict(PositionResult r) => r.Class switch
     {
         PositionClass.None => "no change",
@@ -131,6 +149,8 @@ static class PositionsAnalysis
             lines.Add($"  note: {c.Var} did not move, but a neighbour did (see above)");
 
         var rows = rec.Rows.Where(r => r.Step == step.Name).ToList();
+        if (c.Kind == PositionKind.PushPull && c.Id.StartsWith("FCU_", StringComparison.Ordinal) && !step.Skipped)
+            lines.Add(HiddenDirection(c, rows));
         foreach (var e in c.Effects ?? [])
         {
             var eff = rows.Where(r => r.Var == e && r.New is not null).ToList();

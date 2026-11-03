@@ -1,0 +1,58 @@
+control,label,kind,var,class,values,start,end,changes,back_to_start,notes
+BARO_STD_FO,first officer BARO knob,PushPull,S_FCU_EFIS2_BARO_STD,positions,0 1,0,0,2,yes,longest hold: 1 2680 ms
+BARO_STD_FO,first officer BARO knob,PushPull,B_FCU_EFIS2_BARO_STD,positions,0 1,0,0,2,yes,longest hold: 1 2696 ms
+N1_MODE_1,ENG 1 N1 MODE button (overhead),Click,S_OH_ENG_N1_MODE_1,positions,0 1,0,0,2,yes,longest hold: 1 3278 ms
+N1_MODE_1,ENG 1 N1 MODE button (overhead),Click,S_OH_ENG_N1_MODE_1_Cover,positions,0 1,0,0,2,yes,longest hold: 1 6849 ms
+N1_MODE_2,ENG 2 N1 MODE button (overhead),Click,S_OH_ENG_N1_MODE_2,positions,0 1,0,0,2,yes,longest hold: 1 2948 ms
+N1_MODE_2,ENG 2 N1 MODE button (overhead),Click,S_OH_ENG_N1_MODE_2_Cover,positions,0 1,0,0,2,yes,longest hold: 1 5427 ms
+AUTOBRK_MED,AUTO BRK MED button,Click,S_MIP_AUTOBRAKE_MED,pushbutton,0 1 2 3 4,0,4,4,no,"4 edges, ends up (even)"
+AUTOBRK_MAX,AUTO BRK MAX button,Click,S_MIP_AUTOBRAKE_MAX,pushbutton,0 1 2 3 4,0,4,4,no,"4 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_HF1,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_HF2,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_AM,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_NAV,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_NAV_Cover,positions,0 1,0,0,2,yes,longest hold: 1 10767 ms
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_VOR,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_ILS,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_MLS,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_ADF,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_BFO,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,S_PED_RMP1_VHF1,pushbutton,0 1 2,0,2,2,no,"2 edges, ends up (even)"
+RMP1_KEYS,RMP 1 keys,Click,B_PED_RMP1_COURSE_DISPLAYED,positions,0 1,0,0,2,yes,longest hold: 1 2883 ms
+CLOCK_SET,clock SET selector (captain clock),Move,S_MIP_CLOCK_SET,pushbutton,0 1 2 3 4,0,4,4,no,"4 edges, ends up (even); this was a move step: if it is a selector, it was not moved back (r = redo)"
+CLOCK_SET,clock SET selector (captain clock),Move,E_MIP_CLOCK_SET,analog,0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37,0,36,40,no,range 0..37 (38 values)
+DOOR_VIDEO,cockpit door video button,Click,S_PED_COCKPIT_DOOR_VIDEO,pushbutton,0 1 2 3 4,0,4,4,no,"4 edges, ends up (even)"
+ECAM_BRT,ECAM brightness knobs,Move,A_DISPLAY_BRIGHTNESS_ECAM_U,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+ECAM_BRT,ECAM brightness knobs,Move,A_DISPLAY_BRIGHTNESS_ECAM_L,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+ECAM_BRT,ECAM brightness knobs,Move,N_DISPLAY_BRIGHTNESS_ECAM_U,analog,0.125 0.15 0.175 0.2 0.225 0.25,0.25,0.25,10,yes,range 0.125..0.25 (6 values)
+ECAM_BRT,ECAM brightness knobs,Move,N_DISPLAY_BRIGHTNESS_ECAM_L,analog,0.125 0.15 0.175 0.2 0.225 0.25,0.25,0.25,10,yes,range 0.125..0.25 (6 values)
+CAPT_BRT,captain PFD and ND brightness knobs,Move,A_DISPLAY_BRIGHTNESS_CO,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+CAPT_BRT,captain PFD and ND brightness knobs,Move,A_DISPLAY_BRIGHTNESS_CI,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,14,yes,range 0.25..0.5 (6 values)
+CAPT_BRT,captain PFD and ND brightness knobs,Move,A_DISPLAY_BRIGHTNESS_CI_OUTER,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+CAPT_BRT,captain PFD and ND brightness knobs,Move,N_DISPLAY_BRIGHTNESS_CO,analog,0.125 0.15 0.175 0.2 0.225 0.25,0.25,0.25,10,yes,range 0.125..0.25 (6 values)
+CAPT_BRT,captain PFD and ND brightness knobs,Move,N_DISPLAY_BRIGHTNESS_CI,analog,0.125 0.15 0.175 0.2 0.225 0.25,0.25,0.25,14,yes,range 0.125..0.25 (6 values)
+FO_BRT,first officer PFD and ND brightness knobs,Move,A_DISPLAY_BRIGHTNESS_FO,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+FO_BRT,first officer PFD and ND brightness knobs,Move,A_DISPLAY_BRIGHTNESS_FI,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+FO_BRT,first officer PFD and ND brightness knobs,Move,A_DISPLAY_BRIGHTNESS_FI_OUTER,analog,0.25 0.3 0.35 0.4 0.45 0.5,0.5,0.5,10,yes,range 0.25..0.5 (6 values)
+FO_BRT,first officer PFD and ND brightness knobs,Move,N_DISPLAY_BRIGHTNESS_FO,analog,0.125 0.15 0.175 0.2 0.225 0.25,0.25,0.25,10,yes,range 0.125..0.25 (6 values)
+FO_BRT,first officer PFD and ND brightness knobs,Move,N_DISPLAY_BRIGHTNESS_FI,analog,0.125 0.15 0.175 0.2 0.225 0.25,0.25,0.25,10,yes,range 0.125..0.25 (6 values)
+DCDU_BRT,captain DCDU BRT/DIM,Click,S_DCDU1_BRT,none,0,0,0,0,yes,no change
+DCDU_BRT,captain DCDU BRT/DIM,Click,S_DCDU1_DIM_BRT,positions,0 1 2,1,1,8,yes,"longest hold: 0 690 ms, 2 557 ms"
+DCDU_BRT,captain DCDU BRT/DIM,Click,N_DCDU1_BRIGHTNESS,analog,0.229 0.239 0.248 0.258 0.268 0.278 0.287 0.297 0.307 0.317 0.326 0.356 0.366 0.375 0.385 0.395 0.405 0.414 0.424 0.434,0.248,0.229,32,no,range 0.229..0.434 (20 values)
+ASP2_VOLUME,ASP 2 VHF 1 volume knob (first officer audio panel),Move,A_ASP2_VHF_1_VOLUME,analog,0.3 0.35 0.4 0.45 0.5,0.5,0.5,8,yes,range 0.3..0.5 (5 values)
+TRAY_TABLES,tray tables,Move,S_TRAY_TABLE_CAPT,positions,0 1,0,0,2,yes,longest hold: 1 3490 ms
+TRAY_TABLES,tray tables,Move,S_TRAY_TABLE_FO,positions,0 1,1,0,3,no,did not end where it started (1 -> 0); longest hold: 0 3839 ms
+SEATS,captain seat,Move,S_SEAT_DISTANCE_CAPT,positions,0 1 2,1,1,4,yes,"longest hold: 0 1085 ms, 2 1007 ms"
+SEATS,captain seat,Move,S_SEAT_HEIGHT_CAPT,positions,0 1 2,1,1,4,yes,"longest hold: 0 1048 ms, 2 1064 ms"
+SEATS,captain seat,Move,N_SEAT_DISTANCE_CAPT,analog,0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 10 10.5 11 11.5 12 12.5 13 13.5 14 14.5 15,0,0,60,yes,range 0..15 (31 values)
+SEATS,captain seat,Move,N_SEAT_HEIGHT_CAPT,analog,0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 10 10.5 11 11.5 12 12.5 13 13.5 14 14.5 15 15.5 16,0,0,64,yes,range 0..16 (33 values)
+ARMRESTS,armrests,Move,S_ARMREST_LEFT_CAPT,none,0,0,0,0,yes,no change
+ARMRESTS,armrests,Move,S_ARMREST_RIGHT_CAPT,positions,0 1,0,0,2,yes,longest hold: 1 2717 ms
+ARMRESTS,armrests,Move,S_ARMREST_LEFT_FO,positions,0 1,0,0,2,yes,longest hold: 1 2194 ms
+SUNSHADES,sunshades,Move,S_SUNSHADE_CAPT,none,0,0,0,0,yes,no change
+JUMPSEAT,jumpseat,Move,S_JUMPSEAT,positions,0 1,0,0,4,yes,longest hold: 1 3793 ms
+JUMPSEAT,jumpseat,Move,S_JUMPSEAT_HEADREST,positions,0 1,1,1,4,yes,longest hold: 0 7954 ms
+MASK_HATCH,oxygen mask stowage doors,Move,S_OXYGEN_MASK_COVER_CAPT,positions,0 1,0,0,2,yes,longest hold: 1 2056 ms
+MASK_HATCH,oxygen mask stowage doors,Move,S_OXYGEN_MASK_COVER_FO,positions,0 1,0,0,2,yes,longest hold: 1 2196 ms
+GRAVITY_GEAR,"gravity gear extension handle (pedestal, rear)",Move,S_HYD_GRAVITY_GEAR_HANDLE,positions,0 1,0,0,2,yes,longest hold: 1 16752 ms
+GRAVITY_GEAR,"gravity gear extension handle (pedestal, rear)",Move,S_HYD_GRAVITY_GEAR_EXTEND,analog,0 0 0.05 0.05 0.1 0.1 0.15 0.15 0.2 0.2 0.25 0.25 0.3 0.3 0.35 0.35 0.4 0.4 0.45 0.45 0.5 0.5 0.55 0.55 0.6 0.6 0.65 0.65 0.7 0.7 0.75 0.75 0.8 0.8 0.85 0.85 0.9 0.9 0.95 0.95 1 1 1.05 1.05 1.1 1.1 1.15 1.15 1.2 1.2 1.25 1.25 1.3 1.3 1.35 1.35 1.4 1.4 1.45 1.45 1.5 1.5 1.55 1.55 1.6 1.6 1.65 1.65 1.7 1.7 1.75 1.75 1.8 1.8 1.85 1.85 1.9 1.9 1.95 1.95 2 2 2.05 2.05 2.1 2.1 2.15 2.15 2.2 2.2 2.25 2.25 2.3 2.3 2.35 2.35 2.4 2.4 2.45 2.45 2.5 2.5 2.55 2.55 2.6 2.6 2.65 2.65 2.7 2.7 2.75 2.75 2.8 2.8 2.85 2.85 2.9 2.9 2.95 2.95 3 3,0,0,122,yes,range 0..3 (122 values)

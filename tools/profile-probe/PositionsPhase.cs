@@ -15,8 +15,12 @@ sealed class PositionsSettings
     /// <summary>A timestamped copy of every run's files goes here too, so no run is ever overwritten.</summary>
     public string? RawDir { get; init; }
     public string? Only { get; init; }
+    /// <summary>The run's steps (PositionsVars.Runs); the default run if not set.</summary>
+    public IReadOnlyList<PositionControl> Controls { get; init; } = PositionsVars.Controls;
     public int SettleMs { get; init; } = 800;
     public int ConnectSeconds { get; init; } = 60;
+    /// <summary>Sim vars the sim never sent (a rejected name): reported, so a silent 0 is never read as "did not move".</summary>
+    public Func<IReadOnlyList<string>>? MissingSimVars { get; init; }
 }
 
 sealed class PositionsPhase(
@@ -26,18 +30,18 @@ sealed class PositionsPhase(
     Func<CancellationToken, Task<string?>> readLine,
     PositionsSettings settings)
 {
-    public ObserveRecorder Recorder { get; } = new(PositionsVars.All);
+    public ObserveRecorder Recorder { get; } = new(PositionsVars.AllOf(settings.Controls));
 
-    public static IReadOnlyList<PositionControl> Selected(string? only) =>
-        only is null ? PositionsVars.Controls
-            : PositionsVars.Controls.Where(c => string.Equals(c.Id, only, StringComparison.OrdinalIgnoreCase) || c.Var == only).ToList();
+    public static IReadOnlyList<PositionControl> Selected(IReadOnlyList<PositionControl> run, string? only) =>
+        only is null ? run
+            : run.Where(c => string.Equals(c.Id, only, StringComparison.OrdinalIgnoreCase) || c.Var == only).ToList();
 
     public async Task<int> Run(CancellationToken ct)
     {
-        var controls = Selected(settings.Only);
+        var controls = Selected(settings.Controls, settings.Only);
         if (controls.Count == 0)
         {
-            output.WriteLine($"no control matches --only {settings.Only}; ids: {string.Join(" ", PositionsVars.Controls.Select(c => c.Id))}");
+            output.WriteLine($"no control matches --only {settings.Only}; ids: {string.Join(" ", settings.Controls.Select(c => c.Id))}");
             return 1;
         }
         output.WriteLine($"""
@@ -68,6 +72,7 @@ sealed class PositionsPhase(
             var f0 = Recorder.Frames;
             await Task.Delay(1000, ct);
             output.WriteLine($"connected; {Recorder.Frames - f0} frames per second; title {simvars.Title ?? "?"}");
+            if (Missing() is { Length: > 0 } missing) output.WriteLine($"warning: the sim sends no value for {missing}; those columns stay 0");
             await Steps(controls, ct);
         }
         finally
@@ -90,6 +95,13 @@ sealed class PositionsPhase(
             var left = PositionsVars.TotalSeconds(controls.Skip(n));
             var elapsed = (ObserveClock.NowMs - started) / 1000;
             output.WriteLine($"\n== [{n + 1}/{controls.Count}] {c.Label}   ({elapsed / 60:0}:{elapsed % 60:00} elapsed, about {left / 60}:{left % 60:00} left)");
+            if (c.Before is not null)
+            {
+                // A setup the pilot does first (the FMGS before the FCU knobs); the step starts after Enter.
+                output.WriteLine($"   {c.Before}");
+                output.Write("   > ");
+                if (await readLine(ct) is null or "q") { output.WriteLine("stopping; saving what was recorded"); return; }
+            }
             if (c.Hint is not null) output.WriteLine($"   {c.Hint}");
             for (var attempt = 1; ; attempt++)
             {
@@ -109,6 +121,8 @@ sealed class PositionsPhase(
         Recorder.BeginStep("end", null, null, ObserveClock.NowMs);
         output.WriteLine("\nall steps done");
     }
+
+    string Missing() => string.Join(", ", settings.MissingSimVars?.Invoke() ?? []);
 
     void WriteResults(IReadOnlyList<PositionControl> controls)
     {
@@ -131,6 +145,7 @@ sealed class PositionsPhase(
             File.WriteAllText(Path.Combine(raw, $"positions-changes-{stamp}.csv"), changes);
         }
         var report = PositionsAnalysis.Report(Recorder, controls);
+        if (Missing() is { Length: > 0 } missing) report = $"sim vars the sim never sent (rejected name, column is 0): {missing}\n{report}";
         File.WriteAllText(settings.SummaryPath, $"positions run {DateTime.Now:yyyy-MM-dd HH:mm:ss}, title {simvars.Title ?? "?"}\n{report}");
         output.WriteLine($"\n{report}");
         output.WriteLine($"written: {settings.ResultsPath}");
