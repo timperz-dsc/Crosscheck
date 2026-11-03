@@ -120,6 +120,9 @@
     },
     {
       "$ref": "messages/counter_suspect.schema.json"
+    },
+    {
+      "$ref": "messages/write_blocked.schema.json"
     }
   ]
 }

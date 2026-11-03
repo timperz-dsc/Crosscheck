@@ -175,12 +175,15 @@ internal sealed class SemanticValidator
         Unused(v.CompareWhen is not null, "compare_when", [SyncClass.Delta]);
         Unused(v.Tolerance is not null, "tolerance", [SyncClass.Observe]);
         Unused(v.Powered is not null, "powered", [SyncClass.Observe]);
+        Unused(v.Notice is not null, "notice", [SyncClass.Observe]);
         SyncClass[] onPanel = [SyncClass.Verified, SyncClass.Delta, SyncClass.Pulse, SyncClass.Analog, SyncClass.Observe];
         Unused(v.Control is not null, "control", onPanel);
         Unused(v.Priority is not null, "priority", onPanel);
         Unused(v.Upstream is not null, "upstream", onPanel);
         if (v.Tolerance is not null && v.Alarm is not null)
             Add($"{at}/tolerance", "an alarm indicator shows a pilot input and is compared exactly; 'tolerance' is not used with 'alarm'");
+        if (v.Notice is not null && v.Alarm is not null)
+            Add($"{at}/notice", "an indicator is either red ('alarm') or amber ('notice'), not both");
         if (v.NeverWrite && v.Rest is not null)
             Add($"{at}/rest", "a never_write var is never written, so it has no 'rest' to return to");
         if (v is { Class: SyncClass.Verified, Rest: { } rest })

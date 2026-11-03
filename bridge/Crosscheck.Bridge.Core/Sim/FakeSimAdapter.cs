@@ -33,6 +33,9 @@ public sealed class FakeSimAdapter : ISimAdapter
     private readonly Dictionary<string, VarEntry> _specs;
     private readonly Dictionary<int, string> _screens = new() { [1] = "", [2] = "" };
     private readonly HashSet<string> _refused = new(StringComparer.Ordinal);
+    /// <summary>Vars whose write SimConnect refuses (a refused definition): the write never lands and WriteRejected fires.</summary>
+    private readonly HashSet<string> _rejected = new(StringComparer.Ordinal);
+    private readonly List<string> _setupErrors = [];
     private readonly Dictionary<string, (double Value, int RevertMs)> _stuck = new(StringComparer.Ordinal);
     /// <summary>Keys whose effect lamp does not change on a press (system unpowered).</summary>
     private readonly HashSet<string> _unpowered = new(StringComparer.Ordinal);
@@ -75,6 +78,15 @@ public sealed class FakeSimAdapter : ISimAdapter
 
     public event Action<SimState>? StateChanged;
     public event Action<string, double>? ValueChanged;
+    public event Action<string, string>? WriteRejected;
+    public event Action<string>? SetupError;
+    /// <summary>The fake has no SimConnect exceptions of its own (RejectDefinition and FailSetup raise the specific events).</summary>
+    public event Action<string>? SimException { add { } remove { } }
+
+    public IReadOnlyList<string> SetupErrors
+    {
+        get { lock (_gate) return _setupErrors.ToList(); }
+    }
     /// <summary>MCDU screen n changed (fake GraphQL listens to this).</summary>
     public event Action<int>? McduChanged;
 
@@ -119,6 +131,12 @@ public sealed class FakeSimAdapter : ISimAdapter
             Writes.Add((name, value));
             TimedWrites.Add((name, value, Clock.Elapsed.TotalMilliseconds));
             if (_refused.Contains(name)) return Task.CompletedTask;
+            if (_rejected.Contains(name))
+            {
+                // Like SimConnect: the exception arrives a moment after the call, on the adapter's own thread.
+                _ = Task.Delay(5).ContinueWith(_ => WriteRejected?.Invoke(name, "SimConnect refused the definition (test)"), TaskScheduler.Default);
+                return Task.CompletedTask;
+            }
             if (_options.ReadBackLagMs > 0)
             {
                 _landing.Add((name, value, Clock.Elapsed.TotalMilliseconds + _options.ReadBackLagMs));
@@ -174,6 +192,19 @@ public sealed class FakeSimAdapter : ISimAdapter
     public void Refuse(string name)
     {
         lock (_gate) _refused.Add(name);
+    }
+
+    /// <summary>Like a refused SimConnect definition: every write to this var is dropped and reported as rejected.</summary>
+    public void RejectDefinition(string name)
+    {
+        lock (_gate) _rejected.Add(name);
+    }
+
+    /// <summary>Like a refused read definition at connect: the link to the sim is not complete.</summary>
+    public void FailSetup(string why)
+    {
+        lock (_gate) _setupErrors.Add(why);
+        SetupError?.Invoke(why);
     }
 
     /// <summary>A key press is stored, but its effect lamp does not change (system unpowered).</summary>

@@ -30,6 +30,11 @@ export interface VarDef {
   tolerance?: number;
   /** observe or toggle lamp: compared only while its unit is powered (unitPower); loose for observe (CRO-34). */
   powered?: boolean;
+  /** observe: an amber indicator with this text (profile notice, CRO-40); loose. */
+  notice?: string;
+  /** verified/analog: the profile's limits, reported in snapshot values (CRO-40). */
+  values?: number[];
+  range?: [number, number];
 }
 
 /** A small stand-in profile with one var of each kind. */
@@ -213,6 +218,7 @@ export class FakeSim {
         var: d.name, class: d.cls, value: d.cls === 'delta' ? this.display(d.name) : this.get(d.name),
         ...(d.cls === 'owned' && d.step !== undefined ? { step: d.step } : {}),
         ...(d.cls === 'mode' ? { message: d.message!, ...(d.reportAs ? { report_as: d.reportAs } : {}) } : {}),
+        ...(d.values ? { values: d.values } : {}), ...(d.range ? { range: d.range } : {}),
       });
     }
     return out;
@@ -223,14 +229,17 @@ export class FakeSim {
   }
 
   private isLoose(d: VarDef): boolean {
-    return d.cls === 'observe' && (d.tolerance !== undefined || d.powered === true);
+    return d.cls === 'observe' && (d.tolerance !== undefined || d.powered === true || d.notice !== undefined);
   }
 
   /** Loose indicators of a group (snapshot_hash.loose): tolerance or power gate, never in the hash. */
   loose(group: string): LooseValue[] {
     return [...this.defs.values()].filter((d) => d.group === group && this.isLoose(d)).map((d): LooseValue => {
       if (d.powered && this.unitOff.has(d.name)) return { var: d.name, value: null, context: 'unpowered' };
-      return { var: d.name, value: this.get(d.name), ...(d.tolerance !== undefined ? { tolerance: d.tolerance } : {}) };
+      return {
+        var: d.name, value: this.get(d.name), ...(d.tolerance !== undefined ? { tolerance: d.tolerance } : {}),
+        ...(d.notice !== undefined ? { amber: true as const, message: d.notice } : {}),
+      };
     });
   }
 

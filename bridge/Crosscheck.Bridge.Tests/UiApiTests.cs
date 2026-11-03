@@ -245,6 +245,12 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
     public async Task Set_both_sends_a_pilot_command_from_this_seat_and_clears_the_desync()
     {
         var (host, guest) = await SessionViaApi();
+        // A write of this switch has landed in the host's sim this session (CRO-40: Set both only after one).
+        Sim(guest).PilotSet("S_OH_ELEC_APU_MASTER", 1);
+        await Wait.Until(() => Sim(host).Get("S_OH_ELEC_APU_MASTER") == 1, "mirrored on");
+        Sim(guest).PilotSet("S_OH_ELEC_APU_MASTER", 0);
+        await Wait.Until(() => Sim(host).Get("S_OH_ELEC_APU_MASTER") == 0, "mirrored off");
+        await Wait.Until(() => host.Engine!.CanSetBoth("S_OH_ELEC_APU_MASTER"), "write confirmed");
         Sim(guest).Refuse("S_OH_ELEC_APU_MASTER");
         Sim(host).PilotSet("S_OH_ELEC_APU_MASTER", 1);
         await Wait.Until(() => host.Status.OpenDesyncs.Contains("S_OH_ELEC_APU_MASTER"), "desync", 10000);

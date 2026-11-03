@@ -119,6 +119,7 @@ describe('preflight', () => {
     expect(comparePreflight(ref, { ...ref, bridge_version: '0.1.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
     expect(comparePreflight(ref, { ...ref, bridge_version: '0.2.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
     expect(comparePreflight(ref, { ...ref, bridge_version: '0.4.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
+    expect(comparePreflight(ref, { ...ref, bridge_version: '0.5.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
     expect(comparePreflight(ref, { ...ref, bridge_version: '2.0.0' }).rejects.map((r) => r.field)).toEqual(['bridge_version']);
     const one = { ...PREFLIGHT, bridge_version: '1.2.0' };
     expect(comparePreflight(one, { ...one, bridge_version: '1.3.4' }).rejects).toEqual([]);
@@ -144,7 +145,7 @@ describe('join codes', () => {
 });
 
 describe('replay log', () => {
-  const env = (seq: number): Envelope => ({ v: 4, type: 'command', session: 's_abcdefg', seq, ts: 0, body: {} });
+  const env = (seq: number): Envelope => ({ v: 5, type: 'command', session: 's_abcdefg', seq, ts: 0, body: {} });
   it('replays per client after last_seq and reports a gap once entries were evicted', () => {
     const log = new ReplayLog(3);
     log.add(1, 'a', env(1));

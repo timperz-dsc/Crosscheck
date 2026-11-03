@@ -59,6 +59,8 @@ static class Program
                 case "hold": return await SimCommand(paths, Phase.Hold, opts, cts.Token);
                 // Supervised write test (gate test 3 prep, owner approved): one control at a time, Enter per write.
                 case "writetest": return await SimCommand(paths, Phase.WriteTest, opts, cts.Token);
+                // CRO-40: registration only (no writes, no data requests), owner approved; finds the definition limit.
+                case "deflimit": return await DefLimit.Run(Path.Combine(paths.ProfileDir, "deflimit-results.md"), Console.Out, cts.Token);
                 // Read only: the pilot moves the controls (CRO-24). The old write test of this name stays off:
                 // writing positions that do not exist most likely crashed the Fenix WASM.
                 case "positions": return await PositionsCommand(paths, opts, cts.Token);
@@ -86,7 +88,12 @@ static class Program
                                     (gate3, the default: the gate test 3 prep run; gate2: the run before gate test 2)
           takeover --side capt|fo   supervised a: press 1 s, release
           hold --var NAME --value N [--seconds 60]   supervised b: hold a known ND value, then restore
-          writetest [--only ID]     supervised: flaps, speed brake, A/SKID, cockpit door, FCU SPD; Enter before each write, read back 2.5 s, put back
+          writetest [--only ID] [--bridge-profile]
+                                    supervised: flaps, speed brake, A/SKID, cockpit door, FCU SPD, tray table; Enter before each write,
+                                    read back 2.5 s, put back. --bridge-profile: through the bridge's own SimConnect definitions
+                                    (the real profile's watch list and write-slot pool, CRO-40); switches only
+          deflimit                  CRO-40: registration only (no writes, no data requests): finds how many SimConnect
+                                    data definitions the sim accepts from one client
           release                   ends a running hold
           label --var NAME --value N --text LABEL    record what the ND showed
           info --var NAME --text TEXT                record a manual finding (smoke test, surprise, crash-start/crash-end...)
@@ -97,13 +104,14 @@ static class Program
         exit codes: 0 ok, 1 error, 2 safety stop, 3 a var could not be restored, 4 Ctrl+C
         """);
 
-    sealed record Options(string? Only, bool Redo, string? Side, string? Var, double? Value, int Seconds, string? Text, string? Run = null)
+    sealed record Options(string? Only, bool Redo, string? Side, string? Var, double? Value, int Seconds, string? Text, string? Run = null, bool BridgeProfile = false)
     {
         public static Options Parse(string[] a)
         {
             string? Get(string key) { var i = Array.IndexOf(a, key); return i >= 0 && i + 1 < a.Length ? a[i + 1] : null; }
             double? Num(string key) => Get(key) is { } s && double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null;
-            return new Options(Get("--only"), a.Contains("--redo"), Get("--side"), Get("--var"), Num("--value"), (int)(Num("--seconds") ?? 60), Get("--text"), Get("--run"));
+            return new Options(Get("--only"), a.Contains("--redo"), Get("--side"), Get("--var"), Num("--value"), (int)(Num("--seconds") ?? 60), Get("--text"), Get("--run"),
+                a.Contains("--bridge-profile"));
         }
     }
 
@@ -187,6 +195,19 @@ static class Program
 
         var watched = ProbeProfile.Watched(inputs);
         var profile = ProbeProfile.Build(inputs, writable, watched);
+        string? mode = null;
+        if (opts.BridgeProfile)
+        {
+            if (phase != Phase.WriteTest) { Console.WriteLine("--bridge-profile is only for writetest"); return ExitError; }
+            if (pending is not null) { Console.WriteLine($"{pending.Var} is still pending from an earlier run: run `restore` first, then --bridge-profile"); return ExitError; }
+            try
+            {
+                (profile, watched) = BridgePath.For(inputs.Profile, Crosscheck.Bridge.UnsyncedList.LoadNextTo(paths.Profile, inputs.Profile), writeControls);
+            }
+            catch (InvalidOperationException e) { Console.WriteLine(e.Message); return ExitError; }
+            mode = BridgePath.Describe(watched.Count);
+            Console.WriteLine(mode);
+        }
         using var loggerFactory = LoggerFactory.Create(b => b.AddSimpleConsole(o => o.SingleLine = true).SetMinimumLevel(LogLevel.Warning));
         await using var sim = new SimConnectAdapter(profile, loggerFactory.CreateLogger("sim"));
         await using var gql = new FenixGraphQlClient(1, loggerFactory.CreateLogger("gql"));
@@ -222,7 +243,7 @@ static class Program
         {
             if (writeControls.Count == 0) { Console.WriteLine($"no control matches --only {opts.Only}; ids: {string.Join(" ", WriteTest.Controls.Select(c => c.Id))}"); return ExitError; }
             var lines = new ConsoleLines();
-            return await WriteTest.Run(session, writeControls, lines.ReadAsync, Path.Combine(paths.ProfileDir, "writetest-results.md"), ct);
+            return await WriteTest.Run(session, writeControls, lines.ReadAsync, Path.Combine(paths.ProfileDir, "writetest-results.md"), ct, mode);
         }
 
         if (phase == Phase.Readonly)

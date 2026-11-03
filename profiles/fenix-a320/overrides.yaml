@@ -374,10 +374,9 @@ overrides:
   - name: S_EXT_CARGO_DOOR_SELECTOR_AFT
     class: verified
     group: ground
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    values: [0, 1]
+    note: "interim values from gate test 3 (owner confirmed, CRO-40); more positions can be learned (CRO-24)"
+    evidence: "pilot input, gate test 3 section 2C: the guest moved it to 1 and the host's guard refused it; same as its FWD twin; owner confirmed (CRO-40). Before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
   - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
     class: verified
     group: ground
@@ -1611,20 +1610,20 @@ overrides:
     evidence: "pilot input, gate test 2: -5 … 4 in steps of 1, both directions; owner confirmed (gate test 3 prep)"
   - name: A_FC_THROTTLE_LEFT_INPUT
     class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-17)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-17); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
+    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
   - name: A_FC_THROTTLE_RIGHT_INPUT
     class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-17)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-17); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
+    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
   - name: A_FC_THROTTLE_LEFT_GATE
     class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-17)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-17); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
+    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
   - name: A_FC_THROTTLE_RIGHT_GATE
     class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-17)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-17); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
+    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
   - name: N_OH_LIGHTING_OVD
     class: ignore
     note: "brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
@@ -1703,39 +1702,43 @@ overrides:
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_BRAKE_RIGHT
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_CAPT_TILLER
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
+  - name: A_FC_ELEVATOR_TRIM
+    class: ignore
+    note: "flight-control position (pitch trim wheel): synced by the stream later (CRO-13); never written"
+    evidence: "gate test 3 section 2B: the host sent 100 … 5400 (the trim wheel moving), outside the guessed range [0, 1], and every write was refused; owner decision (gate test 3 section 8): pitch trim stays ignore until the stream (CRO-13)"
   - name: N_FC_ELEVATOR_TRIM
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_FO_TILLER
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_RUDDER
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_SIDESTICK_CAPT_BANK
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_SIDESTICK_CAPT_PITCH
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_SIDESTICK_FO_BANK
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FC_SIDESTICK_FO_PITCH
     class: ignore
-    note: "flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
     evidence: "gate test 1 section 4: desync panel noise"
   - name: N_FUEL_CTR_TANK
     class: ignore
@@ -2462,9 +2465,11 @@ overrides:
     tolerance: 0.3
     evidence: "owner decision CRO-34: ±10 % of full scale; the brake gauge reads 0-3 (x1000 psi), scan value 2.103"
   - name: N_FC_RUDDER_TRIM_DECIMAL
-    class: ignore
-    note: "flight-control position, not compared until the stream (CRO-17)"
-    evidence: "gate test 1 §4 ignore list: flight-control positions until the stream"
+    class: observe
+    tolerance: 1
+    notice: "Rudder trim differs – press RESET or adjust it."
+    note: "rudder trim position (display, 0.1° steps): compared with a tolerance of one step; a difference is one amber line, never written"
+    evidence: "owner decision (gate test 3 section 8): compare the rudder trim position as an amber indicator with a small tolerance; gate test 3 section 4.1: it was the one silent difference; positions run gate3b: integer steps -23 … 1"
   - name: N_WINDOW_CAPT
     class: ignore
     note: "each pilot's own window (owner decision CRO-36)"

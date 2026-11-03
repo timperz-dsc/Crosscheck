@@ -29,7 +29,7 @@ describe('15. hosting', () => {
     server = await startServer();
     const res = await server.app.inject({ method: 'GET', url: '/health' });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toMatchObject({ ok: true, version: SERVER_VERSION, protocol: 4 });
+    expect(res.json()).toMatchObject({ ok: true, version: SERVER_VERSION, protocol: 5 });
     expect(SERVER_VERSION).toMatch(/^\d+\.\d+\.\d+/);
   });
 

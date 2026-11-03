@@ -16,8 +16,8 @@
       ],
       "properties": {
         "v": {
-          "description": "Protocol version. Always 4 (bridge 0.4.0 and later). The server answers a message with another version with error unsupported_version, in that version's envelope.",
-          "const": 4
+          "description": "Protocol version. Always 5 (bridge 0.5.0 and later). The server answers a message with another version with error unsupported_version, in that version's envelope.",
+          "const": 5
         },
         "type": {
           "description": "Message type (snake_case).",
@@ -255,7 +255,9 @@
         "not_mirrored",
         "stuck_pressed",
         "press_lost",
-        "display_mismatch"
+        "display_mismatch",
+        "cannot_write",
+        "out_of_range"
       ]
     },
     "activeDesync": {
@@ -402,12 +404,13 @@
       ]
     },
     "advisoryKind": {
-      "description": "not_synced: a pilot moved a control that is not synced yet. hardware_fighting: repeated overrides on one var (both pilots' hardware set it). sim_disconnected: one pilot's simulator is not connected; that pilot's panels are not comparable. counter_suspect: a switch behaves like a press counter (its value keeps rising); not synced, never written.",
+      "description": "not_synced: a pilot moved a control that is not synced yet. hardware_fighting: repeated overrides on one var (both pilots' hardware set it). sim_disconnected: one pilot's simulator is not connected; that pilot's panels are not comparable. counter_suspect: a switch behaves like a press counter (its value keeps rising); not synced, never written. indicator_differs: an indicator with a profile notice (rudder trim position) differs beyond its tolerance; amber with the profile's text, never written.",
       "enum": [
         "not_synced",
         "hardware_fighting",
         "sim_disconnected",
-        "counter_suspect"
+        "counter_suspect",
+        "indicator_differs"
       ]
     },
     "advisory": {
@@ -425,7 +428,7 @@
       ],
       "properties": {
         "key": {
-          "description": "Stable id: one line per key (not_synced:<var>, hardware_fighting:<var>, sim_disconnected:<seat>, counter_suspect:<var>).",
+          "description": "Stable id: one line per key (not_synced:<var>, hardware_fighting:<var>, sim_disconnected:<seat>, counter_suspect:<var>, indicator:<var>).",
           "type": "string",
           "minLength": 1,
           "maxLength": 200

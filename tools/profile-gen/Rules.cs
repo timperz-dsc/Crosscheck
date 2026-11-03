@@ -26,6 +26,8 @@ sealed class Entry
     public double? Rest { get; init; }
     /// <summary>observe: red comparison text, and the control it is reported under.</summary>
     public (string Text, string? As)? Alarm { get; init; }
+    /// <summary>observe: amber line text when the difference is beyond the tolerance (CRO-40).</summary>
+    public string? Notice { get; init; }
     /// <summary>Deny list: never written on any path, only watched and compared (gate test 2, CRO-33).</summary>
     public bool NeverWrite { get; init; }
     /// <summary>delta: compare the display only while powered and these mode vars match.</summary>

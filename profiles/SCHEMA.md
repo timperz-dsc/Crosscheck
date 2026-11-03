@@ -64,6 +64,9 @@ lists it; none of that needs writing down. For the rest:
 
 - `control: VAR_OR_ID` (any class but ignore and stream): show this var under that control: another var of
   this profile (no chains) or an id from the top-level `controls:` map (`rmp1_freq: RMP 1 frequency`).
+- `notice: "..."` (observe only, not with `alarm`, CRO-40): a difference beyond the `tolerance` is one amber line
+  for the pilots with this text (for example "Rudder trim differs – press RESET or adjust it."), never red and
+  never written. Compared like the other loose indicators (`tolerance`, `powered`).
 - `tolerance: 0.5` (observe only, not with `alarm`): the sims match while the values differ by no more than
   this, in the var's units. Compared value by value outside the exact group hash (protocol.md section 7).
 - `powered: VAR` (observe only): compared only while this flag reads non-zero in both sims. `VAR` is a plain

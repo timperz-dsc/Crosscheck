@@ -181,6 +181,14 @@ Shown: yes, red, many repeats. Two "hardware fighting" lines were false: the ref
 
 ### H. Writes that don't stick (value written, read back as the old value)
 
+> **Corrected after gate test 3 (CRO-40).** The cause below was guessed wrong. Every var in this table sat late
+> in the bridge's list of writable vars; the bridge registered one SimConnect data definition per writable var
+> (about 1,180 then), and the sim refused those past roughly 900–1,190 without anything in the session log. Writes
+> to them never landed, in both directions. Not Fenix putting the value back, not a hardware lever, not
+> hydraulics, and not the sim's handle states. See [the gate test 3 diagnosis](CRO-22-gate-test-3.md), section 2A.
+> Fixed in bridge 0.5.0 (a pool of write definitions; a refused write is a red line). The original text stays
+> below as it was written.
+
 | Item | Sent → read back | Notes |
 |---|---|---|
 | Spoilers (`A_FC_SPEEDBRAKE`) | 1.0 … 3.0 → always 1 | 206 failed acks. The guest sent no commands back, so its lever never moved: Fenix (or the sim's handle) puts it back every frame |
@@ -276,11 +284,13 @@ line asking for a manual turn, and the false and repeated lines (175 of 224) wou
   compass deploy, oxygen mask hatch. The window handle and window movement are each pilot's own (owner decision
   2026-11-02). Move all of these to `ignore`, so they stop producing amber lines.
 - **Should sync:** gravity gear extension (handle and crank: a system state, reversible) and the cockpit door
-  (pedestal LOCK/NORM/UNLOCK switch with `rest`, and the door itself once a write is proven to stick, see H).
+  (pedestal LOCK/NORM/UNLOCK switch with `rest`, and the door itself once a write is proven to stick, see H;
+  corrected: the door write was the bridge's definition limit, gate test 3 section 2A).
 - **Not synced, each pilot's own:** the crew oxygen mask TEST (never pressed in tests).
 - **Irreversible, with CRO-31:** IDG 1/2 disconnect, like the fire push buttons, every AGENT/DISCH button, RAT MAN ON
   and passenger oxygen MAN ON. They are on the deny list now (A). How to mirror them is CRO-31's decision.
-- **Flaps and spoilers** are not "maybe hardware" by design: they are cause H, to be solved.
+- **Flaps and spoilers** are not "maybe hardware" by design: they are cause H, to be solved (solved in gate test
+  3: the bridge's definition limit, section 2A there).
 
 ## 6. Fix plan, in priority order
 
@@ -311,7 +321,7 @@ line asking for a manual turn, and the false and repeated lines (175 of 224) wou
    **Guard for CRO-24:** never learn values for a var whose values keep rising (a counter). Learning IDG's 2 … 22
    as "positions" would have made writing them legal.
 8. **P1 – read-only observe runs** (owner-approved): flaps, spoilers, A/SKID, RUD TRIM and RESET, cockpit door,
-   window lever, N1 MODE, RMP keys, AUTO BRK MED/MAX, brightness knobs, DCDU BRT/DIM, door video, BARO STD.
+   window lever (not needed for these after gate test 3: cause H was the bridge's definition limit), N1 MODE, RMP keys, AUTO BRK MED/MAX, brightness knobs, DCDU BRT/DIM, door video, BARO STD.
 9. **P2 – tolerances and power gating for indicators** (gate test 1 section 4, still open). `not_synced` advisories
    expire.
 

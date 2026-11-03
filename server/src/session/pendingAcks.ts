@@ -66,10 +66,11 @@ export class PendingAcks {
     const entry = this.entries.get(ack.id);
     if (!entry || entry.to !== from) return false;
     entry.lastAck = ack;
+    // A var SimConnect refused to write (cannot_write) fails at once: a re-send cannot help (gate test 3 cause A).
     if (ack.ok) {
       this.remove(entry);
       this.hooks.ok(entry, ack);
-    } else if (entry.retry && entry.attempt < this.hooks.maxRetries) {
+    } else if (entry.retry && entry.attempt < this.hooks.maxRetries && ack.reason !== 'cannot_write') {
       entry.attempt++;
       this.hooks.resend(entry);
       this.arm(entry);

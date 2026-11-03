@@ -53,7 +53,10 @@ internal static class UiStatus
             },
             ["server"] = r.ServerUrl.ToString(),
         };
-        json["start_blocked"] = simConnected ? null : "sim_not_connected";
+        // An incomplete link to the sim (refused SimConnect definitions) blocks every session, loudly (CRO-40).
+        var setup = r.SimSetupProblem;
+        json["start_blocked"] = setup is not null ? "sim_setup_error" : simConnected ? null : "sim_not_connected";
+        json["sim_setup_error"] = setup;
         json["preflight"] = r.Preflight is { } p ? PreflightTable(r, p) : null;
 
         if (engine is null || client is null) return json;
@@ -167,7 +170,7 @@ internal static class UiStatus
     /// <summary>Reasons that mean a pilot's input did not arrive or had another result: always red.</summary>
     private static readonly HashSet<string> InputReasons =
         ["refused", "no_ack", "correction_failed", "correction_loop", "log_conflict", "effect_mismatch", "safety_release", "press_mismatch", "toggle_mismatch", "mode_mismatch",
-         "not_mirrored", "stuck_pressed", "press_lost", "display_mismatch"];
+         "not_mirrored", "stuck_pressed", "press_lost", "display_mismatch", "cannot_write", "out_of_range"];
 
     /// <summary>
     /// Where a desync is shown. The server sends the tier; as defence in depth only an indicator may be

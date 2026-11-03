@@ -1,0 +1,11 @@
+{
+  "v": 5,
+  "type": "write_blocked",
+  "session": "s_k3J9xQ2mPa",
+  "ts": 1793520000000,
+  "body": {
+    "var": "S_TRAY_TABLE_CAPT",
+    "group": "cabin",
+    "label": "TRAY TABLE CAPT"
+  }
+}

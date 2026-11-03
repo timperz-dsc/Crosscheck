@@ -93,6 +93,17 @@ static class WriteTest
             Before: "Set up the FMGS first so managed speed is available (INIT A, a departure in F-PLN, PERF TAKE OFF). " +
                     "The SPD window must show dashes with the managed dot. Press Enter when done.",
             StopWhenModelFails: true),
+        // CRO-40 (gate test 3 cause A): late in the profile, so its writes never landed with one SimConnect definition
+        // per var. Run with --bridge-profile to write it through the bridge's own definitions (the write-slot pool).
+        new("TRAY", "captain's tray table", "S_TRAY_TABLE_CAPT", [0, 1],
+            current => current switch
+            {
+                0 => [new WriteStep(1, "position 1", "the captain's tray table moves and stays there"), new WriteStep(0, "position 0", "the tray table goes back")],
+                1 => [new WriteStep(0, "position 0", "the captain's tray table moves and stays there"), new WriteStep(1, "position 1", "the tray table goes back")],
+                _ => null,
+            },
+            [],
+            "scan 0; positions run 2026-11-03: 0, 1; gate test 3: refused past the definition limit; cosmetic, nothing in the aircraft depends on it"),
     ];
 
     public static IReadOnlyList<WriteControl> Selected(string? only) =>
@@ -102,10 +113,12 @@ static class WriteTest
     public static List<Target> Targets(IEnumerable<WriteControl> controls) =>
         controls.Select(c => new Target(c.Var, Phase.WriteTest, c.Allowed)).ToList();
 
+    /// <param name="mode">A line for the report on how the writes are made (--bridge-profile), or null.</param>
     public static async Task<int> Run(ProbeSession session, IReadOnlyList<WriteControl> controls, Func<CancellationToken, Task<string?>> readLine,
-        string resultsPath, CancellationToken ct)
+        string resultsPath, CancellationToken ct, string? mode = null)
     {
         var report = new List<string> { $"# Supervised write test, {DateTime.Now:yyyy-MM-dd HH:mm}", "" };
+        if (mode is not null) report.AddRange([mode, ""]);
         void Say(string line) { session.Out.WriteLine(line); report.Add(line); }
         session.Out.WriteLine($"""
 

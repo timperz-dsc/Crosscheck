@@ -142,6 +142,11 @@ export function lineText(line: PanelLine, peer: string): { short: string; long: 
       return { short: `A press did not arrive in ${cockpit(line.where, peer)}.`, long: `Press ${x} in the cockpit that is wrong.` };
     case 'mode':
       return { short: 'Managed in one cockpit only.', long: 'Push or pull the knob in the cockpit that is wrong.' };
+    case 'cannot_write':
+      return {
+        short: `Crosscheck cannot write ${x}${line.where === 'there' ? ` in the ${peer}'s cockpit` : line.where === 'here' ? ' in your cockpit' : ''}.`,
+        long: 'Set it by hand in both cockpits. Send the log after the flight.',
+      };
   }
 }
 
@@ -199,6 +204,8 @@ export function amberText(a: AmberItem): string {
         : `The ${a.who}'s simulator is not connected. Panels are not compared until it is back.`;
     case 'counter_suspect':
       return `${a.label ?? 'A control'} looks like a press counter, so it is not synced. Set it by hand in both cockpits.`;
+    case 'indicator_differs':
+      return a.message ?? `${a.label ?? 'An indicator'} differs between the cockpits.`;
     default:
       return `${a.label ?? 'A control'} needs a look in both cockpits.`;
   }
@@ -220,4 +227,9 @@ export function driftText(delta: number, unit: string | null): string {
   const amount = Math.round(Math.abs(delta) * 10) / 10;
   if (amount === 0) return 'Match';
   return `${amount}${unit ? ` ${unit}` : ''} apart`;
+}
+
+/** The start screen when the link to the sim is incomplete (refused SimConnect definitions, CRO-40). */
+export function simSetupText(detail: string | null | undefined): string {
+  return detail ?? 'Crosscheck could not set up its link to the sim. Do not fly with Crosscheck – send the log.';
 }

@@ -15,6 +15,7 @@
 //       pulse_ms: 150                  # momentary only
 //       rest: 1                        # verified, spring-loaded: the position it returns to by itself
 //       alarm: { text: "...", as: S_X } # observe: red comparison (input tier) with this text
+//       notice: "..."                  # observe: amber line with this text when the difference is beyond tolerance
 //       never_write: true              # deny list: never written on any path, watched and compared only
 //       compare_when: { powered: B_X, same: [I_A, I_B] }  # delta: compare the display only then
 //       control: E_X                   # panel: show this var under that control (or an id from `controls`)
@@ -44,7 +45,7 @@ sealed record Override(
     double? Rest = null, (string Text, string? As)? Alarm = null, bool NeverWrite = false,
     (string? Powered, string[]? Same)? CompareWhen = null, bool NoVerify = false, string? Review = null,
     string? Control = null, double? Tolerance = null, string? Powered = null, int? Priority = null, string? Label = null,
-    string[]? Upstream = null);
+    string[]? Upstream = null, string? Notice = null);
 
 sealed record OpenItem(string What, IReadOnlyList<string> Vars, string Why);
 
@@ -115,7 +116,8 @@ sealed class OverrideFile
                     neverWrite, compareWhen, noVerify, S("review"),
                     S("control"), S("tolerance") is { } tol ? double.Parse(tol, CultureInfo.InvariantCulture) : null,
                     S("powered"), S("priority") is { } pri ? int.Parse(pri, CultureInfo.InvariantCulture) : null, S("label"),
-                    item.Children.TryGetValue("upstream", out var un) && un is YamlSequenceNode us ? us.Children.Select(c => ((YamlScalarNode)c).Value!).ToArray() : null));
+                    item.Children.TryGetValue("upstream", out var un) && un is YamlSequenceNode us ? us.Children.Select(c => ((YamlScalarNode)c).Value!).ToArray() : null,
+                    S("notice")));
             }
 
         if (root.Children.TryGetValue("open", out var open) && open is YamlSequenceNode os)
@@ -189,6 +191,7 @@ sealed class OverrideFile
             ValueLabels = o.ValueLabels ?? keep?.ValueLabels,
             Rest = cls == "verified" ? o.Rest ?? keep?.Rest : null,
             Alarm = cls == "observe" ? o.Alarm ?? keep?.Alarm : null,
+            Notice = cls == "observe" ? o.Notice ?? keep?.Notice : null,
             Comment = o.Comment ?? keep?.Comment,
             NeverWrite = cls is "verified" or "pulse" && (o.NeverWrite || keep?.NeverWrite == true),
             CompareWhen = cls == "delta" ? o.CompareWhen ?? keep?.CompareWhen : null,
@@ -200,6 +203,7 @@ sealed class OverrideFile
             Upstream = cls == "ignore" ? null : o.Upstream ?? keep?.Upstream,
         };
         if (o.Tolerance is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: tolerance is only used by class observe");
+        if (o.Notice is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: notice is only used by class observe");
         if (o.Powered is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: powered is only used by class observe");
         e.Display = cls == "delta" ? o.Display ?? keep?.Display : null;
         e.Verify = silent || o.NoVerify ? null : o.Verify ?? keep?.Verify;

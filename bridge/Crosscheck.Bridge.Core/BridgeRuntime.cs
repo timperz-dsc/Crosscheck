@@ -155,6 +155,9 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         GraphQl = backends.GraphQl;
         _package = backends.Package;
         Sim.StateChanged += s => Status.Sim = s == SimState.Connected ? "connected" : "disconnected";
+        Sim.WriteRejected += OnWriteRejected;
+        Sim.SetupError += OnSimSetupError;
+        Sim.SimException += what => Log.Event("sim_exception", new JsonObject { ["what"] = what });
         await Sim.StartAsync(SyncEngine.PlanFor(Profile, Unsynced.Names), ct);
         Status.Sim = Sim.State == SimState.Connected ? "connected" : "disconnected";
         await GraphQl.StartAsync(SyncEngine.GraphQlPathsFor(Profile), ct);
@@ -181,6 +184,34 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             }
         }
     }
+
+    /// <summary>
+    /// SimConnect refused a write of this var (gate test 3 cause A): blocked for as long as the bridge runs, logged,
+    /// and shown to both pilots as a red line. Never silent. Adapter thread.
+    /// </summary>
+    private void OnWriteRejected(string name, string why)
+    {
+        var first = !Sim.Guard.CannotWrite(name);
+        Sim.Guard.BlockCannotWrite(name, why);
+        Log.Event("write_rejected", new JsonObject { ["var"] = name, ["why"] = why, ["first"] = first });
+        if (!first) return;
+        _logger.LogWarning("SimConnect refused writing {Var}: {Why}", name, why);
+        if (Engine is { } engine) engine.ReportCannotWrite(name, why);
+        else Events.Publish("cannot_write", $"Crosscheck cannot write {Labels.Var(name)}. Set it by hand in both cockpits.", new JsonObject { ["var"] = name });
+    }
+
+    /// <summary>The link to the sim is incomplete: logged, shown, and no session can start (loud, never silent). Adapter thread.</summary>
+    private void OnSimSetupError(string why)
+    {
+        Log.Event("sim_setup_error", new JsonObject { ["why"] = why });
+        _logger.LogError("SimConnect setup error: {Why}", why);
+        Events.Publish("sim_setup_error", $"Crosscheck could not set up its link to the sim: {why}", new JsonObject { ["why"] = why });
+    }
+
+    /// <summary>Why no session may start because the link to the sim is incomplete (null if it is complete).</summary>
+    public string? SimSetupProblem => Sim?.SetupErrors is { Count: > 0 } errors
+        ? $"Crosscheck could not set up its link to the sim ({errors.Count} {(errors.Count == 1 ? "error" : "errors")}: {errors[0]}). Do not fly with Crosscheck – send the log."
+        : null;
 
     private async Task<AircraftVersions> ReadVersionsAsync(CancellationToken ct)
     {
@@ -243,6 +274,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         try
         {
             if (Engine is not null) return ApiResult.Fail("You are already in a session.");
+            if (SimSetupProblem is { } setup) return Error(setup);
             var preflight = await PreflightAsync(ct);
             var (client, _) = NewSession();
             var answer = await client.CreateAsync(preflight, _options.Name, ct);
@@ -283,6 +315,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         try
         {
             if (Engine is not null) return ApiResult.Fail("You are already in a session.");
+            if (SimSetupProblem is { } setup) return Error(setup);
             var preflight = await PreflightAsync(_life.Token);
             await using var client = new ProtocolClient(ServerUrl, Log, _logger) { StrictValidation = _options.StrictValidation };
             var answer = await client.CheckAsync(code.Trim().ToUpperInvariant(), preflight, _life.Token);
@@ -320,6 +353,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         try
         {
             if (Engine is not null) return ApiResult.Fail("You are already in a session.");
+            if (SimSetupProblem is { } setup) return Error(setup);
             var preflight = await PreflightAsync(ct);
             var (client, _) = NewSession();
             var answer = await client.JoinAsync(code.Trim().ToUpperInvariant(), preflight, _options.Name, ct);

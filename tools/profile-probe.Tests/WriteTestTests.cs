@@ -8,16 +8,19 @@ public class WriteTestTests
     static WriteControl C(string id) => WriteTest.Controls.Single(c => c.Id == id);
 
     [Fact]
-    public void Only_the_five_approved_controls_with_values_seen_in_the_cockpit()
+    public void Only_the_approved_controls_with_values_seen_in_the_cockpit()
     {
-        Assert.Equal(["FLAPS", "SPEEDBRAKE", "ANTI_SKID", "DOOR", "FCU_SPD"], WriteTest.Controls.Select(c => c.Id));
+        // TRAY: the CRO-40 check of the bridge write path (owner approved, gate test 3 section 8).
+        Assert.Equal(["FLAPS", "SPEEDBRAKE", "ANTI_SKID", "DOOR", "FCU_SPD", "TRAY"], WriteTest.Controls.Select(c => c.Id));
         Assert.Equal([0, 1], C("FLAPS").Allowed);
         Assert.Equal([0, 1, 2.0234375], C("SPEEDBRAKE").Allowed);
         Assert.Equal([0, 1], C("ANTI_SKID").Allowed);
         Assert.Equal([0, 1], C("DOOR").Allowed);
         Assert.Equal([-1, 0, 1], C("FCU_SPD").Allowed);
+        Assert.Equal([0, 1], C("TRAY").Allowed);
+        Assert.Equal("S_TRAY_TABLE_CAPT", C("TRAY").Var);
         // Every step writes an allowed value and every plan ends where it started.
-        foreach (var (c, start) in new[] { (C("FLAPS"), 0.0), (C("SPEEDBRAKE"), 1.0), (C("ANTI_SKID"), 1.0), (C("DOOR"), 1.0), (C("FCU_SPD"), 0.0) })
+        foreach (var (c, start) in new[] { (C("FLAPS"), 0.0), (C("SPEEDBRAKE"), 1.0), (C("ANTI_SKID"), 1.0), (C("DOOR"), 1.0), (C("FCU_SPD"), 0.0), (C("TRAY"), 0.0), (C("TRAY"), 1.0) })
         {
             var steps = c.Plan(start)!;
             Assert.All(steps, s => Assert.Contains(s.Value, c.Allowed));

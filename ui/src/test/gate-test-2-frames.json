@@ -5947,7 +5947,8 @@
             "label": null,
             "mine": false,
             "who": "captain",
-            "at": "2026-11-02T20:19:08.9300000\u002B00:00"
+            "at": "2026-11-02T20:19:08.9300000\u002B00:00",
+            "message": null
           }
         ],
         "indicators": {

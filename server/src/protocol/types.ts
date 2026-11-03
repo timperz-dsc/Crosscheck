@@ -1,7 +1,7 @@
-// TypeScript view of protocol v4. The JSON Schema in protocol/schema is the source of truth;
+// TypeScript view of protocol v5. The JSON Schema in protocol/schema is the source of truth;
 // every inbound message is validated against it before these types are trusted.
 
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 /** Shown to a client that speaks another protocol version (for example the 0.1.0 zip). */
 export const OUTDATED_MESSAGE = 'Your Crosscheck is out of date. Download the latest version.';
@@ -53,7 +53,7 @@ export type DesyncReason =
   | 'no_ack' | 'refused' | 'observe_mismatch' | 'log_conflict' | 'missing_value'
   | 'correction_failed' | 'correction_loop' | 'no_pf' | 'effect_mismatch'
   | 'safety_release' | 'press_mismatch' | 'toggle_mismatch' | 'mode_mismatch'
-  | 'not_mirrored' | 'stuck_pressed' | 'press_lost' | 'display_mismatch';
+  | 'not_mirrored' | 'stuck_pressed' | 'press_lost' | 'display_mismatch' | 'cannot_write' | 'out_of_range';
 
 /** Where a desync is shown: red (an input did not arrive, sticky, at the top) or quiet (an indicator differs). */
 export type Tier = 'red' | 'quiet';
@@ -66,7 +66,7 @@ export interface ActiveDesync {
   tier: Tier;
 }
 
-export type AdvisoryKind = 'not_synced' | 'hardware_fighting' | 'sim_disconnected' | 'counter_suspect';
+export type AdvisoryKind = 'not_synced' | 'hardware_fighting' | 'sim_disconnected' | 'counter_suspect' | 'indicator_differs';
 
 /** An amber line for both pilots (never a desync, never written). The latest body per key wins. */
 export interface AdvisoryBody {
@@ -135,16 +135,23 @@ export interface AckBody {
   /**
    * ok false only. press_lost: a mirrored press could not be applied (red). not_synced: a suspected
    * counter, covered by an amber line. display_check: an encoder click; its display is the proof.
+   * cannot_write: SimConnect refused to write this var in the receiving sim (red cannot_write, no re-send).
    */
-  reason?: 'press_lost' | 'not_synced' | 'display_check';
+  reason?: 'press_lost' | 'not_synced' | 'display_check' | 'cannot_write';
 }
 /** An indicator compared value by value (tolerance, or only while its unit is powered), not through the hash (CRO-34). */
-export interface LooseValue { var: string; value: Scalar; tolerance?: number; context?: 'unpowered' }
+export interface LooseValue {
+  var: string; value: Scalar; tolerance?: number; context?: 'unpowered';
+  /** An indicator with a profile notice: a difference is one amber line with this message (CRO-40). */
+  amber?: true; message?: string;
+}
 export interface SnapshotHashBody { group: string; hash: string; applied_seq: number; loose?: LooseValue[] }
 /** mode: an indicator of an input Crosscheck cannot sync (yet), compared as an input (red, never quiet). */
 /** context (delta with compare_when): "unpowered", or the values of its mode vars; compared only when equal. */
 export interface SnapshotValue {
   var: string; class: SnapshotClass; value: Scalar; step?: number; button?: string; message?: string; report_as?: string; context?: string;
+  /** Verified/analog: the profile's limits. The server never sends a correction outside them (CRO-40). */
+  values?: number[]; range?: [number, number];
 }
 /** A receiver released an edge button Crosscheck had pressed down, because the up never arrived. */
 export interface SafetyReleaseBody { var: string; group: string; cause: 'cap' | 'link_lost' | 'peer_lost'; observed: Scalar }
@@ -158,6 +165,8 @@ export interface PingBody { nonce: number; t: number; rtt_ms: number | null }
 export interface PongBody { nonce: number; t: number }
 export interface SimStateBody { connected: boolean }
 export interface UnsyncedInputBody { var: string; label: string }
+/** SimConnect refused to write this var in the sender's sim (gate test 3 cause A): red cannot_write for both pilots. */
+export interface WriteBlockedBody { var: string; group: string; label: string }
 export interface EffectReportBody { id: string; var: string; value: Scalar }
 /** A pilot pressed a deny-list control in their own cockpit (never mirrored). */
 export interface DeniedInputBody { var: string; group: string; label: string }

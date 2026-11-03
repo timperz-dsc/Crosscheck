@@ -57,9 +57,10 @@ export interface LineValue {
  * What a red line asks the pilots to do (bridge PanelLines.cs; the sentences are in words.ts):
  * set_both (a switch: Set both to …), lamp (lit in one cockpit: Press X here only), turn (a knob display),
  * release (stuck pressed: Release it), not_mirrored (deny list), by_hand (Crosscheck cannot set it),
- * held (held down in one cockpit), released (Crosscheck released it), press_lost, mode (managed differs).
+ * held (held down in one cockpit), released (Crosscheck released it), press_lost, mode (managed differs),
+ * cannot_write (SimConnect refused to write it: the pilots set it by hand, CRO-40).
  */
-export type LineKind = 'set_both' | 'lamp' | 'turn' | 'release' | 'not_mirrored' | 'by_hand' | 'held' | 'released' | 'press_lost' | 'mode';
+export type LineKind = 'set_both' | 'lamp' | 'turn' | 'release' | 'not_mirrored' | 'by_hand' | 'held' | 'released' | 'press_lost' | 'mode' | 'cannot_write';
 
 export type LineAction =
   | { type: 'set_both'; var: string; options: { value: number; text: string }[] }
@@ -106,6 +107,8 @@ export interface AmberItem {
   /** "you", "captain" or "first officer". */
   who: string;
   at: string;
+  /** indicator_differs: the profile's own text for the pilots (rudder trim, CRO-40). */
+  message?: string | null;
 }
 
 export interface LogRow {
@@ -152,7 +155,9 @@ export interface Status {
   /** This bridge's own log file, for sending to the developer after a test. */
   log: { folder: string; file: string } | null;
   this_computer: ThisComputer;
-  start_blocked: 'sim_not_connected' | null;
+  start_blocked: 'sim_not_connected' | 'sim_setup_error' | null;
+  /** Why the link to the sim is incomplete (refused SimConnect definitions, CRO-40); blocks every session. */
+  sim_setup_error?: string | null;
   preflight: Preflight | null;
   join_code: string | null;
   seat: string | null;

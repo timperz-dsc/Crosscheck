@@ -1,4 +1,4 @@
-# Crosscheck protocol v4
+# Crosscheck protocol v5
 
 How the bridges and the session server talk. The server is in [`server/`](../server/), the
 JSON Schema for every message is in [`protocol/schema/`](../protocol/schema/) with one example
@@ -16,17 +16,17 @@ at all (section 5), and encoders are never corrected (section 7).
 
 - One WebSocket per bridge: `ws://<host>:8787/ws` (phase 1: the server runs locally).
 - Text frames, one JSON object per frame, max 256 KiB.
-- `GET /health` answers `{"ok":true,"protocol":4,"sessions":<n>}`.
+- `GET /health` answers `{"ok":true,"protocol":5,"sessions":<n>}`.
 
 ## 2. Envelope
 
 ```json
-{ "v": 4, "type": "command", "session": "s_k3J9xQ2mPa", "seq": 42, "ts": 1793520000000, "body": { } }
+{ "v": 5, "type": "command", "session": "s_k3J9xQ2mPa", "seq": 42, "ts": 1793520000000, "body": { } }
 ```
 
 | Field | Meaning |
 |---|---|
-| `v` | Protocol version, always `4` (bridge 0.4.0 and later; v3 was bridge 0.3.x, v2 0.2.x, v1 the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
+| `v` | Protocol version, always `5` (bridge 0.5.0 and later; v4 was bridge 0.4.x, v3 0.3.x, v2 0.2.x, v1 the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
 | `type` | Message type, snake_case (list below). |
 | `session` | Session id; `null` in `create`, `join` and anything sent before a session exists. |
 | `seq` | Server-assigned, only on server-to-client messages that belong to the session log. One counter per session, strictly increasing. A command's `seq` is its global order. Clients never send `seq`. |
@@ -64,6 +64,7 @@ resume.
 | `safety_release` | C→S | A receiver released an edge push button Crosscheck had pressed down, because the up never arrived (section 5). |
 | `denied_input` | C→S | A pilot pressed a deny-list control (profile `never_write`) in their own cockpit; never mirrored (section 5). |
 | `counter_suspect` | C→S | A switch behaves like a press counter; it is not synced any more (section 7a). |
+| `write_blocked` | C→S | SimConnect refused to write a var in this bridge's sim; it is blocked there (section 5). |
 | `correction` | S→C | Write this absolute target value (decided by the PF safety rule). Never for encoders or push buttons. |
 | `control_request` | C→S | "I have control" (from the PM). |
 | `control_give` | C→S | "You have control" (from the PF). |
@@ -104,13 +105,13 @@ or `pm` changes with control transfer. The host is PF at the start.
 **Preflight.** Sent in `create` and `join`:
 
 ```json
-{ "bridge_version": "0.4.0", "profile_id": "fenix-a320", "profile_hash": "sha256:…",
+{ "bridge_version": "0.5.0", "profile_id": "fenix-a320", "profile_hash": "sha256:…",
   "aircraft": { "package_version": "3.0.0.7613", "app_version": "3.0.0.330" }, "airac": "2611" }
 ```
 
 | Field | Rule |
 |---|---|
-| `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). Before 1.0 the minor counts as the major: `0.3.x` vs `0.4.x` is rejected, `0.4.0` vs `0.4.5` is fine. |
+| `bridge_version` | Major version must match (`0.x` vs `1.x` is rejected; minor/patch may differ). Before 1.0 the minor counts as the major: `0.4.x` vs `0.5.x` is rejected, `0.5.0` vs `0.5.3` is fine. |
 | `profile_id`, `profile_hash` | Must match. The hash is compared as an opaque string. The bridge computes it as `sha256:` + hex SHA-256 of the profile file with CRLF normalised to LF, so line endings never change it. |
 | `aircraft.package_version`, `aircraft.app_version` | Must match. |
 | `airac` | Entered by hand (bridge `--airac`); Crosscheck does not read it from the aircraft. Mismatch, or unknown on one side → **warning**, not rejected, with the reminder "Check that both pilots use the same AIRAC". MCDU pages may differ. |
@@ -137,7 +138,8 @@ sends:
 | `pulse` | event | `value` (1; for an edge button 1 = down, 0 = up), `edge` and `gap_ms` for edge buttons | All presses and edges are applied, none dropped or merged. |
 
 `stream`, `observe` and `ignore` are never commands (rejected by the schema). Range and value
-limits come from the profile and are enforced by the bridge; the server checks structure only.
+limits come from the profile and are enforced by the bridge's guard. The bridge also sends them with
+its `snapshot_values` (section 7), so the server never decides a correction outside them.
 
 Flow:
 
@@ -148,8 +150,9 @@ Flow:
 3. Receiver applies it, verifies (own L: var, then the effect source from the profile) and
    answers `ack {id, ok, observed, reason?}`. `reason` is only set with `ok: false`: `press_lost` (a
    mirrored press could not be applied: red `press_lost`), `not_synced` (a suspected counter, covered by
-   its amber line: no red) or `display_check` (an encoder click whose proof is its display: no red per
-   click, see section 7).
+   its amber line: no red), `display_check` (an encoder click whose proof is its display: no red per
+   click, see section 7) or `cannot_write` (SimConnect refused to write this var in the receiver's sim:
+   red `cannot_write` at once, no re-send).
 4. Server forwards the ack to the origin with `from` and `attempt`.
 
 **Timeouts and retries.** The server waits `settle_ms + 300 ms + receiver RTT`. Only absolute
@@ -259,6 +262,17 @@ same line after 2 s, naming the cockpit with the higher counter. Never a correct
 clears when both sims show the same value (the same button pressed in the other cockpit). How to mirror
 them is CRO-31.
 
+**A var the sim refuses to write (gate test 3 cause A, CRO-40).** The bridge registers its SimConnect
+data definitions in a bounded way (read chunks of 32 vars and a pool of 8 write definitions, at most 256 in
+all) and traces every SimConnect exception to its call. If the sim still refuses a write (or the
+definition it needs), the bridge blocks that var for as long as it runs, logs it with the var, and sends
+`write_blocked {var, group, label}`; the server raises red `cannot_write` for both pilots ("Crosscheck
+cannot write TRAY TABLE CAPT in the guest cockpit. Set it by hand in both cockpits."), blocking, so no
+correction is sent for it. A command for it is acked `ok: false, reason: cannot_write` (the same red line,
+no re-send). Every new session repeats `write_blocked` for each var still blocked. The line clears when
+the cockpits match again; the next difference raises it again at once. A refused read or write-slot
+definition at connect is a setup error: the bridge refuses to create or join a session and says so.
+
 A command id that is already logged is not relayed again: the origin gets `accepted
 {duplicate: true}` with the original seq (resend after reconnect).
 
@@ -310,14 +324,18 @@ within their tolerance would make it flap. It travels with the hash instead, as
 `null` while its unit is off. The server compares the loose lists of both pilots on every pair of hash
 reports: over the tolerance (exact without one) for 10 s it raises `observe_mismatch` (quiet), within it
 the line clears; a var unpowered on either side is not compared and its open line clears. An equal hash
-never clears a loose line. A `toggle` or `mode` item whose lamp has a `powered` flag stays in the hash,
+never clears a loose line. An `observe` var with a profile `notice` (the rudder trim position, CRO-40) is
+loose too and carries `amber: true` and `message` (the profile's text): over its tolerance for 10 s the
+server raises the amber advisory `indicator_differs` (section 7a) with that text instead of a quiet desync,
+and ends it when the values are within the tolerance again or the unit is off. A `toggle` or `mode` item whose lamp has a `powered` flag stays in the hash,
 with value `null` and `context: "unpowered"` while the unit is off; it is not compared then (no line).
 
 **Comparison.** The server compares the latest hash of both pilots for a group only when no
 command or correction in that group is waiting for an ack, and both hashes were taken after
 the last one settled. A mismatch must repeat 2 times in a row (effect vars lag ~120 ms). Then
 it sends `snapshot_request {groups, reason}` to both; each answers one `snapshot_values
-{group, values: [{var, class, value}]}` per group (`groups: null` = all groups). The server
+{group, values: [{var, class, value}]}` per group (`groups: null` = all groups). `verified` and `analog`
+items carry the profile's limits: `values` (allowed values) or `range` ([min, max]). The server
 diffs the values and sends `snapshot_diff` with a decision per differing var.
 
 **Edge buttons are never corrected.** A `pulse` difference (held down on one side only) is a red
@@ -359,6 +377,9 @@ the PF's current value. Nothing else.
    classes only: encoders, push buttons, mode items and deny-list controls are never corrected.
 4. The log value matches neither side, or a value is unknown → `desync` (`log_conflict`,
    `missing_value`); no correction.
+5. A target outside the var's `values` or `range` (from `snapshot_values`) is never sent: red
+   `out_of_range` instead, blocking, for the pilots to set by hand (CRO-40; gate test 3 saw a correction
+   to 5400 for a knob with range [0, 1]).
 
 Why rule 2 needs "never confirmed": if the PF applied a pilot's command and its aircraft later
 changed the value itself, pushing the old command back would be a write no pilot did.
@@ -403,7 +424,7 @@ a correction for it is confirmed. A new pilot command alone does **not** clear i
 is refused too must never wipe the red line. A failed pulse is not in any snapshot, so only a
 confirmed press clears it; an `effect_mismatch` also clears when the lamps match in a snapshot. While `correction_loop`, `correction_failed`,
 `observe_mismatch`, `log_conflict` or `missing_value` is open, the var is not corrected
-automatically (`held` in `snapshot_diff`). `no_ack`/`refused` do not block corrections:
+automatically (`held` in `snapshot_diff`); the same for `cannot_write` and `out_of_range`. `no_ack`/`refused` do not block corrections:
 the snapshot is how those recover.
 
 ## 7a. Advisories
@@ -418,6 +439,7 @@ removes it. The active ones are listed in `joined.advisories` and `resumed.advis
 | `counter_suspect` | `counter_suspect:<var>` | A bridge saw a `verified` var rise by exactly 1 three times in a row past its allowed values (`counter_suspect`): probably a press counter profiled as a switch (gate test 2 cause A). Both bridges stop syncing it and block its writes; the server never compares or corrects it again and drops its open desync. "Set both" is never offered for it, nor for any var whose values were seen outside its allowed set. | At the end of the session. |
 | `hardware_fighting` | `hardware_fighting:<var>` | 3 `overridden` conflicts on one var within 30 s (both pilots' hardware set it). | 30 s without another override. |
 | `sim_disconnected` | `sim_disconnected:<seat>` | That pilot's `sim_state {connected: false}`. | `sim_state {connected: true}`, or the pilot is lost or leaves. |
+| `indicator_differs` | `indicator:<var>` | A loose indicator with a profile `notice` differs beyond its tolerance for 10 s (section 7). `message` = the profile's text ("Rudder trim differs – press RESET or adjust it."). | Within the tolerance again, or the unit is off on one side. |
 
 Advisories are never desyncs and never write anything. The UI shows them below the red items.
 
@@ -429,7 +451,9 @@ of a control upstream of it, profile `upstream`). Never red: lamps mid-burst, ef
 line, items outside the cockpit, a var the profile does not sync, and Crosscheck's own corrections
 (`correction_failed`/`correction_loop` go to the log; while the values still differ, the control's own
 line shows with its normal action). Each red line has one action ("Set both", "Press X here only",
-"Release it") or a plain instruction. Order: priority (1 safety, 2 flight-critical, 3 overhead
+"Release it") or a plain instruction. "Set both" is offered only for proven absolute switches and analog
+knobs, and only once a write of that var changed the value and landed in this pilot's sim during this
+session (CRO-40: gate test 3 offered it for flaps and speed brake, which Crosscheck could not write). Order: priority (1 safety, 2 flight-critical, 3 overhead
 systems, 4 pedestal and radios, 5 lights, cabin and the rest; profile `group_priority`, `priority`),
 then oldest first. "Not synced yet" counts only controls moved in the last 2 minutes.
 
@@ -553,9 +577,10 @@ this file to a desync report.
 | Correction settle / loop guard (absolute values only) | 500 ms / more than 3 per 60 s |
 | Control freeze / control ack timeout | 300 ms / 2 s |
 | Session log ring buffer | 2000 entries |
+| SimConnect definitions (bridge) | read chunks of 32 vars + 8 write slots, at most 256 |
 | Stream | 30 Hz |
 
-## 14. Not in v4
+## 14. Not in v5
 
 - Hosting, accounts, rate limits on join attempts (phase 1 runs locally).
 - The stream field set (after the follower spike).

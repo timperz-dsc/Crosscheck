@@ -42,11 +42,12 @@
           "maximum": 10
         },
         "reason": {
-          "description": "ok false only. press_lost: a mirrored press could not be applied (the button was already down with no local press): red. not_synced: the var behaves like a press counter and is not synced (an amber line covers it): no red. display_check: an encoder click whose proof is its display, compared 2 s after the last click: no red per click.",
+          "description": "ok false only. press_lost: a mirrored press could not be applied (the button was already down with no local press): red. not_synced: the var behaves like a press counter and is not synced (an amber line covers it): no red. display_check: an encoder click whose proof is its display, compared 2 s after the last click: no red per click. cannot_write: SimConnect refused to write this var in the receiving sim (it is blocked there, write_blocked): red cannot_write, no re-send.",
           "enum": [
             "press_lost",
             "not_synced",
-            "display_check"
+            "display_check",
+            "cannot_write"
           ]
         }
       }

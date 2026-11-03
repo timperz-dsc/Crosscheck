@@ -10427,12 +10427,6 @@ vars:
     group: cb
     values: [0, 1]
     note: "label generated; semantics unverified"
-  - name: A_FC_ELEVATOR_TRIM
-    label: "FC ELEVATOR TRIM"
-    class: analog
-    group: flightcontrols
-    range: [0, 1]
-    note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_FC_SPEEDBRAKE
     label: "FC SPEEDBRAKE knob"
     class: analog
@@ -10474,6 +10468,13 @@ vars:
     class: observe
     group: flightcontrols
     note: "label generated"
+  - name: N_FC_RUDDER_TRIM_DECIMAL
+    label: "FC RUDDER TRIM DECIMAL display"
+    class: observe
+    group: flightcontrols
+    notice: "Rudder trim differs – press RESET or adjust it."
+    tolerance: 1
+    note: "label generated; rudder trim position (display, 0.1° steps): compared with a tolerance of one step; a difference is one amber line, never written"
   - name: S_FC_FLAPS
     label: "FC FLAPS"
     value_labels: { "0": "0", "1": "1", "2": "2", "3": "3", "4": FULL }
@@ -10900,13 +10901,12 @@ vars:
     values: [0, 1]
     verify: { lvar: I_EXT_CARGO_DOOR_OPEN_FWD, settle_ms: 150 }
     note: "label generated; values [0,1] confirmed in step 2"
-  # positions to be learned (CRO-24)
   - name: S_EXT_CARGO_DOOR_SELECTOR_AFT
     label: "EXT CARGO DOOR SELECTOR AFT"
     class: verified
     group: ground
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
+    values: [0, 1]
+    note: "label generated; interim values from gate test 3 (owner confirmed, CRO-40); more positions can be learned (CRO-24)"
   - name: S_EXT_CARGO_DOOR_SELECTOR_FWD
     label: "EXT CARGO DOOR SELECTOR FWD"
     class: verified
@@ -11680,26 +11680,31 @@ vars:
     class: ignore
     group: cdu2
     note: "label generated; brightness follows the analog knob, which is synced itself; not compared (CRO-27)"
+  - name: A_FC_ELEVATOR_TRIM
+    label: "FC ELEVATOR TRIM"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position (pitch trim wheel): synced by the stream later (CRO-13); never written"
   - name: A_FC_THROTTLE_LEFT_GATE
     label: "FC THROTTLE LEFT GATE"
     class: ignore
     group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
   - name: A_FC_THROTTLE_LEFT_INPUT
     label: "FC THROTTLE LEFT INPUT"
     class: ignore
     group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
   - name: A_FC_THROTTLE_RIGHT_GATE
     label: "FC THROTTLE RIGHT GATE"
     class: ignore
     group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
   - name: A_FC_THROTTLE_RIGHT_INPUT
     label: "FC THROTTLE RIGHT INPUT"
     class: ignore
     group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-17)"
+    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
   - name: B_FC_SPEEDBRAKE
     label: "FC SPEEDBRAKE"
     class: ignore
@@ -11714,52 +11719,47 @@ vars:
     label: "FC BRAKE RIGHT display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_CAPT_TILLER
     label: "FC CAPT TILLER display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_ELEVATOR_TRIM
     label: "FC ELEVATOR TRIM display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_FO_TILLER
     label: "FC FO TILLER display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_RUDDER
     label: "FC RUDDER display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
-  - name: N_FC_RUDDER_TRIM_DECIMAL
-    label: "FC RUDDER TRIM DECIMAL display"
-    class: ignore
-    group: flightcontrols
-    note: "label generated; flight-control position, not compared until the stream (CRO-17)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_SIDESTICK_CAPT_BANK
     label: "FC SIDESTICK CAPT BANK display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_SIDESTICK_CAPT_PITCH
     label: "FC SIDESTICK CAPT PITCH display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_SIDESTICK_FO_BANK
     label: "FC SIDESTICK FO BANK display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_FC_SIDESTICK_FO_PITCH
     label: "FC SIDESTICK FO PITCH display"
     class: ignore
     group: flightcontrols
-    note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+    note: "label generated; flight-control position: synced by the stream later (CRO-13); not compared (CRO-27)"
   - name: N_SEAT_DISTANCE_CAPT
     label: "SEAT DISTANCE CAPT display"
     class: ignore

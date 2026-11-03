@@ -48,7 +48,7 @@ public static class PanelLines
     /// <summary>Which desync of a control decides its line (first wins).</summary>
     private static readonly string[] Precedence =
     [
-        "stuck_pressed", "not_mirrored", "safety_release", "press_lost", "toggle_mismatch", "effect_mismatch", "press_mismatch",
+        "stuck_pressed", "not_mirrored", "safety_release", "cannot_write", "out_of_range", "press_lost", "toggle_mismatch", "effect_mismatch", "press_mismatch",
         "mode_mismatch", "display_mismatch", "refused", "no_ack", "log_conflict", "missing_value", "correction_failed",
         "correction_loop", "no_pf",
     ];
@@ -58,7 +58,7 @@ public static class PanelLines
     [
         "action_confirmed", "action_failed", "action_applied", "corrected", "overridden", "desync", "desync_cleared",
         "control_changed", "takeover_pressed", "peer_joined", "peer_lost", "peer_resumed", "peer_left", "peer_expired",
-        "press_here_only", "release_it", "denied_input", "counter_suspect", "press_lost",
+        "press_here_only", "release_it", "denied_input", "counter_suspect", "press_lost", "cannot_write",
     ];
 
     private sealed record Open(JsonObject Body, DateTimeOffset Since, string Var, string Reason, string Tier);
@@ -239,6 +239,17 @@ public static class PanelLines
             case "mode_mismatch":
                 kind = "mode";
                 break;
+            case "cannot_write":
+                // SimConnect refused the write (gate test 3 cause A): no action, the pilots set it by hand.
+                // client_id names the cockpit whose sim refused it.
+                kind = "cannot_write";
+                where = main.Body["client_id"] is null ? null : clientIsMe ? "here" : "there";
+                break;
+            case "out_of_range":
+                // The other cockpit shows a value outside what Crosscheck may write: never corrected (CRO-40).
+                kind = "by_hand";
+                showValues = mine is not null || other is not null;
+                break;
             default:
                 if (spec?.Class == SyncClass.Delta || (spec is null && main.Reason == "display_mismatch") || controls.Spec(control)?.Class == SyncClass.Delta
                     || control.StartsWith("rmp", StringComparison.Ordinal))
@@ -367,6 +378,8 @@ public static class PanelLines
                     ["mine"] = mine,
                     ["who"] = mine ? "you" : ctx.OtherSide,
                     ["at"] = DateTimeOffset.FromUnixTimeMilliseconds(a["at"]?.GetValue<long>() ?? 0).ToString("O"),
+                    // An amber indicator's own text from the profile (notice, CRO-40).
+                    ["message"] = a["kind"]?.GetValue<string>() == "indicator_differs" ? a["message"]?.GetValue<string>() : null,
                 };
             }).ToArray());
 
@@ -410,6 +423,8 @@ public static class PanelLines
         "missing_value" => "one sim does not report it",
         "log_conflict" => "neither cockpit shows the last pilot command",
         "no_pf" => "differs, and there is no pilot flying",
+        "cannot_write" => "Crosscheck cannot write it",
+        "out_of_range" => "outside what Crosscheck may set",
         _ => "differs between the cockpits",
     };
 

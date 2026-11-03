@@ -186,6 +186,22 @@ public class ProfileLoaderTests
         Assert.Contains("'rest' is not used by class analog", rest.Message);
     }
 
+    private const string LampHead = "  - name: I_LAMP\n    class: observe\n    group: overhead\n";
+
+    [Fact]
+    public void Notice_is_an_amber_indicator_text_for_observe_only_and_never_with_an_alarm()
+    {
+        // CRO-40 (owner decision, gate test 3 section 8): the rudder trim position is one amber line with this text.
+        var ok = Load(Valid.Replace(LampHead, LampHead + "    tolerance: 1\n    notice: \"Lamp differs – check it.\"\n"));
+        Assert.True(ok.IsValid, string.Join("\n", ok.FormatIssues()));
+        Assert.Equal("Lamp differs – check it.", ok.Profile!.Vars.Single(v => v.Name == "I_LAMP").Notice);
+
+        var onSwitch = Single(Load(Valid.Replace("values: [0, 1]\n", "values: [0, 1]\n    notice: x\n")));
+        Assert.Contains("'notice' is not used by class verified", onSwitch.Message);
+        var both = Single(Load(Valid.Replace(LampHead, LampHead + "    notice: x\n    alarm: { text: y }\n")));
+        Assert.Contains("either red ('alarm') or amber ('notice')", both.Message);
+    }
+
     // --- schema errors ---
 
     [Fact]

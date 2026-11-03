@@ -43,6 +43,27 @@ public sealed partial class SimSafetyGuard
         lock (_blocked) return _blocked.ContainsKey(name);
     }
 
+    /// <summary>Start of the block reason for a var SimConnect refused to write (gate test 3 cause A).</summary>
+    public const string CannotWritePrefix = "cannot write: ";
+
+    /// <summary>Blocks a var SimConnect refused to write (why: SimConnect's answer).</summary>
+    public void BlockCannotWrite(string name, string why) => Block(name, CannotWritePrefix + why);
+
+    /// <summary>true if SimConnect refused to write this var (blocked with <see cref="CannotWritePrefix"/>).</summary>
+    public bool CannotWrite(string name)
+    {
+        lock (_blocked) return _blocked.TryGetValue(name, out var why) && why.StartsWith(CannotWritePrefix, StringComparison.Ordinal);
+    }
+
+    /// <summary>The vars SimConnect refused to write so far (they stay blocked while the bridge runs).</summary>
+    public IReadOnlyList<string> CannotWriteVars
+    {
+        get
+        {
+            lock (_blocked) return _blocked.Where(b => b.Value.StartsWith(CannotWritePrefix, StringComparison.Ordinal)).Select(b => b.Key).Order(StringComparer.Ordinal).ToList();
+        }
+    }
+
     /// <summary>Whether a write would pass, without counting a refusal (for the UI's "Set both" options).</summary>
     public bool IsAllowedValue(string name, double value) => Reason(name, value) is null;
 

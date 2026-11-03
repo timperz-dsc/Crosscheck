@@ -61,7 +61,17 @@ public class PanelProfileTests
         Assert.Equal("B_FCU_POWER", Var("B_FCU_HEADING_DASHED").Powered);
         Assert.Equal("B_PED_RMP1_POWER", Var("B_PED_RMP1_DATA_DISPLAYED_ACT").Powered);
         Assert.Equal(["S_FCU_EFIS1_FD", "S_FCU_EFIS2_FD"], Var("I_FCU_HEADING_MANAGED").Upstream!);
-        Assert.Equal(SyncClass.Ignore, Var("N_FC_RUDDER_TRIM_DECIMAL").Class);
+        // Owner decision (gate test 3 section 8, CRO-40): the rudder trim position is an amber indicator with a
+        // tolerance of one display step; pitch trim stays ignore until the stream (CRO-13).
+        var rudderTrim = Var("N_FC_RUDDER_TRIM_DECIMAL");
+        Assert.Equal(SyncClass.Observe, rudderTrim.Class);
+        Assert.Equal(1, rudderTrim.Tolerance);
+        Assert.Equal("Rudder trim differs – press RESET or adjust it.", rudderTrim.Notice);
+        Assert.Equal(SyncClass.Ignore, Var("A_FC_ELEVATOR_TRIM").Class);
+        Assert.Equal(SyncClass.Ignore, Var("N_FC_ELEVATOR_TRIM").Class);
+        Assert.Equal([0, 1], Var("S_EXT_CARGO_DOOR_SELECTOR_AFT").Values!);
+        // The stream is CRO-13 (CRO-17 is the follower spike).
+        Assert.DoesNotContain(Real.Vars, v => v.Note?.Contains("CRO-17", StringComparison.Ordinal) == true);
     }
 
     [Fact]

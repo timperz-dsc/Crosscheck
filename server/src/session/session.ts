@@ -8,7 +8,7 @@ import {
   type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
   type EffectReportBody, type EffectSpec, type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
   type LooseValue, type Seat, type SimStateBody, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Tier, type Timing,
-  type SafetyReleaseBody, type UnsyncedInputBody, type DeniedInputBody, type CounterSuspectBody,
+  type SafetyReleaseBody, type UnsyncedInputBody, type DeniedInputBody, type CounterSuspectBody, type WriteBlockedBody,
 } from '../protocol/types.js';
 import { CorrectionGuard } from './correctionGuard.js';
 import { buttonDecision, decideCorrections, diffLoose, diffValues, type LoggedCommand, type RawDecision, type VarDiff } from './corrections.js';
@@ -313,6 +313,7 @@ export class Session {
       case 'safety_release': return this.onSafetyRelease(slot, body);
       case 'denied_input': return this.onDeniedInput(slot, body);
       case 'counter_suspect': return this.onCounterSuspect(slot, body);
+      case 'write_blocked': return this.onWriteBlocked(slot, body);
       default:
         this.sendError(slot, 'forbidden', `${msg.type} is not allowed from a client in a session`);
     }
@@ -458,6 +459,11 @@ export class Session {
         this.emit([origin], 'ack', { id: e.id, ok: false, observed, from: e.to, attempt: e.attempt });
       }
       const ackReason = reason === 'refused' ? e.lastAck?.reason : undefined;
+      if (ackReason === 'cannot_write') {
+        this.dropEffectCheck(e.id);
+        this.raiseCannotWrite(e.var, e.group, e.var, receiver);
+        return;
+      }
       if (ackReason === 'not_synced' || ackReason === 'display_check') {
         // A suspected counter has its amber line; an encoder click is proven by its display 2 s after the
         // last click (display_mismatch). Neither is a red line of its own (gate test 2 causes A and E).
@@ -483,6 +489,8 @@ export class Session {
         ...(e.delta !== undefined ? { delta: e.delta } : {}), command_id: e.id, client_id: e.to,
         message: `${e.var}: ${what} on the ${receiver?.seat ?? 'other'} side.`,
       }, false, 'red', e.cls === 'pulse' ? null : e.var);
+    } else if (e.lastAck?.reason === 'cannot_write') {
+      this.raiseCannotWrite(e.var, e.group, e.var, receiver);
     } else {
       this.raiseDesync({
         var: e.var, group: e.group, reason: 'correction_failed', expected: e.expected, observed, command_id: e.id, client_id: e.to,
@@ -575,9 +583,24 @@ export class Session {
       if (d.matchVar !== null || d.reason !== 'observe_mismatch' || !looseNames.has(d.var) || differing.has(d.var)) continue;
       this.clearDesync(d.var, 'match');
     }
+    // Indicators with a profile notice (rudder trim position, CRO-40): one amber line with the profile's text
+    // instead of a quiet desync. It ends when the values match again (or the unit is off on one side).
+    const amber = new Map([...a.loose, ...b.loose].filter((v) => v.amber && v.message).map((v) => [v.var, v.message!]));
+    for (const adv of [...this.advisories.values()]) {
+      if (adv.kind !== 'indicator_differs' || !adv.var || !looseNames.has(adv.var) || differing.has(adv.var)) continue;
+      this.setAdvisory({ ...adv, active: false, at: now, message: `${adv.label ?? adv.var} matches again.` });
+    }
     for (const d of differ) {
       const since = g.looseSince.get(d.var) ?? (g.looseSince.set(d.var, now), now);
       if (now - since < this.config.indicatorHoldMs) continue;
+      const notice = amber.get(d.var);
+      if (notice !== undefined) {
+        const key = `indicator:${d.var}`;
+        if (!this.advisories.has(key)) {
+          this.setAdvisory({ key, kind: 'indicator_differs', active: true, tier: 'amber', var: d.var, seat: ref!.seat, at: now, message: notice });
+        }
+        continue;
+      }
       this.raiseDesync({
         var: d.var, group: name, reason: 'observe_mismatch', expected: d.pf, observed: d.pm, values: { pf: d.pf, pm: d.pm },
         message: desyncText(d.var, 'observe_mismatch'),
@@ -1229,6 +1252,24 @@ export class Session {
     if (this.desyncs.has(body.var)) this.clearDesync(body.var, 'not_synced');
   }
 
+  /**
+   * SimConnect refused to write this var in the sender's sim (gate test 3 cause A). That bridge has blocked it;
+   * both pilots get one red line that stays for the session (never silent), and no correction is sent for it.
+   */
+  private onWriteBlocked(slot: ClientSlot, body: WriteBlockedBody): void {
+    this.log.event('write_blocked', { client: slot.id, var: body.var });
+    this.pending.cancelWhere((e) => e.var === body.var && e.kind === 'correction');
+    this.raiseCannotWrite(body.var, body.group, body.label, slot);
+  }
+
+  private raiseCannotWrite(name: string, group: string | undefined, label: string, where: ClientSlot | undefined): void {
+    this.raiseDesync({
+      var: name, ...(group ? { group } : {}), reason: 'cannot_write', expected: null, observed: null,
+      ...(where ? { client_id: where.id } : {}),
+      message: `Crosscheck cannot write ${label}${where ? ` in the ${where.seat} cockpit` : ''}. Set it by hand in both cockpits.`,
+    }, true, 'red', null);
+  }
+
   /** An edge button differs in this comparison: true once it differed 2 times in a row or for buttonHoldMs. */
   private buttonPersists(g: GroupState, name: string, now: number): boolean {
     const seen = g.buttonSince.get(name);
@@ -1484,6 +1525,8 @@ function desyncText(name: string, reason: DesyncReason): string {
     case 'log_conflict': return `${name}: neither sim has the last pilot command's value; not corrected.`;
     case 'missing_value': return `${name}: value unknown on one side; not corrected.`;
     case 'no_pf': return `${name}: differs and there is no pilot flying to take as reference.`;
+    case 'cannot_write': return `Crosscheck cannot write ${name}. Set it by hand in both cockpits.`;
+    case 'out_of_range': return `${name}: the pilot flying's value is outside what Crosscheck may set; not corrected. Set it by hand.`;
     default: return `${name}: out of sync (${reason}).`;
   }
 }

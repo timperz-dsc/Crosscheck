@@ -13,6 +13,9 @@ export interface VarDiff {
   /** Delta with compare_when: each side's context ("unpowered", or its mode values). */
   pfContext?: string;
   pmContext?: string;
+  /** Verified/analog: the profile's limits, from the snapshot values (CRO-40). No correction outside them. */
+  values?: number[];
+  range?: [number, number];
 }
 
 /** The latest logged pilot command for a var, as far as the safety rule needs it. */
@@ -47,9 +50,13 @@ export function diffValues(pfValues: SnapshotValue[], pmValues: SnapshotValue[])
     const b = pm.get(name);
     if (a && b && sameValue(a.value, b.value)) continue;
     const { button, message, report_as } = (a ?? b)!;
+    // Limits come from the profile (both bridges run the same profile hash), so either side's report will do.
+    const values = a?.values ?? b?.values;
+    const range = a?.range ?? b?.range;
     out.push({
       var: name, class: (a ?? b)!.class, pf: a?.value ?? null, pm: b?.value ?? null,
       ...(button ? { button } : {}), ...(message ? { message } : {}), ...(report_as ? { report_as } : {}),
+      ...(values ? { values } : {}), ...(range ? { range } : {}),
       ...(a?.context !== undefined ? { pfContext: a.context } : {}), ...(b?.context !== undefined ? { pmContext: b.context } : {}),
     });
   }
@@ -96,8 +103,29 @@ export function buttonDecision(d: VarDiff): RawDecision | null {
  * 4. Log value matches neither side and the PF never confirmed it, or a value is unknown →
  *    desync.
  */
+/** Whether the profile allows this value for the var (no limits reported = allowed; the bridge's guard still checks). */
+export function withinLimits(d: Pick<VarDiff, 'values' | 'range'>, value: number): boolean {
+  if (d.values && !d.values.some((v) => Math.abs(v - value) <= EPSILON)) return false;
+  if (d.range && (value < d.range[0] - EPSILON || value > d.range[1] + EPSILON)) return false;
+  return true;
+}
+
 export function decideCorrections(diffs: VarDiff[], lastCommand: (name: string) => LoggedCommand | undefined): RawDecision[] {
-  return diffs.map((d): RawDecision => {
+  return diffs.map((d) => limit(decide(d, lastCommand)));
+}
+
+/**
+ * Never a correction outside the profile's range or values (CRO-40, gate test 3: a correction to 5400 for a
+ * var with range [0, 1]). Such a difference is a red out_of_range line for the pilots instead.
+ */
+function limit(r: RawDecision): RawDecision {
+  if (r.action !== 'correct' || withinLimits(r, r.target)) return r;
+  const { target: _target, sides: _sides, source: _source, source_seq: _seq, action: _action, ...d } = r;
+  return { ...d, action: 'desync', reason: 'out_of_range' };
+}
+
+function decide(d: VarDiff, lastCommand: (name: string) => LoggedCommand | undefined): RawDecision {
+  {
     // Edge push buttons: never corrected, an automatic press would be a write no pilot made.
     const button = buttonDecision(d);
     if (button) return button;
@@ -119,7 +147,7 @@ export function decideCorrections(diffs: VarDiff[], lastCommand: (name: string) 
 
     if (typeof d.pf !== 'number' || !isAbsolute(d.class)) return { ...d, action: 'desync', reason: 'missing_value' };
     return { ...d, action: 'correct', target: d.pf, sides: ['pm'], source: 'pf_reference' };
-  });
+  }
 }
 
 /** One loose indicator compared between the sims (CRO-34). */

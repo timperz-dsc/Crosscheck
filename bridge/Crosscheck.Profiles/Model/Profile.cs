@@ -71,7 +71,8 @@ public sealed record VarEntry(
     double? Tolerance = null,
     string? Powered = null,
     int? Priority = null,
-    IReadOnlyList<string>? Upstream = null)
+    IReadOnlyList<string>? Upstream = null,
+    string? Notice = null)
 {
     /// <summary>The control this var belongs to on the panel: Control, or the var itself (CRO-34).</summary>
     public string ControlId => Control ?? Name;
@@ -90,6 +91,10 @@ public sealed record CompareWhen(string? Powered = null, IReadOnlyList<string>? 
 /// </summary>
 /// <param name="As">Report the difference under this control (several indicators of one knob share one line).</param>
 public sealed record AlarmSpec(string Text, string? As = null);
+
+// Notice (observe only, CRO-40): a difference beyond the tolerance is one amber line with this text (for
+// example "Rudder trim differs – press RESET or adjust it."), never red, never written. Compared like other
+// loose indicators (tolerance, powered).
 
 public sealed record DatarefEntry(
     string Path,

@@ -157,7 +157,7 @@ Enforced in the sim adapter itself, so nothing above it can bypass it:
 - There is no API for sim events at all: the bridge cannot pause, change sim rate, slew,
   move or freeze the aircraft. A test fails if such calls appear in the SimConnect adapter.
 - The stream writer is only active on the pilot monitoring's side (and writes nothing yet,
-  until CRO-17).
+  until the stream, CRO-13; its field set comes from the follower spike, CRO-17).
 - As pilot flying, the bridge refuses every correction that is not from a logged pilot
   command.
 - If the sim or the server goes away, the bridge keeps running and reconnects; both sims keep

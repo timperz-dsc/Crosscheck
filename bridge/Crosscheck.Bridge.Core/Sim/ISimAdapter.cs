@@ -45,4 +45,22 @@ public interface ISimAdapter : IAsyncDisposable
 
     /// <summary>Follower writer for stream frames; refuses while this side is PF.</summary>
     GuardedStreamWriter Stream { get; }
+
+    /// <summary>
+    /// SimConnect refused a write (or the definition it needs) for this var: (var, why). Raised from the
+    /// adapter's own thread. The bridge blocks the var and shows a red line; never silent (gate test 3 cause A).
+    /// </summary>
+    event Action<string, string>? WriteRejected;
+
+    /// <summary>The link to the sim could not be set up completely (why). Raised from the adapter's own thread.</summary>
+    event Action<string>? SetupError;
+
+    /// <summary>
+    /// Every SimConnect exception, in words, with the var it belongs to when known (for the session log). Raised
+    /// from the adapter's own thread, in addition to <see cref="WriteRejected"/> or <see cref="SetupError"/>.
+    /// </summary>
+    event Action<string>? SimException;
+
+    /// <summary>Setup errors of the current connection (empty when the link is complete).</summary>
+    IReadOnlyList<string> SetupErrors { get; }
 }

@@ -48,6 +48,16 @@
               "context": {
                 "description": "'unpowered' while the unit is off (value null): not compared.",
                 "const": "unpowered"
+              },
+              "amber": {
+                "description": "An indicator with a profile notice (CRO-40): a difference beyond the tolerance is one amber indicator_differs advisory with this message, never a desync.",
+                "const": true
+              },
+              "message": {
+                "description": "amber items only: the text the pilots see when it differs.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
               }
             }
           }

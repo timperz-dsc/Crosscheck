@@ -8,7 +8,7 @@ import { sameValue } from '../../src/session/corrections.js';
 import type { FakeSim } from './fakeSim.js';
 
 export const PREFLIGHT: Preflight = {
-  bridge_version: '0.4.0',
+  bridge_version: '0.5.0',
   profile_id: 'fenix-a320',
   profile_hash: 'sha256:7f3a9c1e2b4d5f60',
   aircraft: { package_version: '3.0.0.7613', app_version: '3.0.0.330' },
@@ -68,6 +68,8 @@ export class FakeBridge {
   dropCorrections = 0;
   /** Apply commands but never send acks. */
   dropAcks = false;
+  /** Vars SimConnect refuses to write in this sim (CRO-40): acked ok false with reason cannot_write, never written. */
+  readonly cannotWrite = new Set<string>();
   /** Receiver side of the effect check (protocol 4): report the own lamp after settle. false = never (lost report). */
   reportEffects = true;
   /** Socket stays open, but nothing is sent any more (one-way stall). */
@@ -229,7 +231,7 @@ export class FakeBridge {
 
   /** Low-level send (tests use it for malformed or custom messages). */
   send(type: string, body: object, session: string | null = this.sessionId): void {
-    const env = { v: 4, type, session, ts: Date.now(), body };
+    const env = { v: 5, type, session, ts: Date.now(), body };
     const check = sharedValidator().validate(env);
     if (!check.ok) throw new Error(`fake bridge would send an invalid ${type}: ${check.message}`);
     this.sendText(JSON.stringify(env));
@@ -370,6 +372,8 @@ export class FakeBridge {
       const ownPending = [...this.pendingOwn.values()].includes(b.var);
       if (ownPending || (this.lastSeqByVar.get(b.var) ?? 0) > seq) {
         ack = { id: b.id, ok: true, observed: this.sim.get(b.var), superseded: true };
+      } else if (this.cannotWrite.has(b.var) && !sameValue(this.sim.get(b.var), b.value!)) {
+        ack = { id: b.id, ok: false, observed: this.sim.get(b.var), reason: 'cannot_write' };
       } else {
         this.sim.write(b.var, b.value!, 'remote');
         const observed = this.sim.get(b.var);

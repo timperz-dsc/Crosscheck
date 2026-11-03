@@ -21,7 +21,7 @@ const named = (name: string) => frames.find((f) => f.name === name)!;
 /** The status the bridge would serve the guest (first officer, pilot monitoring) at that moment. */
 function status(f: Frame) {
   return {
-    phase: 'session', bridge_version: '0.4.0', last_error: null, update: null, log: null,
+    phase: 'session', bridge_version: '0.5.0', last_error: null, update: null, log: null,
     this_computer: {
       sim: { connected: true, name: 'MSFS 2024' },
       aircraft: { name: 'Fenix A320', app_version: '3.0.0.7613', package_version: '3.0.0.7613', reading: false },

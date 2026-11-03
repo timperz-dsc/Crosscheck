@@ -36,6 +36,15 @@ describe('start', () => {
     expect(screen.getByText('Start the simulator to create or join a session.')).toBeInTheDocument();
   });
 
+  it('blocks create and join loudly when the link to the sim is incomplete (CRO-40)', () => {
+    const why = 'Crosscheck could not set up its link to the sim (1 error: SimConnect refused read definition 3). Do not fly with Crosscheck – send the log.';
+    show(bridge(idle({ start_blocked: 'sim_setup_error', sim_setup_error: why })));
+    expect(screen.getByRole('button', { name: 'Create session' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Join' })).toBeDisabled();
+    expect(screen.getByRole('alert')).toHaveTextContent(why);
+    expect(screen.queryByText('Start the simulator to create or join a session.')).toBeNull();
+  });
+
   it('saves a new session server address and shows the log folder', async () => {
     const user = userEvent.setup();
     const b = bridge(idle());
@@ -237,6 +246,7 @@ describe('session', () => {
       line({ control: 'K5', label: 'FCU HDG', kind: 'mode', message: 'HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.' }),
       line({ control: 'K6', label: 'ENG 1 FIRE TEST', kind: 'held', where: 'here' }),
       line({ control: 'K7', label: 'SVCE INT OVRD', kind: 'released', where: 'here' }),
+      line({ control: 'K8', label: 'TRAY TABLE CAPT', kind: 'cannot_write', where: 'there' }),
     ];
     show(bridge(inSession({ panel: panel({ red: kinds }) })));
     await userEvent.click(screen.getByRole('button', { name: 'Show' }));
@@ -250,6 +260,8 @@ describe('session', () => {
     expect(within(region('FCU HDG')).getByText(/push or pull the knob in the cockpit that is wrong/)).toBeInTheDocument();
     expect(within(region('ENG 1 FIRE TEST')).getByText('Held down in your cockpit only.')).toBeInTheDocument();
     expect(within(region('SVCE INT OVRD')).getByText('The release never arrived there. Check it in both cockpits.')).toBeInTheDocument();
+    expect(within(region('TRAY TABLE CAPT')).getByText("Crosscheck cannot write TRAY TABLE CAPT in the captain's cockpit.")).toBeInTheDocument();
+    expect(within(region('TRAY TABLE CAPT')).getByText('Set it by hand in both cockpits. Send the log after the flight.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Set both|here only|Release it/ })).toBeNull();
   });
 
@@ -365,12 +377,17 @@ describe('session: everything else collapsed under the red lines (CRO-34)', () =
           { key: 'hardware_fighting:S_MIP_PARKING_BRAKE', kind: 'hardware_fighting', label: 'PARKING BRAKE', mine: false, who: 'captain', at: at(3) },
           { key: 'counter_suspect:S_X', kind: 'counter_suspect', label: 'DOOR VIDEO', mine: false, who: 'captain', at: at(4) },
           { key: 'sim_disconnected:host', kind: 'sim_disconnected', label: null, mine: false, who: 'captain', at: at(5) },
+          {
+            key: 'indicator:N_FC_RUDDER_TRIM_DECIMAL', kind: 'indicator_differs', label: 'RUDDER TRIM', mine: false, who: 'captain', at: at(6),
+            message: 'Rudder trim differs – press RESET or adjust it.',
+          },
         ],
       }),
     })));
     expect(screen.getByText(/Hardware fighting: PARKING BRAKE keeps switching back and forth between the two cockpits/)).toHaveClass('warning');
     expect(screen.getByText(/DOOR VIDEO looks like a press counter/)).toHaveClass('warning');
     expect(screen.getByText("The captain's simulator is not connected. Panels are not compared until it is back.")).toHaveClass('warning');
+    expect(screen.getByText('Rudder trim differs – press RESET or adjust it.')).toHaveClass('warning'); // CRO-40: the profile's own text
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
   });
 });

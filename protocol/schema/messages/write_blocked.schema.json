@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/crosscheck/protocol/v1/messages/write_blocked.schema.json",
+  "title": "write_blocked",
+  "description": "SimConnect refused to write this var in the sending bridge's sim (a refused definition or write, gate test 3 cause A). The bridge blocks the var for as long as it runs; the server shows both pilots one red cannot_write line. Also sent again at the start of each session for every var still blocked. (client to server)",
+  "type": "object",
+  "$ref": "../common.schema.json#/$defs/envelope",
+  "properties": {
+    "type": {
+      "const": "write_blocked"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "var",
+        "group",
+        "label"
+      ],
+      "properties": {
+        "var": {
+          "$ref": "../common.schema.json#/$defs/varName"
+        },
+        "group": {
+          "$ref": "../common.schema.json#/$defs/group"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

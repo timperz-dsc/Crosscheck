@@ -202,6 +202,11 @@
             "as": { "description": "Report it under this control, so several indicators of one knob give one line.", "type": "string", "minLength": 1 }
           }
         },
+        "notice": {
+          "description": "observe only: a difference beyond the tolerance is one amber line for the pilots with this text (for example rudder trim position). Never red, never written. Not with 'alarm'.",
+          "type": "string",
+          "minLength": 1
+        },
         "never_write": {
           "description": "Deny list (irreversible controls such as IDG disconnect, fire push buttons, AGENT/DISCH): Crosscheck never writes this var on any path. A press is watched and shown as a red line for both pilots ('not mirrored'), and the value is compared in snapshots, never corrected (protocol.md section 5).",
           "type": "boolean"

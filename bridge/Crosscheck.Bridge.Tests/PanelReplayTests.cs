@@ -85,7 +85,7 @@ public class PanelReplayTests
     [Fact]
     public void Every_red_line_has_one_action_or_a_plain_instruction_and_no_raw_names()
     {
-        string[] kinds = ["set_both", "lamp", "turn", "release", "not_mirrored", "by_hand", "held", "released", "press_lost", "mode"];
+        string[] kinds = ["set_both", "lamp", "turn", "release", "not_mirrored", "by_hand", "held", "released", "press_lost", "mode", "cannot_write"];
         foreach (var (t, panel, _) in Seconds())
         {
             foreach (var line in panel["red"]!.AsArray())
@@ -95,7 +95,7 @@ public class PanelReplayTests
                 var action = line["action"]?["type"]?.GetValue<string>();
                 // Set both and Press here are buttons; Release it only in the cockpit where it is stuck.
                 if (kind == "set_both") Assert.Equal("set_both", action);
-                if (kind is "turn" or "not_mirrored" or "by_hand" or "held" or "released" or "mode") Assert.Null(action);
+                if (kind is "turn" or "not_mirrored" or "by_hand" or "held" or "released" or "mode" or "cannot_write") Assert.Null(action);
                 if (kind == "release") Assert.Equal(line["where"]!.GetValue<string>() == "here" ? "release" : null, action);
                 Assert.DoesNotMatch(RawName, line["label"]!.GetValue<string>());
             }

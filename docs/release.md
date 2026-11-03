@@ -21,7 +21,9 @@ commit message. Then commit and push to `main` in SourceTree.
 
 Rule of thumb while we are below 1.0: two pilots can only join each other if the first two numbers
 match (0.3.x with 0.3.x). A bump of the middle number (0.3.4 → 0.4.0) means everybody must update
-before they can fly together. Use that only when the protocol changes.
+before they can fly together. Use that only when the protocol changes. A protocol change also needs the
+session server redeployed with the same commit before anyone flies with the new bridge (0.5.0 brought
+protocol v5: an older server refuses a 0.5.0 bridge, and a 0.4.x bridge gets "out of date" from the new one).
 
 ## 2. Release
 

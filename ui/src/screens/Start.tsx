@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Button, Header } from '../components/parts';
 import type { Actions, Status } from '../types';
-import { aircraftText, profileText } from '../words';
+import { aircraftText, profileText, simSetupText } from '../words';
 
 export function ThisComputer({ status }: { status: Status }) {
   const pc = status.this_computer;
@@ -93,7 +93,7 @@ function UpdateNotice({ status, actions, busy }: { status: Status; actions: Acti
 
 export function Start({ status, actions, busy, error }: { status: Status; actions: Actions; busy: boolean; error: string | null }) {
   const [code, setCode] = useState('');
-  const blocked = status.start_blocked === 'sim_not_connected';
+  const blocked = status.start_blocked != null;
   const problem = error ?? status.last_error;
 
   const join = (e: FormEvent) => {
@@ -138,7 +138,8 @@ export function Start({ status, actions, busy, error }: { status: Status; action
               </div>
             </form>
           </div>
-          {blocked && <p className="warning">Start the simulator to create or join a session.</p>}
+          {status.start_blocked === 'sim_not_connected' && <p className="warning">Start the simulator to create or join a session.</p>}
+          {status.start_blocked === 'sim_setup_error' && <p className="warning" role="alert">{simSetupText(status.sim_setup_error)}</p>}
           {!blocked && problem && <p className="warning">{problem}</p>}
         </div>
         <ServerSetting status={status} actions={actions} busy={busy} />

@@ -120,6 +120,8 @@ public sealed class SyncEngine : IAsyncDisposable
     private readonly Dictionary<string, (double Last, int Steps)> _counterRun = new(StringComparer.Ordinal);
     /// <summary>Verified vars that behave like press counters: not synced, writes blocked.</summary>
     private readonly HashSet<string> _counterSuspect = new(StringComparer.Ordinal);
+    /// <summary>Absolute vars whose write changed the value and landed in this sim this session ("Set both", CRO-40).</summary>
+    private readonly HashSet<string> _writeConfirmed = new(StringComparer.Ordinal);
     /// <summary>Edge buttons the local pilot is pressing right now (down seen, up not yet): when it started.</summary>
     private readonly Dictionary<string, double> _localPress = new(StringComparer.Ordinal);
     /// <summary>Incoming edges held back while the local pilot presses the same button, in arrival order.</summary>
@@ -482,12 +484,32 @@ public sealed class SyncEngine : IAsyncDisposable
         return new JsonObject { ["var"] = name, ["group"] = spec.Group, ["label"] = Labels.Var(name) };
     }
 
-    /// <summary>Whether "Set both" may be offered: proven absolute switches and analog knobs only (CRO-33).</summary>
+    /// <summary>
+    /// Whether "Set both" may be offered: proven absolute switches and analog knobs only (CRO-33), and only once
+    /// a write of this var has landed in this sim during this session (CRO-40: in gate test 3 it was offered for
+    /// flaps and speed brake, which Crosscheck could not write).
+    /// </summary>
     public bool CanSetBoth(string name)
     {
         if (!_vars.TryGetValue(name, out var spec) || spec.Class is not (SyncClass.Verified or SyncClass.Analog)) return false;
         if (spec.NeverWrite || spec.Rest is not null || !_sim.Guard.IsWritable(name)) return false;
-        lock (_gate) return !_counterSuspect.Contains(name) && !_seenOutside.Contains(name);
+        lock (_gate) return !_counterSuspect.Contains(name) && !_seenOutside.Contains(name) && _writeConfirmed.Contains(name);
+    }
+
+    /// <summary>
+    /// SimConnect refused to write this var (gate test 3 cause A). The runtime has blocked it already; this tells
+    /// both pilots with one red line ("Crosscheck cannot write …"). Never silent. Any thread.
+    /// </summary>
+    public void ReportCannotWrite(string name, string why)
+    {
+        var body = new JsonObject { ["var"] = name, ["group"] = _vars.TryGetValue(name, out var spec) ? spec.Group : null, ["label"] = Labels.Var(name) };
+        bool active;
+        lock (_gate) active = _sessionActive;
+        var logged = (JsonObject)body.DeepClone();
+        logged["why"] = why;
+        _log.Event("write_blocked", logged);
+        _hub.Publish("cannot_write", $"Crosscheck cannot write {Labels.Var(name)}. Set it by hand in both cockpits.", (JsonObject)body.DeepClone());
+        if (active) _client.Send("write_blocked", body);
     }
 
     /// <summary>
@@ -807,6 +829,9 @@ public sealed class SyncEngine : IAsyncDisposable
         if (body["advisories"] is JsonArray advisories)
             _status.ResetAdvisories(advisories.OfType<JsonObject>().Where(a => a["active"]?.GetValue<bool>() == true));
         if (_sim.State != SimState.Connected) _client.Send("sim_state", new JsonObject { ["connected"] = false });
+        // Vars SimConnect refused earlier stay blocked while the bridge runs: the new session shows them too.
+        foreach (var blocked in _sim.Guard.CannotWriteVars)
+            _client.Send("write_blocked", new JsonObject { ["var"] = blocked, ["group"] = _vars.TryGetValue(blocked, out var bs) ? bs.Group : null, ["label"] = Labels.Var(blocked) });
         _snapshotTimer?.Dispose();
         _snapshotTimer = new Timer(_ => SendHashes(), null, _client.SnapshotIntervalMs, _client.SnapshotIntervalMs);
     }
@@ -996,7 +1021,8 @@ public sealed class SyncEngine : IAsyncDisposable
 
     /// <param name="Reason">ack reason when not ok (press_lost).</param>
     /// <param name="Direction">delta: +1/-1, the turn direction (step 1 passes once the counter reached or passed the target).</param>
-    private sealed record Written(bool Ok, double? StoredTarget, bool StoredSeen, string? Error, string? Reason = null, int Direction = 0);
+    /// <param name="Changed">The write changed the value (false when the sim already showed it and nothing was written).</param>
+    private sealed record Written(bool Ok, double? StoredTarget, bool StoredSeen, string? Error, string? Reason = null, int Direction = 0, bool Changed = true);
 
     /// <summary>The local pilot released the button (or held it too long): its held-back edges go next, in order.</summary>
     private void ResumeParked(string name, string why)
@@ -1072,7 +1098,8 @@ public sealed class SyncEngine : IAsyncDisposable
             if (written.Reason == "press_lost")
                 _hub.Publish("press_lost", $"A press of {Labels.Var(job.Spec.Name)} by the {PeerWord} could not be applied in your cockpit (the button was already down).",
                     new JsonObject { ["id"] = job.Id, ["var"] = job.Spec.Name });
-            SendAck(job.Id, false, _sim.TryGet(job.Spec.Name, out var cur) ? cur : null, reason: written.Reason);
+            SendAck(job.Id, false, _sim.TryGet(job.Spec.Name, out var cur) ? cur : null,
+                reason: written.Reason ?? (_sim.Guard.CannotWrite(job.Spec.Name) ? "cannot_write" : null));
             return;
         }
         _ = Task.Run(async () =>
@@ -1110,7 +1137,7 @@ public sealed class SyncEngine : IAsyncDisposable
                     lock (_gate) _echo.Expect(name, target, window);
                     await WriteGuarded(name, target);
                 }
-                return new Written(true, target, true, null);
+                return new Written(true, target, true, null, Changed: !already);
             }
             case SyncClass.Delta:
             {
@@ -1497,7 +1524,12 @@ public sealed class SyncEngine : IAsyncDisposable
         // A key with an effect lamp: its lamp goes to the server once per burst (effect_report, ScheduleEffect).
         // An encoder with a display: its proof is the display comparison 2 s after the last click, so a
         // click that did not land is no red line of its own (display_check).
-        SendAck(job.Id, ok, observed, reason: spec.Class == SyncClass.Delta && spec.Display is not null ? "display_check" : null);
+        // A write that changed the value and landed: "Set both" may be offered for this var from now on (CRO-40).
+        // Writing the value the sim already showed proves nothing (gate test 3: "close ok, open failed").
+        if (ok && written.Changed && Absolute.Contains(spec.Class)) lock (_gate) _writeConfirmed.Add(name);
+        // A write SimConnect refused (gate test 3 cause A): the reason makes it the red "cannot write" line.
+        SendAck(job.Id, ok, observed, reason: !ok && _sim.Guard.CannotWrite(name) ? "cannot_write"
+            : spec.Class == SyncClass.Delta && spec.Display is not null ? "display_check" : null);
     }
 
     private static JsonNode? Node(object? v) => v switch { double d => d, string s => s, _ => null };
@@ -1574,23 +1606,26 @@ public sealed class SyncEngine : IAsyncDisposable
 
     private const string Unpowered = "unpowered";
 
-    /// <summary>A plain indicator with a tolerance or a power flag: sent in snapshot_hash.loose (CRO-34).</summary>
+    /// <summary>
+    /// A plain indicator with a tolerance, a power flag or an amber notice: sent in snapshot_hash.loose (CRO-34,
+    /// CRO-40).
+    /// </summary>
     private static bool IsLoose(VarEntry v) =>
-        v is { Class: SyncClass.Observe, Alarm: null } && (v.Tolerance is not null || v.Powered is not null);
+        v is { Class: SyncClass.Observe, Alarm: null } && (v.Tolerance is not null || v.Powered is not null || v.Notice is not null);
 
     /// <summary>The indicator's unit is off (its power flag reads 0 or is unknown): not compared.</summary>
     private bool IsUnpowered(VarEntry v) => v.Powered is { } p && (!_sim.TryGet(p, out var power) || power == 0);
 
     /// <summary>The loose indicators of one group, as sent with its hash (protocol.md §7).</summary>
-    public List<(string Var, double? Value, double? Tolerance, bool Unpowered)> LooseValues(string group)
+    public List<(string Var, double? Value, double? Tolerance, bool Unpowered, string? Notice)> LooseValues(string group)
     {
-        var list = new List<(string, double?, double?, bool)>();
+        var list = new List<(string, double?, double?, bool, string?)>();
         foreach (var v in _profile.Vars.Where(v => v.Group == group && IsLoose(v)))
         {
             // Lamps of edge buttons and encoder displays are reported under their control, never loose.
             if (_toggleLamps.ContainsKey(v.Name) || _deltaDisplays.Contains(v.Name)) continue;
             var off = IsUnpowered(v);
-            list.Add((v.Name, !off && _sim.TryGet(v.Name, out var x) ? x : null, v.Tolerance, off));
+            list.Add((v.Name, !off && _sim.TryGet(v.Name, out var x) ? x : null, v.Tolerance, off, v.Notice));
         }
         return list;
     }
@@ -1637,6 +1672,12 @@ public sealed class SyncEngine : IAsyncDisposable
                     var item = new JsonObject { ["var"] = l.Var, ["value"] = l.Value is { } x ? JsonValue.Create(x) : null };
                     if (l.Tolerance is { } t) item["tolerance"] = t;
                     if (l.Unpowered) item["context"] = Unpowered;
+                    // An amber indicator (profile notice): a difference is one amber line with this text (CRO-40).
+                    if (l.Notice is { } notice)
+                    {
+                        item["amber"] = true;
+                        item["message"] = notice;
+                    }
                     return (JsonNode)item;
                 }).ToArray());
             _client.Send("snapshot_hash", message);
@@ -1663,6 +1704,12 @@ public sealed class SyncEngine : IAsyncDisposable
                     if (v.Class == "toggle") item["button"] = _toggleLamps[v.Var];
                     if (v.Class is "toggle" or "mode" && ItemContext(v.Var) is { } off) item["context"] = off;
                     if (v.Class == "delta" && DeltaContext(_vars[v.Var]) is { } context) item["context"] = context;
+                    // The profile's limits, so the server never sends a correction outside them (CRO-40).
+                    if (v.Class is "verified" or "analog" && _vars.TryGetValue(v.Var, out var limits))
+                    {
+                        if (limits.Values is { } allowed) item["values"] = new JsonArray(allowed.Select(a => (JsonNode)JsonValue.Create(a)!).ToArray());
+                        if (limits.Range is [var min, var max]) item["range"] = new JsonArray(min, max);
+                    }
                     if (v.Class == "mode" && _vars[v.Var].Alarm is { } alarm)
                     {
                         item["message"] = alarm.Text;
@@ -1698,7 +1745,7 @@ public sealed class SyncEngine : IAsyncDisposable
         if (spec.NeverWrite)
             throw new SafetyViolationException($"{Labels.Var(name)} is never set by Crosscheck (irreversible). Do it in the cockpit if intended.");
         if (!CanSetBoth(name))
-            throw new SafetyViolationException($"{Labels.Var(name)} cannot be set from here (it may be a press counter). Set it in the cockpit.");
+            throw new SafetyViolationException($"{Labels.Var(name)} cannot be set from here (no write of it confirmed in this session yet, or it may be a press counter). Set it in the cockpit.");
         if (!_sim.Guard.IsAllowedValue(name, value))
             throw new SafetyViolationException($"{Labels.Number(value)} is not an allowed value of {name}.");
         if (_sim.State != SimState.Connected) throw new InvalidOperationException("The sim is not connected.");

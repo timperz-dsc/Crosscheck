@@ -31,6 +31,8 @@ dotnet run --project tools/profile-probe -- <command>
 | `restore` | restore a var an interrupted run left pending | yes (restore only) |
 | `peek NAME... [--clear]` | read vars and the pending var's effect check; `--clear` drops the pending entry only if every effect var is back; `--clear --pilot-ok` also when only effect vars differ and the pilot checked the cockpit (the var itself must be back) | no |
 | `undo --var NAME` | write one var back to the original value the probe recorded for it | yes (restore only) |
+| `writetest [--only ID] [--bridge-profile]` | supervised write test, Enter before each write, put back afterwards; see below | yes (supervised) |
+| `deflimit` | CRO-40: registration only: how many SimConnect data definitions the sim accepts from one client; see below | no |
 | `propose` | `probe-results.csv`, `probe-report.md`, `profile.proposed.yaml` | no (no sim) |
 
 Options: `--only NAME`, `--redo`. Exit codes: 0 ok, 1 error, 2 safety stop, 3 not restored, 4 Ctrl+C.
@@ -88,7 +90,7 @@ timestamped raw copies in `.probe/`. The old write test of this name stays off.
 
 ## writetest (gate test 3 prep, owner approved 2026-11-03)
 
-Supervised, writes to the sim. `WriteTest.cs` lists the five controls and the only values each may get, all seen
+Supervised, writes to the sim. `WriteTest.cs` lists the controls and the only values each may get, all seen
 in the owner's cockpit: flaps lever 0 → 1 → 0 (only with no hydraulic pressure), speed brake RET → half
 (2.0234375, sent in gate test 2) → RET and ARM (0) → RET, A/SKID & N/W STRG 1 → 0 → 1, cockpit door
 closed (0) → open (1) → closed, or from open the other way round, and FCU SPD own + 1 then own − 1 from 0 (the owner's counter model; if the step
@@ -103,6 +105,34 @@ only 0 and 1.
   not rest at its start is skipped. It stops at once on a value nobody wrote, when Fenix stops answering, or
   on the usual safety check (on ground, parking brake, engines, BAT, EXT PWR, bus power).
 - Results are appended to `profiles/fenix-a320/writetest-results.md`.
+
+### The tray table through the bridge write path (CRO-40, owner approved)
+
+```
+dotnet run --project tools/profile-probe -- writetest --only TRAY --bridge-profile
+```
+
+`TRAY` is the captain's tray table (`S_TRAY_TABLE_CAPT`), 0 → 1 → 0 (or 1 → 0 → 1), only values seen in the
+cockpit; it is cosmetic. In gate test 3 its writes never landed (gate test 3 cause A: one SimConnect definition
+per writable var). `--bridge-profile` sets the adapter up exactly like a bridge session: the real profile's watch
+list (`SyncEngine.PlanFor`) in read chunks and the pool of write definitions (`SimDefinitions`); the console and
+the results file say how many definitions that is. Only the tray table is writable; every other var is watched
+read-only, so the guard refuses any other write. It refuses a var that is not a plain switch of the profile, and
+it needs no var pending from an earlier run (`restore` first). Same rules as above: Enter before each write,
+read back 2.5 s, put back, safety stop on anything unexpected.
+
+## deflimit (CRO-40, owner approved)
+
+```
+dotnet run --project tools/profile-probe -- deflimit
+```
+
+Registration only. After Enter it opens its own SimConnect client, adds one existing Fenix lamp var
+(`I_OH_ELEC_EXT_PWR_L`) to data definitions 0 … 1999 and collects the exceptions SimConnect sends back: the first
+refused definition is the limit for one client. Then it clears every definition it made and disconnects. It never
+writes a value, never requests data, sends no events and maps nothing (a test fails if such calls appear in
+`DefLimit.cs`). The sim at the gate with the Fenix loaded, any state; the bridge need not run. The result is
+appended to `profiles/fenix-a320/deflimit-results.md`.
 
 ## Range rule
 

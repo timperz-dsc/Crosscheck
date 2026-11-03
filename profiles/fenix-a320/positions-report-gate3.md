@@ -115,9 +115,15 @@ every control moved as written.
 A second run was stopped with Ctrl+C after the flaps went to 1; the restore put them back to 0 (probe log:
 restored). The tool now says where a stopped control ended.
 
-**Conclusion for gate test 2 cause H:** written alone in a quiet cockpit, every one of these sticks. So in gate
-test 2 something in the receiving cockpit set them back, most likely a hardware lever or a sim binding of that
-pilot (flaps and speed brake axes), not Fenix refusing the write.
+**Conclusion for gate test 2 cause H:** written alone in a quiet cockpit, every one of these sticks.
+
+> **Corrected after gate test 3 (CRO-40).** The earlier conclusion here ("something in the receiving cockpit set
+> them back, most likely a hardware lever or a sim binding") was wrong. The cause was the bridge: it registered
+> one SimConnect data definition per writable var (about 1,240), and the sim refused those late in the list
+> without anything in the session log. Writes to those vars (flaps, speed brake, A/SKID, RUD TRIM and RESET,
+> cockpit door, the cabin items) never landed. This write test registers only a few definitions, so its writes
+> landed. Not Fenix, not hardware, not hydraulics. See [the gate test 3 diagnosis](../../docs/gate-tests/CRO-22-gate-test-3.md),
+> section 2A. Fixed in bridge 0.5.0 (a pool of write definitions; a refused write is a red line).
 
 ## How each control syncs (applied, profile hash `sha256:968a8d3b9691c0cb0a04c5a5c40099fd564a783c96331c3ef9597f45fc5c09fd`)
 
@@ -130,8 +136,7 @@ pilot (flaps and speed brake axes), not Fenix refusing the write.
 | FCU SPD, HDG, V/S, ALT push/pull | `delta` (the change only: pull +1, push −1 from the receiver's own value), never corrected, one line with its knob. Checked by read-back of the own var, never by a lamp. The existing comparison of the managed lamps and dashes between the cockpits stays a red line after 2 s (ALT included) |
 
 For gate test 3:
-- Each pilot should check that no hardware axis or button is bound to flaps or speed brake in the sim that
-  receives them. If one is, Crosscheck's write is set back and the panel shows a "hardware fighting" or "Set it
-  by hand" line.
+- ~~Each pilot should check that no hardware axis or button is bound to flaps or speed brake in the sim that
+  receives them.~~ Not the cause (corrected after gate test 3, see above).
 - Pull and push each FCU knob once in each cockpit. The gate test 2 prep run saw a push as −1 held while the
   mouse was down; that mirrors as −1, then +1.
