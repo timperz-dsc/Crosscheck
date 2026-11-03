@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AlertIcon, Button, Mark } from '../components/parts';
-import type { Actions, Advisory, ControlNotice, Desync, RecentItem, Status } from '../types';
+import { pickHeadline } from '../panel';
+import type { Actions, ControlNotice, Panel, PanelItem, PanelLine, Status } from '../types';
 import {
-  SideName, advisoryText, desyncExplanation, differsHeading, driftText, driftWarningText, effectsText, indicatorsLine, lastCompared,
-  notSyncedText, otherSide, peerLostText, roleName, sideName, timeOfDay,
+  SideName, actionLabel, amberText, driftText, driftWarningText, indicatorsLine, itemValues, lastCompared, lineText, moreText,
+  notSyncedDetail, notSyncedLine, otherSide, outsideLine, peerLostText, roleName, sideName, timeOfDay,
 } from '../words';
 import { SessionHeader } from './Waiting';
 
 interface Props {
   status: Status;
-  recent: RecentItem[];
   actions: Actions;
   busy: boolean;
   error: string | null;
@@ -19,13 +19,17 @@ interface Props {
   now: number;
 }
 
-/** More "not synced yet" lines than this collapse into one. */
-const NOT_SYNCED_MAX_LINES = 3;
+const EMPTY: Panel = {
+  red: [], not_synced: { count: 0, items: [] }, outside: { count: 0, items: [] }, amber: [], indicators: { count: 0, items: [] }, log: [],
+};
 
-export function Session({ status, recent, actions, busy, error, confirmPeerLost, now }: Props) {
-  // Red: a pilot's input did not arrive. Quiet: indicators. (The bridge splits them; quiet ones are never red here.)
-  const desyncs = (status.desyncs ?? []).filter((d) => d.tier !== 'quiet');
-  const indicators = [...(status.indicators ?? []), ...(status.desyncs ?? []).filter((d) => d.tier === 'quiet')];
+/**
+ * The session panel (CRO-34), for a quick glance in flight: one headline line with the most important
+ * red line and its action, the full red list on demand, everything else collapsed below, and the
+ * Panels summary and the log on the right.
+ */
+export function Session({ status, actions, busy, error, confirmPeerLost, now }: Props) {
+  const panel = status.panel ?? EMPTY;
   const crew = status.crew ?? [];
   const me = crew.find((c) => c.you);
   const peer = crew.find((c) => !c.you);
@@ -38,30 +42,11 @@ export function Session({ status, recent, actions, busy, error, confirmPeerLost,
       <SessionHeader status={status} actions={actions} busy={busy} />
       <main className="main main-session">
         <div className="session-col">
-          <div className="heading">
-            <div className="heading-title">
-              {desyncs.length === 0 ? <Mark size={30} /> : <AlertIcon />}
-              <h1>{differsHeading(desyncs.length)}</h1>
-            </div>
-            <p className="muted">
-              {desyncs.length > 0 ? 'Everything else matches. ' : ''}
-              {lastCompared(status.last_compared_at, now)}
-            </p>
-          </div>
+          <RedLines lines={panel.red} peerWord={peerWord} actions={actions} busy={busy} compared={lastCompared(status.last_compared_at, now)} />
 
           {notice.visible && notice.data && <ControlChange notice={notice.data} peerWord={peerWord} onDismiss={notice.dismiss} />}
 
-          {desyncs.length > 0 && (
-            <div className="blocks">
-              {desyncs.map((d) => (
-                <DesyncBlock key={d.var} desync={d} peerWord={peerWord} actions={actions} busy={busy} />
-              ))}
-            </div>
-          )}
-
-          <AmberLines status={status} peerWord={peerWord} isPf={isPf} confirmPeerLost={confirmPeerLost} actions={actions} busy={busy} now={now} />
-
-          {indicators.length > 0 && <Indicators indicators={indicators} peerWord={peerWord} />}
+          <CollapsedLines status={status} panel={panel} peerWord={peerWord} isPf={isPf} confirmPeerLost={confirmPeerLost} actions={actions} busy={busy} now={now} />
 
           <section className="stack-wide">
             <dl className="list list-crew">
@@ -89,44 +74,163 @@ export function Session({ status, recent, actions, busy, error, confirmPeerLost,
             )}
             {error && <p className="warning">{error}</p>}
           </section>
+        </div>
 
-          <section className="stack" style={{ gap: 10 }}>
-            <h2>Recent</h2>
-            {recent.length === 0 ? (
+        <aside className="session-aside">
+          <section className="stack" style={{ gap: 10 }} aria-labelledby="panels-title">
+            <h2 id="panels-title">Panels</h2>
+            <dl className="panels">
+              {(status.groups ?? []).map((g) => (
+                <div key={g.id} style={{ display: 'contents' }}>
+                  <dt className={g.differs > 0 ? 'strong' : undefined}>{g.label}</dt>
+                  <dd className={g.differs > 0 ? 'differs' : 'muted'}>{g.differs > 0 ? `${g.differs} ${g.differs === 1 ? 'differs' : 'differ'}` : 'Match'}</dd>
+                </div>
+              ))}
+              {(status.owned ?? []).map((o) => (
+                <div key={o.var} style={{ display: 'contents' }}>
+                  <dt>{o.label}</dt>
+                  <dd className="muted">{driftText(o.delta, o.unit)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <section className="log-section" aria-labelledby="log-title">
+            <h2 id="log-title">Log</h2>
+            {panel.log.length === 0 ? (
               <p className="muted">Nothing yet. Every change either of you makes appears here.</p>
             ) : (
-              <ol className="recent">
-                {recent.slice(0, 8).map((r, i) => (
+              <ol className="recent log" aria-label="Log">
+                {panel.log.map((r, i) => (
                   <li key={`${r.at}-${i}`}>
                     <time dateTime={r.at}>{timeOfDay(r.at)}</time>
-                    <span>{r.message}</span>
+                    <span>{r.text}</span>
                   </li>
                 ))}
               </ol>
             )}
           </section>
-        </div>
-
-        <aside className="session-aside">
-          <h2>Panels</h2>
-          <dl className="panels">
-            {(status.groups ?? []).map((g) => (
-              <div key={g.id} style={{ display: 'contents' }}>
-                <dt className={g.differs > 0 ? 'strong' : undefined}>{g.label}</dt>
-                <dd className={g.differs > 0 ? 'differs' : 'muted'}>{g.differs > 0 ? `${g.differs} differs` : 'Match'}</dd>
-              </div>
-            ))}
-            {(status.owned ?? []).map((o) => (
-              <div key={o.var} style={{ display: 'contents' }}>
-                <dt>{o.label}</dt>
-                <dd className="muted">{driftText(o.delta, o.unit)}</dd>
-              </div>
-            ))}
-          </dl>
         </aside>
       </main>
     </>
   );
+}
+
+/**
+ * The headline (the most important red line, with its action and "+N more") and, when opened, every
+ * other red line. When nothing is red: one calm line.
+ */
+function RedLines({ lines, peerWord, actions, busy, compared }: {
+  lines: PanelLine[]; peerWord: string; actions: Actions; busy: boolean; compared: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const previous = useRef<string | null>(null);
+  const headline = pickHeadline(previous.current, lines);
+  previous.current = headline?.control ?? null;
+  useEffect(() => {
+    if (lines.length <= 1) setOpen(false);
+  }, [lines.length]);
+
+  if (!headline) {
+    return (
+      <div className="headline">
+        <div className="headline-title">
+          <Mark size={30} />
+          <h1>All controls match</h1>
+        </div>
+        <p className="muted">{compared}</p>
+      </div>
+    );
+  }
+
+  const others = lines.filter((l) => l.control !== headline.control);
+  const text = lineText(headline, peerWord);
+  return (
+    <>
+      <section className="headline" aria-labelledby="headline-title">
+        <div className="headline-title">
+          <AlertIcon />
+          <h1 id="headline-title">{headline.label}</h1>
+          <span className="headline-short">{text.short}</span>
+        </div>
+        {open && <LineDetails line={headline} peerWord={peerWord} />}
+        <div className="row">
+          <LineActions line={headline} actions={actions} busy={busy} />
+          {others.length > 0 && (
+            <span className="note-row">
+              <span className="strong">{moreText(others.length)}</span>
+              <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="red-lines">
+                {open ? 'Hide' : 'Show'}
+              </Button>
+            </span>
+          )}
+        </div>
+        <p className="muted">{compared}</p>
+      </section>
+      {open && others.length > 0 && (
+        <div className="blocks" id="red-lines">
+          {others.map((l) => <ControlLine key={l.control} line={l} peerWord={peerWord} actions={actions} busy={busy} />)}
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Both values (for switches and displays) and the full sentence. */
+function LineDetails({ line, peerWord }: { line: PanelLine; peerWord: string }) {
+  const text = lineText(line, peerWord);
+  return (
+    <>
+      {line.you && line.other && (
+        <dl className="values">
+          <dt>You</dt>
+          <dt>{peerWord.charAt(0).toUpperCase() + peerWord.slice(1)}</dt>
+          <dd>{line.you.text}</dd>
+          <dd>{line.other.text}</dd>
+        </dl>
+      )}
+      <p className="prose">{line.message ?? text.long}</p>
+    </>
+  );
+}
+
+function ControlLine({ line, peerWord, actions, busy }: { line: PanelLine; peerWord: string; actions: Actions; busy: boolean }) {
+  const id = `line-${line.control}`;
+  const where = [line.group_label, `since ${timeOfDay(line.since)}`].filter(Boolean).join(', ');
+  const text = lineText(line, peerWord);
+  return (
+    <section className="block" aria-labelledby={id}>
+      <div className="block-title">
+        <h2 id={id}>{line.label}</h2>
+        <span className="muted">{where.charAt(0).toUpperCase() + where.slice(1)}</span>
+      </div>
+      {/* A switch shows both values below; the sentence would repeat them. */}
+      {!(line.kind === 'set_both' && line.you && line.other) && <p className="prose">{text.short}</p>}
+      <LineDetails line={line} peerWord={peerWord} />
+      {line.action && <div className="row"><LineActions line={line} actions={actions} busy={busy} /></div>}
+    </section>
+  );
+}
+
+/** One action per line: Set both (one button per value), Press X here only, or Release it. */
+function LineActions({ line, actions, busy }: { line: PanelLine; actions: Actions; busy: boolean }) {
+  const a = line.action;
+  if (!a) return null;
+  switch (a.type) {
+    case 'set_both':
+      return (
+        <span className="row">
+          {a.options.map((o, i) => (
+            <Button key={o.value} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => void actions.setBoth(a.var, o.value)} disabled={busy}>
+              {actionLabel(a, o.text)}
+            </Button>
+          ))}
+        </span>
+      );
+    case 'press_here':
+      return <Button onClick={() => void actions.pressHere(a.var)} disabled={busy}>{actionLabel(a)}</Button>;
+    case 'release':
+      return <Button onClick={() => void actions.releaseIt(a.var)} disabled={busy}>{actionLabel(a)}</Button>;
+  }
 }
 
 /** "You have control" after a control change, with the open differences as plain information. */
@@ -163,62 +267,14 @@ function ControlChange({ notice, peerWord, onDismiss }: { notice: ControlNotice;
   );
 }
 
-function DesyncBlock({ desync: d, peerWord, actions, busy }: { desync: Desync; peerWord: string; actions: Actions; busy: boolean }) {
-  const id = `desync-${d.var}`;
-  const where = [d.group_label, `open since ${timeOfDay(d.since)}`].filter(Boolean).join(', ');
-  return (
-    <section className="block" aria-labelledby={id}>
-      <div className="block-title">
-        <h2 id={id} className={d.has_label ? undefined : 'mono'}>{d.label}</h2>
-        <span className="muted">{where.charAt(0).toUpperCase() + where.slice(1)}</span>
-      </div>
-      <dl className="values">
-        <dt>You</dt>
-        <dt>{peerWord.charAt(0).toUpperCase() + peerWord.slice(1)}</dt>
-        <dd>{d.you.text}</dd>
-        <dd>{d.other.text}</dd>
-      </dl>
-      <p className="prose">{desyncExplanation(d, peerWord)}</p>
-      {d.effects && d.effects.length > 0 && <p className="muted prose">{effectsText(d.effects)}</p>}
-      {d.press_here && (
-        <div className="row">
-          <Button variant="primary" onClick={() => void actions.pressHere(d.var)} disabled={busy}>
-            Press {d.label} here only
-          </Button>
-        </div>
-      )}
-      {d.release_here && (
-        <div className="row">
-          <Button variant="primary" onClick={() => void actions.releaseIt(d.var)} disabled={busy}>
-            Release it
-          </Button>
-        </div>
-      )}
-      {d.writable && d.options.length > 0 && (
-        <div className="row">
-          {d.options.map((o, i) => (
-            <Button key={o.value} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => void actions.setBoth(d.var, o.value)} disabled={busy}>
-              Set both to {o.text}
-            </Button>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 /**
- * Amber lines, always below the red items: connection, a sim that is not connected, hardware
- * fighting, fuel, and controls that are not synced yet (one line each, more than 3 collapse).
+ * Everything that is not red, collapsed under the red lines: connection, amber lines (one per hardware
+ * fight, fuel drift, not synced yet, outside the aircraft) and one grey line for the indicators.
  */
-function AmberLines({ status, peerWord, isPf, confirmPeerLost, actions, busy, now }: {
-  status: Status; peerWord: string; isPf: boolean; confirmPeerLost: boolean; actions: Actions; busy: boolean; now: number;
+function CollapsedLines({ status, panel, peerWord, isPf, confirmPeerLost, actions, busy, now }: {
+  status: Status; panel: Panel; peerWord: string; isPf: boolean; confirmPeerLost: boolean; actions: Actions; busy: boolean; now: number;
 }) {
-  const [open, setOpen] = useState(false);
   const peer = (status.crew ?? []).find((c) => !c.you);
-  const advisories = status.advisories ?? [];
-  const notSynced = advisories.filter((a) => a.kind === 'not_synced');
-  const others = advisories.filter((a) => a.kind !== 'not_synced');
   const fuel = driftWarningText(status.owned ?? []);
   const lines: ReactNode[] = [];
   if (status.server === 'reconnecting') {
@@ -235,23 +291,24 @@ function AmberLines({ status, peerWord, isPf, confirmPeerLost, actions, busy, no
       </span>,
     );
   }
-  for (const a of others) lines.push(<span key={a.key} className="warning">{advisoryText(a)}</span>);
+  for (const a of panel.amber) lines.push(<span key={a.key} className="warning">{amberText(a)}</span>);
   if (fuel) lines.push(<span key="fuel" className="warning">{fuel}</span>);
-  if (notSynced.length > 0 && notSynced.length <= NOT_SYNCED_MAX_LINES) {
-    for (const a of notSynced) lines.push(<span key={a.key} className="warning">{notSyncedText(a)}</span>);
-  } else if (notSynced.length > NOT_SYNCED_MAX_LINES) {
+  if (panel.not_synced.count > 0) {
     lines.push(
-      <span key="not-synced" className="note-stack">
-        <span className="note-row">
-          <span className="warning">Not synced yet ({notSynced.length})</span>
-          <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide' : 'Show'}</Button>
-        </span>
-        {open && (
-          <ul className="details" aria-label="Not synced yet">
-            {notSynced.map((a) => <NotSyncedItem key={a.key} advisory={a} />)}
-          </ul>
-        )}
-      </span>,
+      <Expandable key="not-synced" tone="warning" text={notSyncedLine(panel.not_synced.count)} listName="Not synced yet"
+        items={panel.not_synced.items} detail={notSyncedDetail} />,
+    );
+  }
+  if (panel.outside.count > 0) {
+    lines.push(
+      <Expandable key="outside" tone="warning" text={outsideLine(panel.outside.count)} listName="Outside the aircraft"
+        items={panel.outside.items} detail={(i) => `${itemValues(i, peerWord)}. Set it by hand in both cockpits if it matters.`} />,
+    );
+  }
+  if (panel.indicators.count > 0) {
+    lines.push(
+      <Expandable key="indicators" tone="muted" text={indicatorsLine(panel.indicators.count)} listName="Indicators that differ"
+        items={panel.indicators.items} detail={(i) => itemValues(i, peerWord)} />,
     );
   }
   if (lines.length === 0) return null;
@@ -262,38 +319,27 @@ function AmberLines({ status, peerWord, isPf, confirmPeerLost, actions, busy, no
   );
 }
 
-function NotSyncedItem({ advisory: a }: { advisory: Advisory }) {
-  return (
-    <li>
-      <span>{a.label ?? a.var}</span>
-      <span className="muted">{a.mine ? 'moved by you' : `moved by the ${a.who}`}, {timeOfDay(a.at)}</span>
-    </li>
-  );
-}
-
-/** Quiet: one grey line with a count; details on click. Never red. */
-function Indicators({ indicators, peerWord }: { indicators: Desync[]; peerWord: string }) {
+/** One collapsed line with a count; the controls behind it on click. */
+function Expandable({ tone, text, listName, items, detail }: {
+  tone: 'warning' | 'muted'; text: string; listName: string; items: PanelItem[]; detail: (i: PanelItem) => string;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="notes">
-      <div className="note note-stack">
-        <span className="note-row">
-          <span className="muted">{indicatorsLine(indicators.length)}</span>
-          <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide details' : 'Show details'}</Button>
-        </span>
-        {open && (
-          <ul className="details" aria-label="Indicators that differ">
-            {indicators.map((d) => (
-              <li key={d.var}>
-                <span className={d.has_label ? undefined : 'mono'}>{d.label}</span>
-                <span className="muted">
-                  you {d.you.text}, {peerWord} {d.other.text}, since {timeOfDay(d.since)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+    <span className="note-stack">
+      <span className="note-row">
+        <span className={tone}>{text}</span>
+        <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide' : 'Show'}</Button>
+      </span>
+      {open && (
+        <ul className="details" aria-label={listName}>
+          {items.map((i) => (
+            <li key={i.control}>
+              <span>{i.label}</span>
+              <span className="muted">{detail(i)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </span>
   );
 }

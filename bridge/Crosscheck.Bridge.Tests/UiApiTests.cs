@@ -256,6 +256,16 @@ public sealed class UiApiTests(ServerFixture server) : IAsyncLifetime
         Assert.Equal("OFF", d["other"]!["text"]!.GetValue<string>());
         Assert.True(d["writable"]!.GetValue<bool>());
         Assert.Equal(["ON", "OFF"], d["options"]!.AsArray().Select(o => o!["text"]!.GetValue<string>()));
+        // The panel shows it after its 2 s hold (CRO-34): one line with Set both.
+        JsonObject? line = null;
+        for (var i = 0; i < 100 && line is null; i++)
+        {
+            line = (await Status(host))["panel"]!["red"]!.AsArray().SingleOrDefault()?.AsObject();
+            if (line is null) await Task.Delay(100);
+        }
+        Assert.NotNull(line);
+        Assert.Equal("set_both", line!["kind"]!.GetValue<string>());
+        Assert.Equal(["ON", "OFF"], line["action"]!["options"]!.AsArray().Select(o => o!["text"]!.GetValue<string>()));
         Assert.Equal(1, (await Status(host))["groups"]!.AsArray().Single(g => g!["id"]!.GetValue<string>() == "overhead")!["differs"]!.GetValue<int>());
 
         Sim(guest).Unstick("S_OH_ELEC_APU_MASTER");

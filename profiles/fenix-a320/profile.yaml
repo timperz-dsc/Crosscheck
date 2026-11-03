@@ -32,6 +32,37 @@ group_labels:
   systems: Systems
   ground: Ground and doors
 
+# The session panel (CRO-34) shows one line per control. A lamp is shown under its button (verify)
+# and a display under its knob (display) without saying so here; these are the controls made of
+# several knobs or buttons, with the names the pilots see.
+controls:
+  rmp1_freq: RMP 1 frequency
+  rmp2_freq: RMP 2 frequency
+  rmp3_freq: RMP 3 frequency
+  efis1_nd_filter: ND filter (Capt)
+  efis2_nd_filter: ND filter (F/O)
+  ecam_page: ECAM page
+
+# Order of the red lines (CRO-34): 2 flight-critical, 3 other overhead systems, 4 pedestal and
+# radios, 5 lights, cabin and the rest. Safety lines (not mirrored, stuck pressed, released) are 1.
+group_priority:
+  fcu: 2
+  efis: 2
+  cdu1: 2
+  cdu2: 2
+  mip: 2
+  flightcontrols: 2
+  overhead: 3
+  systems: 3
+  pedestal: 4
+  ecam: 4
+  cb: 5
+  cabin: 5
+  ground: 5
+
+# Walkaround items: a difference there is one amber "outside" line, never red (CRO-34).
+outside_groups: [ground]
+
 # Vars that do not belong to the aircraft at all (GSX, Chaseplane, other aircraft,
 # HUES mods, docking guidance). Aircraft-related leftovers (A320_*, ...) are not
 # excluded: CRO-8 classifies them, mostly as `ignore`.
@@ -72,7 +103,7 @@ vars:
   # delta: write the change only, never the absolute value. N_FCU_ALTITUDE shows the result.
   # Never corrected; the display is compared only while the FCU is powered (gate test 2 cause F).
   - name: E_FCU_ALTITUDE
-    label: FCU altitude
+    label: FCU ALT
     class: delta
     group: fcu
     display: N_FCU_ALTITUDE
@@ -142,18 +173,21 @@ vars:
     class: analog
     group: overhead
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_LIGHTING_READING_CAPT
     label: "LIGHTING READING CAPT"
     class: analog
     group: overhead
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_LIGHTING_READING_FO
     label: "LIGHTING READING FO"
     class: analog
     group: overhead
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_OH_PNEUMATIC_AFT_TEMP
     label: "AFT TEMP"
@@ -1294,7 +1328,7 @@ vars:
     values: [0, 1]
     note: "label generated"
   - name: S_OH_APU_AUTOEXTING_RESET
-    label: "APU AUTOEXTING RESET"
+    label: "APU AUTO EXTING RESET"
     class: pulse
     group: overhead
     press: edge
@@ -1647,6 +1681,7 @@ vars:
     class: verified
     group: overhead
     values: [0, 1]
+    priority: 5
     note: "label generated"
   # positions to be learned (CRO-24)
   - name: S_OH_EXT_LT_LANDING_BOTH
@@ -1654,48 +1689,56 @@ vars:
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
   - name: S_OH_EXT_LT_LANDING_L
     label: "EXT LT LANDING L"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   - name: S_OH_EXT_LT_LANDING_R
     label: "EXT LT LANDING R"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   - name: S_OH_EXT_LT_NAV_LOGO
     label: "EXT LT NAV LOGO"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   - name: S_OH_EXT_LT_NOSE
     label: "EXT LT NOSE"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   - name: S_OH_EXT_LT_RWY_TURNOFF
     label: "EXT LT RWY TURNOFF"
     class: verified
     group: overhead
     values: [0, 1]
+    priority: 5
     note: "label generated"
   - name: S_OH_EXT_LT_STROBE
     label: "EXT LT STROBE"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   - name: S_OH_EXT_LT_WING
     label: "EXT LT WING"
     class: verified
     group: overhead
     values: [0, 1]
+    priority: 5
     note: "label generated"
   - name: S_OH_FIRE_APU_AGENT
     label: "APU AGENT"
@@ -2056,18 +2099,21 @@ vars:
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated; positions proven in spike/VarTypes"
   - name: S_OH_INT_LT_EMER
     label: "INT LT EMER"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   - name: S_OH_IN_LT_ANN_LT
     label: "IN LT ANN LT"
     class: verified
     group: overhead
     values: [0, 1, 2]
+    priority: 5
     note: "label generated"
   # positions to be learned (CRO-24)
   - name: S_OH_IN_LT_ICE
@@ -2075,12 +2121,14 @@ vars:
     class: verified
     group: overhead
     values: [0]
+    priority: 5
     note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: S_OH_LIGHTING_AVIONICS_COMPT
     label: "LIGHTING AVIONICS COMPT"
     class: pulse
     group: overhead
     press: edge
+    priority: 5
     note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-27, gate test 1 cause A)"
   - name: S_OH_NAV_ADR1
     label: "ADR1"
@@ -2402,57 +2450,70 @@ vars:
     class: analog
     group: fcu
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_FCU_LIGHTING_TEXT
     label: "LIGHTING TEXT"
     class: analog
     group: fcu
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_FCU_HEADING_DASHED
     label: "HEADING DASHED"
     class: observe
     group: fcu
     alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
+    control: E_FCU_HEADING
+    powered: B_FCU_POWER
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     note: "label generated"
   - name: B_FCU_SPEED_DASHED
     label: "SPEED DASHED"
     class: observe
     group: fcu
     alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+    control: E_FCU_SPEED
+    powered: B_FCU_POWER
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     note: "label generated"
   - name: B_FCU_SPEED_MACH
     label: "SPEED MACH"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: B_FCU_TRACK_FPA_MODE
     label: "TRACK FPA MODE"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: B_FCU_VERTICALSPEED_DASHED
     label: "VERTICALSPEED DASHED"
     class: observe
     group: fcu
     alarm: { text: "VS managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: B_FCU_VERTICALSPEED_DASHED }
+    control: E_FCU_VS
+    powered: B_FCU_POWER
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     note: "label generated"
   - name: E_FCU_HEADING
-    label: "HEADING"
+    label: "FCU HDG"
     class: delta
     group: fcu
     display: N_FCU_HEADING
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_HEADING_DASHED, B_FCU_TRACK_FPA_MODE] }
     note: "label generated"
   - name: E_FCU_SPEED
-    label: "SPEED"
+    label: "FCU SPD"
     class: delta
     group: fcu
     display: N_FCU_SPEED
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_SPEED_DASHED, B_FCU_SPEED_MACH] }
     note: "label generated"
   - name: E_FCU_VS
-    label: "VS"
+    label: "FCU V/S"
     class: delta
     group: fcu
     display: N_FCU_VS
@@ -2463,68 +2524,87 @@ vars:
     class: observe
     group: fcu
     alarm: { text: "ALT managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_ALTITUDE_MANAGED }
+    control: E_FCU_ALTITUDE
+    powered: B_FCU_POWER
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     note: "label generated"
   - name: I_FCU_AP1
     label: "AP1 light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_AP2
     label: "AP2 light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_APPR
     label: "APPR light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_ATHR
     label: "ATHR light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EXPED
     label: "EXPED light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_HEADING_MANAGED
     label: "HEADING MANAGED light"
     class: observe
     group: fcu
     alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
+    control: E_FCU_HEADING
+    powered: B_FCU_POWER
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     note: "label generated"
   - name: I_FCU_HEADING_VS_MODE
     label: "HEADING VS MODE light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_LOC
     label: "LOC light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_MACH_MODE
     label: "MACH MODE light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_SPEED_MANAGED
     label: "SPEED MANAGED light"
     class: observe
     group: fcu
     alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+    control: E_FCU_SPEED
+    powered: B_FCU_POWER
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     note: "label generated"
   - name: I_FCU_SPEED_MODE
     label: "SPEED MODE light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_TRACK_FPA_MODE
     label: "TRACK FPA MODE light"
     class: observe
     group: fcu
+    powered: B_FCU_POWER
     note: "label generated"
   - name: N_FCU_HEADING
     label: "HEADING display"
@@ -2608,292 +2688,332 @@ vars:
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled B_FCU_SPEED_MACH I_FCU_MACH_MODE I_FCU_SPEED_MODE N_FCU_SPEED and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: B_FCU_EFIS1_BARO_INCH
-    label: "EFIS1 BARO INCH"
+    label: "BARO INCH (Capt)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: B_FCU_EFIS1_BARO_STD
-    label: "EFIS1 BARO STD"
+    label: "BARO STD (Capt)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: B_FCU_EFIS2_BARO_INCH
-    label: "EFIS2 BARO INCH"
+    label: "BARO INCH (F/O)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: B_FCU_EFIS2_BARO_STD
-    label: "EFIS2 BARO STD"
+    label: "BARO STD (F/O)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: E_FCU_EFIS1_BARO
-    label: "EFIS1 BARO"
+    label: "BARO (Capt)"
     class: delta
     group: efis
     display: N_FCU_EFIS1_BARO_HPA
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_EFIS1_BARO_STD] }
     note: "label generated; display from step 2: N_FCU_EFIS1_BARO_HPA chosen; also changed: N_FCU_EFIS1_BARO_INCH"
   - name: E_FCU_EFIS2_BARO
-    label: "EFIS2 BARO"
+    label: "BARO (F/O)"
     class: delta
     group: efis
     display: N_FCU_EFIS2_BARO_HPA
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_EFIS2_BARO_STD] }
     note: "label generated; display from step 2: N_FCU_EFIS2_BARO_HPA chosen; also changed: N_FCU_EFIS2_BARO_INCH"
   - name: I_FCU_EFIS1_ARPT
-    label: "EFIS1 ARPT light"
+    label: "ARPT light (Capt)"
     class: observe
     group: efis
+    control: efis1_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_CSTR
-    label: "EFIS1 CSTR light"
+    label: "CSTR light (Capt)"
     class: observe
     group: efis
+    control: efis1_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_FD
-    label: "EFIS1 FD light"
+    label: "FD light (Capt)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_LS
-    label: "EFIS1 LS light"
+    label: "LS light (Capt)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_NDB
-    label: "EFIS1 NDB light"
+    label: "NDB light (Capt)"
     class: observe
     group: efis
+    control: efis1_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_QNH
-    label: "EFIS1 QNH light"
+    label: "QNH light (Capt)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_VORD
-    label: "EFIS1 VORD light"
+    label: "VORD light (Capt)"
     class: observe
     group: efis
+    control: efis1_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS1_WPT
-    label: "EFIS1 WPT light"
+    label: "WPT light (Capt)"
     class: observe
     group: efis
+    control: efis1_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_ARPT
-    label: "EFIS2 ARPT light"
+    label: "ARPT light (F/O)"
     class: observe
     group: efis
+    control: efis2_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_CSTR
-    label: "EFIS2 CSTR light"
+    label: "CSTR light (F/O)"
     class: observe
     group: efis
+    control: efis2_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_FD
-    label: "EFIS2 FD light"
+    label: "FD light (F/O)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_LS
-    label: "EFIS2 LS light"
+    label: "LS light (F/O)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_NDB
-    label: "EFIS2 NDB light"
+    label: "NDB light (F/O)"
     class: observe
     group: efis
+    control: efis2_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_QNH
-    label: "EFIS2 QNH light"
+    label: "QNH light (F/O)"
     class: observe
     group: efis
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_VORD
-    label: "EFIS2 VORD light"
+    label: "VORD light (F/O)"
     class: observe
     group: efis
+    control: efis2_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: I_FCU_EFIS2_WPT
-    label: "EFIS2 WPT light"
+    label: "WPT light (F/O)"
     class: observe
     group: efis
+    control: efis2_nd_filter
+    powered: B_FCU_POWER
     note: "label generated"
   - name: N_FCU_EFIS1_BARO_HPA
-    label: "EFIS1 BARO HPA display"
+    label: "BARO HPA display (Capt)"
     class: observe
     group: efis
     note: "label generated"
   - name: N_FCU_EFIS1_BARO_INCH
-    label: "EFIS1 BARO INCH display"
+    label: "BARO INCH display (Capt)"
     class: observe
     group: efis
     note: "label generated"
   - name: N_FCU_EFIS2_BARO_HPA
-    label: "EFIS2 BARO HPA display"
+    label: "BARO HPA display (F/O)"
     class: observe
     group: efis
     note: "label generated"
   - name: N_FCU_EFIS2_BARO_INCH
-    label: "EFIS2 BARO INCH display"
+    label: "BARO INCH display (F/O)"
     class: observe
     group: efis
     note: "label generated"
   - name: S_FCU_EFIS1_ARPT
-    label: "EFIS1 ARPT"
+    label: "ARPT (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_ARPT, settle_ms: 150 }
+    control: efis1_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS1_BARO_MODE
-    label: "EFIS1 BARO MODE"
+    label: "BARO MODE (Capt)"
     class: verified
     group: efis
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS1_BARO_INCH B_MIP_ISFD_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
   - name: S_FCU_EFIS1_CSTR
-    label: "EFIS1 CSTR"
+    label: "CSTR (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_CSTR, settle_ms: 150 }
+    control: efis1_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS1_FD
-    label: "EFIS1 FD"
+    label: "FD (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_FD, settle_ms: 150 }
     note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
   - name: S_FCU_EFIS1_LS
-    label: "EFIS1 LS"
+    label: "LS (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_LS, settle_ms: 150 }
     note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS1_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_EFIS1_NAV1
-    label: "EFIS1 NAV1"
+    label: "NAV1 (Capt)"
     class: verified
     group: efis
     values: [0, 1, 2]
     note: "label generated"
   - name: S_FCU_EFIS1_NAV2
-    label: "EFIS1 NAV2"
+    label: "NAV2 (Capt)"
     class: verified
     group: efis
     values: [0, 1, 2]
     note: "label generated"
   - name: S_FCU_EFIS1_NDB
-    label: "EFIS1 NDB"
+    label: "NDB (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_NDB, settle_ms: 150 }
+    control: efis1_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS1_ND_ZOOM
-    label: "EFIS1 ND ZOOM"
+    label: "ND ZOOM (Capt)"
     value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
     class: verified
     group: efis
     values: [0, 1, 2, 3, 4, 5]
     note: "label generated; positions proven in spike/VarTypes; labels: FO mapping, captain spot-checked RANGE 1 = 20 (CRO-8 step 2)"
   - name: S_FCU_EFIS1_VORD
-    label: "EFIS1 VORD"
+    label: "VORD (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_VORD, settle_ms: 150 }
+    control: efis1_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS1_WPT
-    label: "EFIS1 WPT"
+    label: "WPT (Capt)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS1_WPT, settle_ms: 150 }
+    control: efis1_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS2_ARPT
-    label: "EFIS2 ARPT"
+    label: "ARPT (F/O)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS2_ARPT, settle_ms: 150 }
+    control: efis2_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS2_BARO_MODE
-    label: "EFIS2 BARO MODE"
+    label: "BARO MODE (F/O)"
     class: verified
     group: efis
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (B_FCU_EFIS2_BARO_INCH): latching, or momentary with an effect only while held; GraphQL 1 -> 0 -> 1"
   - name: S_FCU_EFIS2_CSTR
-    label: "EFIS2 CSTR"
+    label: "CSTR (F/O)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS2_CSTR, settle_ms: 150 }
+    control: efis2_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS2_FD
-    label: "EFIS2 FD"
+    label: "FD (F/O)"
     class: pulse
     group: efis
     press: edge
     note: "label generated; press counter (+1 press, +1 release); only increments are ever written (CRO-8 step 3)"
   - name: S_FCU_EFIS2_LS
-    label: "EFIS2 LS"
+    label: "LS (F/O)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS2_LS, settle_ms: 150 }
     note: "label generated; class from step 2: edge-triggered: the press toggled I_FCU_EFIS2_LS and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_FCU_EFIS2_NAV1
-    label: "EFIS2 NAV1"
+    label: "NAV1 (F/O)"
     class: verified
     group: efis
     values: [0, 1, 2]
     note: "label generated"
   - name: S_FCU_EFIS2_NAV2
-    label: "EFIS2 NAV2"
+    label: "NAV2 (F/O)"
     class: verified
     group: efis
     values: [0, 1, 2]
     note: "label generated"
   - name: S_FCU_EFIS2_NDB
-    label: "EFIS2 NDB"
+    label: "NDB (F/O)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS2_NDB, settle_ms: 150 }
+    control: efis2_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS2_ND_MODE
-    label: "EFIS2 ND MODE"
+    label: "ND MODE (F/O)"
     value_labels: { "0": ROSE ILS, "1": ROSE VOR, "2": ROSE NAV, "3": ARC, "4": PLAN }
     class: verified
     group: efis
     values: [0, 1, 2, 3, 4]
     note: "label generated; values and labels read from the ND by the pilot in step 2"
   - name: S_FCU_EFIS2_ND_ZOOM
-    label: "EFIS2 ND ZOOM"
+    label: "ND ZOOM (F/O)"
     value_labels: { "0": "10", "1": "20", "2": "40", "3": "80", "4": "160", "5": "320" }
     class: verified
     group: efis
     values: [0, 1, 2, 3, 4, 5]
     note: "label generated; values and labels read from the ND by the pilot in step 2"
   - name: S_FCU_EFIS2_VORD
-    label: "EFIS2 VORD"
+    label: "VORD (F/O)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS2_VORD, settle_ms: 150 }
+    control: efis2_nd_filter
     note: "label generated"
   - name: S_FCU_EFIS2_WPT
-    label: "EFIS2 WPT"
+    label: "WPT (F/O)"
     class: pulse
     group: efis
     press: edge
     verify: { lvar: I_FCU_EFIS2_WPT, settle_ms: 150 }
+    control: efis2_nd_filter
     note: "label generated"
   - name: A_MIP_AIR_VENT_CAPT_OPEN
     label: "AIR VENT CAPT OPEN"
@@ -2936,24 +3056,28 @@ vars:
     class: analog
     group: mip
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_FLOOD_PEDESTAL
     label: "LIGHTING FLOOD PEDESTAL"
     class: analog
     group: mip
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_MAP_L
     label: "LIGHTING MAP L"
     class: analog
     group: mip
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LIGHTING_MAP_R
     label: "LIGHTING MAP R"
     class: analog
     group: mip
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_MIP_LOUDSPEAKER_CAPT
     label: "LOUDSPEAKER CAPT"
@@ -3224,6 +3348,7 @@ vars:
     class: verified
     group: mip
     values: [0]
+    priority: 5
     note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
   # positions to be learned (CRO-24)
   - name: S_CHART_LIGHT_TEMP_FO
@@ -3231,6 +3356,7 @@ vars:
     class: verified
     group: mip
     values: [0]
+    priority: 5
     note: "label generated; values [0] are only those seen in the scan and probe; group set in CRO-8 step 3"
   - name: S_DCDU1_BRT
     label: "DCDU1 BRT"
@@ -3492,6 +3618,7 @@ vars:
     class: verified
     group: mip
     values: [0, 1]
+    priority: 5
     note: "label generated; values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
   # positions to be learned (CRO-24)
   - name: S_MIP_LIGHT_CONSOLEFLOOR_FO
@@ -3499,6 +3626,7 @@ vars:
     class: verified
     group: mip
     values: [0, 1]
+    priority: 5
     note: "label generated; values [0, 1] are only those seen; GraphQL showed 2 for 1, so it likely has 3 positions (CRO-8 step 3)"
   - name: S_MIP_MASTER_CAUTION_CAPT
     label: "MASTER CAUTION CAPT"
@@ -3962,6 +4090,7 @@ vars:
     class: analog
     group: pedestal
     range: [0, 1]
+    priority: 5
     note: "label generated; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: A_WR_GAIN
     label: "WR GAIN knob"
@@ -3976,62 +4105,71 @@ vars:
     range: [3, 10]
     note: "label generated; range from gate test 1, not 0..1; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
   - name: B_PED_RMP1_COURSE_DISPLAYED
-    label: "RMP1 COURSE DISPLAYED"
+    label: "RMP 1 COURSE DISPLAYED"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: B_PED_RMP1_DATA_DISPLAYED_ACT
-    label: "RMP1 DATA DISPLAYED ACT"
+    label: "RMP 1 DATA DISPLAYED ACT"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: B_PED_RMP1_DATA_DISPLAYED_STDBY
-    label: "RMP1 DATA DISPLAYED STDBY"
+    label: "RMP 1 DATA DISPLAYED STDBY"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: B_PED_RMP1_POWER
-    label: "RMP1 POWER"
+    label: "RMP 1 POWER"
     class: observe
     group: pedestal
     note: "label generated"
   - name: B_PED_RMP2_COURSE_DISPLAYED
-    label: "RMP2 COURSE DISPLAYED"
+    label: "RMP 2 COURSE DISPLAYED"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: B_PED_RMP2_DATA_DISPLAYED_ACT
-    label: "RMP2 DATA DISPLAYED ACT"
+    label: "RMP 2 DATA DISPLAYED ACT"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: B_PED_RMP2_DATA_DISPLAYED_STDBY
-    label: "RMP2 DATA DISPLAYED STDBY"
+    label: "RMP 2 DATA DISPLAYED STDBY"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: B_PED_RMP2_POWER
-    label: "RMP2 POWER"
+    label: "RMP 2 POWER"
     class: observe
     group: pedestal
     note: "label generated"
   - name: B_PED_RMP3_COURSE_DISPLAYED
-    label: "RMP3 COURSE DISPLAYED"
+    label: "RMP 3 COURSE DISPLAYED"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: B_PED_RMP3_DATA_DISPLAYED_ACT
-    label: "RMP3 DATA DISPLAYED ACT"
+    label: "RMP 3 DATA DISPLAYED ACT"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: B_PED_RMP3_DATA_DISPLAYED_STDBY
-    label: "RMP3 DATA DISPLAYED STDBY"
+    label: "RMP 3 DATA DISPLAYED STDBY"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: B_PED_RMP3_POWER
-    label: "RMP3 POWER"
+    label: "RMP 3 POWER"
     class: observe
     group: pedestal
     note: "label generated"
@@ -4041,45 +4179,51 @@ vars:
     group: pedestal
     note: "label generated"
   - name: E_PED_RMP1_INNER
-    label: "RMP1 INNER"
+    label: "RMP 1 INNER"
     class: delta
     group: pedestal
     display: N_PED_RMP1_STDBY
     compare_when: { powered: B_PED_RMP1_POWER, same: [I_PED_RMP1_VHF1, I_PED_RMP1_VHF2, I_PED_RMP1_VHF3, I_PED_RMP1_HF1, I_PED_RMP1_HF2, I_PED_RMP1_AM, I_PED_RMP1_NAV, I_PED_RMP1_VOR, I_PED_RMP1_ILS, I_PED_RMP1_MLS, I_PED_RMP1_ADF, I_PED_RMP1_BFO] }
+    control: rmp1_freq
     note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
   - name: E_PED_RMP1_OUTER
-    label: "RMP1 OUTER"
+    label: "RMP 1 OUTER"
     class: delta
     group: pedestal
     display: N_PED_RMP1_STDBY
     compare_when: { powered: B_PED_RMP1_POWER, same: [I_PED_RMP1_VHF1, I_PED_RMP1_VHF2, I_PED_RMP1_VHF3, I_PED_RMP1_HF1, I_PED_RMP1_HF2, I_PED_RMP1_AM, I_PED_RMP1_NAV, I_PED_RMP1_VOR, I_PED_RMP1_ILS, I_PED_RMP1_MLS, I_PED_RMP1_ADF, I_PED_RMP1_BFO] }
+    control: rmp1_freq
     note: "label generated; display from step 2: N_PED_RMP1_STDBY follows +1/-1"
   - name: E_PED_RMP2_INNER
-    label: "RMP2 INNER"
+    label: "RMP 2 INNER"
     class: delta
     group: pedestal
     display: N_PED_RMP2_STDBY
     compare_when: { powered: B_PED_RMP2_POWER, same: [I_PED_RMP2_VHF1, I_PED_RMP2_VHF2, I_PED_RMP2_VHF3, I_PED_RMP2_HF1, I_PED_RMP2_HF2, I_PED_RMP2_AM, I_PED_RMP2_NAV, I_PED_RMP2_VOR, I_PED_RMP2_ILS, I_PED_RMP2_MLS, I_PED_RMP2_ADF, I_PED_RMP2_BFO] }
+    control: rmp2_freq
     note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
   - name: E_PED_RMP2_OUTER
-    label: "RMP2 OUTER"
+    label: "RMP 2 OUTER"
     class: delta
     group: pedestal
     display: N_PED_RMP2_STDBY
     compare_when: { powered: B_PED_RMP2_POWER, same: [I_PED_RMP2_VHF1, I_PED_RMP2_VHF2, I_PED_RMP2_VHF3, I_PED_RMP2_HF1, I_PED_RMP2_HF2, I_PED_RMP2_AM, I_PED_RMP2_NAV, I_PED_RMP2_VOR, I_PED_RMP2_ILS, I_PED_RMP2_MLS, I_PED_RMP2_ADF, I_PED_RMP2_BFO] }
+    control: rmp2_freq
     note: "label generated; display from step 2: N_PED_RMP2_STDBY follows +1/-1"
   - name: E_PED_RMP3_INNER
-    label: "RMP3 INNER"
+    label: "RMP 3 INNER"
     class: delta
     group: pedestal
     display: N_PED_RMP3_STDBY
     compare_when: { powered: B_PED_RMP3_POWER, same: [I_PED_RMP3_VHF1, I_PED_RMP3_VHF2, I_PED_RMP3_VHF3, I_PED_RMP3_HF1, I_PED_RMP3_HF2, I_PED_RMP3_AM, I_PED_RMP3_NAV, I_PED_RMP3_VOR, I_PED_RMP3_ILS, I_PED_RMP3_MLS, I_PED_RMP3_ADF, I_PED_RMP3_BFO] }
+    control: rmp3_freq
     note: "label generated; display from step 2: N_PED_RMP3_STDBY follows +1/-1"
   # -1 was not accepted at the gate (CRO-8 step 2 rerun); check in the gate test (CRO-22)
   - name: E_PED_RMP3_OUTER
-    label: "RMP3 OUTER"
+    label: "RMP 3 OUTER"
     class: delta
     group: pedestal
+    control: rmp3_freq
     note: "label generated; no N_ display var follows it; verified by read-back only (CRO-8 step 3)"
   - name: I_ASP2_ADF_1_REC
     label: "ASP2 ADF 1 REC light"
@@ -4747,199 +4891,238 @@ vars:
     group: pedestal
     note: "label generated"
   - name: I_PED_RMP1_ADF
-    label: "RMP1 ADF light"
+    label: "RMP 1 ADF light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_AM
-    label: "RMP1 AM light"
+    label: "RMP 1 AM light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_BFO
-    label: "RMP1 BFO light"
+    label: "RMP 1 BFO light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_HF1
-    label: "RMP1 HF1 light"
+    label: "RMP 1 HF1 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_HF2
-    label: "RMP1 HF2 light"
+    label: "RMP 1 HF2 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_ILS
-    label: "RMP1 ILS light"
+    label: "RMP 1 ILS light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_MLS
-    label: "RMP1 MLS light"
+    label: "RMP 1 MLS light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_NAV
-    label: "RMP1 NAV light"
+    label: "RMP 1 NAV light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_SEL
-    label: "RMP1 SEL light"
+    label: "RMP 1 SEL light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_VHF1
-    label: "RMP1 VHF1 light"
+    label: "RMP 1 VHF1 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_VHF2
-    label: "RMP1 VHF2 light"
+    label: "RMP 1 VHF2 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_VHF3
-    label: "RMP1 VHF3 light"
+    label: "RMP 1 VHF3 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP1_VOR
-    label: "RMP1 VOR light"
+    label: "RMP 1 VOR light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP1_POWER
     note: "label generated"
   - name: I_PED_RMP2_ADF
-    label: "RMP2 ADF light"
+    label: "RMP 2 ADF light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_AM
-    label: "RMP2 AM light"
+    label: "RMP 2 AM light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_BFO
-    label: "RMP2 BFO light"
+    label: "RMP 2 BFO light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_HF1
-    label: "RMP2 HF1 light"
+    label: "RMP 2 HF1 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_HF2
-    label: "RMP2 HF2 light"
+    label: "RMP 2 HF2 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_ILS
-    label: "RMP2 ILS light"
+    label: "RMP 2 ILS light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_MLS
-    label: "RMP2 MLS light"
+    label: "RMP 2 MLS light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_NAV
-    label: "RMP2 NAV light"
+    label: "RMP 2 NAV light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_SEL
-    label: "RMP2 SEL light"
+    label: "RMP 2 SEL light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_VHF1
-    label: "RMP2 VHF1 light"
+    label: "RMP 2 VHF1 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_VHF2
-    label: "RMP2 VHF2 light"
+    label: "RMP 2 VHF2 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_VHF3
-    label: "RMP2 VHF3 light"
+    label: "RMP 2 VHF3 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP2_VOR
-    label: "RMP2 VOR light"
+    label: "RMP 2 VOR light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP2_POWER
     note: "label generated"
   - name: I_PED_RMP3_ADF
-    label: "RMP3 ADF light"
+    label: "RMP 3 ADF light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_AM
-    label: "RMP3 AM light"
+    label: "RMP 3 AM light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_BFO
-    label: "RMP3 BFO light"
+    label: "RMP 3 BFO light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_HF1
-    label: "RMP3 HF1 light"
+    label: "RMP 3 HF1 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_HF2
-    label: "RMP3 HF2 light"
+    label: "RMP 3 HF2 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_ILS
-    label: "RMP3 ILS light"
+    label: "RMP 3 ILS light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_MLS
-    label: "RMP3 MLS light"
+    label: "RMP 3 MLS light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_NAV
-    label: "RMP3 NAV light"
+    label: "RMP 3 NAV light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_SEL
-    label: "RMP3 SEL light"
+    label: "RMP 3 SEL light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_VHF1
-    label: "RMP3 VHF1 light"
+    label: "RMP 3 VHF1 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_VHF2
-    label: "RMP3 VHF2 light"
+    label: "RMP 3 VHF2 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_VHF3
-    label: "RMP3 VHF3 light"
+    label: "RMP 3 VHF3 light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_PED_RMP3_VOR
-    label: "RMP3 VOR light"
+    label: "RMP 3 VOR light"
     class: observe
     group: pedestal
+    powered: B_PED_RMP3_POWER
     note: "label generated"
   - name: I_XPDR_ATC_1
     label: "XPDR ATC 1 light"
@@ -4957,34 +5140,40 @@ vars:
     group: pedestal
     note: "label generated"
   - name: N_PED_RMP1_ACTIVE
-    label: "RMP1 ACTIVE display"
+    label: "RMP 1 ACTIVE display"
     class: observe
     group: pedestal
+    control: rmp1_freq
     note: "label generated"
   - name: N_PED_RMP1_STDBY
-    label: "RMP1 STDBY display"
+    label: "RMP 1 STDBY display"
     class: observe
     group: pedestal
+    control: rmp1_freq
     note: "label generated"
   - name: N_PED_RMP2_ACTIVE
-    label: "RMP2 ACTIVE display"
+    label: "RMP 2 ACTIVE display"
     class: observe
     group: pedestal
+    control: rmp2_freq
     note: "label generated"
   - name: N_PED_RMP2_STDBY
-    label: "RMP2 STDBY display"
+    label: "RMP 2 STDBY display"
     class: observe
     group: pedestal
+    control: rmp2_freq
     note: "label generated"
   - name: N_PED_RMP3_ACTIVE
-    label: "RMP3 ACTIVE display"
+    label: "RMP 3 ACTIVE display"
     class: observe
     group: pedestal
+    control: rmp3_freq
     note: "label generated"
   - name: N_PED_RMP3_STDBY
-    label: "RMP3 STDBY display"
+    label: "RMP 3 STDBY display"
     class: observe
     group: pedestal
+    control: rmp3_freq
     note: "label generated"
   - name: N_PED_XPDR_CHAR_DISPLAYED
     label: "XPDR CHAR DISPLAYED display"
@@ -5638,18 +5827,21 @@ vars:
     class: verified
     group: pedestal
     values: [0, 1]
+    priority: 2
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
   - name: S_ENG_MASTER_2
     label: "MASTER 2"
     class: verified
     group: pedestal
     values: [0, 1]
+    priority: 2
     note: "label generated; values [0,1] from name and scan value, confirm in step 2"
   - name: S_ENG_MODE
     label: "MODE"
     class: verified
     group: pedestal
     values: [0, 1, 2]
+    priority: 2
     note: "label generated"
   - name: S_PED_ATC_0
     label: "ATC 0"
@@ -6264,112 +6456,112 @@ vars:
     press: edge
     note: "label generated"
   - name: S_PED_RMP1_NAV_Cover
-    label: "RMP1 NAV cover"
+    label: "RMP 1 NAV cover"
     value_labels: { "0": closed, "1": open }
     class: verified
     group: pedestal
     values: [0, 1]
     note: "label generated"
   - name: S_PED_RMP1_POWER
-    label: "RMP1 POWER switch"
+    label: "RMP 1 POWER switch"
     class: verified
     group: pedestal
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (I_PED_RMP1_VHF1 N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
   - name: S_PED_RMP1_VHF1
-    label: "RMP1 VHF1"
+    label: "RMP 1 VHF1"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP1_VHF2
-    label: "RMP1 VHF2"
+    label: "RMP 1 VHF2"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP1_VHF3
-    label: "RMP1 VHF3"
+    label: "RMP 1 VHF3"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP1_XFER
-    label: "RMP1 XFER"
+    label: "RMP 1 XFER"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled N_PED_RMP1_ACTIVE N_PED_RMP1_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP2_NAV_Cover
-    label: "RMP2 NAV cover"
+    label: "RMP 2 NAV cover"
     value_labels: { "0": closed, "1": open }
     class: verified
     group: pedestal
     values: [0, 1]
     note: "label generated"
   - name: S_PED_RMP2_POWER
-    label: "RMP2 POWER switch"
+    label: "RMP 2 POWER switch"
     class: verified
     group: pedestal
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (I_PED_RMP2_VHF2 N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
   - name: S_PED_RMP2_VHF1
-    label: "RMP2 VHF1"
+    label: "RMP 2 VHF1"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP2_VHF2
-    label: "RMP2 VHF2"
+    label: "RMP 2 VHF2"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP2_VHF3
-    label: "RMP2 VHF3"
+    label: "RMP 2 VHF3"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP2_XFER
-    label: "RMP2 XFER"
+    label: "RMP 2 XFER"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated; class from step 2: edge-triggered: the press toggled N_PED_RMP2_ACTIVE N_PED_RMP2_STDBY and it stayed after release (Fenix never resets the var); GraphQL 0 -> 1 -> 0"
   - name: S_PED_RMP3_NAV_Cover
-    label: "RMP3 NAV cover"
+    label: "RMP 3 NAV cover"
     value_labels: { "0": closed, "1": open }
     class: verified
     group: pedestal
     values: [0, 1]
     note: "label generated"
   - name: S_PED_RMP3_POWER
-    label: "RMP3 POWER switch"
+    label: "RMP 3 POWER switch"
     class: verified
     group: pedestal
     values: [0, 1]
     note: "label generated; class from step 2: effect follows the value (B_PED_RMP3_DATA_DISPLAYED_ACT I_PED_RMP3_VHF3 N_PED_RMP3_ACTIVE N_PED_RMP3_STDBY): latching, or momentary with an effect only while held; GraphQL 1 -> 1 -> 1"
   - name: S_PED_RMP3_VHF1
-    label: "RMP3 VHF1"
+    label: "RMP 3 VHF1"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP3_VHF2
-    label: "RMP3 VHF2"
+    label: "RMP 3 VHF2"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP3_VHF3
-    label: "RMP3 VHF3"
+    label: "RMP 3 VHF3"
     class: pulse
     group: pedestal
     press: edge
     note: "label generated"
   - name: S_PED_RMP3_XFER
-    label: "RMP3 XFER"
+    label: "RMP 3 XFER"
     class: pulse
     group: pedestal
     press: edge
@@ -7557,16 +7749,19 @@ vars:
     label: "ECAM APU light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_BLEED
     label: "ECAM BLEED light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_CAB_PRESS
     label: "ECAM CAB PRESS light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_CLR_LEFT
     label: "ECAM CLR LEFT light"
@@ -7582,16 +7777,19 @@ vars:
     label: "ECAM COND light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_DOOR
     label: "ECAM DOOR light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_ELEC
     label: "ECAM ELEC light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_EMER_CANCEL
     label: "ECAM EMER CANCEL light"
@@ -7602,37 +7800,44 @@ vars:
     label: "ECAM ENGINE light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_FCTL
     label: "ECAM FCTL light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_FUEL
     label: "ECAM FUEL light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_HYD
     label: "ECAM HYD light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_STATUS
     label: "ECAM STATUS light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: I_ECAM_WHEEL
     label: "ECAM WHEEL light"
     class: observe
     group: ecam
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_ALL
     label: "ECAM ALL"
     class: pulse
     group: ecam
     press: edge
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_APU
     label: "ECAM APU"
@@ -7640,6 +7845,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_APU, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_BLEED
     label: "ECAM BLEED"
@@ -7647,6 +7853,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_BLEED, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_CAB_PRESS
     label: "ECAM CAB PRESS"
@@ -7654,6 +7861,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_CAB_PRESS, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_CLR_LEFT
     label: "ECAM CLR LEFT"
@@ -7673,6 +7881,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_COND, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_DOOR
     label: "ECAM DOOR"
@@ -7680,6 +7889,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_DOOR, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_ELEC
     label: "ECAM ELEC"
@@ -7687,6 +7897,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_ELEC, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_EMER_CANCEL
     label: "ECAM EMER CANCEL"
@@ -7708,6 +7919,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_ENGINE, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_FCTL
     label: "ECAM FCTL"
@@ -7715,6 +7927,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_FCTL, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_FUEL
     label: "ECAM FUEL"
@@ -7722,6 +7935,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_FUEL, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_HYD
     label: "ECAM HYD"
@@ -7729,6 +7943,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_HYD, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_RCL
     label: "ECAM RCL"
@@ -7742,6 +7957,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_STATUS, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: S_ECAM_TO
     label: "ECAM TO"
@@ -7755,6 +7971,7 @@ vars:
     group: ecam
     press: edge
     verify: { lvar: I_ECAM_WHEEL, settle_ms: 150 }
+    control: ecam_page
     note: "label generated"
   - name: E_CB_105VU_A01
     label: "CB 105VU A01"
@@ -9950,11 +10167,6 @@ vars:
     class: observe
     group: flightcontrols
     note: "label generated"
-  - name: N_FC_RUDDER_TRIM_DECIMAL
-    label: "FC RUDDER TRIM DECIMAL display"
-    class: observe
-    group: flightcontrols
-    note: "label generated"
   - name: S_FC_FLAPS
     label: "FC FLAPS"
     value_labels: { "0": "0", "1": "1", "2": "2", "3": "3", "4": FULL }
@@ -9999,16 +10211,6 @@ vars:
     note: "label generated"
   - name: B_DOOR_FWD_CARGO
     label: "DOOR FWD CARGO"
-    class: observe
-    group: cabin
-    note: "label generated"
-  - name: N_WINDOW_CAPT
-    label: "WINDOW CAPT display"
-    class: observe
-    group: cabin
-    note: "label generated"
-  - name: N_WINDOW_FO
-    label: "WINDOW FO display"
     class: observe
     group: cabin
     note: "label generated"
@@ -10065,26 +10267,6 @@ vars:
     group: cabin
     values: [0, 1]
     note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-  # positions to be learned (CRO-24)
-  - name: S_WINDOW_CAPT_LEVER
-    label: "WINDOW CAPT LEVER"
-    class: verified
-    group: cabin
-    values: [0, 1]
-    note: "label generated; values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-  - name: S_WINDOW_FO_LATCH
-    label: "WINDOW FO LATCH"
-    class: verified
-    group: cabin
-    values: [0, 1]
-    note: "label generated; values [0,1] from name and scan value, confirm in step 2"
-  # positions to be learned (CRO-24)
-  - name: S_WINDOW_FO_LEVER
-    label: "WINDOW FO LEVER"
-    class: verified
-    group: cabin
-    values: [0]
-    note: "label generated; values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
   - name: B_ELEC_BUS_POWER_AC_1
     label: "BUS POWER AC 1"
     class: observe
@@ -10144,21 +10326,25 @@ vars:
     label: "VOLT BAT 1 display"
     class: observe
     group: systems
+    tolerance: 0.5
     note: "label generated"
   - name: N_ELEC_VOLT_BAT_2
     label: "VOLT BAT 2 display"
     class: observe
     group: systems
+    tolerance: 0.5
     note: "label generated"
   - name: N_HYD_PRESSURE_BRAKE_LEFT
     label: "PRESSURE BRAKE LEFT display"
     class: observe
     group: systems
+    tolerance: 0.3
     note: "label generated"
   - name: N_HYD_PRESSURE_BRAKE_RIGHT
     label: "PRESSURE BRAKE RIGHT display"
     class: observe
     group: systems
+    tolerance: 0.3
     note: "label generated"
   - name: A_EXT_CARGO_DOOR_BULK_HANDLE
     label: "EXT CARGO DOOR BULK HANDLE"
@@ -11157,6 +11343,11 @@ vars:
     class: ignore
     group: flightcontrols
     note: "label generated; flight-control position: synced by the stream later (CRO-17); not compared (CRO-27)"
+  - name: N_FC_RUDDER_TRIM_DECIMAL
+    label: "FC RUDDER TRIM DECIMAL display"
+    class: ignore
+    group: flightcontrols
+    note: "label generated; flight-control position, not compared until the stream (CRO-17)"
   - name: N_FC_SIDESTICK_CAPT_BANK
     label: "FC SIDESTICK CAPT BANK display"
     class: ignore
@@ -11197,81 +11388,46 @@ vars:
     class: ignore
     group: cabin
     note: "label generated; cosmetic cabin item"
-  - name: S_ARMREST_LEFT_CAPT
-    label: "ARMREST LEFT CAPT"
+  - name: N_WINDOW_CAPT
+    label: "WINDOW CAPT display"
     class: ignore
     group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_ARMREST_LEFT_FO
-    label: "ARMREST LEFT FO"
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
+  - name: N_WINDOW_FO
+    label: "WINDOW FO display"
     class: ignore
     group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_ARMREST_RIGHT_CAPT
-    label: "ARMREST RIGHT CAPT"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_ARMREST_RIGHT_FO
-    label: "ARMREST RIGHT FO"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_JUMPSEAT
-    label: "JUMPSEAT"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_JUMPSEAT_HEADREST
-    label: "JUMPSEAT HEADREST"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_SEAT_DISTANCE_CAPT
-    label: "SEAT DISTANCE CAPT"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_SEAT_DISTANCE_FO
-    label: "SEAT DISTANCE FO"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_SEAT_HEIGHT_CAPT
-    label: "SEAT HEIGHT CAPT"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_SEAT_HEIGHT_FO
-    label: "SEAT HEIGHT FO"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_SUNSHADE_CAPT
-    label: "SUNSHADE CAPT"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_SUNSHADE_FO
-    label: "SUNSHADE FO"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_TRAY_TABLE_CAPT
-    label: "TRAY TABLE CAPT"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
-  - name: S_TRAY_TABLE_FO
-    label: "TRAY TABLE FO"
-    class: ignore
-    group: cabin
-    note: "label generated; cosmetic cabin item"
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
   - name: S_WINDOW_CAPT_LATCH
     label: "WINDOW CAPT LATCH"
     class: ignore
     group: cabin
     note: "label generated; in-between animation values (0.1 seen); not compared (CRO-27)"
+  - name: S_WINDOW_CAPT_LEVER
+    label: "WINDOW CAPT LEVER"
+    class: ignore
+    group: cabin
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
+  - name: S_WINDOW_CAPT_LEVER_BUTTON
+    label: "WINDOW CAPT LEVER BUTTON"
+    class: ignore
+    group: cabin
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
+  - name: S_WINDOW_FO_LATCH
+    label: "WINDOW FO LATCH"
+    class: ignore
+    group: cabin
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
+  - name: S_WINDOW_FO_LEVER
+    label: "WINDOW FO LEVER"
+    class: ignore
+    group: cabin
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
+  - name: S_WINDOW_FO_LEVER_BUTTON
+    label: "WINDOW FO LEVER BUTTON"
+    class: ignore
+    group: cabin
+    note: "label generated; each pilot's own window (owner decision CRO-36)"
   - name: A320.audio.1.reception
     label: "A320.audio.1.reception"
     class: ignore

@@ -12,17 +12,13 @@ namespace Crosscheck.Bridge.Api;
 /// </summary>
 internal static class UiStatus
 {
-    /// <summary>Events that belong in the "Recent" list.</summary>
-    public static readonly HashSet<string> RecentTypes =
-    [
-        "action_confirmed", "action_failed", "action_applied", "corrected", "overridden", "desync", "desync_cleared",
-        "control_changed", "takeover_pressed", "peer_joined", "peer_lost", "peer_resumed", "peer_left", "peer_expired",
-        "press_here_only", "release_it", "denied_input", "counter_suspect", "press_lost",
-    ];
+    /// <summary>Events that belong in the log ("Recent").</summary>
+    public static HashSet<string> RecentTypes => PanelLines.LogTypes;
 
-    public static JsonArray Recent(EventHub hub) =>
+    /// <summary>GET /api/recent: the log, newest first, plain labels.</summary>
+    public static JsonArray Recent(EventHub hub, Sync.ControlMap controls) =>
         new(hub.Recent.Where(e => RecentTypes.Contains(e.Type)).Reverse().Take(50)
-            .Select(e => (JsonNode)new JsonObject { ["type"] = e.Type, ["message"] = e.Message, ["at"] = e.At.ToString("O") }).ToArray());
+            .Select(e => (JsonNode)new JsonObject { ["type"] = e.Type, ["message"] = PanelLines.LogText(controls, e), ["at"] = e.At.ToString("O") }).ToArray());
 
     public static JsonObject Build(BridgeRuntime r)
     {
@@ -67,8 +63,13 @@ internal static class UiStatus
         json["peer_lost_at"] = engine.PeerLostAt?.ToString("O");
         json["session_ttl_ms"] = client.SessionTtlMs;
         json["last_compared_at"] = engine.LastComparedAt?.ToString("O");
-        json["groups"] = Groups(r, engine);
+        // The session panel (CRO-34): one line per control. The UI shows only this.
+        var panel = PanelLines.Build(r.Profile, r.Controls, r.Labels, new EngineContext(r, engine, client), new PanelInput(
+            r.Status.Desyncs, r.Status.Activity, r.Status.Advisories, r.Events.Recent, DateTimeOffset.UtcNow));
+        json["panel"] = panel;
+        json["groups"] = Groups(r, engine, panel);
         json["owned"] = Owned(r, engine);
+        // Per var, for diagnostics and the engine tests; the panel above is what the pilots see.
         var (red, indicators) = Desyncs(r, engine, client);
         json["desyncs"] = red;
         json["indicators"] = indicators;
@@ -123,16 +124,30 @@ internal static class UiStatus
         return crew;
     }
 
-    private static JsonArray Groups(BridgeRuntime r, Sync.SyncEngine engine)
+    /// <summary>Panels summary: red lines (controls) per panel group.</summary>
+    private static JsonArray Groups(BridgeRuntime r, Sync.SyncEngine engine, JsonObject panel)
     {
-        var desyncs = r.Status.Desyncs;
+        var red = panel["red"]!.AsArray().Select(l => l!["group"]?.GetValue<string>()).ToList();
         var withControls = r.Profile.Vars.Where(v => v.Class is not (SyncClass.Ignore or SyncClass.Stream)).Select(v => v.Group).ToHashSet();
         return new JsonArray(engine.ActiveGroups.Where(withControls.Contains).Select(g => (JsonNode)new JsonObject
         {
             ["id"] = g,
             ["label"] = r.Labels.Group(g),
-            ["differs"] = desyncs.Count(d => d.Body["group"]?.GetValue<string>() == g && TierOf(r, d.Body) == "red"),
+            ["differs"] = red.Count(x => x == g),
         }).ToArray());
+    }
+
+    /// <summary>The panel's view of this cockpit, from the running engine.</summary>
+    private sealed class EngineContext(BridgeRuntime r, Sync.SyncEngine engine, ProtocolClient client) : IPanelContext
+    {
+        public string? ClientId => client.ClientId;
+        public bool IsPf => engine.IsPf;
+        public string? Seat => r.Status.Seat;
+        public string OtherSide => r.Status.SeatSide == "fo" ? "captain" : "first officer";
+        public bool TryGetLocal(string var, out double value) => r.Sim.TryGet(var, out value);
+        public bool CanSetBoth(string var) => engine.CanSetBoth(var);
+        public bool IsAllowedValue(string var, double value) => r.Sim.Guard.IsAllowedValue(var, value);
+        public bool CanReleaseHere(string var, JsonObject desync) => engine.CanReleaseHere(var, desync);
     }
 
     private static JsonArray Owned(BridgeRuntime r, Sync.SyncEngine engine)

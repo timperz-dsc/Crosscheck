@@ -69,6 +69,8 @@ export interface ServerConfig {
   /** This many overrides on one var within fightWindowMs → "hardware fighting" advisory. */
   fightCount: number;
   fightWindowMs: number;
+  /** A "not synced yet" line ends this long after the control last moved (CRO-34). */
+  notSyncedExpireMs: number;
   /** Validate every outgoing message against the schema (tests). */
   validateOutgoing: boolean;
   /** Max WebSocket message size in bytes. */
@@ -106,6 +108,7 @@ export const DEFAULT_CONFIG: ServerConfig = {
   driftMinIntervalMs: 10 * 1000,
   fightCount: 3,
   fightWindowMs: 30 * 1000,
+  notSyncedExpireMs: 2 * 60 * 1000,
   createLimit: 10,
   createWindowMs: 10 * 60 * 1000,
   joinLimit: 30,
@@ -121,6 +124,7 @@ const TIME_KEYS = [
   'correctionSettleMs', 'correctionLoopWindowMs', 'streamNoticeIntervalMs', 'streamIdleMs',
   'summaryIntervalMs', 'handshakeTimeoutMs', 'createWindowMs', 'joinWindowMs',
   'indicatorHoldMs', 'buttonHoldMs', 'stuckMs', 'encoderHoldMs', 'effectSettleMs', 'driftMinIntervalMs', 'fightWindowMs',
+  'notSyncedExpireMs',
 ] as const satisfies readonly (keyof ServerConfig)[];
 
 /**

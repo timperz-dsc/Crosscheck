@@ -1,5 +1,5 @@
 // The sentences the UI shows. Plain, specific, sentence case.
-import type { Advisory, CrewMember, Desync, OwnedRow, PreflightRow, Side, Status } from './types';
+import type { AmberItem, CrewMember, LineAction, OwnedRow, PanelItem, PanelLine, PreflightRow, Side, Status } from './types';
 
 export const sideName = (side: Side) => (side === 'captain' ? 'captain' : 'first officer');
 export const SideName = (side: Side) => (side === 'captain' ? 'Captain' : 'First officer');
@@ -26,7 +26,7 @@ export function lastCompared(iso: string | null | undefined, now: number): strin
 
 const NUMBERS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
 export function differsHeading(n: number): string {
-  if (n === 0) return 'Both cockpits match';
+  if (n === 0) return 'All controls match';
   const count = NUMBERS[n] ?? String(n);
   return n === 1 ? `${count} control differs` : `${count} controls differ`;
 }
@@ -91,65 +91,74 @@ export function preflightExplanation(row: PreflightRow, other: string): string |
   }
 }
 
-// ---- a control that differs ----
+// ---- a control that differs (one line per control, CRO-34) ----
 
-export function desyncExplanation(d: Desync, peer: string): string {
-  const what = (() => {
-    switch (d.reason) {
-      case 'no_ack':
-        return d.receiver_is_you
-          ? `The ${peer} changed it, but your sim did not confirm it.`
-          : `You changed it, but the ${peer}'s sim did not confirm it.`;
-      case 'refused':
-        return d.receiver_is_you
-          ? `The ${peer} changed it, but it did not change in your cockpit.`
-          : `You changed it, but it did not change in the ${peer}'s cockpit.`;
-      case 'effect_mismatch':
-        return d.receiver_is_you
-          ? `The ${peer} pressed it. The press arrived, but its light shows a different result in your cockpit.`
-          : `You pressed it. The press arrived, but its light shows a different result in the ${peer}'s cockpit.`;
-      case 'toggle_mismatch':
-        return `${d.label} is ${d.you.text} for you and ${d.other.text} for the ${peer}. If nothing above it differs, press ${d.label} on one side with “Press ${d.label} here only”: a press in the cockpit is mirrored and would switch both. It is never pressed automatically.`;
-      case 'press_mismatch':
-        return `It is ${d.you.text} in your cockpit and ${d.other.text} in the ${peer}'s. It is never pressed or released automatically.`;
-      case 'stuck_pressed':
-        return d.receiver_is_you
-          ? `${d.label} is stuck pressed in your cockpit (up in the ${peer}'s). A click adds a press and a release, so it stays down. “Release it” lifts it once in your cockpit only; it is never released automatically.`
-          : `${d.label} is stuck pressed in the ${peer}'s cockpit (up in yours). The ${peer} can release it there; it is never released automatically.`;
-      case 'press_lost':
-        return d.receiver_is_you
-          ? `The ${peer} pressed it, but the press could not be applied in your cockpit (the button was already down). Check it in both cockpits.`
-          : `You pressed it, but the press could not be applied in the ${peer}'s cockpit (the button was already down there). Check it in both cockpits.`;
-      case 'not_mirrored':
-        return d.receiver_is_you
-          ? `${d.label} pressed in your cockpit – not mirrored (irreversible). Do the same in the ${peer}'s cockpit if intended.`
-          : `${d.label} pressed in the ${peer}'s cockpit – not mirrored (irreversible). Do the same in your cockpit if intended.`;
-      case 'display_mismatch':
-        return `${d.label} differs: yours ${d.you.text}, the ${peer}'s ${d.other.text}. Turn the knob in the cockpit that is wrong. It is never turned automatically.`;
-      case 'safety_release':
-        return d.receiver_is_you
-          ? `Crosscheck released it in your cockpit because the ${peer}'s release never arrived (30 s, or the connection was lost). Check it in both cockpits.`
-          : `Crosscheck released it in the ${peer}'s cockpit because your release never arrived there (30 s, or the connection was lost). Check it in both cockpits.`;
-      case 'correction_failed':
-        return 'It was set to match the pilot flying, but the change did not take effect.';
-      case 'correction_loop':
-        return 'It was set back more than 3 times within a minute and keeps changing, so it is no longer set automatically.';
-      case 'observe_mismatch':
-        return 'This is an indicator, so it cannot be set. It shows a different state in the two cockpits; check the switches that drive it.';
-      case 'log_conflict':
-        return 'Neither cockpit shows the value of the last pilot command, so it was not changed automatically.';
-      case 'missing_value':
-        return 'One of the sims does not report this value.';
-      case 'no_pf':
-        return 'There is no pilot flying, so it was not changed automatically.';
-      default:
-        return d.message ?? 'The two cockpits show different values.';
-    }
-  })();
-  return d.writable && d.options.length > 0
-    ? `${what} Set it in the cockpit, or choose a value for both of you here. The alarm clears when both match.`
-    : `${what} The alarm clears when both match.`;
+/** "your cockpit" / "the captain's cockpit". */
+const cockpit = (where: PanelLine['where'], peer: string) => (where === 'here' ? 'your cockpit' : `the ${peer}'s cockpit`);
+/** The cockpit it did not reach: the other one. */
+const otherCockpit = (where: PanelLine['where'], peer: string) => (where === 'here' ? `the ${peer}'s cockpit` : 'your cockpit');
+
+/**
+ * What the line says, short for the headline and in full for the list. Each one ends with what to do
+ * (the templates of gate test 2 section 4).
+ */
+export function lineText(line: PanelLine, peer: string): { short: string; long: string } {
+  const x = line.label;
+  switch (line.kind) {
+    case 'set_both':
+      return {
+        short: `You ${line.you?.text ?? 'unknown'}, the ${peer} ${line.other?.text ?? 'unknown'}.`,
+        long: 'Set it in the cockpit, or choose one value for both of you here.',
+      };
+    case 'lamp':
+      return {
+        short: line.where === 'here' ? 'Lit here only.' : `Lit in the ${peer}'s cockpit only.`,
+        long: 'A press in the cockpit is mirrored and would switch both. Press it here only, in the cockpit that is wrong.',
+      };
+    case 'turn':
+      return { short: `Turn ${x} in the cockpit that is wrong.`, long: 'Crosscheck never turns a knob by itself.' };
+    case 'release':
+      return line.where === 'here'
+        ? { short: 'Stuck pressed in your cockpit.', long: 'Nobody is holding it. Release it lifts it once, in your cockpit only.' }
+        : { short: `Stuck pressed in the ${peer}'s cockpit.`, long: `The ${peer} can release it there.` };
+    case 'not_mirrored':
+      return {
+        short: `Pressed in ${cockpit(line.where, peer)} only.`,
+        long: `Not mirrored (irreversible). Do the same in ${otherCockpit(line.where, peer)} if intended.`,
+      };
+    case 'by_hand':
+      return { short: 'Crosscheck cannot set this yet.', long: 'Set it by hand in both cockpits.' };
+    case 'held':
+      return {
+        short: `Held down in ${cockpit(line.where, peer)} only.`,
+        long: 'Crosscheck never presses or releases it by itself.',
+      };
+    case 'released':
+      return {
+        short: `Crosscheck released it in ${cockpit(line.where, peer)}.`,
+        long: 'The release never arrived there. Check it in both cockpits.',
+      };
+    case 'press_lost':
+      return { short: `A press did not arrive in ${cockpit(line.where, peer)}.`, long: `Press ${x} in the cockpit that is wrong.` };
+    case 'mode':
+      return { short: 'Managed in one cockpit only.', long: 'Push or pull the knob in the cockpit that is wrong.' };
+  }
 }
+
+/** The button of a line, or null when the pilots fix it in the cockpit. */
+export function actionLabel(a: LineAction, optionText?: string): string {
+  switch (a.type) {
+    case 'set_both':
+      return `Set both to ${optionText ?? ''}`.trim();
+    case 'press_here':
+      return `Press ${a.label} here only`;
+    case 'release':
+      return 'Release it';
+  }
+}
+
+/** "+3 more" next to the headline. */
+export const moreText = (n: number) => `+${n} more`;
 
 /** One amber line for owned values (loaded by each pilot, never synced): the largest difference. */
 export function driftWarningText(rows: OwnedRow[]): string | null {
@@ -163,25 +172,35 @@ export function driftWarningText(rows: OwnedRow[]): string | null {
 
 // ---- amber lines and indicators ----
 
-const who = (a: Advisory) => (a.mine ? 'You' : `The ${a.who}`);
+const whoMoved = (i: { mine?: boolean; who?: string }) => (i.mine ? 'you' : `the ${i.who}`);
 
-/** "You moved ENG MODE – not synced yet." */
-export function notSyncedText(a: Advisory): string {
-  return `${who(a)} moved ${a.label ?? a.var ?? 'a control'} – not synced yet.`;
+/** "Not synced yet: 4 controls" (moved in the last 2 minutes). */
+export function notSyncedLine(n: number): string {
+  return `Not synced yet: ${n} ${n === 1 ? 'control' : 'controls'}`;
 }
 
-export function advisoryText(a: Advisory): string {
+/** "moved by you, 20:07:41" */
+export function notSyncedDetail(i: PanelItem): string {
+  return `moved by ${whoMoved(i)}${i.at ? `, ${timeOfDay(i.at)}` : ''}`;
+}
+
+/** "Outside the aircraft: 6 items differ" (walkaround, never red). */
+export function outsideLine(n: number): string {
+  return `Outside the aircraft: ${n} ${n === 1 ? 'item differs' : 'items differ'}`;
+}
+
+export function amberText(a: AmberItem): string {
   switch (a.kind) {
-    case 'not_synced':
-      return notSyncedText(a);
     case 'hardware_fighting':
-      return `${a.label ?? a.var} keeps switching back and forth between the two cockpits. Both hardware controls may be setting it; leave it to one pilot.`;
+      return `Hardware fighting: ${a.label ?? 'a control'} keeps switching back and forth between the two cockpits. Leave it to one pilot.`;
     case 'sim_disconnected':
       return a.mine
         ? 'Your simulator is not connected. Your panels are not compared until it is back.'
         : `The ${a.who}'s simulator is not connected. Panels are not compared until it is back.`;
+    case 'counter_suspect':
+      return `${a.label ?? 'A control'} looks like a press counter, so it is not synced. Set it by hand in both cockpits.`;
     default:
-      return a.message ?? '';
+      return `${a.label ?? 'A control'} needs a look in both cockpits.`;
   }
 }
 
@@ -189,8 +208,12 @@ export function indicatorsLine(n: number): string {
   return `Indicators differ (${n})`;
 }
 
-export function effectsText(effects: Desync[]): string {
-  return `Likely effects: ${effects.map((e) => e.label).join(', ')}.`;
+/** "you 27.3, captain 27.8, since 19:42:10" */
+export function itemValues(i: PanelItem, peer: string): string {
+  const parts = [];
+  if (i.you && i.other) parts.push(`you ${i.you.text}, ${peer} ${i.other.text}`);
+  if (i.since) parts.push(`since ${timeOfDay(i.since)}`);
+  return parts.join(', ');
 }
 
 export function driftText(delta: number, unit: string | null): string {

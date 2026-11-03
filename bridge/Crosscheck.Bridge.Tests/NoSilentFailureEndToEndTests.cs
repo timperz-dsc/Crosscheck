@@ -201,10 +201,12 @@ public sealed class NoSilentFailureEndToEndTests(ServerFixture server) : IAsyncL
             ["var"] = var, ["group"] = group, ["reason"] = reason, ["tier"] = tier, ["expected"] = 1, ["observed"] = 0,
             ["values"] = new JsonObject { ["pf"] = 1, ["pm"] = 0 }, ["message"] = var,
         };
-        guest.Status.SetDesync("S_OH_ELEC_APU_MASTER", D("S_OH_ELEC_APU_MASTER", "overhead", "refused", "red"));
-        guest.Status.SetDesync("I_OH_ELEC_APU_MASTER_L", D("I_OH_ELEC_APU_MASTER_L", "overhead", "observe_mismatch", "quiet"));
-        guest.Status.SetDesync("I_MIP_GEAR_1_L", D("I_MIP_GEAR_1_L", "mip", "observe_mismatch", "quiet"));
-        guest.Status.SetDesync("A_OH_PNEUMATIC_COCKPIT_TEMP", D("A_OH_PNEUMATIC_COCKPIT_TEMP", "overhead", "refused", "quiet"));
+        // Opened 3 s ago: past the panel's 2 s hold (CRO-34).
+        var at = DateTimeOffset.UtcNow.AddSeconds(-3);
+        guest.Status.SetDesync("S_OH_ELEC_APU_MASTER", D("S_OH_ELEC_APU_MASTER", "overhead", "refused", "red"), at);
+        guest.Status.SetDesync("I_OH_ELEC_APU_MASTER_L", D("I_OH_ELEC_APU_MASTER_L", "overhead", "observe_mismatch", "quiet"), at);
+        guest.Status.SetDesync("I_MIP_GEAR_1_L", D("I_MIP_GEAR_1_L", "mip", "observe_mismatch", "quiet"), at);
+        guest.Status.SetDesync("A_OH_PNEUMATIC_COCKPIT_TEMP", D("A_OH_PNEUMATIC_COCKPIT_TEMP", "overhead", "refused", "quiet"), at);
 
         var s = await Status(guest);
         var red = s["desyncs"]!.AsArray().Select(d => d!["var"]!.GetValue<string>()).ToList();
@@ -215,6 +217,11 @@ public sealed class NoSilentFailureEndToEndTests(ServerFixture server) : IAsyncL
         Assert.Equal(["I_MIP_GEAR_1_L"], s["indicators"]!.AsArray().Select(d => d!["var"]!.GetValue<string>()).ToList());
         var overhead = s["groups"]!.AsArray().Single(g => g!["id"]!.GetValue<string>() == "overhead")!;
         Assert.Equal(2, overhead["differs"]!.GetValue<int>()); // red only
+        // The panel (CRO-34): the lamp is part of its switch's line, the gear light one grey indicator.
+        var panel = s["panel"]!;
+        // Same priority and time: by control name.
+        Assert.Equal(["A_OH_PNEUMATIC_COCKPIT_TEMP", "S_OH_ELEC_APU_MASTER"], panel["red"]!.AsArray().Select(l => l!["control"]!.GetValue<string>()));
+        Assert.Equal(["I_MIP_GEAR_1_L"], panel["indicators"]!["items"]!.AsArray().Select(l => l!["control"]!.GetValue<string>()));
         var mip = s["groups"]!.AsArray().Single(g => g!["id"]!.GetValue<string>() == "mip")!;
         Assert.Equal(0, mip["differs"]!.GetValue<int>());
     }

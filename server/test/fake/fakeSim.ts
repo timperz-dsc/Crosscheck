@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { SnapshotClass, SnapshotValue } from '../../src/protocol/types.js';
+import type { LooseValue, SnapshotClass, SnapshotValue } from '../../src/protocol/types.js';
 
 export interface VarDef {
   name: string;
@@ -26,6 +26,10 @@ export interface VarDef {
   reportAs?: string;
   /** delta with compare_when: reported with a context ("unpowered" with value null while the unit is off). */
   gated?: boolean;
+  /** observe: compared value by value (snapshot_hash.loose) within this tolerance, not through the hash (CRO-34). */
+  tolerance?: number;
+  /** observe or toggle lamp: compared only while its unit is powered (unitPower); loose for observe (CRO-34). */
+  powered?: boolean;
 }
 
 /** A small stand-in profile with one var of each kind. */
@@ -195,6 +199,11 @@ export class FakeSim {
         continue;
       }
       if (d.cls === 'pulse') continue;
+      if (this.isLoose(d)) continue;
+      if (d.cls === 'mode' && d.powered && this.unitOff.has(d.name)) {
+        out.push({ var: d.name, class: 'mode', value: null, context: 'unpowered', message: d.message!, ...(d.reportAs ? { report_as: d.reportAs } : {}) });
+        continue;
+      }
       if (d.cls === 'delta' && d.gated) {
         const off = this.unitOff.has(d.name);
         out.push({ var: d.name, class: 'delta', value: off ? null : this.display(d.name), context: off ? 'unpowered' : this.modes.get(d.name) ?? '' });
@@ -211,6 +220,18 @@ export class FakeSim {
 
   hash(group: string): string {
     return canonicalHash(this.snapshot(group));
+  }
+
+  private isLoose(d: VarDef): boolean {
+    return d.cls === 'observe' && (d.tolerance !== undefined || d.powered === true);
+  }
+
+  /** Loose indicators of a group (snapshot_hash.loose): tolerance or power gate, never in the hash. */
+  loose(group: string): LooseValue[] {
+    return [...this.defs.values()].filter((d) => d.group === group && this.isLoose(d)).map((d): LooseValue => {
+      if (d.powered && this.unitOff.has(d.name)) return { var: d.name, value: null, context: 'unpowered' };
+      return { var: d.name, value: this.get(d.name), ...(d.tolerance !== undefined ? { tolerance: d.tolerance } : {}) };
+    });
   }
 
   writesBy(source: WriteSource): { name: string; value: number | string }[] {

@@ -2,6 +2,20 @@ name,scan_value,kind,provisional_class,reason
 S_FCU_EFIS1_BARO_STD,0,class,verified,"a counter, not a latch (gate test 2 cause A: values -9 ... 1, counts down on pull); not synced until a read-only observe run"
 S_FCU_EFIS2_BARO_STD,0,class,verified,"a counter, not a latch (gate test 2 cause A: values -9 ... 1, counts down on pull); not synced until a read-only observe run"
 S_PED_COCKPIT_DOOR_VIDEO,0,class,verified,"a counter, not a switch (gate test 2 cause A: values 1 ... 86); not synced until a read-only observe run"
+S_ARMREST_LEFT_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_ARMREST_LEFT_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_ARMREST_RIGHT_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_ARMREST_RIGHT_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_JUMPSEAT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_JUMPSEAT_HEADREST,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_SEAT_DISTANCE_CAPT,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_SEAT_DISTANCE_FO,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_SEAT_HEIGHT_CAPT,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_SEAT_HEIGHT_FO,1,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_SUNSHADE_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_SUNSHADE_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_TRAY_TABLE_CAPT,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
+S_TRAY_TABLE_FO,0,class,verified,"cockpit comfort item, syncs later (CRO-36)"
 FNX_FLT_LOADED,2,class,,"FNX_ var, no rule"
 FNX_SELCAL,0,class,,"FNX_ var, no rule"
 FNX_TAIL_HI,28,class,,"FNX_ var, no rule"
@@ -146,8 +160,6 @@ S_PED_RMP3_ILS,0,class,verified,momentary or latching unknown
 S_PED_RMP3_MLS,0,class,verified,momentary or latching unknown
 S_PED_RMP3_NAV,0,class,verified,momentary or latching unknown
 S_PED_RMP3_VOR,0,class,verified,momentary or latching unknown
-S_WINDOW_CAPT_LEVER_BUTTON,0,class,verified,momentary or latching unknown
-S_WINDOW_FO_LEVER_BUTTON,0,class,verified,momentary or latching unknown
 S_HYD_GRAVITY_GEAR_HANDLE,0,class,verified,momentary or latching unknown; panel group unclear
 S_EXT_DOOR_L1_INSIDE_GUST_STATE,0,class,verified,"name looks multi-position, position count unknown"
 S_EXT_DOOR_L1_INSIDE_LOCK,1,class,verified,"name looks multi-position, position count unknown"

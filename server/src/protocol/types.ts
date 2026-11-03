@@ -138,7 +138,9 @@ export interface AckBody {
    */
   reason?: 'press_lost' | 'not_synced' | 'display_check';
 }
-export interface SnapshotHashBody { group: string; hash: string; applied_seq: number }
+/** An indicator compared value by value (tolerance, or only while its unit is powered), not through the hash (CRO-34). */
+export interface LooseValue { var: string; value: Scalar; tolerance?: number; context?: 'unpowered' }
+export interface SnapshotHashBody { group: string; hash: string; applied_seq: number; loose?: LooseValue[] }
 /** mode: an indicator of an input Crosscheck cannot sync (yet), compared as an input (red, never quiet). */
 /** context (delta with compare_when): "unpowered", or the values of its mode vars; compared only when equal. */
 export interface SnapshotValue {

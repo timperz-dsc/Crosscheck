@@ -49,6 +49,22 @@ describe('18. advisories (amber lines)', () => {
     expect(body<{ advisories: Advisory[] }>(resumed).advisories).toEqual([expect.objectContaining({ key: 'not_synced:S_FCU_AP1_X', count: 2 })]);
   });
 
+  it('a "not synced yet" line ends when the control has not moved for notSyncedExpireMs (CRO-34)', async () => {
+    pair = await startPair();
+    const { host, guest, server } = pair;
+    host.unsyncedInput('S_FCU_AP1_X', 'AP1');
+    await guest.waitFor('advisory', (m) => adv(m).kind === 'not_synced' && adv(m).active);
+    // A new move restarts the wait.
+    await sleep(server.config.notSyncedExpireMs * 0.6);
+    host.unsyncedInput('S_FCU_AP1_X', 'AP1');
+    await sleep(server.config.notSyncedExpireMs * 0.6);
+    expect(guest.messages('advisory', (m) => adv(m).kind === 'not_synced' && !adv(m).active)).toHaveLength(0);
+    const off = await guest.waitFor('advisory', (m) => adv(m).kind === 'not_synced' && !adv(m).active);
+    expect(adv(off)).toMatchObject({ key: 'not_synced:S_FCU_AP1_X', active: false });
+    const resumed = await guest.resume();
+    expect(body<{ advisories: Advisory[] }>(resumed).advisories).toEqual([]);
+  });
+
   it('three overrides within the window: "hardware fighting", gone after a quiet window', async () => {
     pair = await startPair();
     const { host, guest, server } = pair;

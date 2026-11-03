@@ -59,7 +59,7 @@
                 "minLength": 1
               },
               "context": {
-                "description": "Delta items with compare_when only: 'unpowered' while the unit is off (value null), else the values of its mode vars. The display is compared only when both sides report the same context.",
+                "description": "Delta items with compare_when: 'unpowered' while the unit is off (value null), else the values of its mode vars; the display is compared only when both sides report the same context. Toggle and mode items with a power flag: 'unpowered' while the unit is off (value null), not compared then.",
                 "type": "string",
                 "maxLength": 400
               },

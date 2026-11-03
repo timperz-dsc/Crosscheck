@@ -17,6 +17,12 @@
 //       alarm: { text: "...", as: S_X } # observe: red comparison (input tier) with this text
 //       never_write: true              # deny list: never written on any path, watched and compared only
 //       compare_when: { powered: B_X, same: [I_A, I_B] }  # delta: compare the display only then
+//       control: E_X                   # panel: show this var under that control (or an id from `controls`)
+//       tolerance: 0.5                 # observe: allowed difference, compared outside the exact hash
+//       powered: B_X                   # observe: compared only while this flag is non-zero in both sims
+//       priority: 2                    # panel priority instead of the group's (2 flight-critical ... 5)
+//       label: "FD (Capt)"             # the name the pilots see, instead of the generated one
+//       upstream: [S_A, S_B]           # panel: while one of these differs, this difference is its effect
 //       review: "..."                  # take a generated entry out of the profile again (back on the
 //                                      # review list, amber "not synced yet"); the reason is the text
 //       note: "..."                    # replaces the rule notes after "label generated"
@@ -36,7 +42,9 @@ sealed record Override(
     string Name, string? Class, string? Group, double[]? Values, double[]? Range, string? Display, Verify? Verify,
     Dictionary<string, string>? ValueLabels, int? PulseMs, string? Press, string? Note, string? Comment, string Evidence,
     double? Rest = null, (string Text, string? As)? Alarm = null, bool NeverWrite = false,
-    (string? Powered, string[]? Same)? CompareWhen = null, bool NoVerify = false, string? Review = null);
+    (string? Powered, string[]? Same)? CompareWhen = null, bool NoVerify = false, string? Review = null,
+    string? Control = null, double? Tolerance = null, string? Powered = null, int? Priority = null, string? Label = null,
+    string[]? Upstream = null);
 
 sealed record OpenItem(string What, IReadOnlyList<string> Vars, string Why);
 
@@ -104,7 +112,10 @@ sealed class OverrideFile
                     S("note"), S("comment"),
                     S("evidence") ?? throw new InvalidDataException($"{path}: {name}: every override needs evidence"),
                     S("rest") is { } rest ? double.Parse(rest, CultureInfo.InvariantCulture) : null, alarm,
-                    neverWrite, compareWhen, noVerify, S("review")));
+                    neverWrite, compareWhen, noVerify, S("review"),
+                    S("control"), S("tolerance") is { } tol ? double.Parse(tol, CultureInfo.InvariantCulture) : null,
+                    S("powered"), S("priority") is { } pri ? int.Parse(pri, CultureInfo.InvariantCulture) : null, S("label"),
+                    item.Children.TryGetValue("upstream", out var un) && un is YamlSequenceNode us ? us.Children.Select(c => ((YamlScalarNode)c).Value!).ToArray() : null));
             }
 
         if (root.Children.TryGetValue("open", out var open) && open is YamlSequenceNode os)
@@ -181,7 +192,15 @@ sealed class OverrideFile
             Comment = o.Comment ?? keep?.Comment,
             NeverWrite = cls is "verified" or "pulse" && (o.NeverWrite || keep?.NeverWrite == true),
             CompareWhen = cls == "delta" ? o.CompareWhen ?? keep?.CompareWhen : null,
+            Control = cls == "ignore" ? null : o.Control ?? keep?.Control,
+            Tolerance = cls == "observe" ? o.Tolerance ?? keep?.Tolerance : null,
+            Powered = cls == "observe" ? o.Powered ?? keep?.Powered : null,
+            Priority = cls == "ignore" ? null : o.Priority ?? keep?.Priority,
+            LabelOverride = o.Label ?? keep?.LabelOverride,
+            Upstream = cls == "ignore" ? null : o.Upstream ?? keep?.Upstream,
         };
+        if (o.Tolerance is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: tolerance is only used by class observe");
+        if (o.Powered is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: powered is only used by class observe");
         e.Display = cls == "delta" ? o.Display ?? keep?.Display : null;
         e.Verify = silent || o.NoVerify ? null : o.Verify ?? keep?.Verify;
         if (o.Note is { } note) e.Notes.Add(note);

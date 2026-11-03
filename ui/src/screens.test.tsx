@@ -2,8 +2,8 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Screens } from './App';
-import { BLEED, NOW, at, bridge, idle, inSession } from './test/fixtures';
-import type { Advisory, Desync, Preflight } from './types';
+import { BLEED, NOW, at, bridge, idle, inSession, line, panel } from './test/fixtures';
+import type { PanelItem, Preflight } from './types';
 
 const show = (b: ReturnType<typeof bridge>) => render(<Screens bridge={b} now={NOW} />);
 
@@ -131,16 +131,18 @@ describe('preflight (joiner)', () => {
 });
 
 describe('session', () => {
-  it('both cockpits match: crew, I have control with the sidestick hint, panels and fuel drift', async () => {
-    const b = bridge(inSession(), { recent: [{ type: 'action_applied', message: 'CDU 1 INIT pressed by captain. Confirmed.', at: at(40) }] });
+  it('all controls match: one calm line, crew, I have control with the sidestick hint, panels, log and fuel drift', async () => {
+    const b = bridge(inSession({ panel: panel({ log: [{ type: 'action_applied', text: 'CDU 1 INIT pressed by captain. Confirmed.', at: at(40) }] }) }));
     show(b);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
     expect(screen.getByText('Last compared 2 seconds ago.')).toBeInTheDocument();
     expect(screen.getByText('Connected, 38 ms')).toBeInTheDocument();
     expect(screen.getByText('First officer (you)')).toBeInTheDocument();
     expect(screen.getByText('Pilot flying')).toBeInTheDocument();
     expect(screen.getByText('Takes over at once. The takeover button on your sidestick does the same.')).toBeInTheDocument();
-    expect(screen.getByText('CDU 1 INIT pressed by captain. Confirmed.')).toBeInTheDocument();
+    // The log is always visible in the right column, next to the panels.
+    const log = screen.getByRole('list', { name: 'Log' });
+    expect(within(log).getByText('CDU 1 INIT pressed by captain. Confirmed.')).toBeInTheDocument();
     expect(screen.getAllByText('Match')).toHaveLength(3);
     expect(screen.getByText('12 kg apart')).toHaveClass('muted');
     await userEvent.click(screen.getByRole('button', { name: 'I have control' }));
@@ -159,27 +161,96 @@ describe('session', () => {
     expect(screen.queryByRole('button', { name: 'I have control' })).toBeNull();
   });
 
-  it('a control differs: name, panel, both values, what happened, Set both buttons', async () => {
-    const b = bridge(inSession({ desyncs: [BLEED], groups: [{ id: 'overhead', label: 'Overhead', differs: 1 }] }));
+  it('one red line: the headline says what differs and offers its action, Set both', async () => {
+    const b = bridge(inSession({ panel: panel({ red: [BLEED] }), groups: [{ id: 'overhead', label: 'Overhead', differs: 1 }] }));
     show(b);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('One control differs');
-    const block = screen.getByRole('region', { name: 'ENG 1 BLEED' });
-    expect(within(block).getByText(/^Overhead, open since/)).toBeInTheDocument();
-    expect(within(block).getByText('ON')).toBeInTheDocument();
-    expect(within(block).getByText('OFF')).toBeInTheDocument();
-    expect(within(block).getByText(/You changed it, but it did not change in the captain's cockpit/)).toBeInTheDocument();
+    const headline = screen.getByRole('region', { name: 'ENG 1 BLEED' });
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ENG 1 BLEED');
+    expect(within(headline).getByText('You ON, the captain OFF.')).toBeInTheDocument();
+    expect(within(headline).queryByText(/more/)).toBeNull();
     expect(screen.getByText('1 differs')).toHaveClass('differs');
-    await userEvent.click(within(block).getByRole('button', { name: 'Set both to OFF' }));
+    expect(within(headline).getByRole('button', { name: 'Set both to ON' })).toHaveClass('btn-primary');
+    await userEvent.click(within(headline).getByRole('button', { name: 'Set both to OFF' }));
     expect(b.actions.setBoth).toHaveBeenCalledWith('S_OH_PNEUMATIC_ENG1_BLEED', 0);
   });
 
-  it('an indicator that differs has no Set both buttons', () => {
-    show(bridge(inSession({
-      desyncs: [{ ...BLEED, var: 'I_MIP_GEAR_1_L', label: 'I_MIP_GEAR_1_L', has_label: false, reason: 'observe_mismatch', writable: false, options: [] }],
-    })));
-    expect(screen.getByRole('heading', { level: 2, name: 'I_MIP_GEAR_1_L' })).toHaveClass('mono');
-    expect(screen.queryByRole('button', { name: /Set both/ })).toBeNull();
-    expect(screen.getByText(/This is an indicator, so it cannot be set/)).toBeInTheDocument();
+  it('several red lines: the most important one on top with +N more; Show opens one line per control', async () => {
+    const stuck = line({
+      control: 'S_OH_APU_AUTOEXTING_RESET', label: 'APU AUTO EXTING RESET', priority: 1, kind: 'release', where: 'here',
+      action: { type: 'release', var: 'S_OH_APU_AUTOEXTING_RESET' }, reason: 'stuck_pressed',
+    });
+    const alt = line({
+      control: 'E_FCU_ALTITUDE', label: 'FCU ALT', group: 'fcu', group_label: 'FCU', priority: 2, kind: 'turn',
+      you: { value: 100, text: '100' }, other: { value: 1000, text: '1000' }, reason: 'display_mismatch',
+    });
+    const ls = line({
+      control: 'S_FCU_EFIS1_LS', label: 'LS (Capt)', group: 'efis', group_label: 'EFIS', priority: 2, kind: 'lamp', where: 'here',
+      action: { type: 'press_here', var: 'S_FCU_EFIS1_LS', label: 'LS (Capt)' }, reason: 'toggle_mismatch',
+    });
+    const b = bridge(inSession({ panel: panel({ red: [stuck, alt, ls] }) }));
+    show(b);
+    const headline = screen.getByRole('region', { name: 'APU AUTO EXTING RESET' });
+    expect(within(headline).getByText('Stuck pressed in your cockpit.')).toBeInTheDocument();
+    expect(within(headline).getByText('+2 more')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'FCU ALT' })).toBeNull(); // collapsed by default
+    await userEvent.click(within(headline).getByRole('button', { name: 'Release it' }));
+    expect(b.actions.releaseIt).toHaveBeenCalledWith('S_OH_APU_AUTOEXTING_RESET');
+
+    await userEvent.click(within(headline).getByRole('button', { name: 'Show' }));
+    const altLine = screen.getByRole('region', { name: 'FCU ALT' });
+    expect(within(altLine).getByText(/^FCU, since/)).toBeInTheDocument();
+    expect(within(altLine).getByText('Turn FCU ALT in the cockpit that is wrong.')).toBeInTheDocument();
+    expect(within(altLine).getByText('100')).toBeInTheDocument();
+    expect(within(altLine).queryByRole('button')).toBeNull(); // never turned automatically, no button
+    const lsLine = screen.getByRole('region', { name: 'LS (Capt)' });
+    expect(within(lsLine).getByText('Lit here only.')).toBeInTheDocument();
+    await userEvent.click(within(lsLine).getByRole('button', { name: 'Press LS (Capt) here only' }));
+    expect(b.actions.pressHere).toHaveBeenCalledWith('S_FCU_EFIS1_LS');
+    // Order: headline, then the others as the bridge sent them (priority, then oldest).
+    expect(altLine.compareDocumentPosition(lsLine) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('the headline does not jump: a new lower or equal priority line stays behind +N more', () => {
+    const a = line({ control: 'A', label: 'LS (Capt)', priority: 2, kind: 'lamp', where: 'here' });
+    const older = line({ control: 'B', label: 'WR TILT', priority: 2, kind: 'by_hand', since: at(60) });
+    const safety = line({ control: 'C', label: 'IDG 1', priority: 1, kind: 'not_mirrored', where: 'there' });
+    const view = show(bridge(inSession({ panel: panel({ red: [a] }) })));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('LS (Capt)');
+    // An older line of the same priority arrives (it sorts first): the headline stays.
+    view.rerender(<Screens bridge={bridge(inSession({ panel: panel({ red: [older, a] }) }))} now={NOW} />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('LS (Capt)');
+    // A safety line: it takes the headline.
+    view.rerender(<Screens bridge={bridge(inSession({ panel: panel({ red: [safety, older, a] }) }))} now={NOW} />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('IDG 1');
+    expect(screen.getByText("Pressed in the captain's cockpit only.")).toBeInTheDocument();
+    // It clears: the next most important line.
+    view.rerender(<Screens bridge={bridge(inSession({ panel: panel({ red: [older, a] }) }))} now={NOW} />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('WR TILT');
+  });
+
+  it('every kind says what to do (gate test 2 section 4 templates)', async () => {
+    const kinds = [
+      line({ control: 'K1', label: 'IDG 1', kind: 'not_mirrored', where: 'there', priority: 1 }),
+      line({ control: 'K2', label: 'FLAPS', kind: 'by_hand' }),
+      line({ control: 'K3', label: 'APU AUTO EXTING RESET', kind: 'release', where: 'there' }),
+      line({ control: 'K4', label: 'FD (Capt)', kind: 'press_lost', where: 'there' }),
+      line({ control: 'K5', label: 'FCU HDG', kind: 'mode', message: 'HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.' }),
+      line({ control: 'K6', label: 'ENG 1 FIRE TEST', kind: 'held', where: 'here' }),
+      line({ control: 'K7', label: 'SVCE INT OVRD', kind: 'released', where: 'here' }),
+    ];
+    show(bridge(inSession({ panel: panel({ red: kinds }) })));
+    await userEvent.click(screen.getByRole('button', { name: 'Show' }));
+    const region = (name: string) => screen.getByRole('region', { name });
+    // The headline shows its full sentence when the list is open.
+    expect(within(region('IDG 1')).getByText('Not mirrored (irreversible). Do the same in your cockpit if intended.')).toBeInTheDocument();
+    expect(within(region('FLAPS')).getByText('Set it by hand in both cockpits.')).toBeInTheDocument();
+    expect(within(region('APU AUTO EXTING RESET')).getByText('The captain can release it there.')).toBeInTheDocument();
+    expect(within(region('APU AUTO EXTING RESET')).queryByRole('button', { name: 'Release it' })).toBeNull();
+    expect(within(region('FD (Capt)')).getByText('Press FD (Capt) in the cockpit that is wrong.')).toBeInTheDocument();
+    expect(within(region('FCU HDG')).getByText(/push or pull the knob in the cockpit that is wrong/)).toBeInTheDocument();
+    expect(within(region('ENG 1 FIRE TEST')).getByText('Held down in your cockpit only.')).toBeInTheDocument();
+    expect(within(region('SVCE INT OVRD')).getByText('The release never arrived there. Check it in both cockpits.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Set both|here only|Release it/ })).toBeNull();
   });
 
   it('after taking control: You have control with the open differences as information', async () => {
@@ -190,7 +261,7 @@ describe('session', () => {
     expect(screen.queryByRole('region', { name: 'You have control' })).toBeNull();
   });
 
-  it('peer lost: one line at the top, and the confirm flow for taking control', async () => {
+  it('peer lost: one line, and the confirm flow for taking control', async () => {
     const b = bridge(inSession({
       peer: 'lost', peer_lost_at: at(12),
       crew: [{ side: 'fo', you: true, role: 'pm', state: 'connected' }, { side: 'captain', you: false, role: 'pf', state: 'lost' }],
@@ -203,23 +274,18 @@ describe('session', () => {
     expect(b.actions.takeControl).toHaveBeenCalledWith(true);
   });
 
-  it('fuel loaded differently: one amber line, no red, no desync', () => {
+  it('fuel loaded differently: one amber line, no red', () => {
     show(bridge(inSession({ owned: [{ var: 'fuel', label: 'Fuel', unit: 'kg', delta: -400, warn: true }] })));
     expect(screen.getByText('Fuel differs by 400 kg – load the same fuel in the EFB.')).toHaveClass('warning');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
     expect(screen.getByText('400 kg apart')).toHaveClass('muted');
   });
 
   it('server unreachable: one line, the session view stays', () => {
     show(bridge(inSession({ server: 'reconnecting' })));
     expect(screen.getByText('Connection to the server lost. Reconnecting. Both sims keep flying, just not synced.')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
     expect(screen.getByText('Reconnecting')).toBeInTheDocument();
-  });
-
-  it('several controls differ', () => {
-    show(bridge(inSession({ desyncs: [BLEED, { ...BLEED, var: 'X', label: 'APU MASTER' }, { ...BLEED, var: 'Y', label: 'ENG 2 BLEED' }] })));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Three controls differ');
   });
 });
 
@@ -230,161 +296,82 @@ describe('bridge not running', () => {
   });
 });
 
-describe('session: three tiers (CRO-26)', () => {
-  const lamp = (name: string, label: string, group = 'overhead'): Desync => ({
-    ...BLEED, var: name, label, group, group_label: 'Overhead', reason: 'observe_mismatch', tier: 'quiet', writable: false, options: [],
-    you: { value: 1, text: '1' }, other: { value: 0, text: '0' },
-  });
-  const adv = (over: Partial<Advisory>): Advisory => ({
-    key: `not_synced:${over.var ?? 'S_X'}`, kind: 'not_synced', var: 'S_X', label: 'X', mine: true, who: 'you', at: at(5), count: 1, message: null, ...over,
-  });
+describe('session: everything else collapsed under the red lines (CRO-34)', () => {
+  const item = (label: string, over: Partial<PanelItem> = {}): PanelItem => ({ control: label, label, ...over });
 
-  it('red input first, then amber lines, then the quiet indicators line', () => {
+  it('red first, then amber lines, then the grey indicators line', () => {
     show(bridge(inSession({
-      desyncs: [{ ...BLEED, tier: 'red' }],
-      indicators: [lamp('I_MIP_GEAR_1_L', 'Gear indicator')],
-      advisories: [adv({ var: 'S_FCU_AP1', label: 'AP1', key: 'not_synced:S_FCU_AP1' })],
+      panel: panel({
+        red: [BLEED],
+        not_synced: { count: 1, items: [item('AP1', { mine: true, who: 'you', at: at(5) })] },
+        indicators: { count: 1, items: [item('Gear indicator', { you: { value: 1, text: '1' }, other: { value: 0, text: '0' }, since: at(30) })] },
+      }),
       owned: [{ var: 'fuel', label: 'Left tank fuel', unit: 'kg', delta: -400, warn: true }],
     })));
     const red = screen.getByRole('region', { name: 'ENG 1 BLEED' });
-    const amber = screen.getByText('You moved AP1 – not synced yet.');
+    const amber = screen.getByText('Not synced yet: 1 control');
     const fuel = screen.getByText('Fuel differs by 400 kg – load the same fuel in the EFB.');
     const quiet = screen.getByText('Indicators differ (1)');
     expect(amber).toHaveClass('warning');
     expect(fuel).toHaveClass('warning');
     expect(quiet).toHaveClass('muted');
-    // Document order: red above amber above quiet.
     expect(red.compareDocumentPosition(amber) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(amber.compareDocumentPosition(quiet) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('One control differs'); // red only
   });
 
-  it('indicators are collapsed into one line; details on click', async () => {
-    show(bridge(inSession({ indicators: [lamp('I_MIP_GEAR_1_L', 'Gear indicator'), lamp('I_OH_X', 'X light')] })));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
-    expect(screen.queryByText('Gear indicator')).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'Show details' }));
+  it('not synced yet: one amber line with a count, details on click', async () => {
+    const names = ['AP1', 'AP2', 'EXPED', 'ENG MODE'];
+    show(bridge(inSession({
+      panel: panel({ not_synced: { count: 4, items: names.map((n, i) => item(n, { mine: i % 2 === 0, who: i % 2 === 0 ? 'you' : 'captain', at: at(i) })) } }),
+    })));
+    expect(screen.getByText('Not synced yet: 4 controls')).toHaveClass('warning');
+    expect(screen.queryByText('AP1')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Show' }));
+    const list = screen.getByRole('list', { name: 'Not synced yet' });
+    expect(within(list).getAllByRole('listitem').map((li) => li.firstChild?.textContent)).toEqual(names);
+    expect(within(list).getAllByText(/^moved by (you|the captain), /)).toHaveLength(4);
+  });
+
+  it('walkaround items are one amber "outside" line, never red', async () => {
+    show(bridge(inSession({
+      panel: panel({ outside: { count: 2, items: [item('EXT CARGO BAY AFT LT'), item('EXT MAINT BUS')] } }),
+    })));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
+    expect(screen.getByText('Outside the aircraft: 2 items differ')).toHaveClass('warning');
+    await userEvent.click(screen.getByRole('button', { name: 'Show' }));
+    expect(within(screen.getByRole('list', { name: 'Outside the aircraft' })).getByText('EXT MAINT BUS')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'EXT MAINT BUS' })).toBeNull();
+  });
+
+  it('indicators are one grey line; details on click; never red', async () => {
+    show(bridge(inSession({
+      panel: panel({ indicators: { count: 2, items: [
+        item('Gear indicator', { you: { value: 1, text: '1' }, other: { value: 0, text: '0' }, since: at(30) }),
+        item('VOLT BAT 1 display', { you: { value: 26, text: '26' }, other: { value: 27.8, text: '27.8' }, since: at(30) }),
+      ] } }),
+    })));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
+    await userEvent.click(screen.getByRole('button', { name: 'Show' }));
     const list = screen.getByRole('list', { name: 'Indicators that differ' });
     expect(within(list).getByText('Gear indicator')).toBeInTheDocument();
-    expect(within(list).getAllByText(/you 1, captain 0, since/)).toHaveLength(2);
-    expect(screen.queryByRole('region', { name: 'Gear indicator' })).toBeNull(); // never a red block
-  });
-
-  it('lamps of the same panel are listed under the red input as likely effects', () => {
-    show(bridge(inSession({ desyncs: [{ ...BLEED, tier: 'red', effects: [lamp('I_OH_BLEED_L', 'ENG 1 BLEED light')] }] })));
-    const block = screen.getByRole('region', { name: 'ENG 1 BLEED' });
-    expect(within(block).getByText('Likely effects: ENG 1 BLEED light.')).toHaveClass('muted');
-    expect(screen.queryByText(/Indicators differ/)).toBeNull();
-  });
-
-  it('a desync marked quiet is never shown as a red block', () => {
-    show(bridge(inSession({ desyncs: [lamp('I_MIP_GEAR_1_L', 'Gear indicator', 'mip')] })));
+    expect(within(list).getAllByText(/you .*, captain .*, since/)).toHaveLength(2);
     expect(screen.queryByRole('region', { name: 'Gear indicator' })).toBeNull();
-    expect(screen.getByText('Indicators differ (1)')).toBeInTheDocument();
   });
 
-  it('up to three not-synced controls: one line each, by who moved them', () => {
+  it('hardware fighting, a counter suspect and a disconnected sim are amber lines of their own', () => {
     show(bridge(inSession({
-      advisories: [
-        adv({ var: 'S_ENG_MODE', label: 'ENG MODE', key: 'not_synced:S_ENG_MODE' }),
-        adv({ var: 'S_FCU_AP1', label: 'AP1', key: 'not_synced:S_FCU_AP1', mine: false, who: 'captain' }),
-      ],
+      panel: panel({
+        amber: [
+          { key: 'hardware_fighting:S_MIP_PARKING_BRAKE', kind: 'hardware_fighting', label: 'PARKING BRAKE', mine: false, who: 'captain', at: at(3) },
+          { key: 'counter_suspect:S_X', kind: 'counter_suspect', label: 'DOOR VIDEO', mine: false, who: 'captain', at: at(4) },
+          { key: 'sim_disconnected:host', kind: 'sim_disconnected', label: null, mine: false, who: 'captain', at: at(5) },
+        ],
+      }),
     })));
-    expect(screen.getByText('You moved ENG MODE – not synced yet.')).toHaveClass('warning');
-    expect(screen.getByText('The captain moved AP1 – not synced yet.')).toHaveClass('warning');
-  });
-
-  it('more than three collapse into one amber line, newest first in the details', async () => {
-    const names = ['AP1', 'AP2', 'EXPED', 'ENG MODE'];
-    show(bridge(inSession({ advisories: names.map((n, i) => adv({ var: `S_${i}`, key: `not_synced:S_${i}`, label: n, at: at(i) })) })));
-    expect(screen.getByText('Not synced yet (4)')).toHaveClass('warning');
-    expect(screen.queryByText(/You moved AP1/)).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'Show' }));
-    const items = within(screen.getByRole('list', { name: 'Not synced yet' })).getAllByRole('listitem');
-    expect(items.map((li) => li.firstChild?.textContent)).toEqual(names);
-  });
-
-  it('hardware fighting and a disconnected sim are amber lines', () => {
-    show(bridge(inSession({
-      advisories: [
-        adv({ kind: 'hardware_fighting', key: 'hardware_fighting:S_MIP_PARKING_BRAKE', var: 'S_MIP_PARKING_BRAKE', label: 'PARKING BRAKE', mine: false, who: 'captain' }),
-        adv({ kind: 'sim_disconnected', key: 'sim_disconnected:host', var: null, label: null, mine: false, who: 'captain' }),
-      ],
-    })));
-    expect(screen.getByText(/PARKING BRAKE keeps switching back and forth between the two cockpits/)).toHaveClass('warning');
+    expect(screen.getByText(/Hardware fighting: PARKING BRAKE keeps switching back and forth between the two cockpits/)).toHaveClass('warning');
+    expect(screen.getByText(/DOOR VIDEO looks like a press counter/)).toHaveClass('warning');
     expect(screen.getByText("The captain's simulator is not connected. Panels are not compared until it is back.")).toHaveClass('warning');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Both cockpits match');
-  });
-
-  it('a key whose light differs explains what happened, without Set both', () => {
-    show(bridge(inSession({
-      desyncs: [{ ...BLEED, var: 'S_FCU_EFIS1_FD', label: 'FD', reason: 'effect_mismatch', tier: 'red', receiver_is_you: true, writable: false, options: [] }],
-    })));
-    expect(screen.getByText(/The captain pressed it. The press arrived, but its light shows a different result in your cockpit/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Set both/ })).toBeNull();
-  });
-
-  it('a toggle light that differs: on for you, off for the other pilot, and a press-here-only button', async () => {
-    const b = bridge(inSession({
-      desyncs: [{
-        ...BLEED, var: 'S_FCU_EFIS1_FD', label: 'FD', group: 'efis', group_label: 'EFIS', reason: 'toggle_mismatch', tier: 'red',
-        you: { value: 1, text: 'on' }, other: { value: 0, text: 'off' }, writable: false, options: [], press_here: true,
-      }],
-    }));
-    show(b);
-    const block = screen.getByRole('region', { name: 'FD' });
-    expect(within(block).getByText(/FD is on for you and off for the captain\. If nothing above it differs, press FD on one side with “Press FD here only”: a press in the cockpit is mirrored and would switch both\. It is never pressed automatically\./)).toBeInTheDocument();
-    expect(within(block).queryByRole('button', { name: /Set both/ })).toBeNull();
-    await userEvent.click(within(block).getByRole('button', { name: 'Press FD here only' }));
-    expect(b.actions.pressHere).toHaveBeenCalledWith('S_FCU_EFIS1_FD');
-  });
-
-  it('a button held down on one side only, and a safety release, are explained', () => {
-    show(bridge(inSession({
-      desyncs: [
-        { ...BLEED, var: 'S_OH_FIRE_ENG1_TEST', label: 'ENG 1 FIRE TEST', reason: 'press_mismatch', tier: 'red', you: { value: 1, text: 'held down' }, other: { value: 0, text: 'up' }, writable: false, options: [] },
-        { ...BLEED, var: 'S_OH_SVCE_INT_OVRD', label: 'SVCE INT OVRD', reason: 'safety_release', tier: 'red', receiver_is_you: true, writable: false, options: [] },
-      ],
-    })));
-    expect(screen.getByText(/It is held down in your cockpit and up in the captain's\. It is never pressed or released automatically\./)).toBeInTheDocument();
-    expect(screen.getByText(/Crosscheck released it in your cockpit because the captain's release never arrived \(30 s, or the connection was lost\)\. Check it in both cockpits\./)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /here only/ })).toBeNull();
-  });
-
-  it('a button stuck pressed in this cockpit offers Release it; in the other cockpit it does not (CRO-33)', async () => {
-    const stuck = {
-      ...BLEED, var: 'S_OH_APU_AUTOEXTING_RESET', label: 'APU AUTO EXTING RESET', reason: 'stuck_pressed', tier: 'red' as const,
-      you: { value: 1, text: 'held down' }, other: { value: 0, text: 'up' }, writable: false, options: [],
-    };
-    const b = bridge(inSession({ desyncs: [{ ...stuck, receiver_is_you: true, release_here: true }] }));
-    show(b);
-    const block = screen.getByRole('region', { name: 'APU AUTO EXTING RESET' });
-    expect(within(block).getByText(/APU AUTO EXTING RESET is stuck pressed in your cockpit \(up in the captain's\)\..*“Release it” lifts it once in your cockpit only; it is never released automatically\./)).toBeInTheDocument();
-    expect(within(block).queryByRole('button', { name: /Set both/ })).toBeNull();
-    await userEvent.click(within(block).getByRole('button', { name: 'Release it' }));
-    expect(b.actions.releaseIt).toHaveBeenCalledWith('S_OH_APU_AUTOEXTING_RESET');
-    cleanup();
-
-    show(bridge(inSession({ desyncs: [{ ...stuck, receiver_is_you: false, release_here: false }] })));
-    expect(screen.getByText(/stuck pressed in the captain's cockpit \(up in yours\)\. The captain can release it there/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Release it' })).toBeNull();
-  });
-
-  it('a deny-list press, a lost press and an encoder display that differs are explained, with no button (CRO-33)', () => {
-    show(bridge(inSession({
-      desyncs: [
-        { ...BLEED, var: 'S_OH_ELEC_IDG1', label: 'IDG 1', reason: 'not_mirrored', tier: 'red', receiver_is_you: false, writable: false, options: [] },
-        { ...BLEED, var: 'S_FCU_EFIS1_FD', label: 'FD', reason: 'press_lost', tier: 'red', receiver_is_you: true, writable: false, options: [] },
-        {
-          ...BLEED, var: 'E_FCU_ALTITUDE', label: 'FCU altitude', reason: 'display_mismatch', tier: 'red', writable: false, options: [],
-          you: { value: 11900, text: '11900' }, other: { value: 49000, text: '49000' },
-        },
-      ],
-    })));
-    expect(screen.getByText(/IDG 1 pressed in the captain's cockpit – not mirrored \(irreversible\)\. Do the same in your cockpit if intended\./)).toBeInTheDocument();
-    expect(screen.getByText(/The captain pressed it, but the press could not be applied in your cockpit \(the button was already down\)\./)).toBeInTheDocument();
-    expect(screen.getByText(/FCU altitude differs: yours 11900, the captain's 49000\. Turn the knob in the cockpit that is wrong\. It is never turned automatically\./)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Set both|here only|Release it/ })).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
   });
 });
 

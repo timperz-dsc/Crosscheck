@@ -8,7 +8,7 @@ import { SessionHeader, Waiting } from './screens/Waiting';
 
 /** Picks the screen from the bridge's phase. */
 export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
-  const { status, recent, actions, busy, error, confirmPeerLost, bridgeDown } = bridge;
+  const { status, actions, busy, error, confirmPeerLost, bridgeDown } = bridge;
 
   if (!status) {
     return (
@@ -29,7 +29,7 @@ export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
       return (
         <>
           {down}
-          <Session status={status} recent={recent} actions={actions} busy={busy} error={error} confirmPeerLost={confirmPeerLost} now={now} />
+          <Session status={status} actions={actions} busy={busy} error={error} confirmPeerLost={confirmPeerLost} now={now} />
         </>
       );
     case 'ended':

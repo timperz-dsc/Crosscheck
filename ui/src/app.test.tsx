@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
-import { idle, inSession } from './test/fixtures';
+import { idle, inSession, panel } from './test/fixtures';
 import type { Status } from './types';
 
 // The real data hook against a mocked bridge: status polling, POSTs and the events socket.
@@ -34,7 +34,6 @@ beforeEach(() => {
       if (path === '/api/control/take') return new Response(JSON.stringify({ ok: false, error: 'Not in a session.' }), { status: 409 });
       return new Response(JSON.stringify({ ok: true }));
     }
-    if (path === '/api/recent') return new Response('[]');
     return new Response(JSON.stringify(status));
   }));
 });
@@ -51,10 +50,11 @@ describe('app with the bridge API', () => {
     expect(await screen.findByText('Waiting for the first officer')).toBeInTheDocument();
   });
 
-  it('adds events to Recent and asks for the confirm when the PF is lost', async () => {
+  it('an event refreshes the status (the log comes with it) and asks for the confirm when the PF is lost', async () => {
     status = inSession();
     render(<App />);
-    expect(await screen.findByText('Both cockpits match')).toBeInTheDocument();
+    expect(await screen.findByText('All controls match')).toBeInTheDocument();
+    status = inSession({ panel: panel({ log: [{ type: 'action_confirmed', text: 'APU MASTER on by you. Confirmed.', at: new Date().toISOString() }] }) });
     act(() => FakeSocket.last!.emit({ type: 'action_confirmed', message: 'APU MASTER on by you. Confirmed.', at: new Date().toISOString(), data: null }));
     expect(await screen.findByText('APU MASTER on by you. Confirmed.')).toBeInTheDocument();
     act(() => FakeSocket.last!.emit({ type: 'control_denied', message: 'x', at: new Date().toISOString(), data: { reason: 'peer_lost' } }));

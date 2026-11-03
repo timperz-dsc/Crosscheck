@@ -41,6 +41,24 @@
       "type": "object",
       "propertyNames": { "$ref": "#/$defs/identifier" },
       "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "controls": {
+      "description": "Controls made of several vars that have no single main var (an RMP's inner and outer knob), with the name the pilots see.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "group_priority": {
+      "description": "Panel priority per group: 2 flight-critical, 3 other overhead systems, 4 pedestal and radios, 5 lights, cabin and the rest. Safety lines are always 1.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "type": "integer", "minimum": 2, "maximum": 5 }
+    },
+    "outside_groups": {
+      "description": "Groups outside the cockpit (walkaround). Their differences are one amber 'outside' line, never red.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
     }
   },
   "$defs": {
@@ -197,6 +215,34 @@
             "powered": { "description": "Var that reads 0 while the unit is unpowered.", "type": "string", "minLength": 1 },
             "same": { "description": "Vars that must show the same value in both sims (mode, selected radio).", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
           }
+        },
+        "control": {
+          "description": "The control this var belongs to on the panel (one line per control): another var of this profile (a lamp names its button, a display its knob) or an id from 'controls'. Without it, the var is its own control.",
+          "type": "string",
+          "minLength": 1
+        },
+        "tolerance": {
+          "description": "observe only: the sims count as matching while the values differ by no more than this (in the var's units). Compared outside the exact group hash.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "powered": {
+          "description": "observe only: an observe var that reads 0 while this indicator's unit is unpowered. The indicator is compared only while it reads non-zero in both sims.",
+          "type": "string",
+          "minLength": 1
+        },
+        "upstream": {
+          "description": "Controls that change this one by themselves (both FDs off un-dash the FCU windows). While one of them differs between the cockpits, this var's difference is an effect of that line, never a line of its own.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "priority": {
+          "description": "Panel priority of this control, overriding group_priority: 2 flight-critical ... 5 lights, cabin and the rest (1 is reserved for safety lines).",
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 5
         },
         "note": { "type": "string" },
         "label": { "description": "Name as the pilots see it, for example ENG 1 BLEED.", "type": "string", "minLength": 1 },

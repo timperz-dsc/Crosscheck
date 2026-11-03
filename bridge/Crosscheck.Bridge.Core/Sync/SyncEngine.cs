@@ -199,6 +199,7 @@ public sealed class SyncEngine : IAsyncDisposable
             names.Add(v.Name);
             if (v.Display is { } d && vars.Contains(d)) names.Add(d);
             if (v.Verify?.Lvar is { } e && vars.Contains(e)) names.Add(e);
+            if (v.Powered is { } p && vars.Contains(p)) names.Add(p);
             if (v.CompareWhen is { } when)
                 foreach (var c in (when.Same ?? []).Append(when.Powered).OfType<string>().Where(vars.Contains)) names.Add(c);
         }
@@ -658,6 +659,7 @@ public sealed class SyncEngine : IAsyncDisposable
         // One line per press in the recent list: the release is not a separate action.
         if (edge != "up") _sentText[id] = Labels.Action(spec.Name, spec.Class, value, delta);
         if (_sentText.Count > 2000) _sentText.Remove(_sentText.Keys.First());
+        _status.NoteActivity(spec.Name);
         CommandsSent++;
         return body;
     }
@@ -1481,6 +1483,7 @@ public sealed class SyncEngine : IAsyncDisposable
             _ => _sim.TryGet(name, out var v) ? v : null,
         };
         CommandsApplied++;
+        if (!job.IsCorrection) _status.NoteActivity(name);
         if (!job.IsCorrection && job.Edge != "up")
         {
             var what = Labels.Action(name, spec.Class, job.Value, job.Delta);
@@ -1540,12 +1543,16 @@ public sealed class SyncEngine : IAsyncDisposable
                 case SyncClass.Pulse when IsEdge(v):
                     // Parity only: the counters differ between the sims by design. Odd = held down.
                     list.Add((v.Name, "pulse", _sim.TryGet(v.Name, out var pv) ? (double)((long)Math.Round(pv) & 1) : null));
+                    // The lamp is null while its unit is unpowered (context "unpowered", not compared; CRO-34).
                     if (v.Verify?.Lvar is { } lamp && _toggleLamps.GetValueOrDefault(lamp) == v.Name)
-                        list.Add((lamp, "toggle", _sim.TryGet(lamp, out var lv) ? lv : null));
+                        list.Add((lamp, "toggle", !IsUnpowered(_vars[lamp]) && _sim.TryGet(lamp, out var lv) ? lv : null));
                     break;
                 case SyncClass.Observe when v.Alarm is not null:
                     // An indicator of an input Crosscheck cannot sync (yet): compared as an input (red), never quiet.
-                    list.Add((v.Name, "mode", _sim.TryGet(v.Name, out var mv) ? mv : null));
+                    list.Add((v.Name, "mode", !IsUnpowered(v) && _sim.TryGet(v.Name, out var mv) ? mv : null));
+                    break;
+                case SyncClass.Observe when IsLoose(v):
+                    // Tolerance or power gate: compared value by value (snapshot_hash.loose), not through the hash.
                     break;
                 case SyncClass.Verified or SyncClass.Analog or SyncClass.Owned or SyncClass.Observe:
                     list.Add((v.Name, v.Class.ToString().ToLowerInvariant(), _sim.TryGet(v.Name, out var x) ? x : null));
@@ -1566,6 +1573,30 @@ public sealed class SyncEngine : IAsyncDisposable
     }
 
     private const string Unpowered = "unpowered";
+
+    /// <summary>A plain indicator with a tolerance or a power flag: sent in snapshot_hash.loose (CRO-34).</summary>
+    private static bool IsLoose(VarEntry v) =>
+        v is { Class: SyncClass.Observe, Alarm: null } && (v.Tolerance is not null || v.Powered is not null);
+
+    /// <summary>The indicator's unit is off (its power flag reads 0 or is unknown): not compared.</summary>
+    private bool IsUnpowered(VarEntry v) => v.Powered is { } p && (!_sim.TryGet(p, out var power) || power == 0);
+
+    /// <summary>The loose indicators of one group, as sent with its hash (protocol.md §7).</summary>
+    public List<(string Var, double? Value, double? Tolerance, bool Unpowered)> LooseValues(string group)
+    {
+        var list = new List<(string, double?, double?, bool)>();
+        foreach (var v in _profile.Vars.Where(v => v.Group == group && IsLoose(v)))
+        {
+            // Lamps of edge buttons and encoder displays are reported under their control, never loose.
+            if (_toggleLamps.ContainsKey(v.Name) || _deltaDisplays.Contains(v.Name)) continue;
+            var off = IsUnpowered(v);
+            list.Add((v.Name, !off && _sim.TryGet(v.Name, out var x) ? x : null, v.Tolerance, off));
+        }
+        return list;
+    }
+
+    /// <summary>Context of a toggle or mode item with a power flag: "unpowered" while its unit is off.</summary>
+    private string? ItemContext(string name) => _vars.TryGetValue(name, out var v) && IsUnpowered(v) ? Unpowered : null;
 
     /// <summary>
     /// compare_when of an encoder: "unpowered" while the unit is off, else the values of its mode vars
@@ -1593,12 +1624,22 @@ public sealed class SyncEngine : IAsyncDisposable
         if (_status.PeerState is "joined" or "resumed" or "connected") LastComparedAt = DateTimeOffset.UtcNow;
         foreach (var group in Groups)
         {
-            _client.Send("snapshot_hash", new JsonObject
+            var message = new JsonObject
             {
                 ["group"] = group,
                 ["hash"] = GroupHash(group),
                 ["applied_seq"] = Interlocked.Read(ref _appliedSeq),
-            });
+            };
+            var loose = LooseValues(group);
+            if (loose.Count > 0)
+                message["loose"] = new JsonArray(loose.Select(l =>
+                {
+                    var item = new JsonObject { ["var"] = l.Var, ["value"] = l.Value is { } x ? JsonValue.Create(x) : null };
+                    if (l.Tolerance is { } t) item["tolerance"] = t;
+                    if (l.Unpowered) item["context"] = Unpowered;
+                    return (JsonNode)item;
+                }).ToArray());
+            _client.Send("snapshot_hash", message);
         }
     }
 
@@ -1620,6 +1661,7 @@ public sealed class SyncEngine : IAsyncDisposable
                     var item = new JsonObject { ["var"] = v.Var, ["class"] = v.Class, ["value"] = Node(v.Value) };
                     if (v.Class == "owned" && _driftSteps.TryGetValue(v.Var, out var step)) item["step"] = step;
                     if (v.Class == "toggle") item["button"] = _toggleLamps[v.Var];
+                    if (v.Class is "toggle" or "mode" && ItemContext(v.Var) is { } off) item["context"] = off;
                     if (v.Class == "delta" && DeltaContext(_vars[v.Var]) is { } context) item["context"] = context;
                     if (v.Class == "mode" && _vars[v.Var].Alarm is { } alarm)
                     {

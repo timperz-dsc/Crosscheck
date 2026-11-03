@@ -603,4 +603,56 @@ public class ProfileLoaderTests
         Assert.True(filter.IsExcluded("A320.audio.1.tone"));
         Assert.False(filter.IsExcluded("A320Xaudio.1.tone"));
     }
+
+    // --- panel fields (CRO-34) ---
+
+    private const string LampEntry = "  - name: I_LAMP\n    class: observe\n    group: overhead";
+    private const string SwitchValues = "    values: [0, 1]\n    verify: { lvar: I_LAMP";
+    private const string Groups = "groups: [overhead, fcu, cdu1, systems]";
+
+    [Fact]
+    public void Panel_fields_load_controls_tolerance_power_priority_upstream()
+    {
+        var yaml = Valid
+            .Replace(Groups, Groups + "\ncontrols: { lamp_pair: Lamp pair }\ngroup_priority: { fcu: 2, overhead: 3 }\noutside_groups: [systems]")
+            .Replace(LampEntry, LampEntry + "\n    control: lamp_pair\n    tolerance: 0.5\n    powered: N_DISPLAY\n    upstream: [S_SWITCH]")
+            .Replace(SwitchValues, "    values: [0, 1]\n    priority: 5\n    verify: { lvar: I_LAMP");
+        var result = Load(yaml);
+        Assert.True(result.IsValid, string.Join("\n", result.FormatIssues()));
+        var p = result.Profile!;
+        var lamp = p.Vars.Single(v => v.Name == "I_LAMP");
+        Assert.Equal("lamp_pair", lamp.Control);
+        Assert.Equal(0.5, lamp.Tolerance);
+        Assert.Equal("N_DISPLAY", lamp.Powered);
+        Assert.Equal(["S_SWITCH"], lamp.Upstream!);
+        Assert.Equal(5, p.Vars.Single(v => v.Name == "S_SWITCH").Priority);
+        Assert.Equal(2, p.GroupPriority!["fcu"]);
+        Assert.Equal(["systems"], p.OutsideGroups!);
+        Assert.Equal("Lamp pair", p.Controls!["lamp_pair"]);
+    }
+
+    [Theory]
+    [InlineData("tolerance: 0.5", "'tolerance' is not used by class verified")]
+    [InlineData("powered: I_LAMP", "'powered' is not used by class verified")]
+    [InlineData("control: NOPE", "neither a var of this profile nor listed in 'controls'")]
+    [InlineData("upstream: [NOPE]", "upstream var 'NOPE' is not defined")]
+    public void Panel_fields_are_checked(string field, string message)
+    {
+        var yaml = Valid.Replace(SwitchValues, "    values: [0, 1]\n    " + field + "\n    verify: { lvar: I_LAMP");
+        Assert.Contains(message, Single(Load(yaml)).Message);
+    }
+
+    [Fact]
+    public void Powered_must_be_a_plain_observe_flag()
+    {
+        var yaml = Valid.Replace(LampEntry, LampEntry + "\n    powered: S_SWITCH");
+        Assert.Contains("must have class observe", Single(Load(yaml)).Message);
+    }
+
+    [Fact]
+    public void Outside_groups_must_exist()
+    {
+        var yaml = Valid.Replace(Groups, Groups + "\noutside_groups: [ramp]");
+        Assert.Contains("outside_groups names 'ramp'", Single(Load(yaml)).Message);
+    }
 }

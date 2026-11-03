@@ -4,8 +4,12 @@
   "session": "s_k3J9xQ2mPa",
   "ts": 1793520000000,
   "body": {
-    "group": "overhead",
+    "group": "systems",
     "hash": "3f9a1c0e7b2d4a68",
-    "applied_seq": 42
+    "applied_seq": 42,
+    "loose": [
+      { "var": "N_ELEC_VOLT_BAT_1", "value": 27.8, "tolerance": 0.5 },
+      { "var": "N_HYD_PRESSURE_BRAKE_LEFT", "value": 2.103, "tolerance": 0.3 }
+    ]
   }
 }

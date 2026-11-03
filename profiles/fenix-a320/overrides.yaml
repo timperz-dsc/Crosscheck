@@ -682,19 +682,15 @@ overrides:
     comment: "positions to be learned (CRO-24)"
     evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
   - name: S_WINDOW_CAPT_LEVER
-    class: verified
     group: cabin
-    values: [0, 1]
-    note: "values from the scan and probe plus the positions pilots used in gate test 1 (CRO-27); more positions to be learned (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "pilot input, gate test 1: positions 0, 1 seen in the logs; before: probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed a"
+    class: ignore
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "owner decision CRO-36: the windows are each pilot's own; before: verified (CRO-27 positions)"
   - name: S_WINDOW_FO_LEVER
-    class: verified
     group: cabin
-    values: [0]
-    note: "values [0] are only those seen in the scan and probe; position count unknown; to be learned from real pilot input (CRO-24)"
-    comment: "positions to be learned (CRO-24)"
-    evidence: "probe values seen: position count unknown; to be learned from real pilot input (CRO-24); first run: not tested: probed after the Fenix WASM crash, nothing could react; no source of truth: no GraphQL mirror, no effect or animation var chang"
+    class: ignore
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "owner decision CRO-36: the windows are each pilot's own; before: verified (CRO-27 positions)"
   - name: S_WR_GAIN
     class: verified
     group: pedestal
@@ -2172,6 +2168,7 @@ overrides:
     class: verified
     group: pedestal
     values: [0, 1, 2]
+    priority: 2
     evidence: "pilot input, observe positions run 2026-11-02: positions 0, 1, 2; rests at 1 (NORM) at the gate"
   - name: S_FC_MIP_ANTI_SKID
     class: verified
@@ -2316,31 +2313,43 @@ overrides:
     class: observe
     group: fcu
     alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+    control: E_FCU_SPEED
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     evidence: "owner decision (gate test 2 prep): the FCU SPD knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
   - name: B_FCU_SPEED_DASHED
     class: observe
     group: fcu
     alarm: { text: "SPD managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_SPEED_MANAGED }
+    control: E_FCU_SPEED
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     evidence: "owner decision (gate test 2 prep): the FCU SPD knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
   - name: I_FCU_HEADING_MANAGED
     class: observe
     group: fcu
     alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
+    control: E_FCU_HEADING
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     evidence: "owner decision (gate test 2 prep): the FCU HDG knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
   - name: B_FCU_HEADING_DASHED
     class: observe
     group: fcu
     alarm: { text: "HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_HEADING_MANAGED }
+    control: E_FCU_HEADING
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     evidence: "owner decision (gate test 2 prep): the FCU HDG knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
   - name: I_FCU_ALTITUDE_MANAGED
     class: observe
     group: fcu
     alarm: { text: "ALT managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: I_FCU_ALTITUDE_MANAGED }
+    control: E_FCU_ALTITUDE
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     evidence: "owner decision (gate test 2 prep): the FCU ALT knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
   - name: B_FCU_VERTICALSPEED_DASHED
     class: observe
     group: fcu
     alarm: { text: "VS managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.", as: B_FCU_VERTICALSPEED_DASHED }
+    control: E_FCU_VS
+    upstream: [S_FCU_EFIS1_FD, S_FCU_EFIS2_FD]
     evidence: "owner decision (gate test 2 prep): the FCU VS knob stays unsynced because one direction is set and reset inside one frame (pilot input, observe positions run 2026-11-02: only -1 seen); this indicator is compared as an input, red after 2 s"
   # --- CRO-33 (gate test 2): deny list, encoder gating, re-profiled controls
   # Deny list (owner decision 2026-11-02, gate test 2 section 7): irreversible controls are never written by
@@ -2432,15 +2441,67 @@ overrides:
     evidence: "gate test 2 (CRO-22) section 2 A; owner plan CRO-33"
   # FCU encoders: never corrected; the display is compared only while powered and in the same mode.
   - name: E_FCU_HEADING
+    label: "FCU HDG"
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_HEADING_DASHED, B_FCU_TRACK_FPA_MODE] }
     evidence: "gate test 2 cause F: displays compared while the guest FCU was unpowered; owner plan CRO-33"
   - name: E_FCU_SPEED
+    label: "FCU SPD"
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_SPEED_DASHED, B_FCU_SPEED_MACH] }
     evidence: "gate test 2 cause F; owner plan CRO-33"
   - name: E_FCU_VS
+    label: "FCU V/S"
     compare_when: { powered: B_FCU_POWER, same: [B_FCU_VERTICALSPEED_DASHED, B_FCU_TRACK_FPA_MODE] }
     evidence: "gate test 2 cause F (VS swung between +-6000); owner plan CRO-33"
 
+
+  # --- CRO-34: a calm session panel (tolerances, panel priority, labels, windows, gate test 1 §4)
+  - name: N_ELEC_VOLT_BAT_1
+    tolerance: 0.5
+    evidence: "gate test 1 §4 proposal, owner plan CRO-34: ±0.5 V; a real battery fault differs by volts (gate test 2: 27.8 vs 27.3 was noise)"
+  - name: N_ELEC_VOLT_BAT_2
+    tolerance: 0.5
+    evidence: "gate test 1 §4 proposal, owner plan CRO-34: ±0.5 V"
+  - name: N_HYD_PRESSURE_BRAKE_LEFT
+    tolerance: 0.3
+    evidence: "owner decision CRO-34: ±10 % of full scale; the brake gauge reads 0-3 (x1000 psi), scan value 2.103"
+  - name: N_HYD_PRESSURE_BRAKE_RIGHT
+    tolerance: 0.3
+    evidence: "owner decision CRO-34: ±10 % of full scale; the brake gauge reads 0-3 (x1000 psi), scan value 2.103"
+  - name: N_FC_RUDDER_TRIM_DECIMAL
+    class: ignore
+    note: "flight-control position, not compared until the stream (CRO-17)"
+    evidence: "gate test 1 §4 ignore list: flight-control positions until the stream"
+  - name: N_WINDOW_CAPT
+    class: ignore
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "gate test 1 §4 (window position, animation) and owner decision CRO-36"
+  - name: N_WINDOW_FO
+    class: ignore
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "gate test 1 §4 (window position, animation) and owner decision CRO-36"
+  - name: S_WINDOW_FO_LATCH
+    class: ignore
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "owner decision CRO-36: the windows are each pilot's own"
+  - name: S_WINDOW_CAPT_LEVER_BUTTON
+    class: ignore
+    group: cabin
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "owner decision CRO-36: the windows are each pilot's own (was on the review list)"
+  - name: S_WINDOW_FO_LEVER_BUTTON
+    class: ignore
+    group: cabin
+    note: "each pilot's own window (owner decision CRO-36)"
+    evidence: "owner decision CRO-36: the windows are each pilot's own (was on the review list)"
+  - name: S_ENG_MASTER_1
+    priority: 2
+    evidence: "owner plan CRO-34: engine controls are flight-critical on the panel"
+  - name: S_ENG_MASTER_2
+    priority: 2
+    evidence: "owner plan CRO-34: engine controls are flight-critical on the panel"
+  - name: S_OH_APU_AUTOEXTING_RESET
+    label: "APU AUTO EXTING RESET"
+    evidence: "plain label for the panel (CRO-34)"
 open:
   - what: "Audio SEND keys"
     vars: [S_ASP2_CAB_SEND, S_ASP2_HF_1_SEND]

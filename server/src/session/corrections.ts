@@ -1,4 +1,4 @@
-import { isAbsolute, type DesyncReason, type Role, type Scalar, type SnapshotClass, type SnapshotValue } from '../protocol/types.js';
+import { isAbsolute, type DesyncReason, type LooseValue, type Role, type Scalar, type SnapshotClass, type SnapshotValue } from '../protocol/types.js';
 
 export interface VarDiff {
   var: string;
@@ -74,6 +74,8 @@ export function buttonDecision(d: VarDiff): RawDecision | null {
     if (d.pf === null || d.pm === null) return { ...d, action: 'desync', reason: 'missing_value' };
     return { ...d, action: 'desync', reason: 'display_mismatch' };
   }
+  // A lamp or mode indicator of a unit that is off in either sim is not compared (CRO-34).
+  if ((d.class === 'toggle' || d.class === 'mode') && !comparable(d)) return { ...d, action: 'skip', why: 'not_comparable' };
   if (d.class === 'denied') return { ...d, action: 'desync', reason: 'not_mirrored' };
   if (d.class === 'pulse') return { ...d, action: 'desync', reason: 'press_mismatch' };
   if (d.class === 'toggle') return { ...d, action: 'desync', reason: 'toggle_mismatch' };
@@ -118,4 +120,29 @@ export function decideCorrections(diffs: VarDiff[], lastCommand: (name: string) 
     if (typeof d.pf !== 'number' || !isAbsolute(d.class)) return { ...d, action: 'desync', reason: 'missing_value' };
     return { ...d, action: 'correct', target: d.pf, sides: ['pm'], source: 'pf_reference' };
   });
+}
+
+/** One loose indicator compared between the sims (CRO-34). */
+export interface LooseDiff { var: string; pf: Scalar; pm: Scalar; tolerance: number | null }
+
+/**
+ * Loose indicators (a tolerance, or compared only while powered) of one group, compared value by value.
+ * `differ`: over the tolerance (exact without one). `match`: comparable and within it. A var that is
+ * unpowered on either side, or missing on one side, is in neither: it is not compared.
+ */
+export function diffLoose(pfValues: LooseValue[], pmValues: LooseValue[]): { differ: LooseDiff[]; match: string[] } {
+  const pm = new Map(pmValues.map((v) => [v.var, v]));
+  const differ: LooseDiff[] = [];
+  const match: string[] = [];
+  for (const a of pfValues) {
+    const b = pm.get(a.var);
+    if (!b || a.context === 'unpowered' || b.context === 'unpowered') continue;
+    const tolerance = a.tolerance ?? b.tolerance ?? null;
+    const within = typeof a.value === 'number' && typeof b.value === 'number'
+      ? Math.abs(a.value - b.value) <= (tolerance ?? 0) + EPSILON
+      : a.value === b.value;
+    if (within) match.push(a.var);
+    else differ.push({ var: a.var, pf: a.value, pm: b.value, tolerance });
+  }
+  return { differ, match };
 }

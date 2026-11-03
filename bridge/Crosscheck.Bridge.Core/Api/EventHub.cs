@@ -46,6 +46,8 @@ public sealed class BridgeStatus
     private readonly Dictionary<string, DateTimeOffset> _desyncSince = new(StringComparer.Ordinal);
     /// <summary>Active amber lines from the server (advisory messages), by key.</summary>
     private readonly Dictionary<string, JsonObject> _advisories = new(StringComparer.Ordinal);
+    /// <summary>Last pilot activity per var (a local input sent, or the other pilot's input applied here; CRO-34).</summary>
+    private readonly Dictionary<string, DateTimeOffset> _activity = new(StringComparer.Ordinal);
 
     public string? SessionId { get; set; }
     public string? JoinCode { get; set; }
@@ -63,13 +65,25 @@ public sealed class BridgeStatus
     public string? AppVersion { get; set; }
     public IReadOnlyList<string> Warnings { get; set; } = [];
 
-    public void SetDesync(string var, JsonObject body)
+    public void SetDesync(string var, JsonObject body, DateTimeOffset? at = null)
     {
         lock (_gate)
         {
             _desyncs[var] = body;
-            _desyncSince.TryAdd(var, DateTimeOffset.UtcNow);
+            _desyncSince.TryAdd(var, at ?? DateTimeOffset.UtcNow);
         }
+    }
+
+    /// <summary>A pilot moved or pressed this var (either cockpit): the panel waits 2 s before it is red (CRO-34).</summary>
+    public void NoteActivity(string var, DateTimeOffset? at = null)
+    {
+        lock (_gate) _activity[var] = at ?? DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Last pilot activity per var.</summary>
+    public IReadOnlyDictionary<string, DateTimeOffset> Activity
+    {
+        get { lock (_gate) return new Dictionary<string, DateTimeOffset>(_activity, StringComparer.Ordinal); }
     }
 
     /// <summary>Open desyncs with the time this bridge first saw them.</summary>
@@ -117,6 +131,7 @@ public sealed class BridgeStatus
             _desyncs.Clear();
             _desyncSince.Clear();
             _advisories.Clear();
+            _activity.Clear();
         }
         SessionId = JoinCode = ClientId = Seat = SeatSide = Role = PfClientId = PeerState = null;
         RttMs = null;

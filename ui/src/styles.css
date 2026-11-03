@@ -80,13 +80,27 @@ h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
 .main-preflight { max-width: 860px; gap: 40px; }
 .main-session { max-width: 1180px; padding: 48px 48px 72px; flex-direction: row; flex-wrap: wrap; gap: 64px; }
 .session-col { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px; }
-.session-aside { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+/* The right column stays in view: Panels at the top, the log below it scrolls inside the column. */
+.session-aside {
+  flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 32px;
+  position: sticky; top: 24px; align-self: flex-start; max-height: calc(100vh - 48px); overflow-y: auto;
+}
+.session-aside .panels dt, .session-aside .panels dd { padding: 7px 0; font-size: 14px; }
+.log-section { display: flex; flex-direction: column; gap: 10px; min-height: 200px; flex: 1 1 auto; }
+.log { overflow-y: auto; min-height: 0; }
+.log li { grid-template-columns: 72px 1fr; gap: 12px; font-size: 14px; }
 
 .intro { display: flex; flex-direction: column; gap: 10px; }
 .intro .lead { font-size: 16px; color: var(--grey); max-width: 560px; }
 .heading { display: flex; flex-direction: column; gap: 8px; }
 .heading-title { display: flex; align-items: center; gap: 12px; }
 .heading h1 { font-size: 30px; }
+
+/* The headline: the most important red line, readable at a glance (CRO-34). */
+.headline { display: flex; flex-direction: column; gap: 14px; }
+.headline-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.headline h1 { font-size: 30px; }
+.headline-short { font-size: 20px; font-weight: 500; }
 
 .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 48px; }
 .choice { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }

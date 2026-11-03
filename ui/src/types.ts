@@ -48,48 +48,85 @@ export interface OwnedRow {
   warn?: boolean;
 }
 
-export interface DesyncValue {
+export interface LineValue {
   value: number | null;
   text: string;
 }
 
-export interface Desync {
-  var: string;
+/**
+ * What a red line asks the pilots to do (bridge PanelLines.cs; the sentences are in words.ts):
+ * set_both (a switch: Set both to …), lamp (lit in one cockpit: Press X here only), turn (a knob display),
+ * release (stuck pressed: Release it), not_mirrored (deny list), by_hand (Crosscheck cannot set it),
+ * held (held down in one cockpit), released (Crosscheck released it), press_lost, mode (managed differs).
+ */
+export type LineKind = 'set_both' | 'lamp' | 'turn' | 'release' | 'not_mirrored' | 'by_hand' | 'held' | 'released' | 'press_lost' | 'mode';
+
+export type LineAction =
+  | { type: 'set_both'; var: string; options: { value: number; text: string }[] }
+  | { type: 'press_here'; var: string; label: string }
+  | { type: 'release'; var: string };
+
+/** One red line: one control (a button with its lamp, a knob with its display) that a pilot can fix. */
+export interface PanelLine {
+  control: string;
   label: string;
-  has_label: boolean;
   group: string | null;
   group_label: string | null;
-  reason: string;
   since: string;
-  receiver_is_you: boolean;
-  you: DesyncValue;
-  other: DesyncValue;
-  writable: boolean;
-  options: { value: number; text: string }[];
-  /** toggle_mismatch: offer "Press X here only" (one click in this cockpit, not mirrored). */
-  press_here?: boolean;
-  /** stuck_pressed in this cockpit: offer "Release it" (one up step here, not mirrored). */
-  release_here?: boolean;
+  /** 1 safety, 2 flight-critical, 3 overhead systems, 4 pedestal and radios, 5 lights, cabin and the rest. */
+  priority: number;
+  kind: LineKind;
+  /** Which cockpit it is about: this one or the other pilot's. */
+  where: 'here' | 'there' | null;
+  you: LineValue | null;
+  other: LineValue | null;
+  action: LineAction | null;
   message: string | null;
-  /** red: an input did not arrive (sticky, at the top). quiet: an indicator differs. */
-  tier?: 'red' | 'quiet';
-  /** Red only: lamps of the same panel that differ too, most likely because of this input. */
-  effects?: Desync[];
+  reason: string;
 }
 
-/** An amber line: a control that is not synced yet, hardware fighting, a sim that is not connected. */
-export interface Advisory {
+/** One control in a collapsed line (outside, indicators, not synced yet). */
+export interface PanelItem {
+  control: string;
+  label: string;
+  you?: LineValue;
+  other?: LineValue;
+  since?: string;
+  mine?: boolean;
+  who?: string;
+  at?: string;
+}
+
+/** An amber line of its own: hardware fighting, a counter suspect, a sim that is not connected. */
+export interface AmberItem {
   key: string;
-  kind: 'not_synced' | 'hardware_fighting' | 'sim_disconnected';
-  var: string | null;
+  kind: string;
   label: string | null;
-  /** This pilot moved it / this pilot's sim. */
   mine: boolean;
   /** "you", "captain" or "first officer". */
   who: string;
   at: string;
-  count: number | null;
-  message: string | null;
+}
+
+export interface LogRow {
+  type: string;
+  text: string;
+  at: string;
+}
+
+/** The session panel (CRO-34): one line per control, everything else collapsed. */
+export interface Panel {
+  /** Priority, then oldest first. */
+  red: PanelLine[];
+  /** Controls not synced yet that a pilot moved in the last 2 minutes. */
+  not_synced: { count: number; items: PanelItem[] };
+  /** Walkaround items that differ: one amber line. */
+  outside: { count: number; items: PanelItem[] };
+  amber: AmberItem[];
+  /** Indicators that differ: one grey line. */
+  indicators: { count: number; items: PanelItem[] };
+  /** Newest first, plain labels. */
+  log: LogRow[];
 }
 
 export interface ControlNotice {
@@ -131,17 +168,9 @@ export interface Status {
   last_compared_at?: string | null;
   groups?: GroupRow[];
   owned?: OwnedRow[];
-  desyncs?: Desync[];
-  /** Quiet: indicators that differ for 10 s or more (not attached to a red input). */
-  indicators?: Desync[];
-  advisories?: Advisory[];
+  /** The session panel (CRO-34). */
+  panel?: Panel;
   control_notice?: ControlNotice | null;
-}
-
-export interface RecentItem {
-  type: string;
-  message: string;
-  at: string;
 }
 
 /** Event from WS /api/events. */

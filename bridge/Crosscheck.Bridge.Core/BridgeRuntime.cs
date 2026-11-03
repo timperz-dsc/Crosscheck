@@ -123,6 +123,8 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     /// <summary>Self-update (null when not installed with the installer, and in tests).</summary>
     public Updater? Updater { get; set; }
     public Labels Labels { get; private set; } = null!;
+    /// <summary>Which vars the pilots see as one control on the panel (CRO-34).</summary>
+    public ControlMap Controls { get; private set; } = null!;
     /// <summary>Controls watched read-only because they are not synced yet (unsynced.csv next to the profile).</summary>
     public UnsyncedList Unsynced { get; private set; } = UnsyncedList.Empty;
     public Uri ServerUrl => _server;
@@ -138,6 +140,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         Profile = loaded.Profile!;
         Labels = new Labels(Profile);
         Unsynced = UnsyncedList.LoadNextTo(_options.ProfilePath, Profile);
+        Controls = new ControlMap(Profile, Labels, Unsynced.Labels);
         ProfileHash = global::Crosscheck.Bridge.ProfileHash.Of(await File.ReadAllBytesAsync(_options.ProfilePath, ct));
 
         Log = new BridgeLog(_options.LogDir ?? BridgeLog.DefaultDirectory);
@@ -430,7 +433,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
 
     public JsonObject StatusJson() => UiStatus.Build(this);
 
-    public JsonArray Recent() => UiStatus.Recent(Events);
+    public JsonArray Recent() => UiStatus.Recent(Events, Controls);
 
     private ApiResult Error(string message)
     {

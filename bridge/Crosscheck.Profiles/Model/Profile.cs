@@ -66,7 +66,16 @@ public sealed record VarEntry(
     double? Rest = null,
     AlarmSpec? Alarm = null,
     bool NeverWrite = false,
-    CompareWhen? CompareWhen = null);
+    CompareWhen? CompareWhen = null,
+    string? Control = null,
+    double? Tolerance = null,
+    string? Powered = null,
+    int? Priority = null,
+    IReadOnlyList<string>? Upstream = null)
+{
+    /// <summary>The control this var belongs to on the panel: Control, or the var itself (CRO-34).</summary>
+    public string ControlId => Control ?? Name;
+}
 
 /// <summary>
 /// delta only: when the encoder's display may be compared between the sims. Not while the unit is
@@ -114,4 +123,7 @@ public sealed record Profile(
     IReadOnlyList<string>? Exclude = null,
     IReadOnlyList<DatarefEntry>? Datarefs = null,
     ProfileRoles? Roles = null,
-    IReadOnlyDictionary<string, string>? GroupLabels = null);
+    IReadOnlyDictionary<string, string>? GroupLabels = null,
+    IReadOnlyDictionary<string, string>? Controls = null,
+    IReadOnlyDictionary<string, int>? GroupPriority = null,
+    IReadOnlyList<string>? OutsideGroups = null);

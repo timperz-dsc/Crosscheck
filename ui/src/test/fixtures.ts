@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import type { BridgeState } from '../api';
-import type { Actions, Desync, Status } from '../types';
+import type { Actions, Panel, PanelLine, Status } from '../types';
 
 export const NOW = new Date('2026-11-01T12:43:30').getTime();
 export const at = (secondsAgo: number) => new Date(NOW - secondsAgo * 1000).toISOString();
@@ -53,27 +53,39 @@ export function inSession(over: Partial<Status> = {}): Status {
       { id: 'mip', label: 'Main panel', differs: 0 },
     ],
     owned: [{ var: 'aircraft.fuel.left.amount.kg', label: 'Fuel', unit: 'kg', delta: -12 }],
-    desyncs: [],
+    panel: panel(),
     control_notice: null,
     ...over,
   });
 }
 
-export const BLEED: Desync = {
-  var: 'S_OH_PNEUMATIC_ENG1_BLEED',
+/** An empty panel, with the parts a test sets. */
+export function panel(over: Partial<Panel> = {}): Panel {
+  return {
+    red: [], not_synced: { count: 0, items: [] }, outside: { count: 0, items: [] }, amber: [], indicators: { count: 0, items: [] }, log: [],
+    ...over,
+  };
+}
+
+/** ENG 1 BLEED: on for you, off for the captain, Set both. */
+export const BLEED: PanelLine = {
+  control: 'S_OH_PNEUMATIC_ENG1_BLEED',
   label: 'ENG 1 BLEED',
-  has_label: true,
   group: 'overhead',
   group_label: 'Overhead',
-  reason: 'refused',
   since: at(20),
-  receiver_is_you: false,
+  priority: 3,
+  kind: 'set_both',
+  where: null,
   you: { value: 1, text: 'ON' },
   other: { value: 0, text: 'OFF' },
-  writable: true,
-  options: [{ value: 1, text: 'ON' }, { value: 0, text: 'OFF' }],
+  action: { type: 'set_both', var: 'S_OH_PNEUMATIC_ENG1_BLEED', options: [{ value: 1, text: 'ON' }, { value: 0, text: 'OFF' }] },
   message: null,
+  reason: 'refused',
 };
+
+/** A red line of another kind. */
+export const line = (over: Partial<PanelLine>): PanelLine => ({ ...BLEED, action: null, you: null, other: null, ...over });
 
 type Mocked = { [K in keyof Actions]: ReturnType<typeof vi.fn> & Actions[K] };
 
@@ -85,5 +97,5 @@ export function actions(): Mocked {
 }
 
 export function bridge(status: Status | null, over: Partial<BridgeState> = {}): BridgeState & { actions: Mocked } {
-  return { status, recent: [], bridgeDown: false, error: null, confirmPeerLost: false, busy: false, actions: actions(), ...over } as BridgeState & { actions: Mocked };
+  return { status, bridgeDown: false, error: null, confirmPeerLost: false, busy: false, actions: actions(), ...over } as BridgeState & { actions: Mocked };
 }

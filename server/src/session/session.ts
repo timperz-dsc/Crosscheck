@@ -7,11 +7,11 @@ import {
   type AckBody, type ActiveDesync, type AdvisoryBody, type CommandBody, type CommandClass, type ControlAckBody,
   type ControlConfirm, type ControlKind, type ControlRequestBody, type CorrectionBody, type DesyncReason, type DiffDecision, type DiffEntry,
   type EffectReportBody, type EffectSpec, type Envelope, type PeerInfo, type PingBody, type PongBody, type Preflight, type Role, type Scalar,
-  type Seat, type SimStateBody, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Tier, type Timing,
+  type LooseValue, type Seat, type SimStateBody, type SnapshotHashBody, type SnapshotValue, type SnapshotValuesBody, type StreamBody, type Tier, type Timing,
   type SafetyReleaseBody, type UnsyncedInputBody, type DeniedInputBody, type CounterSuspectBody,
 } from '../protocol/types.js';
 import { CorrectionGuard } from './correctionGuard.js';
-import { buttonDecision, decideCorrections, diffValues, type LoggedCommand, type RawDecision, type VarDiff } from './corrections.js';
+import { buttonDecision, decideCorrections, diffLoose, diffValues, type LoggedCommand, type RawDecision, type VarDiff } from './corrections.js';
 import { newClientId, newResumeToken } from './joinCode.js';
 import { PendingAcks, type PendingEntry } from './pendingAcks.js';
 import { comparePreflight } from './preflight.js';
@@ -70,7 +70,9 @@ interface CommandRecord {
 }
 
 interface GroupState {
-  reports: Map<string, { hash: string; appliedSeq: number; at: number }>;
+  reports: Map<string, { hash: string; appliedSeq: number; at: number; loose: LooseValue[] }>;
+  /** Loose indicators (tolerance or power gate) that differ, since when (CRO-34; held like observeSince). */
+  looseSince: Map<string, number>;
   mismatchCount: number;
   inFlight: string | null;
   /** Last time a command/correction in this group started or finished. */
@@ -155,6 +157,8 @@ export class Session {
   private readonly failedIds = new Map<string, { var: string; origin?: string; attempt: number }>();
   /** Recent overrides per var (hardware fighting) and the timer that ends the advisory. */
   private readonly overrides = new Map<string, { times: number[]; timer: NodeJS.Timeout | null }>();
+  /** "Not synced yet" lines: each ends notSyncedExpireMs after its control last moved (CRO-34). */
+  private readonly notSyncedTimers = new Map<string, NodeJS.Timeout>();
   private readonly effectChecks = new Map<string, EffectCheck>();
   /** The open effect check per button (one per burst). */
   private readonly effectByVar = new Map<string, EffectCheck>();
@@ -534,7 +538,7 @@ export class Session {
     if (!g) {
       g = {
         reports: new Map(), mismatchCount: 0, inFlight: null, quietSince: 0, deferred: false, diffVars: [], driftVars: [],
-        observeSince: new Map(), buttonSince: new Map(), driftSent: new Map(), driftSentAt: 0,
+        observeSince: new Map(), looseSince: new Map(), buttonSince: new Map(), driftSent: new Map(), driftSentAt: 0,
       };
       this.groups.set(name, g);
     }
@@ -543,8 +547,42 @@ export class Session {
 
   private onSnapshotHash(slot: ClientSlot, body: SnapshotHashBody): void {
     const g = this.group(body.group);
-    g.reports.set(slot.id, { hash: body.hash, appliedSeq: body.applied_seq, at: Date.now() });
+    g.reports.set(slot.id, { hash: body.hash, appliedSeq: body.applied_seq, at: Date.now(), loose: body.loose ?? [] });
     this.compareGroup(body.group, g);
+    this.compareLoose(body.group, g);
+  }
+
+  /**
+   * Loose indicators (CRO-34): those with a tolerance and those compared only while their unit is
+   * powered. They are not in the hash, so an equal hash never clears them; they are compared here on
+   * every pair of hash reports. Quiet tier, held indicatorHoldMs like any indicator. A var that is
+   * unpowered on either side is not compared, and an open line for it clears.
+   */
+  private compareLoose(name: string, g: GroupState): void {
+    if (!this.bothConnected() || !this.simsConnected()) return;
+    const pf = this.pfClientId ? this.slot(this.pfClientId) : undefined;
+    const ref = pf ?? this.slots.find((s) => s.seat === 'host');
+    const other = ref ? this.other(ref) : undefined;
+    const a = ref ? g.reports.get(ref.id) : undefined;
+    const b = other ? g.reports.get(other.id) : undefined;
+    if (!a || !b || (a.loose.length === 0 && b.loose.length === 0)) return;
+    const { differ } = diffLoose(a.loose, b.loose);
+    const differing = new Set(differ.map((d) => d.var));
+    const now = Date.now();
+    for (const v of [...g.looseSince.keys()]) if (!differing.has(v)) g.looseSince.delete(v);
+    const looseNames = new Set([...a.loose, ...b.loose].map((v) => v.var));
+    for (const d of [...this.desyncs.values()]) {
+      if (d.matchVar !== null || d.reason !== 'observe_mismatch' || !looseNames.has(d.var) || differing.has(d.var)) continue;
+      this.clearDesync(d.var, 'match');
+    }
+    for (const d of differ) {
+      const since = g.looseSince.get(d.var) ?? (g.looseSince.set(d.var, now), now);
+      if (now - since < this.config.indicatorHoldMs) continue;
+      this.raiseDesync({
+        var: d.var, group: name, reason: 'observe_mismatch', expected: d.pf, observed: d.pm, values: { pf: d.pf, pm: d.pm },
+        message: desyncText(d.var, 'observe_mismatch'),
+      }, false, 'quiet', null);
+    }
   }
 
   /**
@@ -1034,6 +1072,8 @@ export class Session {
     if (this.handover) clearTimeout(this.handover.timer);
     if (this.controlAcks) clearTimeout(this.controlAcks.timer);
     for (const o of this.overrides.values()) if (o.timer) clearTimeout(o.timer);
+    for (const t of this.notSyncedTimers.values()) clearTimeout(t);
+    this.notSyncedTimers.clear();
     for (const c of this.effectChecks.values()) clearTimeout(c.timer);
     this.effectChecks.clear();
     this.effectByVar.clear();
@@ -1108,6 +1148,7 @@ export class Session {
         g.reports.delete(slot.id);
         g.mismatchCount = 0;
         g.observeSince.clear();
+        g.looseSince.clear();
       }
       this.setAdvisory({
         key, kind: 'sim_disconnected', active: true, tier: 'amber', seat: slot.seat, at: Date.now(),
@@ -1221,6 +1262,16 @@ export class Session {
       key, kind: 'not_synced', active: true, tier: 'amber', var: body.var, label: body.label, seat: slot.seat, at: Date.now(),
       count: (prev?.count ?? 0) + 1, message: `${body.label} (${body.var}) moved on the ${slot.seat} side: not synced yet.`,
     });
+    // The line is about a recent move: it ends when the control has been left alone for a while.
+    const timer = this.notSyncedTimers.get(key);
+    if (timer) clearTimeout(timer);
+    this.notSyncedTimers.set(key, setTimeout(() => {
+      this.notSyncedTimers.delete(key);
+      this.setAdvisory({
+        key, kind: 'not_synced', active: false, tier: 'amber', var: body.var, label: body.label, seat: slot.seat, at: Date.now(),
+        message: `${body.label}: not moved for ${Math.round(this.config.notSyncedExpireMs / 1000)} s.`,
+      });
+    }, this.config.notSyncedExpireMs));
   }
 
   /** Overrides on one var: fightCount within fightWindowMs → "hardware fighting" until it calms down. */

@@ -30,6 +30,18 @@ sealed class Entry
     public bool NeverWrite { get; init; }
     /// <summary>delta: compare the display only while powered and these mode vars match.</summary>
     public (string? Powered, string[]? Same)? CompareWhen { get; init; }
+    /// <summary>The control this var is shown under on the panel (CRO-34); null = its own control.</summary>
+    public string? Control { get; set; }
+    /// <summary>observe: allowed difference between the sims, compared outside the exact hash (CRO-34).</summary>
+    public double? Tolerance { get; init; }
+    /// <summary>observe: compared only while this flag reads non-zero in both sims (CRO-34).</summary>
+    public string? Powered { get; set; }
+    /// <summary>Panel priority overriding the group's (2 flight-critical ... 5 lights and the rest).</summary>
+    public int? Priority { get; set; }
+    /// <summary>Label from overrides.yaml, replacing the generated one.</summary>
+    public string? LabelOverride { get; init; }
+    /// <summary>Controls whose difference makes this one differ by itself (CRO-34).</summary>
+    public string[]? Upstream { get; init; }
     /// <summary>Written as a comment line above the entry (from overrides.yaml).</summary>
     public string? Comment { get; init; }
     public List<string> Notes { get; } = ["label generated"];
@@ -122,7 +134,12 @@ static class Rules
         if (name.StartsWith("FNX_")) return (null, new Review(name, v.Value, "class", "FNX_ var, no rule", null));
 
         var rest = name[2..];
-        if (name[0] is 'S' or 'N' or 'A' && Cosmetic.IsMatch(rest))
+        // Owner decision CRO-36: seats, armrests, jumpseat, tray tables and sunshades sync later. Until
+        // then they are on the review list (amber "not synced yet" when moved), not ignored. Their N_
+        // readouts are positions written by the model and stay ignored.
+        if (name[0] is 'S' or 'A' && Cosmetic.IsMatch(rest))
+            return (null, new Review(name, v.Value, "class", "cockpit comfort item, syncs later (CRO-36)", name[0] == 'A' ? "analog" : "verified"));
+        if (name[0] == 'N' && Cosmetic.IsMatch(rest))
             return WithGroup(v, group, "ignore", "cosmetic cabin item");
 
         switch (name[0])

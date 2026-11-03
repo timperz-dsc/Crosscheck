@@ -91,6 +91,23 @@ var shortClash = labelled.GroupBy(x => (x.e.Group, x.l.Short)).Where(g => g.Coun
 foreach (var (e, l) in labelled) e.Label = shortClash.Contains(e) ? l.Long : l.Short;
 var longClash = entries.GroupBy(e => (e.Group, e.Label)).Where(g => g.Count() > 1).SelectMany(g => g).ToList();
 foreach (var e in longClash) e.Label += e.Name[0] switch { 'E' => " encoder", 'A' => " knob", 'S' when e.Class == "pulse" => " button", 'S' => " switch", _ => "" };
+// Plain words for the side and unit (CRO-34): "EFIS1 LS" -> "LS (Capt)", "RMP1 INNER" -> "RMP 1 INNER".
+foreach (var e in entries)
+{
+    e.Label = System.Text.RegularExpressions.Regex.Replace(e.Label, @"^EFIS([12]) (.+)$", m => $"{m.Groups[2].Value} ({(m.Groups[1].Value == "1" ? "Capt" : "F/O")})");
+    e.Label = System.Text.RegularExpressions.Regex.Replace(e.Label, @"\bRMP([123])\b", "RMP $1");
+}
+foreach (var e in entries) if (e.LabelOverride is { } label) e.Label = label;
+
+// 5b. Panel controls (CRO-34): synthetic controls by name, lights at priority 5. Their labels live in
+// the hand-written `controls:` map, so the pilots' names are written by a person.
+var usedControls = Controls.Assign(entries, handProfile.GroupPriority ?? new Dictionary<string, int>());
+var missing = usedControls.Where(c => handProfile.Controls?.ContainsKey(c.Key) != true).ToList();
+if (missing.Count > 0)
+{
+    foreach (var (id, label) in missing) Console.Error.WriteLine($"controls: add '{id}: {label}' to the hand-written part of the profile");
+    return 1;
+}
 
 // 6. Write the profile, then validate it.
 var groupOrder = handProfile.Groups.ToList();

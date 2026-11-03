@@ -71,8 +71,22 @@ internal sealed class SemanticValidator
             if (v.Class == SyncClass.Delta && v.Display is { } display) CheckDisplay(v.Name, display, at, varsByName);
             if (v.CompareWhen is { } when) CheckCompareWhen(v, when, at, varsByName);
             if (v.ValueLabels is { } labels) CheckValueLabels(v, labels, at);
+            if (v.Control is { } control) CheckControl(v, control, at, varsByName);
+            if (v.Powered is { } powered) CheckPowered(v, powered, at, varsByName);
+            for (var k = 0; k < (v.Upstream?.Count ?? 0); k++)
+            {
+                var up = v.Upstream![k];
+                if (up == v.Name) Add($"{at}/upstream/{k}", "upstream cannot be the var itself");
+                else if (!varsByName.ContainsKey(up)) Add($"{at}/upstream/{k}", $"upstream var '{up}' is not defined in this profile");
+            }
         }
 
+        foreach (var group in (_profile.GroupPriority ?? new Dictionary<string, int>()).Keys)
+            if (!groups.Contains(group))
+                Add($"/group_priority/{group}", $"group_priority names '{group}', which is not listed in 'groups'");
+        for (var i = 0; i < (_profile.OutsideGroups?.Count ?? 0); i++)
+            if (!groups.Contains(_profile.OutsideGroups![i]))
+                Add($"/outside_groups/{i}", $"outside_groups names '{_profile.OutsideGroups[i]}', which is not listed in 'groups'");
         foreach (var group in (_profile.GroupLabels ?? new Dictionary<string, string>()).Keys)
             if (!groups.Contains(group))
                 Add($"/group_labels/{group}", $"group_labels names '{group}', which is not listed in 'groups'");
@@ -159,6 +173,14 @@ internal sealed class SemanticValidator
         Unused(v.Alarm is not null, "alarm", [SyncClass.Observe]);
         Unused(v.NeverWrite, "never_write", [SyncClass.Verified, SyncClass.Pulse]);
         Unused(v.CompareWhen is not null, "compare_when", [SyncClass.Delta]);
+        Unused(v.Tolerance is not null, "tolerance", [SyncClass.Observe]);
+        Unused(v.Powered is not null, "powered", [SyncClass.Observe]);
+        SyncClass[] onPanel = [SyncClass.Verified, SyncClass.Delta, SyncClass.Pulse, SyncClass.Analog, SyncClass.Observe];
+        Unused(v.Control is not null, "control", onPanel);
+        Unused(v.Priority is not null, "priority", onPanel);
+        Unused(v.Upstream is not null, "upstream", onPanel);
+        if (v.Tolerance is not null && v.Alarm is not null)
+            Add($"{at}/tolerance", "an alarm indicator shows a pilot input and is compared exactly; 'tolerance' is not used with 'alarm'");
         if (v.NeverWrite && v.Rest is not null)
             Add($"{at}/rest", "a never_write var is never written, so it has no 'rest' to return to");
         if (v is { Class: SyncClass.Verified, Rest: { } rest })
@@ -172,6 +194,31 @@ internal sealed class SemanticValidator
             if (present && !allowed.Contains(v.Class))
                 Add($"{at}/{field}", $"'{field}' is not used by class {cls}");
         }
+    }
+
+    private void CheckControl(VarEntry v, string control, string at, Dictionary<string, int> varsByName)
+    {
+        if (_profile.Controls?.ContainsKey(control) == true) return;
+        if (control == v.Name)
+            Add($"{at}/control", "control cannot be the var itself (leave it out: a var is its own control)");
+        else if (!varsByName.TryGetValue(control, out var target))
+            Add($"{at}/control", $"control '{control}' is neither a var of this profile nor listed in 'controls'");
+        else if (_profile.Vars[target].Control is { } next)
+            Add($"{at}/control", $"control '{control}' belongs to control '{next}' itself; name '{next}' directly");
+        else if (_profile.Vars[target].Class == SyncClass.Ignore)
+            Add($"{at}/control", $"control '{control}' has class ignore, so it is never on the panel");
+    }
+
+    private void CheckPowered(VarEntry v, string powered, string at, Dictionary<string, int> varsByName)
+    {
+        if (powered == v.Name)
+            Add($"{at}/powered", "powered cannot be the var itself");
+        else if (!varsByName.TryGetValue(powered, out var target))
+            Add($"{at}/powered", $"powered var '{powered}' is not defined in this profile");
+        else if (_profile.Vars[target].Class != SyncClass.Observe)
+            Add($"{at}/powered", $"powered var '{powered}' must have class observe (it is only read), it has {Lower(_profile.Vars[target].Class)}");
+        else if (_profile.Vars[target].Tolerance is not null || _profile.Vars[target].Powered is not null)
+            Add($"{at}/powered", $"powered var '{powered}' must be a plain flag (no tolerance, no powered of its own)");
     }
 
     private void CheckValues(VarEntry v, string at)

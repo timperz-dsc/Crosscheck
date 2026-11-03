@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Actions, BridgeEvent, RecentItem, Status } from './types';
-
-/** Events that belong in the Recent list (same list as the bridge's /api/recent). */
-export const RECENT_TYPES = new Set([
-  'action_confirmed', 'action_failed', 'action_applied', 'corrected', 'overridden', 'desync', 'desync_cleared',
-  'control_changed', 'takeover_pressed', 'peer_joined', 'peer_lost', 'peer_resumed', 'peer_left', 'peer_expired',
-  'press_here_only', 'release_it', 'denied_input', 'counter_suspect', 'press_lost',
-]);
+import type { Actions, BridgeEvent, Status } from './types';
 
 async function post(path: string, body: unknown = {}): Promise<void> {
   const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -17,8 +10,8 @@ async function post(path: string, body: unknown = {}): Promise<void> {
 }
 
 export interface BridgeState {
+  /** The log comes with it (status.panel.log, plain labels). */
   status: Status | null;
-  recent: RecentItem[];
   /** The bridge itself does not answer (not running). */
   bridgeDown: boolean;
   /** The last request failed; the sentence from the bridge. */
@@ -32,7 +25,6 @@ export interface BridgeState {
 /** Polls /api/status every second and listens to /api/events. */
 export function useBridge(pollMs = 1000): BridgeState {
   const [status, setStatus] = useState<Status | null>(null);
-  const [recent, setRecent] = useState<RecentItem[]>([]);
   const [bridgeDown, setBridgeDown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmPeerLost, setConfirmPeerLost] = useState(false);
@@ -55,7 +47,6 @@ export function useBridge(pollMs = 1000): BridgeState {
   useEffect(() => {
     alive.current = true;
     void refresh();
-    fetch('/api/recent').then((r) => r.json()).then((items: RecentItem[]) => alive.current && setRecent(items)).catch(() => {});
     const timer = setInterval(() => void refresh(), pollMs);
 
     let ws: WebSocket | null = null;
@@ -65,7 +56,6 @@ export function useBridge(pollMs = 1000): BridgeState {
       ws = new WebSocket(`${proto}://${location.host}/api/events`);
       ws.onmessage = (m) => {
         const e = JSON.parse(String(m.data)) as BridgeEvent;
-        if (RECENT_TYPES.has(e.type)) setRecent((r) => [{ type: e.type, message: e.message, at: e.at }, ...r].slice(0, 50));
         if (e.type === 'control_denied' && e.data?.reason === 'peer_lost') setConfirmPeerLost(true);
         if (e.type === 'control_changed') setConfirmPeerLost(false);
         void refresh();
@@ -107,10 +97,7 @@ export function useBridge(pollMs = 1000): BridgeState {
     check: (code) => run(() => post('/api/session/check', { code }))(),
     join: (code) => run(() => post('/api/session/join', { code }))(),
     cancel: () => run(() => post('/api/session/cancel'))(),
-    leave: () => run(async () => {
-      await post('/api/session/leave');
-      setRecent([]);
-    })(),
+    leave: () => run(() => post('/api/session/leave'))(),
     takeControl: (confirm = false) => run(async () => {
       await post('/api/control/take', { confirm_peer_lost: confirm });
       if (confirm) setConfirmPeerLost(false);
@@ -123,5 +110,5 @@ export function useBridge(pollMs = 1000): BridgeState {
     applyUpdate: () => run(() => post('/api/update/apply'))(),
   };
 
-  return { status, recent, bridgeDown, error, confirmPeerLost, busy, actions };
+  return { status, bridgeDown, error, confirmPeerLost, busy, actions };
 }

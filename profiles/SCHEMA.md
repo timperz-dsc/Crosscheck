@@ -25,6 +25,9 @@ vars: [...]                     # L: variables
 datarefs: [...]                 # Fenix GraphQL datarefs
 roles: {...}                    # vars with a special meaning, optional
 group_labels: {...}             # names of the groups in the UI, optional
+controls: {...}                 # controls made of several vars, with their names (CRO-34), optional
+group_priority: {...}           # order of the red lines per group, optional
+outside_groups: [...]           # walkaround groups: never red, optional
 ```
 
 `match` needs at least one of `titles` or `packages`. Group names are lowercase (`a-z`, `0-9`, `_`). Every `group:` in `vars` and `datarefs` must be listed in `groups`.
@@ -52,6 +55,24 @@ Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels
 - `compare_when` (delta with `display` only): `{ powered: VAR, same: [VAR, ...] }`. The display is compared only while `powered` reads non-zero in both sims and every `same` var (mode lamps, the selected radio of an RMP) shows the same value on both sides. All of them must be `observe` vars. Otherwise the display is "not comparable" and never raises a line.
 - `never_write: true` (verified or pulse): the **deny list** for irreversible controls (IDG disconnect, fire push buttons, every AGENT/DISCH button, RAT MAN ON, passenger oxygen MAN ON). Crosscheck never writes the var on any path (command, correction, "Set both", "Press here only", "Release it", safety release); the guard refuses it. A press is not mirrored: both pilots get a red line "IDG 1 pressed in the host cockpit – not mirrored (irreversible)". The raw value is still compared in snapshots (class `denied`), so a pilot who joins later sees the same line; it clears when both sims show the same value. `values`/`range` are optional; `rest` is not allowed. Covers of these buttons keep syncing.
 - `observe` and `ignore` take no write or verify fields.
+
+### The session panel (CRO-34)
+
+The panel shows one line per control. A lamp is shown under the button that names it in `verify.lvar`,
+a display under its knob (`display`), and a `B_` mode flag under the one encoder whose `compare_when.same`
+lists it; none of that needs writing down. For the rest:
+
+- `control: VAR_OR_ID` (any class but ignore and stream): show this var under that control: another var of
+  this profile (no chains) or an id from the top-level `controls:` map (`rmp1_freq: RMP 1 frequency`).
+- `tolerance: 0.5` (observe only, not with `alarm`): the sims match while the values differ by no more than
+  this, in the var's units. Compared value by value outside the exact group hash (protocol.md section 7).
+- `powered: VAR` (observe only): compared only while this flag reads non-zero in both sims. `VAR` is a plain
+  `observe` flag (no tolerance or power gate of its own).
+- `upstream: [VAR, ...]`: controls that change this one by themselves (both FDs off un-dash the FCU
+  windows). While one of them differs, this difference is that line's effect, never a line of its own.
+- `priority: 2..5`: the order of the red lines, instead of the group's. Top level: `group_priority:
+  { fcu: 2, overhead: 3, pedestal: 4, cabin: 5 }` (safety lines are always 1), and `outside_groups: [ground]`
+  for walkaround items (one amber "outside" line, never red).
 
 ### verify
 

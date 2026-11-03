@@ -49,6 +49,11 @@ static class ProfileWriter
                 sb.Append("    compare_when: { ").Append(string.Join(", ", parts)).Append(" }\n");
             }
             if (e.Verify is { } vf) sb.Append("    verify: ").Append(VerifyText(vf)).Append('\n');
+            if (e.Control is { } ctl) sb.Append("    control: ").Append(ctl).Append('\n');
+            if (e.Tolerance is { } tol) sb.Append("    tolerance: ").Append(N(tol)).Append('\n');
+            if (e.Powered is { } pwr) sb.Append("    powered: ").Append(pwr).Append('\n');
+            if (e.Priority is { } pri) sb.Append("    priority: ").Append(pri).Append('\n');
+            if (e.Upstream is { } ups) sb.Append("    upstream: [").Append(string.Join(", ", ups)).Append("]\n");
             sb.Append("    note: ").Append(Q(string.Join("; ", e.Notes))).Append('\n');
         }
         sb.Append(End).Append('\n');

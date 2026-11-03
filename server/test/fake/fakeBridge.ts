@@ -222,7 +222,8 @@ export class FakeBridge {
   sendHashes(): void {
     if (!this.simConnected) return;
     for (const group of this.sim.groups()) {
-      this.send('snapshot_hash', { group, hash: this.sim.hash(group), applied_seq: this.appliedSeq });
+      const loose = this.sim.loose(group);
+      this.send('snapshot_hash', { group, hash: this.sim.hash(group), applied_seq: this.appliedSeq, ...(loose.length > 0 ? { loose } : {}) });
     }
   }
 

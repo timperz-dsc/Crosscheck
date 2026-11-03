@@ -303,6 +303,16 @@ not change the hash. Canonical form, so both bridges get the same hash:
 `applied_seq` is the highest pilot-command seq the client has processed (logged, for
 diagnosis). The server treats hashes as opaque.
 
+**Loose indicators (CRO-34).** An `observe` var with a profile `tolerance` (battery volts ±0.5 V, brake
+pressure ±0.3) or a `powered` flag (FCU and RMP lamps and flags) is not in the hash: values that wander
+within their tolerance would make it flap. It travels with the hash instead, as
+`snapshot_hash.loose: [{var, value, tolerance?, context?}]`, with `context: "unpowered"` and value
+`null` while its unit is off. The server compares the loose lists of both pilots on every pair of hash
+reports: over the tolerance (exact without one) for 10 s it raises `observe_mismatch` (quiet), within it
+the line clears; a var unpowered on either side is not compared and its open line clears. An equal hash
+never clears a loose line. A `toggle` or `mode` item whose lamp has a `powered` flag stays in the hash,
+with value `null` and `context: "unpowered"` while the unit is off; it is not compared then (no line).
+
 **Comparison.** The server compares the latest hash of both pilots for a group only when no
 command or correction in that group is waiting for an ack, and both hashes were taken after
 the last one settled. A mismatch must repeat 2 times in a row (effect vars lag ~120 ms). Then
@@ -404,12 +414,24 @@ removes it. The active ones are listed in `joined.advisories` and `resumed.advis
 
 | Kind | Key | When | Ends |
 |---|---|---|---|
-| `not_synced` | `not_synced:<var>` | A pilot moved a control that is watched read-only (`unsynced_input`; the list is `profiles/<aircraft>/unsynced.csv`). `seat` = who moved it, `count` = how often. | At the end of the session. |
+| `not_synced` | `not_synced:<var>` | A pilot moved a control that is watched read-only (`unsynced_input`; the list is `profiles/<aircraft>/unsynced.csv`). `seat` = who moved it, `count` = how often. | 2 minutes after the last move (`notSyncedExpireMs`, CRO-34), or at the end of the session. |
 | `counter_suspect` | `counter_suspect:<var>` | A bridge saw a `verified` var rise by exactly 1 three times in a row past its allowed values (`counter_suspect`): probably a press counter profiled as a switch (gate test 2 cause A). Both bridges stop syncing it and block its writes; the server never compares or corrects it again and drops its open desync. "Set both" is never offered for it, nor for any var whose values were seen outside its allowed set. | At the end of the session. |
 | `hardware_fighting` | `hardware_fighting:<var>` | 3 `overridden` conflicts on one var within 30 s (both pilots' hardware set it). | 30 s without another override. |
 | `sim_disconnected` | `sim_disconnected:<seat>` | That pilot's `sim_state {connected: false}`. | `sim_state {connected: true}`, or the pilot is lost or leaves. |
 
 Advisories are never desyncs and never write anything. The UI shows them below the red items.
+
+**The panel (CRO-34).** The bridge turns open desyncs and advisories into one line per control
+(`status.panel`, built by `PanelLines`): a button with its lamp, a knob with its display and mode flags,
+an RMP's inner and outer knob, the walkaround items as one "outside" line. A line is red only when a
+pilot can act and it has lasted: open 2 s, and 2 s after the last movement or press of that control (or
+of a control upstream of it, profile `upstream`). Never red: lamps mid-burst, effects of another red
+line, items outside the cockpit, a var the profile does not sync, and Crosscheck's own corrections
+(`correction_failed`/`correction_loop` go to the log; while the values still differ, the control's own
+line shows with its normal action). Each red line has one action ("Set both", "Press X here only",
+"Release it") or a plain instruction. Order: priority (1 safety, 2 flight-critical, 3 overhead
+systems, 4 pedestal and radios, 5 lights, cabin and the rest; profile `group_priority`, `priority`),
+then oldest first. "Not synced yet" counts only controls moved in the last 2 minutes.
 
 ## 8. Control token
 

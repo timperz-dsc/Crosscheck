@@ -26,33 +26,45 @@ function freePort(): Promise<number> {
   });
 }
 
-function start(cmd: string, args: string[], cwd: string, ready: string, env: Record<string, string> = {}): Promise<void> {
+/** Starts a process; it is ready when its output contains `ready`, or when `probe` answers. */
+function start(cmd: string, args: string[], cwd: string, ready: string | (() => Promise<boolean>), env: Record<string, string> = {}): Promise<void> {
   const p = spawn(cmd, args, { cwd, env: { ...process.env, ...env }, stdio: ['pipe', 'pipe', 'pipe'] });
   procs.push(p);
   let out = '';
   return new Promise((ok, fail) => {
-    const timer = setTimeout(() => fail(new Error(`${cmd} did not start:\n${out}`)), 90_000);
+    let done = false;
+    const finish = (error?: Error) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      clearInterval(poll);
+      if (error) fail(error);
+      else ok();
+    };
+    const timer = setTimeout(() => finish(new Error(`${cmd} did not start:\n${out}`)), 90_000);
     const look = (d: Buffer) => {
       out += d.toString();
-      if (out.includes(ready)) {
-        clearTimeout(timer);
-        ok();
-      }
+      if (typeof ready === 'string' && out.includes(ready)) finish();
     };
+    // The bridge is a windowed app (WinExe since the installer, 56f41cd): it prints nothing to a pipe.
+    const poll = setInterval(() => {
+      if (typeof ready !== 'string') void ready().then((up) => up && finish(), () => {});
+    }, 500);
     p.stdout!.on('data', look);
     p.stderr!.on('data', look);
-    p.on('exit', (code) => fail(new Error(`${cmd} exited with ${code}:\n${out}`)));
+    p.on('exit', (code) => finish(new Error(`${cmd} exited with ${code}:\n${out}`)));
   });
 }
 
 async function bridge(name: string, apiPort: number, serverPort: number): Promise<string> {
+  const url = `http://127.0.0.1:${apiPort}/`;
   await start('dotnet', [
     'run', '--project', join(ROOT, 'bridge', 'Crosscheck.Bridge'), '--no-build', '--',
     '--sim', 'fake', '--no-browser', '--no-tray', '--name', name,
     '--api-port', String(apiPort), '--server', `ws://127.0.0.1:${serverPort}/ws`,
     '--ui-dir', join(ROOT, 'ui', 'dist'), '--log-dir', join(logs, name),
-  ], ROOT, 'Crosscheck: http://127.0.0.1');
-  return `http://127.0.0.1:${apiPort}/`;
+  ], ROOT, async () => (await fetch(`${url}api/status`)).ok);
+  return url;
 }
 
 test.beforeAll(async () => {
@@ -123,8 +135,8 @@ test('two pilots: create, preflight, join, both cockpits match, control change',
   await guest.getByRole('button', { name: 'Join session' }).click();
 
   // Both in the session.
-  await expect(guest.getByRole('heading', { level: 1 })).toHaveText('Both cockpits match');
-  await expect(host.getByRole('heading', { level: 1 })).toHaveText('Both cockpits match');
+  await expect(guest.getByRole('heading', { level: 1 })).toHaveText('All controls match');
+  await expect(host.getByRole('heading', { level: 1 })).toHaveText('All controls match');
   await expect(host.getByText('Captain (you)')).toBeVisible();
   await expect(guest.getByText('First officer (you)')).toBeVisible();
   await expect(host.getByRole('button', { name: 'You have control' })).toBeVisible();

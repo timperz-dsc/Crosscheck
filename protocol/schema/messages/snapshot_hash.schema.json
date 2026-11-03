@@ -28,6 +28,29 @@
         "applied_seq": {
           "type": "integer",
           "minimum": 0
+        },
+        "loose": {
+          "description": "Indicators compared value by value instead of through the hash (CRO-34): those with a tolerance, and those that are compared only while their unit is powered. Never written.",
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["var", "value"],
+            "properties": {
+              "var": { "$ref": "../common.schema.json#/$defs/varName" },
+              "value": { "$ref": "../common.schema.json#/$defs/scalar" },
+              "tolerance": {
+                "description": "The sims match while the values differ by no more than this.",
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "context": {
+                "description": "'unpowered' while the unit is off (value null): not compared.",
+                "const": "unpowered"
+              }
+            }
+          }
         }
       }
     }
