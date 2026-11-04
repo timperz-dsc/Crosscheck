@@ -40,6 +40,8 @@ public sealed record BridgeOptions
     public TimeSpan VersionTimeout { get; init; } = TimeSpan.FromSeconds(30);
     /// <summary>Physics stream and follower settings (CRO-13): rate, playout buffer, extrapolation cap.</summary>
     public PhysicsOptions Physics { get; init; } = new();
+    /// <summary>The diagnosis log line (0.6.1) is written this often, seconds (0 = only the start line).</summary>
+    public double DiagnosisEveryS { get; init; } = 5;
     public bool StrictValidation { get; init; }
     public EngineOptions Engine { get; init; } = new();
 }
@@ -163,10 +165,11 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         Sim.WriteRejected += OnWriteRejected;
         Sim.SetupError += OnSimSetupError;
         Sim.SimException += what => Log.Event("sim_exception", new JsonObject { ["what"] = what });
-        await Sim.StartAsync(SyncEngine.PlanFor(Profile, Unsynced.Names), ct);
+        await Sim.StartAsync(SyncEngine.PlanFor(Profile, Unsynced.Names, DiagnosisLog.ExtraLvars), ct);
         Status.Sim = Sim.State == SimState.Connected ? "connected" : "disconnected";
         StartPhysics(backends.Physics ?? new FakePhysicsLink());
         await GraphQl.StartAsync(SyncEngine.GraphQlPathsFor(Profile), ct);
+        StartDiagnosis();
         _versions = ReadVersionsAsync(_life.Token);
 
         if (_options.ApiPort >= 0)
@@ -189,6 +192,26 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// The read-only diagnosis log (0.6.1): one "diag" line every few seconds in the log file only, never in the panel
+    /// or on the wire. Stops with the bridge.
+    /// </summary>
+    private void StartDiagnosis()
+    {
+        var sim = Sim;
+        var gql = GraphQl;
+        var physics = Physics;
+        var diag = new DiagnosisLog(
+            name => sim.TryGet(name, out var v) ? v : null,
+            (path, token) => gql.GetAsync(path, token),
+            () => physics.Reading(),
+            () => Engine is { } e ? (e.IsPf ? "pf" : "pm") : null,
+            () => PhysicsSync.ModeWord(physics.Mode),
+            (name, data) => Log.Event(name, data),
+            _options.DiagnosisEveryS);
+        _ = Task.Run(() => diag.RunAsync(_life.Token));
     }
 
     /// <summary>

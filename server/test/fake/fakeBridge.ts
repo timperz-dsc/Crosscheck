@@ -9,7 +9,7 @@ import { sameValue } from '../../src/session/corrections.js';
 import type { FakeSim } from './fakeSim.js';
 
 export const PREFLIGHT: Preflight = {
-  bridge_version: '0.6.0',
+  bridge_version: '0.6.1',
   profile_id: 'fenix-a320',
   profile_hash: 'sha256:7f3a9c1e2b4d5f60',
   aircraft: { package_version: '3.0.0.7613', app_version: '3.0.0.330' },

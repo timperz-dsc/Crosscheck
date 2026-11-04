@@ -1,10 +1,13 @@
 // The physics stream (CRO-13, protocol.md section 9) on one bridge.
 //
-// PF: every new sim frame of the own aircraft is a candidate; at most 30 per second (sim time) are sent.
+// PF: every new sim frame of the own aircraft is a candidate; 30 per second on average (sim time) are sent, on a
+// fixed 1/30 s grid so the rate does not depend on the sim's frame rate (0.6.1; it was 22 Hz at 45 fps).
 // Latest wins, nothing is ever replayed.
 // Follower (PM): frames go into a playout buffer on the PF's sim time (100 ms behind, interpolated,
 // extrapolated for at most 600 ms, then held). Each new own sim frame gets exactly one placement. After the
 // first placement the three freezes go on; a watchdog sends a freeze again that reads off.
+// The three control surfaces are not written while the PF is on the ground below 40 kt (0.6.1), so the follower's
+// pilot can do the flight control check; they start at 40 kt or in the air and stay on at least 5 s.
 //
 // Safety (owner decision 2026-11-04, CLAUDE.md): freezes and placement ONLY while this side is the follower.
 // Becoming PF releases at once, in the same call (GuardedStreamWriter.RoleChanged). If the PF is lost (or the
@@ -22,8 +25,12 @@ namespace Crosscheck.Bridge.Follow;
 public sealed record PhysicsOptions
 {
     public PlayoutOptions Playout { get; init; } = new();
-    /// <summary>Most frames per second the PF sends (sim time).</summary>
+    /// <summary>Frames per second the PF sends on average (sim time); never more than one per sim frame.</summary>
     public double StreamHz { get; init; } = 30;
+    /// <summary>The follower writes the control surfaces when the PF is in the air or at least this fast on the ground, knots.</summary>
+    public double SurfaceOnGsKt { get; init; } = 40;
+    /// <summary>Once the surfaces are written they stay on at least this long before the ground rule can stop them, seconds.</summary>
+    public double SurfaceHoldS { get; init; } = 5;
     /// <summary>A freeze reading off is only sent again this long after the freezes went on, seconds.</summary>
     public double WatchdogGraceS { get; init; } = 1.0;
     /// <summary>stream_stats is logged this often while streaming or following, seconds (0 = never).</summary>
@@ -48,6 +55,9 @@ public enum FollowMode
     Released,
 }
 
+/// <summary>Ground speed and ground flag of the own aircraft and of the last placed PF frame; SurfacesOn is the follower's surface rule.</summary>
+public sealed record PhysicsReading(double? OwnGsKt, bool? OwnOnGround, double? PfGsKt, bool? PfOnGround, bool? SurfacesOn);
+
 /// <summary>A thrust lever (profile stream var) that differs between this cockpit and the PF's stream.</summary>
 public sealed record LeverDifference(string Var, double Pf, double Mine);
 
@@ -67,7 +77,11 @@ public sealed class PhysicsSync : IAsyncDisposable
     private FollowMode _mode = FollowMode.Off;
     private Action<long, JsonObject>? _send;
     private long _frameNo;
-    private double _lastSentT = double.NegativeInfinity;
+    /// <summary>The sim time the next stream frame is due (a fixed grid, so a frame rate that is not a multiple of 30 loses nothing).</summary>
+    private double _nextSendT = double.NegativeInfinity;
+    private bool _surfacesDecided;
+    private bool _surfacesOn;
+    private double _surfacesOnSince;
     private PlayoutBuffer _buffer;
     private PlacementState? _placement;
     private double _engagedAtS;
@@ -89,6 +103,9 @@ public sealed class PhysicsSync : IAsyncDisposable
     {
         public long Sent, Received, DroppedOld, Bad, Ignored, Placed, Interpolated, Extrapolated, Holding, Waiting, Reasserts;
         public double MaxGapMs;
+        /// <summary>Ground speed (kt) and ground flag of the last placement: the PF's frame and this sim's own aircraft (CRO-41).</summary>
+        public double PfGs, OwnGs, GsDiffMax;
+        public bool PfOnGround, OwnOnGround;
         public readonly List<double> LatenessMs = [];
     }
 
@@ -191,7 +208,7 @@ public sealed class PhysicsSync : IAsyncDisposable
                 _link.SetFollower(false);
                 if (_mode == FollowMode.Streaming) return;
                 ReleaseLocked("became_pf");
-                _lastSentT = double.NegativeInfinity;
+                _nextSendT = double.NegativeInfinity;
                 SetMode(FollowMode.Streaming, "became_pf");
                 return;
             }
@@ -310,6 +327,19 @@ public sealed class PhysicsSync : IAsyncDisposable
         return ApiResult.Success;
     }
 
+    /// <summary>What the own aircraft and the last placed PF frame read, for the diagnosis log (read-only).</summary>
+    public PhysicsReading Reading()
+    {
+        lock (_gate)
+        {
+            var following = _mode is FollowMode.Following or FollowMode.PfLost;
+            return new PhysicsReading(
+                _own?.Frame.GroundSpeedKt, _own?.Frame.OnGround,
+                following ? _lastPlaced?.GroundSpeedKt : null, following ? _lastPlaced?.OnGround : null,
+                following && _surfacesDecided ? _surfacesOn : null);
+        }
+    }
+
     /// <summary>Thrust levers that differ from the PF's stream by more than the profile's tolerance (follower only).</summary>
     public IReadOnlyList<LeverDifference> LeverDifferences()
     {
@@ -382,9 +412,11 @@ public sealed class PhysicsSync : IAsyncDisposable
             switch (_mode)
             {
                 case FollowMode.Streaming when _send is not null:
-                    if (own.Frame.T - _lastSentT >= 1 / _options.StreamHz - 0.004)
+                    if (own.Frame.T >= _nextSendT - 1e-4)
                     {
-                        _lastSentT = own.Frame.T;
+                        // Step a fixed grid; a clock that stalled or jumped starts a new one.
+                        var period = 1 / _options.StreamHz;
+                        _nextSendT = own.Frame.T - _nextSendT > period ? own.Frame.T + period : _nextSendT + period;
                         send = (++_frameNo, StreamFields.ToWire(own.Frame, own.Lvars));
                         sender = _send;
                     }
@@ -418,10 +450,19 @@ public sealed class PhysicsSync : IAsyncDisposable
         }
         try
         {
-            _link.Place(r.State);
+            var surfaces = UpdateSurfacesLocked(r.State, now);
+            _link.Place(r.State, surfaces);
             _lastPlaced = r.State;
             _stats.Placed++;
             _totalPlaced++;
+            if (_own is { } own)
+            {
+                _stats.PfGs = r.State.GroundSpeedKt;
+                _stats.OwnGs = own.Frame.GroundSpeedKt;
+                _stats.PfOnGround = r.State.OnGround;
+                _stats.OwnOnGround = own.Frame.OnGround;
+                _stats.GsDiffMax = Math.Max(_stats.GsDiffMax, Math.Abs(_stats.PfGs - _stats.OwnGs));
+            }
             if (_placement is not { IsEngaged: true })
             {
                 // Freeze after the first placement, so the aircraft is frozen where the PF is.
@@ -447,6 +488,45 @@ public sealed class PhysicsSync : IAsyncDisposable
             (writes ??= []).Add((name, pf));
         }
         return writes;
+    }
+
+    /// <summary>
+    /// Whether this placement writes elevator, aileron and rudder (0.6.1): not while the PF is on the ground below
+    /// <see cref="PhysicsOptions.SurfaceOnGsKt"/>, so the follower's pilot can do the flight control check. Starts at that
+    /// speed or in the air; once on, stays on at least <see cref="PhysicsOptions.SurfaceHoldS"/> (no flicker around 40 kt).
+    /// Position, attitude and the freezes are not affected. Logs follow_surfaces on every change.
+    /// </summary>
+    private bool UpdateSurfacesLocked(PhysicsFrame pf, double now)
+    {
+        var want = !pf.OnGround || pf.GroundSpeedKt >= _options.SurfaceOnGsKt;
+        string? cause = null;
+        if (!_surfacesDecided)
+        {
+            _surfacesDecided = true;
+            _surfacesOn = want;
+            _surfacesOnSince = now;
+            cause = "engage";
+        }
+        else if (want && !_surfacesOn)
+        {
+            _surfacesOn = true;
+            _surfacesOnSince = now;
+            cause = pf.OnGround ? "speed" : "airborne";
+        }
+        else if (!want && _surfacesOn && now - _surfacesOnSince >= _options.SurfaceHoldS)
+        {
+            _surfacesOn = false;
+            cause = "ground_slow";
+        }
+        if (cause is not null)
+            _log.Event("follow_surfaces", new JsonObject
+            {
+                ["on"] = _surfacesOn,
+                ["cause"] = cause,
+                ["pf_gs_kt"] = Math.Round(pf.GroundSpeedKt, 1),
+                ["on_ground"] = pf.OnGround,
+            });
+        return _surfacesOn;
     }
 
     private async Task WriteLeverAsync(string name, double value)
@@ -509,6 +589,7 @@ public sealed class PhysicsSync : IAsyncDisposable
         _lastStatus = PlayoutStatus.Empty;
         _lastArrivalS = double.NaN;
         _leverWritten.Clear();
+        _surfacesDecided = false;
         _placement = NewPlacement();
         _link.SetFollower(true);
         SetMode(FollowMode.Waiting, cause);
@@ -549,6 +630,7 @@ public sealed class PhysicsSync : IAsyncDisposable
             undone = [];
         }
         _placement = null;
+        _surfacesDecided = false;
         if (undone.Count > 0) _log.Event("freeze_released", new JsonObject { ["cause"] = cause, ["in_air"] = inAir, ["events"] = undone.Count });
     }
 
@@ -614,6 +696,15 @@ public sealed class PhysicsSync : IAsyncDisposable
             ["freeze_reasserts"] = s.Reasserts,
             ["rtt_ms"] = Rtt() is { } rtt ? Math.Round(rtt) : null,
         };
+        if (s.Placed > 0)
+        {
+            // CRO-41: the PF's ground speed in the last placement against this sim's own aircraft.
+            o["pf_gs_kt"] = Math.Round(s.PfGs, 1);
+            o["own_gs_kt"] = Math.Round(s.OwnGs, 1);
+            o["gs_diff_max_kt"] = Math.Round(s.GsDiffMax, 1);
+            o["pf_on_ground"] = s.PfOnGround;
+            o["own_on_ground"] = s.OwnOnGround;
+        }
         _log.Event("stream_stats", o);
         return o;
     }

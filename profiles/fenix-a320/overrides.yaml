@@ -2455,11 +2455,11 @@ overrides:
 
   # --- CRO-34: a calm session panel (tolerances, panel priority, labels, windows, gate test 1 §4)
   - name: N_ELEC_VOLT_BAT_1
-    tolerance: 0.5
-    evidence: "gate test 1 §4 proposal, owner plan CRO-34: ±0.5 V; a real battery fault differs by volts (gate test 2: 27.8 vs 27.3 was noise)"
+    tolerance: 1.2
+    evidence: "0.6.1, flight 1 (2026-11-04) logs: 2593 paired host/guest samples; the two sims differ by up to 1.1 V without any fault (28.6 V on one side, 27.5–27.9 V on the other, at 17:08:49, 17:54:02, 17:58:06), p99 0.7 V, so 0.5 V raised 4 observe_mismatch lines that cleared by themselves in 14–36 s. The only real fault in the logs (host 0 V vs guest 27.8 V, 17:47:57) differs by 27.8 V, far above 1.2 V. Earlier: gate test 1 §4 / CRO-34 ±0.5 V, gate test 2 27.8 vs 27.3 was noise."
   - name: N_ELEC_VOLT_BAT_2
-    tolerance: 0.5
-    evidence: "gate test 1 §4 proposal, owner plan CRO-34: ±0.5 V"
+    tolerance: 1.2
+    evidence: "0.6.1, flight 1 (2026-11-04) logs: same as N_ELEC_VOLT_BAT_1 (max noise 1.1 V, p99 0.7 V; the real fault is 27.8 V apart). Earlier: gate test 1 §4 / CRO-34 ±0.5 V."
   - name: N_HYD_PRESSURE_BRAKE_LEFT
     tolerance: 0.3
     evidence: "owner decision CRO-34: ±10 % of full scale; the brake gauge reads 0-3 (x1000 psi), scan value 2.103"

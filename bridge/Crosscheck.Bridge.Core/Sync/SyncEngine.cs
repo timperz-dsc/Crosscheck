@@ -191,10 +191,12 @@ public sealed class SyncEngine : IAsyncDisposable
     /// <summary>Profile vars (never ignore/stream) and the read-only watch list of controls not synced yet.</summary>
     public SimPlan Plan => PlanFor(_profile, _unsynced.Keys);
 
-    public static SimPlan PlanFor(Profile profile, IEnumerable<string>? unsynced = null)
+    /// <param name="readOnly">L: vars that are only read for the diagnosis log (never compared, synced or shown).</param>
+    public static SimPlan PlanFor(Profile profile, IEnumerable<string>? unsynced = null, IEnumerable<string>? readOnly = null)
     {
         var vars = profile.Vars.Select(v => v.Name).ToHashSet(StringComparer.Ordinal);
         var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var n in readOnly ?? []) names.Add(n);
         foreach (var n in unsynced ?? []) if (!vars.Contains(n)) names.Add(n);
         foreach (var v in profile.Vars.Where(v => Watched.Contains(v.Class)))
         {

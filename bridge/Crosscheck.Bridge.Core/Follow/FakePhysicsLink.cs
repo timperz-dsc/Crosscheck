@@ -8,6 +8,8 @@ public sealed record FakePhysicsOptions
     public int FrameMs { get; init; } = 16;
     /// <summary>Flags are reported every this many frames (the real link: every 6th).</summary>
     public int FlagsEvery { get; init; } = 6;
+    /// <summary>No timer: the test pushes every own frame by hand with <see cref="FakePhysicsLink.PushFrame"/>.</summary>
+    public bool Manual { get; init; }
 }
 
 /// <summary>
@@ -56,6 +58,8 @@ public sealed class FakePhysicsLink : IPhysicsLink
 
     /// <summary>Every placement written: (sim time, frame).</summary>
     public List<(double At, PhysicsFrame Frame)> Placed { get; } = [];
+    /// <summary>For each entry of <see cref="Placed"/>: whether elevator, aileron and rudder were written with it.</summary>
+    public List<bool> SurfacesWritten { get; } = [];
     /// <summary>Every freeze event sent: (event, on).</summary>
     public List<(string Event, bool On)> FreezeEvents { get; } = [];
     /// <summary>Placements and freezes refused by the role gate.</summary>
@@ -116,6 +120,24 @@ public sealed class FakePhysicsLink : IPhysicsLink
         lock (_gate) _lvars[name] = value;
     }
 
+    /// <summary>
+    /// One own sim frame, by hand (for <see cref="FakePhysicsOptions.Manual"/>): the frame as the real link would read it
+    /// (T = this sim's clock, chosen by the test). Returns after the handlers ran.
+    /// </summary>
+    public void PushFrame(PhysicsFrame frame)
+    {
+        OwnFrame own;
+        lock (_gate)
+        {
+            _state = frame;
+            _stateAt = frame.T;
+            own = new OwnFrame(frame, new Dictionary<string, double>(_lvars));
+            _history.Add(frame);
+            if (_history.Count > 4000) _history.RemoveRange(0, 1000);
+        }
+        FrameRead?.Invoke(own);
+    }
+
     /// <summary>The sim switches a freeze off by itself (the watchdog must send it again).</summary>
     public void DropFreeze(string ev)
     {
@@ -152,13 +174,13 @@ public sealed class FakePhysicsLink : IPhysicsLink
             foreach (var n in lvars) _lvars.TryAdd(n, 0);
         _clock.Start();
         _stateAt = 0;
-        _timer = new Timer(_ => Tick(), null, _options.FrameMs, _options.FrameMs);
+        if (!_options.Manual) _timer = new Timer(_ => Tick(), null, _options.FrameMs, _options.FrameMs);
         SetConnected(true);
     }
 
     public void SetFollower(bool follower) => _follower = follower;
 
-    public void Place(in PhysicsFrame frame)
+    public void Place(in PhysicsFrame frame, bool writeSurfaces = true)
     {
         if (!_follower)
         {
@@ -170,6 +192,7 @@ public sealed class FakePhysicsLink : IPhysicsLink
         {
             var now = SimTime;
             Placed.Add((now, frame));
+            SurfacesWritten.Add(writeSurfaces);
             _state = frame;
             _stateAt = now;
             _script = null; // a placed aircraft is no longer flown by its own pilot

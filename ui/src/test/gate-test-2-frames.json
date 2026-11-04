@@ -524,7 +524,7 @@
         },
         "amber": [],
         "indicators": {
-          "count": 3,
+          "count": 2,
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
@@ -551,19 +551,6 @@
                 "text": "0.88175"
               },
               "since": "2026-11-02T18:52:11.2780000\u002B00:00"
-            },
-            {
-              "control": "N_ELEC_VOLT_BAT_1",
-              "label": "Volt BAT 1 display",
-              "you": {
-                "value": 28.6,
-                "text": "28.6"
-              },
-              "other": {
-                "value": 27.9,
-                "text": "27.9"
-              },
-              "since": "2026-11-02T18:54:25.2790000\u002B00:00"
             }
           ]
         },

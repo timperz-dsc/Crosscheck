@@ -152,7 +152,7 @@ public sealed class PhysicsSyncTests : IAsyncLifetime
         await Task.Delay(700);
         lock (sent)
         {
-            Assert.InRange(sent.Count, 15, 26); // about 30 per second, never more
+            Assert.InRange(sent.Count, 17, 24); // 30 per second on average (0.6.1; 22 Hz passed the old 15..26)
             Assert.All(sent, d => Assert.True(StreamFields.TryFromWire(d, out _, out _)));
         }
         Assert.Equal(FollowMode.Streaming, _sync.Mode);

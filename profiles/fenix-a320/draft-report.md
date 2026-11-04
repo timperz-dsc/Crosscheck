@@ -71,7 +71,7 @@ From `overrides.yaml` (`open:`). Everything on the review list below is open too
 | owner decision (CRO-27) | 2 |
 | gate test 2 cause A | 2 |
 | observe-report.md | 2 |
-| gate test 1 §4 proposal, owner plan CRO-34 | 2 |
+| 0.6.1, flight 1 (2026-11-04) logs | 2 |
 | owner decision CRO-34 | 2 |
 | gate test 1 §4 (window position, animation) and owner decision CRO-36 | 2 |
 | owner plan CRO-34 | 2 |

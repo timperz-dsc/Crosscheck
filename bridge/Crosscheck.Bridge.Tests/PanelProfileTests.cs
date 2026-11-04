@@ -53,8 +53,8 @@ public class PanelProfileTests
     [Fact]
     public void Tolerances_power_gates_and_the_gate_test_1_ignore_list()
     {
-        Assert.Equal(0.5, Var("N_ELEC_VOLT_BAT_1").Tolerance);
-        Assert.Equal(0.5, Var("N_ELEC_VOLT_BAT_2").Tolerance);
+        Assert.Equal(1.2, Var("N_ELEC_VOLT_BAT_1").Tolerance); // 0.6.1: flight 1 showed 1.1 V of noise
+        Assert.Equal(1.2, Var("N_ELEC_VOLT_BAT_2").Tolerance); // 0.6.1: flight 1 showed 1.1 V of noise
         Assert.Equal(0.3, Var("N_HYD_PRESSURE_BRAKE_LEFT").Tolerance);
         Assert.Equal(0.3, Var("N_HYD_PRESSURE_BRAKE_RIGHT").Tolerance);
         Assert.Equal("B_FCU_POWER", Var("I_FCU_EFIS1_LS").Powered);
@@ -111,7 +111,7 @@ public class PanelProfileTests
         Assert.Equal(before, h.Engine.GroupHash("systems")); // the hash does not flap with the volts
         Assert.DoesNotContain(h.Engine.GroupValues("systems"), v => v.Var == "N_ELEC_VOLT_BAT_1");
         var bat = h.Engine.LooseValues("systems").Single(l => l.Var == "N_ELEC_VOLT_BAT_1");
-        Assert.Equal((27.3, 0.5, false), (bat.Value!.Value, bat.Tolerance!.Value, bat.Unpowered));
+        Assert.Equal((27.3, 1.2, false), (bat.Value!.Value, bat.Tolerance!.Value, bat.Unpowered)); // 1.2 V since 0.6.1
 
         // A plain FCU flag of a powered unit: loose, with its value; unpowered: null and "unpowered".
         h.Sim.Logic("B_FCU_TRACK_FPA_MODE", 1);

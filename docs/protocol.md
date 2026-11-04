@@ -282,7 +282,8 @@ definition at connect is a setup error: the bridge refuses to create or join a s
 **Follower placement (CRO-13, owner decision 2026-11-04).** The only sim writes outside the profile's
 L: vars. A bridge may freeze and place its aircraft ONLY while it is the follower (PM), never on the PF:
 the three `FREEZE_LATITUDE_LONGITUDE_SET`, `FREEZE_ALTITUDE_SET`, `FREEZE_ATTITUDE_SET` events, and the
-follower's position, attitude, the mixed velocity set and control surfaces (section 9). Thrust levers are
+follower's position, attitude, the mixed velocity set and control surfaces (section 9; since 0.6.1 the surfaces
+are not written while the PF is on the ground below 40 kt). Thrust levers are
 profile `stream` vars and go through the guard like every L: var: written only once the profile gives
 them a range the owner confirmed from a measurement (until then never). Pausing the sim, the sim rate,
 slew and every other event or sim var stay forbidden. A bridge that becomes PF releases its freezes at
@@ -335,7 +336,7 @@ not change the hash. Canonical form, so both bridges get the same hash:
 `applied_seq` is the highest pilot-command seq the client has processed (logged, for
 diagnosis). The server treats hashes as opaque.
 
-**Loose indicators (CRO-34).** An `observe` var with a profile `tolerance` (battery volts ±0.5 V, brake
+**Loose indicators (CRO-34).** An `observe` var with a profile `tolerance` (battery volts ±1.2 V, brake
 pressure ±0.3) or a `powered` flag (FCU and RMP lamps and flags) is not in the hash: values that wander
 within their tolerance would make it flap. It travels with the hash instead, as
 `snapshot_hash.loose: [{var, value, tolerance?, context?}]`, with `context: "unpowered"` and value
@@ -538,7 +539,9 @@ The PF's aircraft, for the follower (CRO-13; method and numbers from the CRO-17 
 [`docs/spikes/CRO-17-follower.md`](spikes/CRO-17-follower.md)).
 
 **Sending (PF only).** `stream {frame, data}`. The PF's bridge reads its own aircraft every sim frame
-and sends at most 30 frames per second of sim time. Latest wins: a frame is never queued, re-sent or
+and sends 30 frames per second of sim time on average (since 0.6.1 on a fixed 1/30 s grid, so a sim at 30 fps or
+more gets 30 whatever its frame rate; never more than one frame per sim frame; a stalled clock starts a new
+grid, there is no catch-up burst). Latest wins: a frame is never queued, re-sent or
 replayed. `frame` counts up on the sending bridge and never repeats.
 
 **`data`** (numbers; names match `^[a-z0-9_]{1,40}$`, at most 64):
@@ -553,11 +556,12 @@ replayed. `frame` counts up on the sending bridge and never repeats.
 | `vwx`, `vwy`, `vwz` | VELOCITY WORLD X, Y, Z (X east, Y up, Z north) | ft/s |
 | `g` | G FORCE | g |
 | `on_ground` | SIM ON GROUND | 0/1 |
-| `gs_kt` | GROUND VELOCITY (logging only) | kt |
+| `gs_kt` | GROUND VELOCITY (the follower's surface rule below, and logging) | kt |
 | `elev`, `ail`, `rud` | ELEVATOR POSITION, AILERON POSITION, RUDDER POSITION | -1 … 1 |
 | `lv_<name>` | the profile's `stream` L: vars, lower case (thrust levers: `lv_a_fc_throttle_left_input`, `lv_a_fc_throttle_right_input`) | number |
 
 `t` to `vwz` and `on_ground` are required; the bridge ignores (and counts) a frame without them.
+A missing `gs_kt` reads as 0 kt.
 
 **Server.** Accepts stream only from the current PF, never during a handover freeze (section 8), at
 most ~36 frames per second. A frame whose `frame` is not newer than the last one relayed from the same
@@ -576,7 +580,13 @@ a PM is dropped, with one `notice stream_dropped` every 5 s at most.
 - One placement per new sim frame of the follower's own sim (method B): position, attitude and the
   mixed velocity set (VELOCITY BODY Y/Z, VELOCITY WORLD X/Z in one definition; VERTICAL SPEED = `vwy`,
   G FORCE and the three surfaces each on their own, so a refusal by the sim stops only that one, logged
-  and shown amber). After the first placement the three freezes go on; every 6th sim frame the bridge
+  and shown amber). Exception (0.6.1): while the PF's frame says on ground and `gs_kt` is below 40 kt,
+  elevator, aileron and rudder are not written at all, so the follower's pilot can do the flight control
+  check. They start when the PF reaches 40 kt on the ground or leaves it, and stay on at least 5 s (the
+  follower's sim time) before the rule can stop them again. The first placement decides the start state.
+  Position, attitude, velocities and the freezes are unchanged. Logged as
+  `follow_surfaces {on, cause (engage|speed|airborne|ground_slow), pf_gs_kt, on_ground}`. When writing
+  resumes the surfaces jump to the PF's values. After the first placement the three freezes go on; every 6th sim frame the bridge
   reads them back and sends a freeze again that reads off (after 1 s).
 - Thrust levers: the follower writes `lv_` values only for profile `stream` vars that have a confirmed
   `range` (none yet: measured first, owner decision 2026-11-04).
@@ -588,8 +598,16 @@ a PM is dropped, with one `notice stream_dropped` every 5 s at most.
   screen (the sim reports a freeze Crosscheck does not hold) or `crosscheck restore`.
 - Logged for CRO-18 every 5 s: `stream_stats {mode, sent, received, dropped_old, bad, placed,
   interpolated, extrapolated, holding, late_p50_ms, late_p95_ms, late_max_ms, max_gap_ms,
-  freeze_reasserts, rtt_ms}`; plus `freeze_engaged`, `freeze_released {cause, in_air}`,
-  `freeze_reasserted`, `pf_lost_hold`, `follow_mode`, `placement_refused`.
+  freeze_reasserts, rtt_ms}` (0.6.1: on the follower also `pf_gs_kt`, `own_gs_kt`, `gs_diff_max_kt`,
+  `pf_on_ground`, `own_on_ground`, the PF's ground speed in the last placement against this sim's own, CRO-41);
+  plus `freeze_engaged`, `freeze_released {cause, in_air}`, `freeze_reasserted`, `pf_lost_hold`, `follow_mode`,
+  `follow_surfaces`, `placement_refused`.
+- Diagnosis log (0.6.1, log file only, never on the wire or in the panel, read-only): `diag_start` once, then
+  `diag` every 5 s on both sides with `role`, `mode`, `own_gs_kt`, `pf_gs_kt`, `surfaces_on`, fuel per tank and
+  total (`fuel_*_kg`), `zfw_kg`, `gw_est_kg` (zfw + fuel total, an estimate), `n1_1_raw` / `n1_2_raw` and
+  `brake_temp_max_raw` (scale and unit unverified) and an `fcu` object of the autoflight lamps. Values that are
+  not known to exist are not logged (EPR, live gross weight, per-wheel brake temperatures, FMA text, FD bars);
+  `diag_start` lists them. About 0.5 MB per hour per side.
 
 **Preflight.** Only the PF may be connected to VATSIM or another online network. The join screen says
 so, and warns when a network client (vPilot, xPilot, swift, IVAO, PilotEdge) runs on the joining PC.
@@ -662,7 +680,7 @@ this file to a desync report.
 | Control freeze / control ack timeout | 300 ms / 2 s |
 | Session log ring buffer | 2000 entries |
 | SimConnect definitions (bridge) | read chunks of 32 vars + 8 write slots, at most 256 |
-| Stream | 30 Hz of sim time; server relay buffer 64 KB per receiver |
+| Stream | 30 Hz of sim time on average (a fixed grid, one frame per sim frame at most); server relay buffer 64 KB per receiver |
 | Follower | buffer 100 ms, extrapolation 600 ms, blend 200 ms; freeze check every 6th frame, after 1 s |
 
 ## 14. Not in v6

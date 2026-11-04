@@ -7,7 +7,10 @@ public enum SimState
     Connected,
 }
 
-/// <summary>What the adapter watches. Only profile vars are ever in here.</summary>
+/// <summary>
+/// What the adapter watches: profile vars, plus a few known L: vars that are only read for the diagnosis log
+/// (<c>DiagnosisLog.ExtraLvars</c>; the engine ignores them, nothing is compared, synced or shown).
+/// </summary>
 public sealed record SimPlan(IReadOnlyList<string> Watched);
 
 /// <summary>

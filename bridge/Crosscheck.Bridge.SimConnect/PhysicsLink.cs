@@ -72,7 +72,7 @@ public sealed class PhysicsLink : IPhysicsLink
 
     public void SetFollower(bool follower) => _follower = follower;
 
-    public void Place(in PhysicsFrame f)
+    public void Place(in PhysicsFrame f, bool writeSurfaces = true)
     {
         if (!_follower) throw new SafetyViolationException("placement refused: this side is not the follower");
         var values = FollowerSafety.PlacementValues(f);
@@ -84,6 +84,7 @@ public sealed class PhysicsLink : IPhysicsLink
             for (var i = 0; i < extras.Length; i++)
             {
                 if (_extraRefused[i]) continue;
+                if (!writeSurfaces && FollowerSafety.IsSurfaceExtra(i)) continue;
                 sc.SetDataOnSimObject(Def.ExtraBase + (uint)i, SC.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT, new One { V = extras[i] });
                 var id = sc.GetLastSentPacketID();
                 _extraSends[id] = i;

@@ -295,3 +295,42 @@ attitude cage, oxygen mask tests, EFIS BARO STD; `hardware_fighting` 30).
 6. **BARO STD and heading push/pull sync** (`not_synced` advisories, mode_mismatch).
 7. **Fuel/GW/brake observe values and the fuel-sync decision** (item 2) – after 1 and 3, the drift may be gone.
 8. **CRO-43:** PF-computed values (N1, FMA, FD) for the PM, if 1–3 do not fix item 1.
+
+---
+
+## 0.6.1 follow-up (2026-11-04)
+
+What 0.6.1 did about this diagnosis:
+
+| Priority item | Status in 0.6.1 |
+|---|---|
+| 1 Write-rejection fix | Done before 0.6.1 (first-use clear of a write slot no longer blocks a var; retry once, block on the second refusal). |
+| 2 Surfaces off on the ground (item 6) | Done: elevator, aileron and rudder are not written while the PF is on the ground below 40 kt; they start at 40 kt or in the air and stay on at least 5 s. Log event `follow_surfaces`. Needs the sim test named in item 6. |
+| 4 Noise downgrades | Only the battery voltage tolerance: 0.5 V to 1.2 V (flight 1 showed up to 1.1 V of noise between the sims without a fault; the one real fault, 0 V against 27.8 V, is far above 1.2 V). Cabin call lights and the toilet light stay as they are: a notice would turn the quiet line amber, which is louder. E_FCU_VS stays untouched (owner decision, see below). |
+| 5 CRO-41 logging | Done: `stream_stats` on the follower now has the PF's and the own ground speed and ground flag of the last placement, and their largest difference. The PF stream gate is fixed (below). |
+| Diagnosis log | Done: `diag` line every 5 s on both sides (see protocol.md section 9). |
+
+**PF stream rate.** The measured ~22 Hz came from the send gate: a frame was sent when 29.3 ms had passed since the
+last sent frame, and the overshoot was thrown away, so the period rounded up to whole sim frames (45 fps gives
+22.5 Hz, 50 and 75 fps give 25 Hz; 60 and 90 fps happened to give 30 Hz). Now frames are sent on a fixed 1/30 s grid:
+30 Hz on average at any sim frame rate of 30 fps or more, never more than one frame per sim frame, and a stalled clock
+starts a new grid without a burst. The server cap (36 frames per second window) is not touched.
+
+**E_FCU_VS display_mismatch: were the 14 lines on a dashed window?** Yes. In all 14 (17:27:53 to 18:32:58 host-log
+time) `B_FCU_VERTICALSPEED_DASHED` was 1 on both sides in every snapshot from 3 s before to 8 s after the line, and the
+FCU was powered. (Only 3 of 723 fcu snapshots in the host log had it at 0, none near a V/S line.) The numbers do not look
+like a V/S the pilot set; they follow the aircraft's actual vertical speed: 900, 3800, 4000, 5200 to 5500 and 2800 in the
+climb (17:27 to 17:32), -1000 to -1400 in the descent (17:41 to 17:46), 2000 to 2800, 0 to 100 and -300 in flight 2.
+Each pair is the PF's value against the follower's, 100 to 300 fpm apart (ten of 100, one of 200, three of 300), and all
+cleared in 1 to 9 s. So these lines came from a hidden value under a dashed (managed) window, not from a set V/S.
+Limits of this check: snapshots come about every 7 s, "1 means dashed" is from the var name and this pattern (no probe
+ever recorded it), and the data has no sample with a V/S actually selected, so it says nothing about a real
+difference there. A real 300 fpm difference with a value shown must still be a red line, which is why no tolerance was
+added. Possible follow-up for the owner to decide: compare E_FCU_VS only while the window is not dashed (needs the
+delta compare in the bridge and server to honour `compare_when` for the displayed value, or a tolerance-free gate).
+
+**Noise candidates, listed only (not changed):** cabin call lights I_ASP_CAB_CALL, I_ASP2/3/4_CAB_CALL and the toilet
+light I_OH_TOILET (cabin crew runs on separate timers per sim; 13 and 5 quiet lines, 2 to 165 s); E_FCU_EFIS2_BARO (1 hPa
+encoder timing, a delta var, so it needs the same missing delta tolerance); I_ECAM_CLR_LEFT/RIGHT (ECAM state timing per
+sim); MASTER CAUTION and MASTER WARNING lamps (the flight 2 shutdown cluster); the MCDU display hashes in flight 2
+(whole-screen hash, FMGC recomputes per sim); E_FCU_SPEED (1 unit, knob timing). E_FCU_HEADING is not noise.

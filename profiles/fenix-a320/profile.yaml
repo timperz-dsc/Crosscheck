@@ -10736,13 +10736,13 @@ vars:
     label: "Volt BAT 1 display"
     class: observe
     group: systems
-    tolerance: 0.5
+    tolerance: 1.2
     note: "label generated"
   - name: N_ELEC_VOLT_BAT_2
     label: "Volt BAT 2 display"
     class: observe
     group: systems
-    tolerance: 0.5
+    tolerance: 1.2
     note: "label generated"
   - name: N_HYD_PRESSURE_BRAKE_LEFT
     label: "Pressure brake display (left)"

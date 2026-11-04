@@ -56,6 +56,12 @@ public static class FollowerSafety
         ("RUDDER POSITION", "position"),
     ];
 
+    /// <summary>The control surfaces are the last three <see cref="Extras"/> (elevator, aileron, rudder).</summary>
+    public const int SurfaceExtraFirst = 2;
+
+    /// <summary>True for the extras that are control surfaces (skipped on the ground, see PhysicsSync).</summary>
+    public static bool IsSurfaceExtra(int index) => index >= SurfaceExtraFirst;
+
     /// <summary>What both sides read of their own aircraft every sim frame (read only), in this order.</summary>
     public static readonly IReadOnlyList<(string Var, string Unit)> Read =
     [

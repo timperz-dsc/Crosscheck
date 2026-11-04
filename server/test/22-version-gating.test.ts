@@ -75,17 +75,17 @@ describe('22. version gating', () => {
     }
     expect(ws.readyState).toBe(WebSocket.OPEN);
 
-    // The old client took no slot: the host saw nobody, and a 0.6.0 pilot still joins.
+    // The old client took no slot: the host saw nobody, and a current (0.6.x) pilot still joins.
     await sleep(50);
     expect(host.messages('peer_status')).toHaveLength(0);
     const guest = new FakeBridge({ url: server.url, name: 'guest', sim: new FakeSim() });
     bridges.push(guest);
     await guest.connect();
-    expect(PREFLIGHT.bridge_version).toBe('0.6.0');
+    expect(PREFLIGHT.bridge_version).toBe('0.6.1');
     expect((await guest.join(host.joinCode)).type).toBe('joined');
   });
 
-  it('a 0.6.0 client is allowed: preflight_check answers with the comparison, join succeeds', async () => {
+  it('a current (0.6.x) client is allowed: preflight_check answers with the comparison, join succeeds', async () => {
     server = await startServer();
     const host = await hostSession();
     const guest = new FakeBridge({ url: server.url, name: 'guest', sim: new FakeSim() });

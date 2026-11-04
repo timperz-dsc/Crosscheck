@@ -154,10 +154,15 @@ Enforced in the sim adapter itself, so nothing above it can bypass it:
 
 - Only profile vars are read or written; only writable classes; only values inside the
   profile's `values`/`range`. Anything else is refused and logged.
-- There is no API for sim events at all: the bridge cannot pause, change sim rate, slew,
+- The sync adapter has no API for sim events at all: it cannot pause, change sim rate, slew,
   move or freeze the aircraft. A test fails if such calls appear in the SimConnect adapter.
-- The stream writer is only active on the pilot monitoring's side (and writes nothing yet,
-  until the stream, CRO-13; its field set comes from the follower spike, CRO-17).
+  The only sim events are the three FREEZE_*_SET events, sent by the separate physics link
+  (`PhysicsLink.cs`) and only while this side is the follower (CRO-13).
+- The follower places the aircraft from the PF's stream (position, attitude, velocities,
+  surfaces). Since 0.6.1 it does not write elevator, aileron and rudder while the PF is on the
+  ground below 40 kt, so the pilot monitoring can do the flight control check.
+- Since 0.6.1 the bridge also writes a read-only diagnosis line to the log file every 5 s
+  (`diag`, see docs/protocol.md section 9). It reads values only and is never shown in the panel.
 - As pilot flying, the bridge refuses every correction that is not from a logged pilot
   command.
 - If the sim or the server goes away, the bridge keeps running and reconnects; both sims keep

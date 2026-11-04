@@ -34,8 +34,12 @@ public interface IPhysicsLink : IAsyncDisposable
 
     bool IsFollower { get; }
 
-    /// <summary>Writes the follower's placement (one write per sim frame). Throws SafetyViolationException unless follower.</summary>
-    void Place(in PhysicsFrame frame);
+    /// <summary>
+    /// Writes the follower's placement (one write per sim frame). Throws SafetyViolationException unless follower.
+    /// With <paramref name="writeSurfaces"/> false, elevator, aileron and rudder are left to the own pilot (0.6.1:
+    /// not written while the PF is on the ground below 40 kt); everything else is written as usual.
+    /// </summary>
+    void Place(in PhysicsFrame frame, bool writeSurfaces = true);
 
     /// <summary>Sends one of the three freeze events. "on" throws SafetyViolationException unless follower; "off" is always allowed.</summary>
     void SendFreeze(string ev, bool on);
