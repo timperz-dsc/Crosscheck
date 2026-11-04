@@ -34,3 +34,9 @@ profiles/**/.probe/
 
 # Gate test bridge logs (contain names and paths; never public)
 gatetest-logs/
+
+# Chrome HAR captures of the Fenix EFB (may contain personal codes; never commit)
+efb-capture/
+
+# Follower spike run folders (CRO-17)
+runs/
