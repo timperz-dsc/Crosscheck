@@ -78,7 +78,11 @@ follower inspect circuit1.cxrec
 This prints frame times, the phases, whether it ends on the ground, min/max of every field,
 and how well the recorded world velocities match the position changes. A mismatch above 5 %
 means the velocity axes are not what the code assumes (X east, Y up, Z north). Then use
-`--tangents fd`, and tell us. The min/max of the `fnx_stick_*` fields show the Fenix stick
+`--tangents fd`, and tell us. **Update 2026-11-04:** on `circuit1` the 10 % mismatch came from
+noisy time stamps (stopwatch, not sim time), not from the axes; over 0.5–2 s the velocities
+match within 1 %. Keep the default tangents. See
+[research §6.8](../research/yourcontrols.md#68-what-it-means-for-jerky-taxi-and-the-jumping-ground-speed-method-b---tangents-fd).
+The min/max of the `fnx_stick_*` fields show the Fenix stick
 range: pass the full deflection as `--fenix-stick-scale` when playing (the default 1 assumes
 −1..1).
 
@@ -200,6 +204,16 @@ the real runs are for. First offline results on the synthetic circuit (all phase
 So with a perfect sim the buffer and interpolation are not the problem, at 20 Hz either.
 Holding is: a stall longer than the extrapolation limit makes the follower stop dead and jump.
 That is a reason to try a longer limit on the sim (run 8).
+
+## Follower in YourControls and FS Copilot
+
+Both ship our method B: the three freezes, plus position, attitude and a fixed set of
+velocities written once every sim frame from a WASM module inside the sim. Both use a straight
+line between points, a buffer (about 100 ms and 400 ms) and hold when data is late, and both
+have no special handling for the ground or the handover. Our differences are the timing (we
+write from outside the sim and time frames with a stopwatch) and the smoothing (cubic curve,
+prediction, blend). Details, known problems and the changes to try next:
+[research §6](../research/yourcontrols.md#6-follower-how-yourcontrols-and-fs-copilot-place-the-aircraft).
 
 ## Notes
 

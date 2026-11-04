@@ -137,10 +137,11 @@ host's definition and nothing warns about the mismatch.
 
 - Before v2.5.0 the mod used sim "active pause" to freeze the aircraft while syncing position.
   That caused jumps and was replaced (#61).
-- Now the controlling sim sends position, attitude, velocity and control surfaces at a
-  configurable rate (users report trying 10–60 Hz). They are marked interpolated and
-  unreliable, and the gauge blends toward them in the other sim. The sim that is not in
-  control is frozen (see above), so it does not simulate its own physics.
+- Now the controlling sim sends position, attitude, velocity and control surfaces as fast as
+  it reads them (the rate setting users tried at 10–60 Hz was removed in 2.7.8). They are
+  marked interpolated and unreliable, and the gauge blends toward them in the other sim. The
+  sim that is not in control is frozen (see above), so it does not simulate its own physics.
+  Details and a comparison with our follower spike: section 6.
 - A wind-component corrector existed (to keep ground speed equal in different weather) but
   the changelog for 2.8.11 says it was removed.
 - On MSFS 2024 the changelog for 2.8.15/16 still lists ground jitter as "semi-fixed, WIP".
@@ -336,3 +337,201 @@ the same parking position unless stated.
   a good idea for our own CI.
 - **Free and open**, with a maintainer team that kept it alive for six years. We should
   match the openness and the quick response to sim updates.
+
+## 6. Follower: how YourControls and FS Copilot place the aircraft
+
+Research for CRO-17, written 2026-11-04. It compares how both projects move the follower
+(the sim that is not flying) with our follower spike
+([docs/spikes/CRO-17-follower.md](../spikes/CRO-17-follower.md)).
+
+[FS Copilot](https://github.com/yury-sch/FsCopilot) by Yury Scherbakov is a newer shared
+cockpit for MSFS 2020 and 2024 (C# app plus a WASM module, first release 2026). It is
+**MIT-licensed**, like Crosscheck. We still describe it in our own words and copy none of its
+code, the same as for YourControls (GPL-3.0). Both projects solved this problem in public, and
+we learn from what they found.
+
+Sources: YourControls code at `4e32af5` (2026-04-05) with its full history, its changelog,
+GitHub releases (old and new repo) and issues. FS Copilot code at `7b85a16` (default branch
+`main`) with its full history and its releases. FS Copilot has no GitHub issues (support is on
+Discord). Limits: the source of the YourControls WASM gauge, where its interpolation runs, is
+not in the repo, only the compiled module. What we say about that interpolation comes from
+the symbol names in the module, the app's side of the protocol and the older Rust
+interpolator it replaced, so it is marked "probably". We did not read either Discord.
+
+### 6.1 What is sent
+
+| | YourControls | FS Copilot |
+|---|---|---|
+| Position | `PLANE LATITUDE`, `PLANE LONGITUDE` (degrees), `PLANE ALTITUDE` (feet, above sea level) | the same (lat/lon in radians) |
+| Attitude | `PLANE PITCH DEGREES`, `PLANE BANK DEGREES`, `PLANE HEADING DEGREES TRUE` and `… GYRO` (the gyro heading "due to drift") | the same, in degrees |
+| Velocities | `VELOCITY BODY Y`, `VELOCITY BODY Z`, `VELOCITY WORLD X`, `VELOCITY WORLD Z`, `VERTICAL SPEED`, `G FORCE` | the same set |
+| Not sent | `VELOCITY BODY X`, `VELOCITY WORLD Y`, rotation rates, accelerations, on-ground, height above ground, wheels | the same |
+| Control surfaces | `AILERON/ELEVATOR/RUDDER POSITION`, written with the `AXIS_*_SET` events, only while the autopilot is off | the same three, written both as the A: var and with the `AXIS_*_SET` event |
+| Rate | as fast as the sim reports changes, so about once per sim frame. The rate setting was removed in 2.7.8 | fixed 20 Hz (every 50 ms) |
+| Transport | UDP (Laminar), unreliable-sequenced: lost packets are not resent, older ones are dropped | UDP (LiteNetLib), sequenced: the same idea |
+| Time stamp | sender's wall clock at send time | sender's stopwatch (ms since app start) |
+
+Sources: [YC physics.yaml](https://github.com/Sequal32/yourcontrols/blob/master/definitions/FS2024/modules/physics.yaml),
+[FSC Physics.cs](https://github.com/yury-sch/FsCopilot/blob/main/FsCopilot/Simulation/Physics.cs).
+The YourControls file marks the velocity block "do not change or the autopilot will break". The
+velocities are not used to predict position. They are written so that the follower's speed
+indications and autopilot see a moving aircraft, and so that the aircraft already has its
+speed when the freeze is lifted at a handover.
+
+### 6.2 How the follower writes
+
+Both write from **inside the sim**: a WASM module receives the latest values and writes
+position, attitude and the velocities above **once every sim frame**, through calculator code
+(`execute_calculator_code`). YourControls moved this into its gauge in January 2021. FS
+Copilot did the same in January 2026 (before that it wrote with `SetDataOnSimObject` at the
+network rate). Since 1.1 it interpolates "on every simulator visual frame", and its release
+notes credit this with removing stutter, jumps and jitter. In MSFS 2024 its module runs on the
+frame update of a standalone WASM module.
+
+### 6.3 Smoothing, buffering, late updates
+
+| | YourControls (probably, see limits) | FS Copilot |
+|---|---|---|
+| Clock | playback clock starts at the first packet's sender time and runs on local time; it fast-forwards if it falls more than 1 s behind | offset to the sender clock per session, smoothed with factor 0.01 per packet |
+| Buffer | waits until the newest packet is about 100 ms ahead | plays 0.4 s behind (was 0.8 s until 2026-02-21); keeps only one sample per 0.2 s as a keyframe, so about 5 points per second |
+| Interpolation | linear between the two packets around the playback time; angles the short way round (wrap types for ±90°, ±180°, 0–360°) | linear between keyframes; angles the short way round |
+| Late update | holds the last value (no prediction) | holds the last value (no prediction, no snap limit) |
+
+Neither project predicts ahead, and neither uses the velocities for the curve. Both rely on a
+straight line between points plus a buffer large enough that a point is almost always there.
+
+### 6.4 Stopping the follower's own physics, and the ground
+
+- **Both use the three freezes**, the same as our method B: `FREEZE_LATITUDE_LONGITUDE_SET`,
+  `FREEZE_ALTITUDE_SET`, `FREEZE_ATTITUDE_SET`. Neither uses slew or pause (YourControls used
+  active pause before 2.5.0 and replaced it, #61).
+- Both watch `IS LATITUDE LONGITUDE FREEZE ON`, `IS ALTITUDE FREEZE ON` and
+  `IS ATTITUDE FREEZE ON` every frame and send the freezes again if one is wrong.
+  - YourControls has sent them as calculator code through its gauge since the "2024 band-aid"
+    in 2.8.11 ("fixed position freeze on FS2024"). The SimConnect events alone were not
+    reliable on 2024.
+  - FS Copilot sets them from its WASM module and renews "who flies" every 200 ms. Its module
+    lifts the freezes by itself if the app goes quiet for more than 1 s.
+- **No ground handling in either.** No on-ground flag, height above ground, wheel or contact
+  logic, no taxi mode. On the ground the follower gets the same sea-level altitude and
+  attitude as in the air.
+- YourControls once had two corrections, and removed both as buggy:
+  - altitude near the ground for different scenery (below 1000 ft above ground): altitude
+    jumped at the 1000 ft threshold;
+  - speed for different wind: the aircraft "launched forward on the ground" with spinning
+    wheels (removed in 2.6.1, and again in 2.8.11).
+
+### 6.5 Handover
+
+Neither does anything special.
+- The new pilot's side stops interpolating and lifts its freezes. The old side freezes and
+  starts playing what it receives.
+- No velocities are seeded at that moment: the aircraft already has them, because they were
+  written every frame while it was frozen.
+- There is no check that both sims agree before or after.
+- FS Copilot can briefly have two sides that both think they fly (last writer wins).
+
+### 6.6 Known problems and fixes
+
+| Problem | Where | Fix or status |
+|---|---|---|
+| Aircraft hundreds of metres apart, FD offset, wrong direct-to | YC [#61](https://github.com/sequal32/yourcontrols/issues/61) | Cause was active pause; replaced by freezes in 2.5.0 |
+| Jump or teleport at handover, plane jumps ahead | YC [#12](https://github.com/sequal32/yourcontrols/issues/12), [#16](https://github.com/sequal32/yourcontrols/issues/16), [#77](https://github.com/sequal32/yourcontrols/issues/77) | Several fixes in 2.5.2–2.6.2 ("fixed clients teleported on transfer", "attempted to fix random warping"); no cause written down |
+| Interpolation breaks a handover in a steep bank, "teleport into the ocean" | YC 2.6.0 release notes | Advice: hand over wings level. 2.6.0/2.6.1 also fixed wrong angle units (degrees vs radians) and a jump at heading 360° |
+| Launching forward on the ground, wheels spinning | YC 2.6.1 | Wind/speed "physics corrector" removed |
+| Altitude jumping below 1000 ft; plane 2 m above or in the ground | YC 2.5.7, [#201](https://github.com/sequal32/yourcontrols/issues/201) | Ground-altitude correction removed; #201 closed without a code fix (scenery difference) |
+| Banking or rotating after a handover | YC [#237](https://github.com/sequal32/yourcontrols/issues/237), [#314](https://github.com/sequal32/yourcontrols/issues/314) (Fenix, open) | Open or closed without a cause |
+| Ground jitter on MSFS 2024 | YC 2.8.16 release notes (April 2026): "semi-fixed, better but still present, WIP"; 2.8.17 went back to the older WASM "due to instability" | Open. A May 2026 post on the [MSFS dev support forum](https://devsupport.flightsimulator.com/t/constant-jittering-only-on-2024-what-changed/17842) describes it. It happens only on 2024, and also when only lat/lon is written. The aircraft itself moves smoothly, but the world seems to shake, more with speed and reportedly more at higher frame rates. No answer from Asobo yet |
+| Small jumps and jitter | FSC 1.0-rc.2/rc.3 | Cause: network updates arriving out of order (fixed); then 1.1 interpolates on every visual frame |
+
+### 6.7 Compared with our follower spike
+
+| | YourControls | FS Copilot | Our spike (CRO-17) |
+|---|---|---|---|
+| Freeze | three freezes, re-sent if off | the same, plus a watchdog in the sim | method B: the same (A: none, C: slew) |
+| Writes | position, attitude, body Y/Z + world X/Z + vertical speed + G force, every frame, from inside the sim | the same | position, attitude, three body **or** three world velocities and three rotation rates, from outside the sim through SimConnect, once per state message |
+| Curve | linear | linear, ~5 points/s | cubic curve through the frames (velocity or `fd` tangents), attitude as a rotation |
+| Buffer | ~100 ms | 400 ms | 100 ms, clock from the fastest arrival |
+| Late | hold | hold | predict up to 250 ms, then hold, then blend back over 200 ms |
+| Ground | nothing special | nothing special | nothing special |
+| Clock | sender wall clock; local frame time | sender stopwatch; local frame time | PC stopwatch at the moment a SimConnect message is handled (recorder and player) |
+| Measured | no | no | per phase: error, jitter, spikes, reaction |
+
+Method B is what both projects ship, so B is the right baseline. Our smoothing and prediction
+already go further than theirs. Where we differ is **timing**: they write from inside the sim on
+the sim's own frame; we time and write from outside it.
+
+### 6.8 What it means for jerky taxi and the jumping ground speed (method B, `--tangents fd`)
+
+Checked offline on `circuit1.cxrec` and the method B run of 2026-11-04 (file reading only, no
+sim):
+
+1. **The recording's time stamps are noisy.** The recorder stamps each frame with the PC's
+   stopwatch when the message is handled, not with sim time.
+   - 1179 frames (3.4 %) are less than 3 ms after the one before: two sim frames handled in
+     one go.
+   - 208 taxi frames repeat the position of the frame before.
+   - Speed from position change ÷ stamped time swings between 55 % and 133 % of the real
+     ground speed while taxiing (5th to 95th percentile).
+2. **The velocity axes are fine; `fd` is the wrong cure.** `inspect` reported a 10 % mismatch
+   between recorded velocity and position change, which led to `--tangents fd`. Over longer
+   windows the mismatch shrinks to 3.5 % (0.1 s), 1.0 % (0.5 s) and 0.3 % (2 s), and the
+   horizontal world velocity equals `GROUND VELOCITY`. So the 10 % is time-stamp noise. `fd`
+   builds the curve from exactly those time stamps, so it turns the noise into uneven speed.
+3. **The player has the same timing problem.**
+   - On the taxiway, 240 of 8689 follower frames were less than 3 ms apart.
+   - In about 2.5 % of taxi frames the sim showed a position about one frame behind what we
+     had just written.
+   - So a sim frame sometimes gets no new position, and the next one gets two frames' worth.
+     The result is a stutter, and a speed that jumps if anything (the sim or the Fenix)
+     derives speed from the position change.
+4. **Our jitter metric measures the same noise.** It uses the stopwatch too, which is why
+   nearly every taxi frame of the B run counts as a "spike". Until the clock is fixed, the
+   jitter and spike columns cannot rank the methods.
+
+For the methods:
+
+- **B** matches both projects. Its jerkiness on our run most likely comes from our timing
+  (points 1–3), not from freezing. Fix the timing first, then judge B again. Also write the
+  same velocity set both projects write, so that the speed indications have a steady value to
+  show.
+- **A** is not used by either project. Expect the Fenix fly-by-wire to push back (the reaction
+  columns). Still worth one run after the timing fix: it is the only method that leaves the
+  aircraft fully alive at a handover.
+- **C** (slew) is not used by either project. YourControls only mirrors the slew switch as a
+  normal control. Keep it as a comparison, but no one has made it work for a follower.
+- If B is still uneven after the timing fixes, the remaining step is what both projects did:
+  write from inside the sim on every frame.
+  - That needs a WASM module in the Community folder that writes position. This is an owner
+    decision, because our scanner module is read-only by rule.
+  - YourControls' open 2024 ground jitter suggests that even this may not be perfect on 2024.
+
+### 6.9 Changes to try in the player
+
+In order. The first four need no sim to build and test.
+
+1. **Stamp frames with sim time.** Record `SIMULATION TIME` (and `ABSOLUTE TIME` as a second
+   candidate) in every frame, next to the stopwatch time. `inspect` shows which one advances
+   smoothly with the position, and the player and metrics use that one. Drop frames whose
+   position and sim time both repeat the frame before. Then record `circuit1` again; the
+   current recording cannot be fully repaired.
+2. **Run the player's clock on sim time too.** Advance the render clock by the sim's own frame
+   step, not by the stopwatch, so each sim frame moves the aircraft by exactly one frame's
+   worth. When several state messages are handled in one go, write only once, for the newest.
+3. **Make velocity tangents the default again.** Change the `inspect` check to compare over
+   0.5 s windows (or over sim time), so time-stamp noise no longer looks like wrong axes.
+   Keep `fd` only as an option.
+4. **Compute jitter and spikes on sim time.** Also add the follower's read-back
+   `GROUND VELOCITY` to `frames.csv`, so "the ground speed jumps" becomes a number.
+5. **Write the velocity set both projects use**, as a new `--velocities` choice: body Y/Z,
+   world X/Z, `VERTICAL SPEED`, and `G FORCE` if the sim accepts it. Also try
+   `--velocities world` and `none` on B, to see which one steadies the ground speed display.
+6. **A handover test on the ground.** At the end of a taxi segment at about 15 kt, release
+   the freezes while moving (offline, own sim, as the stop key does now) and log the next 5 s.
+   Does the aircraft keep its speed and heading, or does it jump or stop? Both projects had
+   most of their reported problems at this moment.
+7. **Only if B is still uneven after 1–5:** a test WASM that writes position on each sim
+   frame, like both projects. Owner decision first: it would be our first module that writes.
+
+Keep our prediction, blend and cubic curve. Neither project has them, and they matter on a real
+network (loss and stalls). They are not related to the ground timing problem above.
