@@ -9,15 +9,20 @@ namespace Crosscheck.Bridge.Tests;
 
 /// <summary>
 /// A SimConnect stand-in for the write path: it refuses every definition past <c>limit</c> distinct definition
-/// IDs, like the sim did in gate tests 2 and 3, and remembers what each definition points at.
+/// IDs, like the sim did in gate tests 2 and 3, refuses clearing a definition that never had a var added
+/// (UNRECOGNIZED_ID, flight 1 on 2026-11-04), and remembers what each definition points at.
 /// </summary>
 internal sealed class FakeSimConnectCalls(int limit) : ISimConnectCalls
 {
     private uint _send;
     public HashSet<int> Definitions { get; } = [];
     public Dictionary<int, string?> Bound { get; } = [];
+    /// <summary>Definitions the sim knows (an add went through).</summary>
+    public HashSet<int> Created { get; } = [];
     /// <summary>Send IDs SimConnect would answer with an exception (a refused definition).</summary>
     public List<uint> Refused { get; } = [];
+    /// <summary>Every write-path call in order: (call, definition).</summary>
+    public List<(string Call, int Def)> Log { get; } = [];
     /// <summary>Values that landed: var → value.</summary>
     public Dictionary<string, double> Landed { get; } = new(StringComparer.Ordinal);
     public int Clears { get; private set; }
@@ -36,20 +41,26 @@ internal sealed class FakeSimConnectCalls(int limit) : ISimConnectCalls
 
     public uint ClearDefinition(int definition)
     {
+        Log.Add(("clear", definition));
         Clears++;
+        var id = ++_send;
+        if (!Created.Contains(definition)) Refused.Add(id); // UNRECOGNIZED_ID, as the real sim answers
         Bound[definition] = null;
-        return ++_send;
+        return id;
     }
 
     public uint AddToDefinition(int definition, string lvar)
     {
+        Log.Add(("add", definition));
         var id = Define(definition);
+        if (Definitions.Count <= limit) Created.Add(definition);
         Bound[definition] = lvar;
         return id;
     }
 
     public uint SetValue(int definition, double value)
     {
+        Log.Add(("set", definition));
         var id = ++_send;
         if (Definitions.Count <= limit && Bound.GetValueOrDefault(definition) is { } name) Landed[name] = value;
         return id;
@@ -123,7 +134,7 @@ public sealed class WriteSlotTests
         defs.SetupSlots(calls);
         defs.Write(calls, "V0", 1);
         defs.Write(calls, "V0", 0);
-        Assert.Equal(1, calls.Clears); // a second write of the same var re-points nothing
+        Assert.Equal(0, calls.Clears); // a fresh slot needs no clear, a second write of the same var re-points nothing
         for (var i = 1; i < SimDefinitions.PoolSize; i++) defs.Write(calls, $"V{i}", 1);
         defs.Write(calls, "V0", 1); // V0 is the most recent now; V1 the least recent
         defs.Write(calls, "V8", 1);
@@ -134,7 +145,7 @@ public sealed class WriteSlotTests
     }
 
     [Fact]
-    public void A_refused_write_names_its_var_and_a_refused_setup_call_is_a_setup_error()
+    public void A_refused_setup_call_is_a_setup_error()
     {
         // A sim that refuses everything past 3 definitions: the read chunk and two slots fit, the rest do not.
         var defs = new SimDefinitions();
@@ -143,18 +154,154 @@ public sealed class WriteSlotTests
         defs.SetupSlots(calls);
         Assert.Equal(SimDefinitions.PoolSize - 2, calls.Refused.Count);
         Assert.All(calls.Refused, id => Assert.IsType<SimExceptionOutcome.SetupError>(defs.OnException(id, "ERROR")));
+    }
 
-        var bind = new SimDefinitions();
-        var bindCalls = new FakeSimConnectCalls(int.MaxValue);
-        bind.SetupSlots(bindCalls);
-        bind.Write(bindCalls, "S_TRAY_TABLE_CAPT", 1);
-        // The last call was the write itself (before it: clear and add, which bound the slot).
-        var rejected = Assert.IsType<SimExceptionOutcome.WriteRejected>(bind.OnException(bindCalls.LastSend, "DATA_ERROR"));
+    /// <summary>Flight 1 (2026-11-04): each slot's first bind cleared a definition the sim never had, so 8 vars per side were blocked.</summary>
+    [Fact]
+    public void First_use_of_each_slot_sends_no_clear_and_nothing_is_refused()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        // The guest's first writes in flight 1, then more than a pool's worth so slots are re-used.
+        string[] vars = ["A_ASP_INT_VOLUME", "S_ASP_INT_REC_LATCH", "A_FC_SPEEDBRAKE", "S_OH_INT_LT_EMER", "S_OH_EXT_LT_NAV_LOGO",
+            "S_OH_OXYGEN_CREW_OXYGEN", "S_OH_RCRD_GND_CTL", "A_OH_PNEUMATIC_FWD_TEMP", "S_ARMREST_LEFT_FO", "E_FCU_EFIS1_BARO", "S_CDU1_KEY_FPLN"];
+        foreach (var v in vars) defs.Write(calls, v, 1);
+        Assert.Empty(calls.Refused);
+        Assert.Equal(vars.Length - SimDefinitions.PoolSize, calls.Clears); // only re-used slots are cleared
+        Assert.All(vars, v => Assert.Equal(1, calls.Landed[v]));
+        Assert.All(vars, v => Assert.Equal(0, defs.Strikes(v)));
+    }
+
+    [Fact]
+    public void Rebind_sends_clear_then_add_then_set_on_the_same_definition_in_order()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        for (var i = 0; i < SimDefinitions.PoolSize; i++) defs.Write(calls, $"V{i}", 1);
+        calls.Log.Clear();
+        defs.Write(calls, "NEW", 5); // takes V0's slot (least recently used)
+        const int def = SimDefinitions.WriteDefBase;
+        Assert.Equal([("clear", def), ("add", def), ("set", def)], calls.Log);
+        Assert.Equal("NEW", calls.Bound[def]);
+        Assert.Equal(5, calls.Landed["NEW"]);
+        Assert.Empty(calls.Refused);
+    }
+
+    [Fact]
+    public void An_exception_for_an_unknown_send_is_logged_and_blocks_nothing()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        defs.Write(calls, "S_TRAY_TABLE_CAPT", 1);
+        Assert.IsType<SimExceptionOutcome.Unknown>(defs.OnException(99_999, "UNRECOGNIZED_ID"));
+        Assert.IsType<SimExceptionOutcome.Unknown>(defs.OnException(uint.MaxValue, "UNRECOGNIZED_ID"));
+        Assert.Equal(0, defs.Strikes("S_TRAY_TABLE_CAPT"));
+        Assert.Contains("S_TRAY_TABLE_CAPT", Enumerable.Range(0, SimDefinitions.PoolSize).Select(defs.SlotVar)); // still bound
+    }
+
+    [Fact]
+    public void A_refused_clear_is_ignored_blocks_nothing_and_retires_the_slot()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        for (var i = 0; i < SimDefinitions.PoolSize; i++) defs.Write(calls, $"V{i}", 1);
+        defs.Write(calls, "NEW", 1);
+        var clear = calls.LastSend - 2; // clear, add, set
+        var outcome = Assert.IsType<SimExceptionOutcome.Ignored>(defs.OnException(clear, "UNRECOGNIZED_ID"));
+        Assert.Contains("not blocked", outcome.Why);
+        Assert.Equal(0, defs.Strikes("NEW"));
+        // The slot is not used again; NEW moves to another slot on its next write.
+        Assert.DoesNotContain("NEW", Enumerable.Range(0, SimDefinitions.PoolSize).Select(defs.SlotVar));
+        calls.Log.Clear();
+        defs.Write(calls, "NEW", 2);
+        Assert.DoesNotContain(calls.Log, c => c.Def == SimDefinitions.WriteDefBase);
+        Assert.Equal(2, calls.Landed["NEW"]);
+    }
+
+    [Fact]
+    public void A_matched_rejection_retries_once_with_the_same_value_and_the_second_blocks()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        defs.Write(calls, "S_TRAY_TABLE_CAPT", 1);
+        // The write itself is refused (its send ID matches exactly): first strike, retry the same value.
+        var retry = Assert.IsType<SimExceptionOutcome.Retry>(defs.OnException(calls.LastSend, "DATA_ERROR"));
+        Assert.Equal("S_TRAY_TABLE_CAPT", retry.Var);
+        Assert.Equal(1, retry.Value);
+        Assert.DoesNotContain("S_TRAY_TABLE_CAPT", Enumerable.Range(0, SimDefinitions.PoolSize).Select(defs.SlotVar)); // fresh slot next time
+        // The retry is refused too: blocked.
+        defs.Write(calls, retry.Var, retry.Value);
+        var rejected = Assert.IsType<SimExceptionOutcome.WriteRejected>(defs.OnException(calls.LastSend, "DATA_ERROR"));
         Assert.Equal("S_TRAY_TABLE_CAPT", rejected.Var);
         Assert.Contains("DATA_ERROR", rejected.Why);
-        // The slot is free again: the next var takes it without a stale binding.
-        Assert.DoesNotContain("S_TRAY_TABLE_CAPT", Enumerable.Range(0, SimDefinitions.PoolSize).Select(bind.SlotVar));
-        Assert.IsType<SimExceptionOutcome.Unknown>(bind.OnException(99_999, "ERROR"));
+    }
+
+    [Fact]
+    public void Two_exceptions_from_one_attempt_count_as_one_strike()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        defs.Write(calls, "V", 1);
+        var add = calls.LastSend - 1;
+        Assert.IsType<SimExceptionOutcome.Retry>(defs.OnException(add, "NAME_UNRECOGNIZED"));
+        Assert.IsType<SimExceptionOutcome.Ignored>(defs.OnException(calls.LastSend, "DATA_ERROR"));
+        Assert.Equal(1, defs.Strikes("V"));
+    }
+
+    [Fact]
+    public void A_newer_write_of_the_var_is_the_retry()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        defs.Write(calls, "V", 1);
+        var first = calls.LastSend;
+        defs.Write(calls, "V", 0); // the pilot moved it again before the exception arrived
+        Assert.IsType<SimExceptionOutcome.Ignored>(defs.OnException(first, "DATA_ERROR"));
+        Assert.Equal(1, defs.Strikes("V"));
+    }
+
+    [Fact]
+    public void A_landed_write_resets_the_strikes()
+    {
+        var defs = new SimDefinitions();
+        var calls = new FakeSimConnectCalls(int.MaxValue);
+        defs.SetupSlots(calls);
+        defs.Write(calls, "V", 1);
+        Assert.IsType<SimExceptionOutcome.Retry>(defs.OnException(calls.LastSend, "DATA_ERROR"));
+        defs.Write(calls, "V", 1);
+        defs.NoteLanded("V", 0.5); // another value proves nothing
+        Assert.Equal(1, defs.Strikes("V"));
+        defs.NoteLanded("V", 1);
+        Assert.Equal(0, defs.Strikes("V"));
+        // A later single refusal is a retry again, not a block.
+        defs.Write(calls, "V", 0);
+        Assert.IsType<SimExceptionOutcome.Retry>(defs.OnException(calls.LastSend, "DATA_ERROR"));
+    }
+
+    [Fact]
+    public void A_struct_registration_that_sends_no_packet_does_not_relabel_the_previous_call()
+    {
+        var defs = new SimDefinitions();
+        defs.Note(7, SendKind.ReadChunk, "S_A", 0);
+        defs.SetupSlots(new NoPacketRegister());
+        var error = Assert.IsType<SimExceptionOutcome.SetupError>(defs.OnException(7, "ERROR"));
+        Assert.Contains("read definition", error.Why);
+    }
+
+    /// <summary>RegisterDataDefineStruct may send no packet: "last sent" is still the read request (send 7).</summary>
+    private sealed class NoPacketRegister : ISimConnectCalls
+    {
+        public uint RegisterOneVar(int definition) => 7;
+        public uint ClearDefinition(int definition) => 0;
+        public uint AddToDefinition(int definition, string lvar) => 0;
+        public uint SetValue(int definition, double value) => 0;
     }
 }
 

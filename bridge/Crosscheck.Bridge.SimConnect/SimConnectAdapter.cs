@@ -4,9 +4,10 @@
 // A test (SafetyTripwireTests) fails if event APIs ever appear in this file.
 //
 // Definitions (gate test 3 cause A): reads use chunks of 32 vars; writes share a pool of 8 definitions that
-// are re-pointed to the var being written (SimDefinitions). Every SimConnect exception is traced to its call:
-// a refused write blocks that var (WriteRejected, a red line), a refused read or slot definition is a setup
-// error (SetupError, the bridge refuses to start a session). Never silent.
+// are re-pointed to the var being written (SimDefinitions). Every SimConnect exception is traced to its call by
+// its exact send ID: a refused write is retried once, a second refusal blocks that var (WriteRejected, a red
+// line), a refused read or slot definition is a setup error (SetupError, the bridge refuses to start a session).
+// An exception no call matches is logged and blocks nothing. Never silent.
 
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -117,7 +118,16 @@ public sealed class SimConnectAdapter : ISimAdapter
                 _wake.WaitOne(10);
                 while (_writes.TryDequeue(out var w))
                 {
-                    _definitions.Write(_calls!, w.Name, w.Value);
+                    try
+                    {
+                        _definitions.Write(_calls!, w.Name, w.Value);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        // No write slot left (every clear refused): this write fails loudly, the link stays up.
+                        w.Done.TrySetException(e);
+                        continue;
+                    }
                     _awaitingReadBack[w.Name] = DateTime.UtcNow;
                     w.Done.TrySetResult();
                 }
@@ -193,6 +203,8 @@ public sealed class SimConnectAdapter : ISimAdapter
         var text = outcome switch
         {
             SimExceptionOutcome.WriteRejected r => $"{r.Var}: {r.Why}",
+            SimExceptionOutcome.Retry r => $"{r.Var}: {r.Why}",
+            SimExceptionOutcome.Ignored i => i.Why,
             SimExceptionOutcome.SetupError s => s.Why,
             SimExceptionOutcome.Unknown u => u.Why,
             _ => exception.ToString(),
@@ -205,10 +217,24 @@ public sealed class SimConnectAdapter : ISimAdapter
                 _awaitingReadBack.TryRemove(r.Var, out _);
                 try { WriteRejected?.Invoke(r.Var, r.Why); } catch (Exception e) { _log.LogError(e, "WriteRejected handler failed"); }
                 break;
+            case SimExceptionOutcome.Retry r:
+                // First refusal traced to this var: the same value once more, on a fresh slot. The guard checks it again;
+                // a second refusal blocks the var (SimDefinitions.StrikesToBlock).
+                try
+                {
+                    Guard.CheckWrite(r.Var, r.Value);
+                    _writes.Enqueue((r.Var, r.Value, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)));
+                    _wake.Set();
+                }
+                catch (SafetyViolationException e)
+                {
+                    _log.LogWarning("Retry of {Var} not sent: {Why}", r.Var, e.Message);
+                }
+                break;
             case SimExceptionOutcome.SetupError s:
                 AddSetupError(s.Why);
                 break;
-            // Unknown: logged (SimException) only. Only a refused call the bridge can name blocks sessions.
+            // Ignored, Unknown: logged (SimException) only. They never block a var.
         }
     }
 
@@ -229,7 +255,7 @@ public sealed class SimConnectAdapter : ISimAdapter
             var value = chunk.V[i];
             if (_values.TryGetValue(names[i], out var old) && old == value) continue;
             _values[names[i]] = value;
-            _awaitingReadBack.TryRemove(names[i], out _);
+            if (_awaitingReadBack.TryRemove(names[i], out _)) _definitions.NoteLanded(names[i], value);
             ValueChanged?.Invoke(names[i], value);
         }
     }

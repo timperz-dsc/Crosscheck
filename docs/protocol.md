@@ -265,8 +265,13 @@ them is CRO-31.
 
 **A var the sim refuses to write (gate test 3 cause A, CRO-40).** The bridge registers its SimConnect
 data definitions in a bounded way (read chunks of 32 vars and a pool of 8 write definitions, at most 256 in
-all) and traces every SimConnect exception to its call. If the sim still refuses a write (or the
-definition it needs), the bridge blocks that var for as long as it runs, logs it with the var, and sends
+all) and traces every SimConnect exception to its call by its exact send ID. An exception that matches
+no call is logged and blocks nothing. A write slot is cleared only once it holds a var (clearing a
+definition the sim has never seen is refused with UNRECOGNIZED_ID, which blocked 8 vars per side in the
+first two-PC flight on 2026-11-04); a refused clear blocks no var, it retires that slot for the rest of the
+connection. The first refusal of a var's own add or write is retried once with the same value on a fresh
+slot (unless a newer write of that var is already on its way); a write that later reads back resets the
+count. If the sim refuses it a second time, the bridge blocks that var for as long as it runs, logs it with the var, and sends
 `write_blocked {var, group, label}`; the server raises red `cannot_write` for both pilots ("Crosscheck
 cannot write TRAY TABLE CAPT in the guest cockpit. Set it by hand in both cockpits."), blocking, so no
 correction is sent for it. A command for it is acked `ok: false, reason: cannot_write` (the same red line,

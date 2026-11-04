@@ -78,3 +78,16 @@ all controls done
 
 all controls done
 
+# Supervised write test, 2026-11-04 17:58
+
+bridge write path (--bridge-profile): 70 SimConnect definitions (62 read chunks for 1960 watched vars + 8 write slots), as in a bridge session
+
+
+== captain's tray table (S_TRAY_TABLE_CAPT)
+   starts at 0; values this test may write: 0, 1 (scan 0; positions run 2026-11-03: 0, 1; gate test 3: refused past the definition limit; cosmetic, nothing in the aircraft depends on it)
+   0 -> 1 (position 1): STUCK for 2.5 s, read back after 23 ms
+   1 -> 0 (position 0): STUCK for 2.5 s, read back after 25 ms
+   back at 0 (where it started)
+
+all controls done
+
