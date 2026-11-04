@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- CRO-17 follower spike, Windows only: the thin SimConnect host (record, play, restore).
+       All logic is in Follower.Core. Offline use with your own sim only: see
+       docs/spikes/CRO-17-follower.md. Never referenced by anything under bridge/. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>follower-sim</AssemblyName>
+    <RootNamespace>Crosscheck.Follower.Sim</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <!-- Same SimConnect lookup as bridge/Crosscheck.Bridge.SimConnect: the MSFS 2024 SDK if
+       MSFS2024_SDK is set, otherwise the copies in bridge/third_party/simconnect. -->
+  <PropertyGroup Condition="'$(MSFS2024_SDK)' != ''">
+    <MsfsSdkDir>$([MSBuild]::EnsureTrailingSlash('$(MSFS2024_SDK)'))</MsfsSdkDir>
+    <SimConnectNativeDir>$(MsfsSdkDir)SimConnect SDK\lib\</SimConnectNativeDir>
+    <SimConnectManagedDir>$(MsfsSdkDir)SimConnect SDK\lib\managed\</SimConnectManagedDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSFS2024_SDK)' == ''">
+    <SimConnectNativeDir>$(MSBuildThisFileDirectory)..\..\..\bridge\third_party\simconnect\</SimConnectNativeDir>
+    <SimConnectManagedDir>$(MSBuildThisFileDirectory)..\..\..\bridge\third_party\simconnect\</SimConnectManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.FlightSimulator.SimConnect">
+      <HintPath>$(SimConnectManagedDir)Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+    </Reference>
+    <None Include="$(SimConnectNativeDir)SimConnect.dll" Link="SimConnect.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Follower.Core\Follower.Core.csproj" />
+  </ItemGroup>
+
+  <Target Name="CheckSimConnect" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(SimConnectNativeDir)SimConnect.dll')" Text="SimConnect.dll not found under $(SimConnectNativeDir)" />
+    <Error Condition="!Exists('$(SimConnectManagedDir)Microsoft.FlightSimulator.SimConnect.dll')" Text="Microsoft.FlightSimulator.SimConnect.dll not found under $(SimConnectManagedDir)" />
+  </Target>
+
+</Project>

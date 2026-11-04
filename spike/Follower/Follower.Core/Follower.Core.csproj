@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- CRO-17 follower spike: all logic (file format, buffer, interpolation, network simulation,
+       metrics). Cross-platform, no SimConnect. Never referenced by anything under bridge/. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Crosscheck.Follower</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Follower.Core.Tests" />
+  </ItemGroup>
+
+</Project>
