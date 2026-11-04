@@ -26,6 +26,10 @@ class SocketConn implements Conn {
   isOpen(): boolean {
     return this.ws.readyState === this.ws.OPEN;
   }
+
+  bufferedAmount(): number {
+    return this.ws.bufferedAmount;
+  }
 }
 
 export class SessionManager {

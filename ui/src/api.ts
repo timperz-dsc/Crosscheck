@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Actions, BridgeEvent, Status } from './types';
 
+/** The bridge needs the pilot's confirmation first (e.g. release_in_air). */
+export class ConfirmNeeded extends Error {
+  constructor(message: string, readonly confirm: string) {
+    super(message);
+  }
+}
+
 async function post(path: string, body: unknown = {}): Promise<void> {
   const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   if (!r.ok) {
-    const answer = (await r.json().catch(() => ({}))) as { error?: string };
+    const answer = (await r.json().catch(() => ({}))) as { error?: string; confirm?: string | null };
+    if (answer.confirm) throw new ConfirmNeeded(answer.error ?? '', answer.confirm);
     throw new Error(answer.error ?? `The bridge answered ${r.status}.`);
   }
 }
@@ -18,6 +26,9 @@ export interface BridgeState {
   error: string | null;
   /** A take-control request was refused because the PF is lost: ask for the explicit confirm. */
   confirmPeerLost: boolean;
+  /** Leave was asked while this aircraft is held frozen in the air: ask before releasing it. */
+  confirmLeaveInAir: string | null;
+  cancelLeave(): void;
   busy: boolean;
   actions: Actions;
 }
@@ -28,6 +39,7 @@ export function useBridge(pollMs = 1000): BridgeState {
   const [bridgeDown, setBridgeDown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmPeerLost, setConfirmPeerLost] = useState(false);
+  const [confirmLeaveInAir, setConfirmLeaveInAir] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const alive = useRef(true);
 
@@ -83,7 +95,8 @@ export function useBridge(pollMs = 1000): BridgeState {
       try {
         await fn();
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        if (e instanceof ConfirmNeeded && e.confirm === 'release_in_air') setConfirmLeaveInAir(e.message);
+        else setError(e instanceof Error ? e.message : String(e));
       } finally {
         setBusy(false);
         await refresh();
@@ -97,7 +110,11 @@ export function useBridge(pollMs = 1000): BridgeState {
     check: (code) => run(() => post('/api/session/check', { code }))(),
     join: (code) => run(() => post('/api/session/join', { code }))(),
     cancel: () => run(() => post('/api/session/cancel'))(),
-    leave: () => run(() => post('/api/session/leave'))(),
+    leave: (releaseInAir = false) => run(async () => {
+      await post('/api/session/leave', { release_in_air: releaseInAir });
+      setConfirmLeaveInAir(null);
+    })(),
+    releaseAircraft: () => run(() => post('/api/aircraft/release'))(),
     takeControl: (confirm = false) => run(async () => {
       await post('/api/control/take', { confirm_peer_lost: confirm });
       if (confirm) setConfirmPeerLost(false);
@@ -110,5 +127,5 @@ export function useBridge(pollMs = 1000): BridgeState {
     applyUpdate: () => run(() => post('/api/update/apply'))(),
   };
 
-  return { status, bridgeDown, error, confirmPeerLost, busy, actions };
+  return { status, bridgeDown, error, confirmPeerLost, confirmLeaveInAir, cancelLeave: () => setConfirmLeaveInAir(null), busy, actions };
 }

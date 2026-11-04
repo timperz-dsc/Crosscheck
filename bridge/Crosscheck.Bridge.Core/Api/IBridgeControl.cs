@@ -8,6 +8,9 @@ public sealed record ApiResult(bool Ok, string? Error = null)
     /// <summary>join_rejected body when the server refused a join (headless mode reports it).</summary>
     public JsonObject? Rejected { get; init; }
 
+    /// <summary>The request needs the pilot's confirmation first (e.g. "release_in_air"); the UI asks and sends it again.</summary>
+    public string? Confirm { get; init; }
+
     public static ApiResult Success { get; } = new(true);
     public static ApiResult Fail(string error) => new(false, error);
 }
@@ -23,6 +26,10 @@ public interface IBridgeControl
     Task<ApiResult> JoinAsync(string code);
     ApiResult CancelPreflight();
     Task<ApiResult> LeaveAsync();
+    /// <summary>Leave; <paramref name="releaseInAir"/> = the pilot confirmed releasing the aircraft in the air.</summary>
+    Task<ApiResult> LeaveAsync(bool releaseInAir);
+    /// <summary>"Release aircraft": switches the sim's freezes off (crashed bridge, or holding after the PF was lost).</summary>
+    ApiResult ReleaseAircraft();
     ApiResult TakeControl(bool confirmPeerLost);
     ApiResult GiveControl();
     Task<ApiResult> PilotSetAsync(string name, double value);

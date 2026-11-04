@@ -801,8 +801,9 @@ public sealed class SyncEngine : IAsyncDisposable
                 OnDrift(body["group"]!.GetValue<string>(), (JsonArray)body["values"]!.DeepClone());
                 break;
             case "stream":
-                if (body["data"] is JsonObject data)
-                    _sim.Stream.Apply(data.ToDictionary(p => p.Key, p => p.Value!.GetValue<double>()));
+                // Passed on to the physics side (Follow.PhysicsSync) only while this side is not PF.
+                if (body["data"] is JsonObject data && body["frame"] is JsonValue fv && fv.TryGetValue<long>(out var frameNo))
+                    _sim.Stream.Apply(frameNo, data);
                 break;
             case "error":
                 _hub.Publish("error", body["message"]!.GetValue<string>(), body);
@@ -1857,15 +1858,15 @@ public sealed class SyncEngine : IAsyncDisposable
         return text;
     }
 
-    /// <summary>Sends one stream frame; only while PF (the field set is a placeholder until CRO-17).</summary>
-    public bool SendStreamFrame(long frame, IReadOnlyDictionary<string, double> data)
+    /// <summary>Sends one stream frame (protocol.md section 9); only while PF. Never logged, never replayed.</summary>
+    public bool SendStreamFrame(long frame, IReadOnlyDictionary<string, double> data) =>
+        SendStreamFrame(frame, new JsonObject(data.Select(p => KeyValuePair.Create(p.Key, (JsonNode?)p.Value))));
+
+    /// <summary>Sends one stream frame (protocol.md section 9); only while PF. Never logged, never replayed.</summary>
+    public bool SendStreamFrame(long frame, JsonObject data)
     {
         if (!IsPf) return false;
-        _client.Send("stream", new JsonObject
-        {
-            ["frame"] = frame,
-            ["data"] = new JsonObject(data.Select(p => KeyValuePair.Create(p.Key, (JsonNode?)p.Value))),
-        });
+        _client.Send("stream", new JsonObject { ["frame"] = frame, ["data"] = data });
         return true;
     }
 

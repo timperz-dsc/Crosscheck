@@ -107,6 +107,7 @@ public static class Interpolator
             FenixStickCaptBank = L(a.FenixStickCaptBank, b.FenixStickCaptBank),
             FenixStickFoPitch = L(a.FenixStickFoPitch, b.FenixStickFoPitch),
             FenixStickFoBank = L(a.FenixStickFoBank, b.FenixStickFoBank),
+            GForce = L(a.GForce, b.GForce),
         };
     }
 
@@ -136,21 +137,37 @@ public static class Interpolator
         return lo;
     }
 
+    /// <summary>Window for <see cref="VelocityMismatch"/>, seconds.</summary>
+    public const double MismatchWindowS = 0.5;
+
     /// <summary>
     /// Checks that the recorded world velocities match the position changes (sign and axis
-    /// conventions). Returns the median relative mismatch over moving frames; NaN if it never moves.
+    /// conventions). Over windows of <see cref="MismatchWindowS"/>: the displacement against the
+    /// velocity integrated over the window. A window is long enough that a few ms of noise in
+    /// the frame times (stopwatch) do not count, and the integral follows turns. Returns the
+    /// median relative mismatch over moving windows; NaN if it never moves.
     /// </summary>
-    public static double VelocityMismatch(IReadOnlyList<Frame> frames)
+    public static double VelocityMismatch(IReadOnlyList<Frame> frames, double windowS = MismatchWindowS)
     {
         var errs = new List<double>();
-        for (var i = 1; i < frames.Count; i++)
+        var i = 0;
+        while (i < frames.Count - 1)
         {
-            var dt = frames[i].T - frames[i - 1].T;
-            if (dt <= 1e-6) continue;
-            var fd = Geo.Offset(frames[i - 1], frames[i]) * (1 / dt);
-            var v = (Geo.Velocity(frames[i - 1]) + Geo.Velocity(frames[i])) * 0.5;
-            if (fd.Length < 2) continue; // below ~4 kt the noise dominates
-            errs.Add((fd - v).Length / fd.Length);
+            var j = i;
+            var integral = new Enu(0, 0, 0);
+            while (j + 1 < frames.Count && frames[j].T - frames[i].T < windowS)
+            {
+                var dt = frames[j + 1].T - frames[j].T;
+                if (dt > 0) integral += (Geo.Velocity(frames[j]) + Geo.Velocity(frames[j + 1])) * (0.5 * dt);
+                j++;
+            }
+            var span = frames[j].T - frames[i].T;
+            if (span < windowS * 0.5) break; // the short rest at the end
+            var disp = Geo.Offset(frames[i], frames[j]);
+            var h = new Enu(disp.E, disp.N, 0);
+            var hv = new Enu(integral.E, integral.N, 0);
+            if (h.Length / span >= 2) errs.Add((h - hv).Length / h.Length); // below ~4 kt the noise dominates
+            i = j;
         }
         if (errs.Count == 0) return double.NaN;
         errs.Sort();

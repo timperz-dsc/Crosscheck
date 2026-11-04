@@ -9,7 +9,7 @@ using SC = Microsoft.FlightSimulator.SimConnect.SimConnect;
 
 namespace Crosscheck.Follower.Sim;
 
-enum Def : uint { State = 1, Title = 2, Flags = 3, PlacePos = 10, PlaceBody = 11, PlaceWorld = 12 }
+enum Def : uint { State = 1, Title = 2, Flags = 3, PlacePos = 10, PlaceBody = 11, PlaceWorld = 12, PlaceMixed = 13, PlaceVerticalSpeed = 14, PlaceGForce = 15 }
 
 enum Req : uint { State = 1, Title = 2, Flags = 3 }
 
@@ -42,6 +42,20 @@ struct FlagsData
 struct Pos6
 {
     public double Lat, Lon, AltFt, Pitch, Bank, Heading;
+}
+
+/// <summary>Position, attitude and the mixed set: VELOCITY BODY Y/Z, VELOCITY WORLD X/Z.</summary>
+[StructLayout(LayoutKind.Sequential)]
+struct Pos10
+{
+    public double Lat, Lon, AltFt, Pitch, Bank, Heading, BodyY, BodyZ, WorldX, WorldZ;
+}
+
+/// <summary>One value (an extra var written on its own, so a refusal by the sim only affects it).</summary>
+[StructLayout(LayoutKind.Sequential)]
+struct One
+{
+    public double V;
 }
 
 /// <summary>Position, attitude and six velocities (body or world, plus body rotation rates).</summary>
@@ -126,15 +140,47 @@ static class SimLink
         sc.RegisterDataDefineStruct<Pos12>(Def.PlaceBody);
         Add(Def.PlaceWorld, p.Concat(world.Select(v => (v, "feet per second"))).Concat(rot.Select(v => (v, "radians per second"))));
         sc.RegisterDataDefineStruct<Pos12>(Def.PlaceWorld);
+        // The set YourControls and FS Copilot write (research section 6.1), without the two extras below.
+        Add(Def.PlaceMixed, p.Concat(new[] { body[1], body[2], world[0], world[2] }.Select(v => (v, "feet per second"))));
+        sc.RegisterDataDefineStruct<Pos10>(Def.PlaceMixed);
+        foreach (var x in Extras)
+        {
+            Add(x.Def, [(x.Var, x.Unit)]);
+            sc.RegisterDataDefineStruct<One>(x.Def);
+        }
     }
 
-    /// <summary>Writes the follower's place. The only SetDataOnSimObject in this project.</summary>
+    /// <summary>Extra vars of the mixed set, each written on its own. The sim may refuse one; then only that one stops.</summary>
+    public static readonly IReadOnlyList<(Def Def, string Var, string Unit)> Extras =
+    [
+        (Def.PlaceVerticalSpeed, "VERTICAL SPEED", "feet per second"),
+        (Def.PlaceGForce, "G FORCE", "gforce"),
+    ];
+
+    /// <summary>Writes one extra var of the mixed set; returns the send id, to match a SimConnect exception to it.</summary>
+    public static uint PlaceExtra(SC sc, Def def, double value)
+    {
+        if (!Extras.Any(x => x.Def == def)) throw new ArgumentException($"{def} is not an extra placement var");
+        sc.SetDataOnSimObject(def, SC.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT, new One { V = value });
+        return sc.GetLastSentPacketID();
+    }
+
+    /// <summary>Writes the follower's place. With PlaceExtra, the only SetDataOnSimObject calls in this project.</summary>
     public static void Place(SC sc, in Frame f, VelocityMode velocities, bool slewing)
     {
         if (slewing || velocities == VelocityMode.None)
         {
             sc.SetDataOnSimObject(Def.PlacePos, SC.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT,
                 new Pos6 { Lat = f.Lat, Lon = f.Lon, AltFt = f.AltFt, Pitch = f.PitchDeg, Bank = f.BankDeg, Heading = f.HeadingDeg });
+            return;
+        }
+        if (velocities == VelocityMode.Mixed)
+        {
+            sc.SetDataOnSimObject(Def.PlaceMixed, SC.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT, new Pos10
+            {
+                Lat = f.Lat, Lon = f.Lon, AltFt = f.AltFt, Pitch = f.PitchDeg, Bank = f.BankDeg, Heading = f.HeadingDeg,
+                BodyY = f.VelBodyY, BodyZ = f.VelBodyZ, WorldX = f.VelWorldX, WorldZ = f.VelWorldZ,
+            });
             return;
         }
         var world = velocities == VelocityMode.World;

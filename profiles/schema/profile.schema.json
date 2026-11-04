@@ -163,7 +163,7 @@
           "items": { "type": "number" }
         },
         "range": {
-          "description": "Allowed [min, max] (verified, analog). Hard write limit.",
+          "description": "Allowed [min, max] (verified, analog, stream). Hard write limit. A stream var (thrust lever) is written by the follower only once it has a range the owner confirmed from a measurement (CRO-13).",
           "$ref": "#/$defs/numberRange"
         },
         "verify": { "$ref": "#/$defs/verify" },
@@ -227,7 +227,7 @@
           "minLength": 1
         },
         "tolerance": {
-          "description": "observe only: the sims count as matching while the values differ by no more than this (in the var's units). Compared outside the exact group hash.",
+          "description": "observe: the sims count as matching while the values differ by no more than this (in the var's units). Compared outside the exact group hash. stream: the follower's own value counts as matching the PF's while within this (thrust levers: \"Match your thrust levers\" before a control transfer).",
           "type": "number",
           "exclusiveMinimum": 0
         },

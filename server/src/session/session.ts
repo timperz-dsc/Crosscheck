@@ -22,6 +22,8 @@ export interface Conn {
   send(text: string): void;
   terminate(): void;
   isOpen(): boolean;
+  /** Bytes queued on the socket and not sent yet (stream backpressure). */
+  bufferedAmount?(): number;
   slot?: ClientSlot;
   session?: Session;
 }
@@ -29,6 +31,10 @@ export interface Conn {
 interface StreamStats {
   frames: number;
   dropped: number;
+  /** Frames not newer than the last one relayed from this PF (latest wins, never replayed). */
+  stale: number;
+  /** Frames skipped for a receiver whose socket was still busy (latest wins on a slow link). */
+  skippedSlow: number;
   active: boolean;
   lastAt: number;
   windowStart: number;
@@ -979,15 +985,29 @@ export class Session {
       st.dropped++;
       return;
     }
+    // Latest wins (protocol.md section 9): a frame that is not newer than the last one relayed from this PF
+    // is dropped. lastFrame is cleared on a control change, so a new PF starts fresh.
+    if (this.lastFrame && this.lastFrame.from === slot.id && body.frame <= this.lastFrame.frame) {
+      st.stale++;
+      return;
+    }
     st.frames++;
     st.lastAt = now;
     if (!st.active) {
       st.active = true;
       this.log.event('stream_started', { client: slot.id, frame: body.frame });
     }
-    const peer = this.other(slot);
     this.lastFrame = { frame: body.frame, data: body.data, from: slot.id };
-    if (peer?.state === 'connected') this.sendUnsequenced(peer, 'stream', { frame: body.frame, data: body.data, from: slot.id });
+    // Relayed to every other connected client (the follower; observers later, CRO-38). Never corrected,
+    // never queued: a receiver whose socket is still busy skips this frame and gets the next one.
+    for (const target of this.slots) {
+      if (target === slot || target.state !== 'connected') continue;
+      if ((target.conn?.bufferedAmount?.() ?? 0) > this.config.streamBackpressureBytes) {
+        st.skippedSlow++;
+        continue;
+      }
+      this.sendUnsequenced(target, 'stream', { frame: body.frame, data: body.data, from: slot.id });
+    }
   }
 
   // ------------------------------------------------------------------ liveness
@@ -1019,7 +1039,7 @@ export class Session {
       const st = slot.stream;
       if (st.active && now - st.lastAt > this.config.streamIdleMs) {
         st.active = false;
-        this.log.event('stream_stopped', { client: slot.id, frames: st.frames, dropped: st.dropped });
+        this.log.event('stream_stopped', { client: slot.id, frames: st.frames, dropped: st.dropped, stale: st.stale, skipped_slow: st.skippedSlow });
       }
     }
   }
@@ -1028,7 +1048,7 @@ export class Session {
     this.log.event('summary', {
       clients: this.slots.map((s) => ({
         client: s.id, seat: s.seat, role: this.role(s), state: s.state, rtt_ms: s.rttMs, client_rtt_ms: s.clientRttMs,
-        stream_frames: s.stream.frames, stream_dropped: s.stream.dropped,
+        stream_frames: s.stream.frames, stream_dropped: s.stream.dropped, stream_stale: s.stream.stale, stream_skipped_slow: s.stream.skippedSlow,
       })),
       pending_groups: [...this.groups.keys()].filter((g) => this.pending.countInGroup(g) > 0),
       open_desyncs: this.openDesyncs(),
@@ -1115,7 +1135,7 @@ export class Session {
     const slot: ClientSlot = {
       id: newClientId(), seat, token: newResumeToken(), preflight, conn: null, state: 'connected',
       lastRxAt: now, lastPongAt: now, rttMs: null, clientRttMs: null, pingNonce: 0, expiryTimer: null,
-      stream: { frames: 0, dropped: 0, active: false, lastAt: 0, windowStart: 0, windowCount: 0, lastNoticeAt: -Infinity },
+      stream: { frames: 0, dropped: 0, stale: 0, skippedSlow: 0, active: false, lastAt: 0, windowStart: 0, windowCount: 0, lastNoticeAt: -Infinity },
       simConnected: true,
       ...(name ? { name } : {}),
     };

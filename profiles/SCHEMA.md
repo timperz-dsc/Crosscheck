@@ -42,7 +42,7 @@ Common fields: `name`, `class`, `group`, optional `note`, `label`, `value_labels
 | delta | the change only | | `display` (a var in this profile), `verify` |
 | pulse | 1, then 0 (`press: momentary`), or each press and release as it happens (`press: edge`) | `pulse_ms` (momentary only) | `press`, `verify` |
 | analog | absolute value | `range` | `verify` |
-| stream | none (PF streams it) | | `rate_hz` |
+| stream | none (PF streams it); the follower writes it only with a confirmed `range` (CRO-13) | | `rate_hz`, `range`, `tolerance` (follower: matches the PF within this, "Match your thrust levers") |
 | owned | once at session start | | `verify` |
 | observe | never | | |
 | ignore | never | | |

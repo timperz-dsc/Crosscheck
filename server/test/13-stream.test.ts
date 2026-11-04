@@ -31,6 +31,25 @@ describe('13. stream (physics from the PF)', () => {
     expect(host.messages('stream')).toHaveLength(0);
   });
 
+  it('drops a frame that is not newer than the last one relayed (latest wins, never replayed)', async () => {
+    pair = await startPair();
+    const { host, guest } = pair;
+    for (const n of [5, 3, 5, 6, 4, 7]) host.stream(n, frame(n));
+    await waitUntil(() => guest.messages('stream').some((m) => body(m).frame === 7), 'frame 7 relayed');
+    await sleep(30);
+    expect(guest.messages('stream').map((m) => body(m).frame)).toEqual([5, 6, 7]);
+  });
+
+  it('skips a frame for a receiver whose socket is still busy, and counts it', async () => {
+    // -1: every socket counts as busy, so every frame is skipped (the next frame would replace it).
+    pair = await startPair({ server: { streamBackpressureBytes: -1, summaryIntervalMs: 20 } });
+    const { host, guest, server } = pair;
+    for (let i = 0; i < 4; i++) host.stream(i, frame(i));
+    await waitUntil(() => server.logLines().some((l) => l.event === 'summary'
+      && ((l as { clients?: { stream_skipped_slow?: number }[] }).clients ?? []).some((c) => c.stream_skipped_slow === 4)), 'skips counted');
+    expect(guest.messages('stream')).toHaveLength(0);
+  });
+
   it('drops frames above the rate limit', async () => {
     pair = await startPair();
     const { host, guest, server } = pair;

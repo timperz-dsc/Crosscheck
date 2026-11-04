@@ -80,7 +80,7 @@ public sealed class MemoryChannel : IProtocolChannel
 
     public void Send(string type, JsonObject body)
     {
-        var envelope = new JsonObject { ["v"] = 5, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
+        var envelope = new JsonObject { ["v"] = ProtocolClient.ProtocolVersion, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 1, ["body"] = body.DeepClone() };
         if (MessageValidator.Shared.Validate(envelope) is { } error) Invalid.Enqueue(error);
         Sent.Enqueue((type, (JsonObject)body.DeepClone()));
     }
@@ -91,7 +91,7 @@ public sealed class MemoryChannel : IProtocolChannel
 
     public void Inject(string type, JsonObject body, long? seq = null)
     {
-        var msg = new JsonObject { ["v"] = 5, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 0, ["body"] = body };
+        var msg = new JsonObject { ["v"] = ProtocolClient.ProtocolVersion, ["type"] = type, ["session"] = "s_test0001", ["ts"] = 0, ["body"] = body };
         if (seq is not null) msg["seq"] = seq;
         MessageReceived?.Invoke(msg);
     }

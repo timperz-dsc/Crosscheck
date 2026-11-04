@@ -1,7 +1,7 @@
-// TypeScript view of protocol v5. The JSON Schema in protocol/schema is the source of truth;
+// TypeScript view of protocol v6. The JSON Schema in protocol/schema is the source of truth;
 // every inbound message is validated against it before these types are trusted.
 
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 /** Shown to a client that speaks another protocol version (for example the 0.1.0 zip). */
 export const OUTDATED_MESSAGE = 'Your Crosscheck is out of date. Download the latest version.';

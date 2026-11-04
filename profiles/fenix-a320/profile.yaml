@@ -10433,6 +10433,18 @@ vars:
     group: flightcontrols
     range: [0, 3]
     note: "label generated; 0 = ARM, 1 = RET, up to 3 = full; confirmed by own L: var read-back; GraphQL scale unverified (CRO-28)"
+  - name: A_FC_THROTTLE_LEFT_INPUT
+    label: "Throttle left input"
+    class: stream
+    group: flightcontrols
+    tolerance: 0.2
+    note: "label generated; thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
+  - name: A_FC_THROTTLE_RIGHT_INPUT
+    label: "Throttle right input"
+    class: stream
+    group: flightcontrols
+    tolerance: 0.2
+    note: "label generated; thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
   - name: B_FC_ELEVATOR_TRIM_MOTOR_POWER
     label: "Elevator trim motor power"
     class: observe
@@ -11690,18 +11702,8 @@ vars:
     class: ignore
     group: flightcontrols
     note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
-  - name: A_FC_THROTTLE_LEFT_INPUT
-    label: "Throttle left input"
-    class: ignore
-    group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
   - name: A_FC_THROTTLE_RIGHT_GATE
     label: "Throttle right gate"
-    class: ignore
-    group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
-  - name: A_FC_THROTTLE_RIGHT_INPUT
-    label: "Throttle right input"
     class: ignore
     group: flightcontrols
     note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"

@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { Actions, Status } from '../types';
-import { serverText, simText } from '../words';
+import { otherSide, pfLostText, physicsText, serverText, simText } from '../words';
 
 /** The Crosscheck mark, in the theme's ink and green. */
 export function Mark({ size = 18 }: { size?: number }) {
@@ -38,6 +38,41 @@ export function Line({ children, tone }: { children: ReactNode; tone?: 'warning'
   );
 }
 
+/**
+ * The red line while the PF (or the server) is lost and this aircraft is held frozen (CRO-13, owner decision
+ * 2026-11-04): never released by itself, only by the pilot's yes.
+ */
+export function PfLostLine({ status, actions, busy }: { status: Status; actions: Actions; busy: boolean }) {
+  const p = status.physics;
+  if (!p || p.mode !== 'pf_lost') return null;
+  const text = pfLostText(p, otherSide(status));
+  return (
+    <section className="pane-head headline" role="alert" aria-labelledby="pf-lost-title">
+      <div className="headline-title">
+        <AlertIcon />
+        <h1 id="pf-lost-title">{text.title}</h1>
+      </div>
+      <p className="muted">{text.detail}</p>
+      <div className="row">
+        <Button onClick={() => void actions.takeControl(true)} disabled={busy}>Take control</Button>
+      </div>
+    </section>
+  );
+}
+
+/** A frozen aircraft nobody holds (a crashed bridge, or holding after the session): "Release aircraft". */
+export function FrozenLine({ status, actions, busy }: { status: Status; actions: Actions; busy: boolean }) {
+  const p = status.physics;
+  if (!p || !p.frozen_outside) return null;
+  return (
+    <div className="line row" role="alert">
+      <AlertIcon />
+      <span className="differs">Your aircraft is frozen in the sim. Crosscheck froze it to follow the other pilot and did not release it.</span>
+      <Button small onClick={() => void actions.releaseAircraft()} disabled={busy}>Release aircraft</Button>
+    </div>
+  );
+}
+
 /** The window: the screen above, the status bar below. Nothing outside it scrolls. */
 export function Shell({ children, bar }: { children: ReactNode; bar: ReactNode }) {
   return (
@@ -62,6 +97,7 @@ export function StatusBar({ status, actions, busy }: { status: Status | null; ac
   }
   const inSession = status.phase === 'waiting' || status.phase === 'session';
   const sim = status.this_computer.sim;
+  const physics = physicsText(status);
   return (
     <footer className="statusbar">
       {status.phase === 'preflight' && status.preflight ? (
@@ -72,6 +108,7 @@ export function StatusBar({ status, actions, busy }: { status: Status | null; ac
         <span>Not in a session</span>
       )}
       {inSession && <span className={status.server === 'connected' ? undefined : 'warning'}>{serverText(status)}</span>}
+      {physics && <span className={physics.warning ? 'warning' : undefined}>{physics.text}</span>}
       <span className={sim.connected ? undefined : 'warning'}>{simText(status)}</span>
       <span className="statusbar-end">
         <span>Crosscheck {status.bridge_version}</span>

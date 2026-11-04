@@ -9,6 +9,39 @@ export interface ThisComputer {
   aircraft: { name: string; app_version: string | null; package_version: string | null; reading: boolean };
   profile: { id: string; builds: string[]; hash: string };
   server: string;
+  /** Online-network clients running here (vPilot, xPilot …): only the PF may be connected (CRO-13). */
+  network_clients?: string[];
+}
+
+/**
+ * The physics stream (CRO-13, bridge Follow/PhysicsSync.cs): the PF streams, the follower is frozen and
+ * placed. pf_lost: the PF (or the server) is lost and the follower holds where it is until the pilot's yes.
+ * released: the pilot took the aircraft while the server was gone and flies unsynced.
+ */
+export type PhysicsMode = 'off' | 'streaming' | 'waiting' | 'following' | 'pf_lost' | 'released';
+
+export interface Physics {
+  mode: PhysicsMode;
+  /** The physics link to the sim is up. */
+  link: boolean;
+  /** Crosscheck holds this aircraft frozen. */
+  frozen: boolean;
+  /** The sim reports a freeze on that Crosscheck does not hold (a crashed bridge): offer "Release aircraft". */
+  frozen_outside: boolean;
+  in_air: boolean;
+  pf_lost_cause: 'peer' | 'server' | null;
+  /** ok = interpolating, late = predicting ahead, holding = frames too late, waiting = none yet. */
+  health: 'ok' | 'late' | 'holding' | 'waiting' | null;
+  buffer_ms: number;
+  late_ms: number;
+  /** About the time a frame takes from the PF (round trip to the server), null until measured. */
+  latency_ms: number | null;
+  /** No frame for 2 s while following. */
+  no_stream: boolean;
+  /** Thrust levers that differ from the PF's (match them before taking control). */
+  levers: { var: string; pf: number; mine: number }[];
+  /** Placement vars the sim refused (no longer written). */
+  refused: string[];
 }
 
 export interface PreflightRow {
@@ -176,6 +209,8 @@ export interface Status {
   /** The session panel (CRO-34). */
   panel?: Panel;
   control_notice?: ControlNotice | null;
+  /** The physics stream (CRO-13); also between sessions (a frozen aircraft to release). */
+  physics?: Physics | null;
 }
 
 /** Event from WS /api/events. */
@@ -192,7 +227,10 @@ export interface Actions {
   check(code: string): Promise<void>;
   join(code: string): Promise<void>;
   cancel(): Promise<void>;
-  leave(): Promise<void>;
+  /** Leave; releaseInAir = the pilot confirmed releasing the aircraft in the air. */
+  leave(releaseInAir?: boolean): Promise<void>;
+  /** Switch the sim's freezes off (a crashed bridge, or holding after the PF was lost). */
+  releaseAircraft(): Promise<void>;
   takeControl(confirmPeerLost?: boolean): Promise<void>;
   giveControl(): Promise<void>;
   setBoth(variable: string, value: number): Promise<void>;

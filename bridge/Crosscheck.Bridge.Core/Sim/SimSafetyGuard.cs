@@ -22,7 +22,10 @@ public sealed partial class SimSafetyGuard
 
     public SimSafetyGuard(Profile profile)
     {
-        _writable = profile.Vars.Where(v => Writable.Contains(v.Class)).ToDictionary(v => v.Name, StringComparer.Ordinal);
+        // A stream var (thrust lever, CRO-13) is writable only once the profile gives it a confirmed range
+        // (owner decision 2026-11-04: measure the lever travel first; until then it is never written).
+        _writable = profile.Vars.Where(v => Writable.Contains(v.Class) || (v.Class == SyncClass.Stream && v.Range is not null))
+            .ToDictionary(v => v.Name, StringComparer.Ordinal);
     }
 
     public int Refused => _refused;

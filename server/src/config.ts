@@ -35,6 +35,11 @@ export interface ServerConfig {
   streamNoticeIntervalMs: number;
   /** No stream frame for this long → "stream stopped" in the log. */
   streamIdleMs: number;
+  /**
+   * Latest wins on a slow link (CRO-13): a stream frame is skipped for a receiver whose socket still has more
+   * than this many bytes waiting to go out. The next frame replaces it; nothing is ever queued up.
+   */
+  streamBackpressureBytes: number;
   /** How often RTT and stream counts are written to the log. */
   summaryIntervalMs: number;
   /** Time a fresh socket has to send create/join/resume. */
@@ -96,6 +101,7 @@ export const DEFAULT_CONFIG: ServerConfig = {
   streamMaxHz: 30,
   streamNoticeIntervalMs: 5000,
   streamIdleMs: 1000,
+  streamBackpressureBytes: 64 * 1024,
   summaryIntervalMs: 10 * 1000,
   handshakeTimeoutMs: 10 * 1000,
   logDir: null,

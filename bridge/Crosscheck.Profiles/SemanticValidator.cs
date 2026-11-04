@@ -163,7 +163,7 @@ internal sealed class SemanticValidator
             Add($"{at}/range", "use either 'values' or 'range', not both");
 
         Unused(v.Values is not null, "values", [SyncClass.Verified]);
-        Unused(v.Range is not null, "range", [SyncClass.Verified, SyncClass.Analog]);
+        Unused(v.Range is not null, "range", [SyncClass.Verified, SyncClass.Analog, SyncClass.Stream]);
         Unused(v.Verify is not null, "verify", [SyncClass.Verified, SyncClass.Delta, SyncClass.Pulse, SyncClass.Analog, SyncClass.Owned]);
         Unused(v.PulseMs is not null, "pulse_ms", [SyncClass.Pulse]);
         Unused(v.Press is not null, "press", [SyncClass.Pulse]);
@@ -173,7 +173,7 @@ internal sealed class SemanticValidator
         Unused(v.Alarm is not null, "alarm", [SyncClass.Observe]);
         Unused(v.NeverWrite, "never_write", [SyncClass.Verified, SyncClass.Pulse]);
         Unused(v.CompareWhen is not null, "compare_when", [SyncClass.Delta]);
-        Unused(v.Tolerance is not null, "tolerance", [SyncClass.Observe]);
+        Unused(v.Tolerance is not null, "tolerance", [SyncClass.Observe, SyncClass.Stream]);
         Unused(v.Powered is not null, "powered", [SyncClass.Observe]);
         Unused(v.Notice is not null, "notice", [SyncClass.Observe]);
         SyncClass[] onPanel = [SyncClass.Verified, SyncClass.Delta, SyncClass.Pulse, SyncClass.Analog, SyncClass.Observe];

@@ -24,7 +24,7 @@ public enum ServerState
 public sealed class ProtocolClient : IProtocolChannel, IAsyncDisposable
 {
     /// <summary>Protocol version in every envelope (`v`). The server refuses clients with another version.</summary>
-    public const int ProtocolVersion = 5;
+    public const int ProtocolVersion = 6;
     public const string OutdatedMessage = "Your Crosscheck is out of date. Download the latest version.";
     public const string ServerOutdatedMessage = "The server runs an older Crosscheck version. Ask whoever runs the server to update it.";
 

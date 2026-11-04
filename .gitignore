@@ -40,3 +40,5 @@ efb-capture/
 
 # Follower spike run folders (CRO-17)
 runs/
+# Follower recordings (CRO-17 spike)
+*.cxrec

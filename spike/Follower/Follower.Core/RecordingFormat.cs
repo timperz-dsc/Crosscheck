@@ -10,6 +10,12 @@ public sealed record RecordingHeader(DateTime StartUtc, string AircraftTitle, st
 /// <summary>A loaded recording. <see cref="Truncated"/>: the last record was cut off (e.g. a crash while recording) and dropped.</summary>
 public sealed record Recording(RecordingHeader Header, IReadOnlyList<Frame> Frames, bool Truncated)
 {
+    /// <summary>Field names the file had (null: all fields of this version, e.g. synthetic).</summary>
+    public IReadOnlyCollection<string>? FieldNames { get; init; }
+
+    /// <summary>True if the recording has this field (older files lack sim_time, abs_time, g_force).</summary>
+    public bool Has(string field) => FieldNames is null || FieldNames.Contains(field);
+
     public double Duration => Frames.Count < 2 ? 0 : Frames[^1].T - Frames[0].T;
 
     /// <summary>The part between <paramref name="from"/> and <paramref name="to"/> seconds after the start.</summary>
@@ -112,7 +118,10 @@ public static class RecordingFormat
             }
             frames.Add(f);
         }
-        return new Recording(header, frames, truncated);
+        return new Recording(header, frames, truncated)
+        {
+            FieldNames = fields.Where(f => f.Spec is not null).Select(f => f.Spec!.Name).ToHashSet(StringComparer.Ordinal),
+        };
     }
 
     private static int ReadFully(Stream s, byte[] buffer)

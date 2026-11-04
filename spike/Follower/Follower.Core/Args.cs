@@ -96,11 +96,18 @@ public static class PlaybackArgs
           --buffer <ms>             playout buffer (default 100)
           --extrapolate <ms>        longest dead reckoning when late, then hold (default 250)
           --blend <ms>              smooth the way back after a late stretch (default 200)
-          --tangents velocity|fd    position curve from velocities or neighbouring frames (default velocity)
+          --tangents velocity|fd    position curve from the recorded velocities (default) or from neighbouring
+                                    frames (fd: follows every bit of time-stamp noise; for comparison only)
+          --clock auto|sim|abs|stopwatch  clock for the recording and the player (default auto: the smoothest
+                                    the recording has; `follower inspect` shows them)
           --settle <s>              hold at the first frame before playing (default 3)
           --from <s> / --to <s>     play only part of the recording
           --allow-air-end           allow a playback that ends in the air
-          --velocities body|world|none    velocities written with the position (default body; sim only)
+          --velocities mixed|body|world|none   velocities written with the position (sim only). mixed: body Y/Z,
+                                    world X/Z, VERTICAL SPEED, G FORCE (default for B); body/world: three
+                                    velocities + rotation rates (default for A)
+          --handover-test <s>       sim only, B or C: at <s> s into the recording, while taxiing, release the
+                                    freezes as the stop key does, log the next 5 s, then stop
           --spike-accel <m/s2>      jitter spike threshold (default 2)
           --spike-ang <deg/s2>      angular jitter spike threshold (default 20)
           --stick-neutral <x>       follower stick counts as neutral below this (default 0.05)
@@ -111,9 +118,10 @@ public static class PlaybackArgs
 
     public static PlaybackSettings Parse(Args a)
     {
+        var method = a.Enum("method", Method.A);
         var settings = new PlaybackSettings
         {
-            Method = a.Enum("method", Method.A),
+            Method = method,
             RateHz = a.Num("rate", 30, 1, 60),
             Network = new NetworkOptions
             {
@@ -145,7 +153,9 @@ public static class PlaybackArgs
             AllowAirEnd = a.Flag("allow-air-end"),
             FromS = a.OptNum("from", 0),
             ToS = a.OptNum("to", 0),
-            Velocities = a.Enum("velocities", VelocityMode.Body),
+            Velocities = a.Enum("velocities", PlaybackSettings.DefaultVelocities(method)),
+            Clock = a.Enum("clock", ClockSource.Auto),
+            HandoverTestS = a.OptNum("handover-test", 0),
         };
         return settings;
     }

@@ -9,7 +9,10 @@ namespace Crosscheck.Follower;
 /// </summary>
 public readonly record struct Frame
 {
-    /// <summary>Seconds, monotonic (host clock when recorded; PF clock on the wire).</summary>
+    /// <summary>
+    /// Seconds, monotonic. In a .cxrec file: the recorder's stopwatch when the message was
+    /// handled. When played, replaced by the chosen clock (see <see cref="TimeBase"/>).
+    /// </summary>
     public double T { get; init; }
     public double Lat { get; init; }
     public double Lon { get; init; }
@@ -45,6 +48,13 @@ public readonly record struct Frame
     public double FenixStickCaptBank { get; init; }
     public double FenixStickFoPitch { get; init; }
     public double FenixStickFoBank { get; init; }
+
+    // Clocks and extras (added 2026-11-04; 0 in older recordings, see Recording.Has).
+    /// <summary>SIMULATION TIME, seconds: the sim's own clock for this frame.</summary>
+    public double SimTimeS { get; init; }
+    /// <summary>ABSOLUTE TIME, seconds: a second sim clock candidate.</summary>
+    public double AbsTimeS { get; init; }
+    public double GForce { get; init; }
 }
 
 public enum FieldType : byte
@@ -64,7 +74,7 @@ public sealed record FieldSpec(string Name, string SimVar, string Unit, FieldTyp
 public static class Fields
 {
     /// <summary>Fields read from the sim (all except <see cref="Frame.T"/>), in this order.</summary>
-    public const int SimVarCount = 31;
+    public const int SimVarCount = 34;
 
     public static readonly IReadOnlyList<FieldSpec> All =
     [
@@ -100,6 +110,9 @@ public static class Fields
         new("fnx_stick_capt_bank", "L:N_FC_SIDESTICK_CAPT_BANK", "number", FieldType.F32, f => f.FenixStickCaptBank, (f, v) => f with { FenixStickCaptBank = v }),
         new("fnx_stick_fo_pitch", "L:N_FC_SIDESTICK_FO_PITCH", "number", FieldType.F32, f => f.FenixStickFoPitch, (f, v) => f with { FenixStickFoPitch = v }),
         new("fnx_stick_fo_bank", "L:N_FC_SIDESTICK_FO_BANK", "number", FieldType.F32, f => f.FenixStickFoBank, (f, v) => f with { FenixStickFoBank = v }),
+        new("sim_time", "SIMULATION TIME", "seconds", FieldType.F64, f => f.SimTimeS, (f, v) => f with { SimTimeS = v }),
+        new("abs_time", "ABSOLUTE TIME", "seconds", FieldType.F64, f => f.AbsTimeS, (f, v) => f with { AbsTimeS = v }),
+        new("g_force", "G FORCE", "gforce", FieldType.F32, f => f.GForce, (f, v) => f with { GForce = v }),
     ];
 
     /// <summary>The fields read from the sim, in data definition order.</summary>

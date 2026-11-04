@@ -16,7 +16,7 @@ afterEach(async () => {
 });
 
 /** What older zips send: 0.1.0 = protocol v1, 0.2.0 = protocol v2, 0.3.x = protocol v3, 0.4.x = protocol v4 envelopes. */
-const OLD_CLIENTS: [number, string][] = [[1, '0.1.0'], [2, '0.2.0'], [3, '0.3.2'], [4, '0.4.0']];
+const OLD_CLIENTS: [number, string][] = [[1, '0.1.0'], [2, '0.2.0'], [3, '0.3.2'], [4, '0.4.0'], [5, '0.5.0']];
 
 interface Reply { v: number; type: string; session: string | null; body: { code?: string; message?: string } }
 
@@ -47,11 +47,11 @@ async function hostSession(): Promise<FakeBridge> {
 }
 
 describe('22. version gating', () => {
-  it('/health shows protocol 5', async () => {
+  it('/health shows protocol 6', async () => {
     server = await startServer();
     const res = await server.app.inject({ method: 'GET', url: '/health' });
-    expect(PROTOCOL_VERSION).toBe(5);
-    expect(res.json()).toMatchObject({ protocol: 5 });
+    expect(PROTOCOL_VERSION).toBe(6);
+    expect(res.json()).toMatchObject({ protocol: 6 });
   });
 
   it.each(OLD_CLIENTS)('a protocol v%i (bridge %s) client is refused at preflight and at join, in an envelope it can read, with a clear message', async (v, version) => {
@@ -75,17 +75,17 @@ describe('22. version gating', () => {
     }
     expect(ws.readyState).toBe(WebSocket.OPEN);
 
-    // The old client took no slot: the host saw nobody, and a 0.5.0 pilot still joins.
+    // The old client took no slot: the host saw nobody, and a 0.6.0 pilot still joins.
     await sleep(50);
     expect(host.messages('peer_status')).toHaveLength(0);
     const guest = new FakeBridge({ url: server.url, name: 'guest', sim: new FakeSim() });
     bridges.push(guest);
     await guest.connect();
-    expect(PREFLIGHT.bridge_version).toBe('0.5.0');
+    expect(PREFLIGHT.bridge_version).toBe('0.6.0');
     expect((await guest.join(host.joinCode)).type).toBe('joined');
   });
 
-  it('a 0.5.0 client is allowed: preflight_check answers with the comparison, join succeeds', async () => {
+  it('a 0.6.0 client is allowed: preflight_check answers with the comparison, join succeeds', async () => {
     server = await startServer();
     const host = await hostSession();
     const guest = new FakeBridge({ url: server.url, name: 'guest', sim: new FakeSim() });
@@ -99,9 +99,9 @@ describe('22. version gating', () => {
   it('a newer client is told that the server is the old one', async () => {
     server = await startServer();
     const { ws, replies } = await oldClient();
-    ws.send(JSON.stringify({ v: 6, type: 'create', session: null, ts: 1, body: { preflight: PREFLIGHT } }));
+    ws.send(JSON.stringify({ v: 7, type: 'create', session: null, ts: 1, body: { preflight: PREFLIGHT } }));
     const reply = await nextReply(replies, 1);
-    expect(reply).toMatchObject({ v: 6, type: 'error', body: { code: 'unsupported_version' } });
+    expect(reply).toMatchObject({ v: 7, type: 'error', body: { code: 'unsupported_version' } });
     expect(reply.body.message).toMatch(/server runs an older Crosscheck version/);
   });
 });

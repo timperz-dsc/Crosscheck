@@ -1,4 +1,4 @@
-# Crosscheck protocol v5
+# Crosscheck protocol v6
 
 How the bridges and the session server talk. The server is in [`server/`](../server/), the
 JSON Schema for every message is in [`protocol/schema/`](../protocol/schema/) with one example
@@ -10,7 +10,8 @@ desync is ever silent. The server orders, relays, tracks acks, compares snapshot
 visible desyncs. It never invents a value and never writes into the pilot flying's (PF's) sim
 what no pilot did. The one narrow exception is the safety release of a mirrored push button or
 spring-loaded switch (section 5). Irreversible controls on the profile's deny list are never written
-at all (section 5), and encoders are never corrected (section 7).
+at all (section 5), and encoders are never corrected (section 7). The pilot monitoring's aircraft is
+frozen and placed by its own bridge while it follows the PF (section 9); never the PF's.
 
 ## 1. Transport
 
@@ -26,7 +27,7 @@ at all (section 5), and encoders are never corrected (section 7).
 
 | Field | Meaning |
 |---|---|
-| `v` | Protocol version, always `5` (bridge 0.5.0 and later; v4 was bridge 0.4.x, v3 0.3.x, v2 0.2.x, v1 the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
+| `v` | Protocol version, always `6` (bridge 0.6.0 and later; v5 was bridge 0.5.x, v4 0.4.x, v3 0.3.x, v2 0.2.x, v1 the 0.1.0 zip). Any other version gets `error unsupported_version` in an envelope with the client's own `v`, so an old bridge can read it: "Your Crosscheck is out of date. Download the latest version." |
 | `type` | Message type, snake_case (list below). |
 | `session` | Session id; `null` in `create`, `join` and anything sent before a session exists. |
 | `seq` | Server-assigned, only on server-to-client messages that belong to the session log. One counter per session, strictly increasing. A command's `seq` is its global order. Clients never send `seq`. |
@@ -273,6 +274,18 @@ no re-send). Every new session repeats `write_blocked` for each var still blocke
 the cockpits match again; the next difference raises it again at once. A refused read or write-slot
 definition at connect is a setup error: the bridge refuses to create or join a session and says so.
 
+**Follower placement (CRO-13, owner decision 2026-11-04).** The only sim writes outside the profile's
+L: vars. A bridge may freeze and place its aircraft ONLY while it is the follower (PM), never on the PF:
+the three `FREEZE_LATITUDE_LONGITUDE_SET`, `FREEZE_ALTITUDE_SET`, `FREEZE_ATTITUDE_SET` events, and the
+follower's position, attitude, the mixed velocity set and control surfaces (section 9). Thrust levers are
+profile `stream` vars and go through the guard like every L: var: written only once the profile gives
+them a range the owner confirmed from a measurement (until then never). Pausing the sim, the sim rate,
+slew and every other event or sim var stay forbidden. A bridge that becomes PF releases its freezes at
+once. If the PF (or the server) is lost, the follower stays frozen where it is, with a red line
+"<seat> lost – take control?"; only the pilot's yes releases it (never automatically in the air).
+Session end and leaving on the ground release; leaving in the air asks first. "Release aircraft" in the
+UI and `crosscheck restore` cover a crashed bridge.
+
 A command id that is already logged is not relayed again: the origin gets `accepted
 {duplicate: true}` with the original seq (resend after reconnect).
 
@@ -467,7 +480,10 @@ they are listed in `control_changed` so the new PF's UI can show them.
 - **Giving control:** the PF sends `control_give {}`. The PM gets control immediately, with
   the same handover sequence. It cannot be given to a pilot who is not connected.
 - **PF lost:** if the PF is lost or left, a plain `control_request` is refused with
-  `peer_lost`; the PM takes control by sending it again with `confirm: ["@peer_lost"]`.
+  `peer_lost`; the PM takes control by sending it again with `confirm: ["@peer_lost"]`. The UI
+  sends that only from the pilot's yes on the red "<seat> lost – take control?" line (section 9).
+  If the server itself cannot be reached, the yes releases the follower locally and that pilot flies
+  on unsynced; the bridge sends `control_request {confirm: ["@peer_lost"]}` as soon as it has resumed.
 - `control_denied {reason, desyncs, message}` with `reason` one of `peer_lost`,
   `already_pf` (take while PF), `not_pf` (give while PM), `handover_in_progress`.
 
@@ -492,6 +508,13 @@ Handover sequence (same for take and give):
 The safety rules do not change with the token: corrections never go to the PF's sim without
 a logged pilot command, and the correction loop guard stays.
 
+**The aircraft at a transfer (CRO-14).** On `control_changed` the new PF's bridge releases its freezes
+where its aircraft stands: it was placed every sim frame with the PF's velocities, so it rolls or flies
+on from there. The old PF's bridge starts following: its first placement is the new PF's stream, then it
+freezes. Before "I have control", the follower's UI shows "Match your thrust levers" when its own levers
+differ from the PF's stream by more than the profile's `tolerance` (the takeover push button cannot ask:
+the line stays until they match).
+
 **Takeover pushbutton.** The bridge treats a press of a sidestick takeover pushbutton (profile
 `roles.takeover`, either seat) by the PM as `control_request` (granted at once, as above).
 The press is never written into the sim of the pilot who is flying at that moment, because
@@ -506,11 +529,65 @@ there it would lock out the flying pilot's stick:
 
 ## 9. Stream
 
-Only the current PF sends `stream {frame, data}` (position, attitude, velocity, sidestick;
-the field set inside `data` is open until the follower spike). Up to 30 Hz; frames above
-~36 per second are dropped. The server relays them to the PM with `from`, without `seq`, and
-does not log frames (the log gets start/stop and counts). Stream from the PM is dropped, with
-one `notice stream_dropped` every 5 s at most.
+The PF's aircraft, for the follower (CRO-13; method and numbers from the CRO-17 follower spike,
+[`docs/spikes/CRO-17-follower.md`](spikes/CRO-17-follower.md)).
+
+**Sending (PF only).** `stream {frame, data}`. The PF's bridge reads its own aircraft every sim frame
+and sends at most 30 frames per second of sim time. Latest wins: a frame is never queued, re-sent or
+replayed. `frame` counts up on the sending bridge and never repeats.
+
+**`data`** (numbers; names match `^[a-z0-9_]{1,40}$`, at most 64):
+
+| Field | Sim var | Unit |
+|---|---|---|
+| `t` | SIMULATION TIME of the PF's sim (its frame clock; never the PC stopwatch) | s |
+| `lat`, `lon` | PLANE LATITUDE, PLANE LONGITUDE | degrees |
+| `alt_ft` | PLANE ALTITUDE | feet |
+| `pitch`, `bank`, `hdg` | PLANE PITCH DEGREES, PLANE BANK DEGREES, PLANE HEADING DEGREES TRUE (the sim's signs) | degrees |
+| `vby`, `vbz` | VELOCITY BODY Y, VELOCITY BODY Z | ft/s |
+| `vwx`, `vwy`, `vwz` | VELOCITY WORLD X, Y, Z (X east, Y up, Z north) | ft/s |
+| `g` | G FORCE | g |
+| `on_ground` | SIM ON GROUND | 0/1 |
+| `gs_kt` | GROUND VELOCITY (logging only) | kt |
+| `elev`, `ail`, `rud` | ELEVATOR POSITION, AILERON POSITION, RUDDER POSITION | -1 … 1 |
+| `lv_<name>` | the profile's `stream` L: vars, lower case (thrust levers: `lv_a_fc_throttle_left_input`, `lv_a_fc_throttle_right_input`) | number |
+
+`t` to `vwz` and `on_ground` are required; the bridge ignores (and counts) a frame without them.
+
+**Server.** Accepts stream only from the current PF, never during a handover freeze (section 8), at
+most ~36 frames per second. A frame whose `frame` is not newer than the last one relayed from the same
+PF is dropped (`stale`; the counter starts over with a new PF). Relayed to every other connected client
+with `from`, without `seq`. A receiver whose socket still has more than 64 KB waiting gets no copy of
+this frame (the next one replaces it). Never corrected, never logged per frame (the log gets start,
+stop and counts: `stream_frames`, `stream_dropped`, `stream_stale`, `stream_skipped_slow`). Stream from
+a PM is dropped, with one `notice stream_dropped` every 5 s at most.
+
+**Follower (PM only).**
+- Playout buffer on the PF's sim time: 100 ms behind the newest frame (the clock offset is the fastest
+  arrival of the last 2 s, followed slowly). Position on a cubic curve with the frames' velocities,
+  attitude by slerp, the rest linear.
+- Frames late: dead reckoning for at most 600 ms, then the follower holds; back on the path the jump is
+  spread over 200 ms.
+- One placement per new sim frame of the follower's own sim (method B): position, attitude and the
+  mixed velocity set (VELOCITY BODY Y/Z, VELOCITY WORLD X/Z in one definition; VERTICAL SPEED = `vwy`,
+  G FORCE and the three surfaces each on their own, so a refusal by the sim stops only that one, logged
+  and shown amber). After the first placement the three freezes go on; every 6th sim frame the bridge
+  reads them back and sends a freeze again that reads off (after 1 s).
+- Thrust levers: the follower writes `lv_` values only for profile `stream` vars that have a confirmed
+  `range` (none yet: measured first, owner decision 2026-11-04).
+- PF lost (`peer_status lost|left`) or the follower's own server link lost: the follower stops placing
+  and stays frozen where it is. Red line "<seat> lost – take control?"; only the pilot's yes releases
+  (section 8). When frames come back, it follows again without releasing.
+- Session end, leaving on the ground, or the bridge stopping: the freezes are released. Leaving in the
+  air asks the pilot first ("Release and leave"). A crashed bridge: "Release aircraft" on the start
+  screen (the sim reports a freeze Crosscheck does not hold) or `crosscheck restore`.
+- Logged for CRO-18 every 5 s: `stream_stats {mode, sent, received, dropped_old, bad, placed,
+  interpolated, extrapolated, holding, late_p50_ms, late_p95_ms, late_max_ms, max_gap_ms,
+  freeze_reasserts, rtt_ms}`; plus `freeze_engaged`, `freeze_released {cause, in_air}`,
+  `freeze_reasserted`, `pf_lost_hold`, `follow_mode`, `placement_refused`.
+
+**Preflight.** Only the PF may be connected to VATSIM or another online network. The join screen says
+so, and warns when a network client (vPilot, xPilot, swift, IVAO, PilotEdge) runs on the joining PC.
 
 ## 10. Liveness and resume
 
@@ -553,7 +630,9 @@ this file to a desync report.
    press back until control is granted (section 8); show `control_changed.differences` to the
    new PF.
 8. Ping every `heartbeat_ms`, answer pings, treat 5 s of silence as lost and resume.
-9. If the server is gone, keep flying unsynced and say so; never pause, slew or "fix" the sim.
+9. If the server is gone, keep flying unsynced and say so; never pause, slew or "fix" the sim. A
+   follower that is frozen stays frozen until its pilot says yes (section 9).
+10. Freeze and place only while PM (section 9); release at once on becoming PF.
 
 ## 13. Defaults
 
@@ -578,10 +657,13 @@ this file to a desync report.
 | Control freeze / control ack timeout | 300 ms / 2 s |
 | Session log ring buffer | 2000 entries |
 | SimConnect definitions (bridge) | read chunks of 32 vars + 8 write slots, at most 256 |
-| Stream | 30 Hz |
+| Stream | 30 Hz of sim time; server relay buffer 64 KB per receiver |
+| Follower | buffer 100 ms, extrapolation 600 ms, blend 200 ms; freeze check every 6th frame, after 1 s |
 
-## 14. Not in v5
+## 14. Not in v6
 
 - Hosting, accounts, rate limits on join attempts (phase 1 runs locally).
-- The stream field set (after the follower spike).
+- Writing the thrust levers on the follower (after the lever range is measured).
+- A WASM module that places the follower from inside the sim (research section 6.9, item 7; only if
+  method B is not smooth enough, owner decision needed).
 - Momentary pulses (`press: momentary`) in snapshots: they always return to 0.

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBridge, type BridgeState } from './api';
-import { Button, Line, Shell, StatusBar } from './components/parts';
+import { Button, FrozenLine, Line, PfLostLine, Shell, StatusBar } from './components/parts';
 import { Preflight } from './screens/Preflight';
 import { Session } from './screens/Session';
 import { Start } from './screens/Start';
@@ -8,7 +8,7 @@ import { Waiting } from './screens/Waiting';
 
 /** Picks the screen from the bridge's phase; every screen sits in the same window with the status bar. */
 export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
-  const { status, actions, busy, error, confirmPeerLost, bridgeDown } = bridge;
+  const { status, actions, busy, error, confirmPeerLost, confirmLeaveInAir, cancelLeave, bridgeDown } = bridge;
 
   if (!status) {
     return (
@@ -29,12 +29,14 @@ export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
       return (
         <Shell bar={bar}>
           {down}
-          <Session status={status} actions={actions} busy={busy} error={error} confirmPeerLost={confirmPeerLost} now={now} />
+          <Session status={status} actions={actions} busy={busy} error={error} confirmPeerLost={confirmPeerLost}
+            confirmLeaveInAir={confirmLeaveInAir} cancelLeave={cancelLeave} now={now} />
         </Shell>
       );
     case 'ended':
       return (
         <Shell bar={bar}>
+          <PfLostLine status={status} actions={actions} busy={busy} />
           <main className="page">
             <div className="page-inner">
               <div className="intro">
@@ -46,15 +48,25 @@ export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
                   Your log of this session is in <span className="mono">{status.log.folder}</span>. Send the newest file there if something went wrong.
                 </p>
               )}
+              {confirmLeaveInAir && (
+                <p className="differs" role="alert">{confirmLeaveInAir}</p>
+              )}
               <div className="actions">
-                <Button onClick={() => void actions.leave()} disabled={busy}>Back to start</Button>
+                {confirmLeaveInAir ? (
+                  <>
+                    <Button onClick={() => void actions.leave(true)} disabled={busy}>Release and go back to start</Button>
+                    <Button variant="secondary" onClick={cancelLeave}>Stay</Button>
+                  </>
+                ) : (
+                  <Button onClick={() => void actions.leave()} disabled={busy}>Back to start</Button>
+                )}
               </div>
             </div>
           </main>
         </Shell>
       );
     default:
-      return <Shell bar={bar}>{down}<Start status={status} actions={actions} busy={busy} error={error} /></Shell>;
+      return <Shell bar={bar}>{down}<FrozenLine status={status} actions={actions} busy={busy} /><Start status={status} actions={actions} busy={busy} error={error} /></Shell>;
   }
 }
 

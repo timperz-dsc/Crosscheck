@@ -62,12 +62,13 @@ From `overrides.yaml` (`open:`). Everything on the review list below is open too
 | owner decision CRO-36 | 5 |
 | observed (observe-report.md, CRO-29) | 4 |
 | owner decision 6 (noisy) | 4 |
-| owner decision (CRO-27) | 4 |
 | pilot read the ND | 3 |
 | owner decision 2 (press counter) | 3 |
 | supervised write test 2026-11-03 | 2 |
 | gate test 2 (CRO-22) section 2 A; owner plan CRO-33 | 2 |
 | owner decision 7 (EFB cosmetics) | 2 |
+| owner decision 2026-11-04 (CRO-13) | 2 |
+| owner decision (CRO-27) | 2 |
 | gate test 2 cause A | 2 |
 | observe-report.md | 2 |
 | gate test 1 §4 proposal, owner plan CRO-34 | 2 |
@@ -103,26 +104,27 @@ From `overrides.yaml` (`open:`). Everything on the review list below is open too
 | delta | 1 | 21 | 22 |
 | pulse | 3 | 477 | 480 |
 | analog | 1 | 105 | 106 |
+| stream | 0 | 2 | 2 |
 | observe | 4 | 565 | 569 |
-| ignore | 0 | 503 | 503 |
+| ignore | 0 | 501 | 501 |
 
 ## Counts per group and class (whole profile)
 
-| group | verified | delta | pulse | analog | observe | ignore | total |
-|---|---|---|---|---|---|---|---|
-| overhead | 131 | 0 | 56 | 8 | 199 | 49 | 443 |
-| fcu | 1 | 8 | 9 | 2 | 23 | 2 | 45 |
-| efis | 10 | 2 | 14 | 0 | 24 | 0 | 50 |
-| mip | 12 | 6 | 45 | 18 | 45 | 16 | 142 |
-| pedestal | 75 | 6 | 184 | 74 | 195 | 46 | 580 |
-| cdu1 | 0 | 0 | 73 | 0 | 8 | 1 | 82 |
-| cdu2 | 0 | 0 | 74 | 0 | 8 | 1 | 83 |
-| ecam | 1 | 0 | 18 | 2 | 15 | 0 | 36 |
-| cb | 356 | 0 | 0 | 0 | 0 | 0 | 356 |
-| flightcontrols | 3 | 0 | 3 | 1 | 8 | 16 | 31 |
-| cabin | 22 | 0 | 0 | 0 | 4 | 12 | 38 |
-| systems | 0 | 0 | 0 | 0 | 15 | 359 | 374 |
-| ground | 31 | 0 | 4 | 1 | 25 | 1 | 62 |
+| group | verified | delta | pulse | analog | stream | observe | ignore | total |
+|---|---|---|---|---|---|---|---|---|
+| overhead | 131 | 0 | 56 | 8 | 0 | 199 | 49 | 443 |
+| fcu | 1 | 8 | 9 | 2 | 0 | 23 | 2 | 45 |
+| efis | 10 | 2 | 14 | 0 | 0 | 24 | 0 | 50 |
+| mip | 12 | 6 | 45 | 18 | 0 | 45 | 16 | 142 |
+| pedestal | 75 | 6 | 184 | 74 | 0 | 195 | 46 | 580 |
+| cdu1 | 0 | 0 | 73 | 0 | 0 | 8 | 1 | 82 |
+| cdu2 | 0 | 0 | 74 | 0 | 0 | 8 | 1 | 83 |
+| ecam | 1 | 0 | 18 | 2 | 0 | 15 | 0 | 36 |
+| cb | 356 | 0 | 0 | 0 | 0 | 0 | 0 | 356 |
+| flightcontrols | 3 | 0 | 3 | 1 | 2 | 8 | 14 | 31 |
+| cabin | 22 | 0 | 0 | 0 | 0 | 4 | 12 | 38 |
+| systems | 0 | 0 | 0 | 0 | 0 | 15 | 359 | 374 |
+| ground | 31 | 0 | 4 | 1 | 0 | 25 | 1 | 62 |
 
 ## Review list: not in the profile
 

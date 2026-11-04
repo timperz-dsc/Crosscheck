@@ -14,6 +14,14 @@ using Microsoft.Extensions.Logging;
 Velopack.VelopackApp.Build().Run();
 AppPaths.MigrateOldData(); // settings, logs and WebView2 used to live in the folder the installer now owns
 if (args.Length > 0) ConsoleAttach.AttachToParent(); // started from a terminal: output goes there
+if (args is ["restore"])
+{
+    // A crashed bridge can leave the follower's aircraft frozen (CRO-13): switch every freeze off.
+    using var loggers = LoggerFactory.Create(b => b.AddSimpleConsole(o => o.SingleLine = true));
+    var (allOff, text) = await PhysicsLink.RestoreAsync(loggers.CreateLogger("crosscheck"), TimeSpan.FromSeconds(10));
+    Console.WriteLine(text);
+    return allOff ? 0 : 1;
+}
 if (!Cli.TryParse(args, out var cli, out var error))
 {
     Console.Error.WriteLine(error);
@@ -49,6 +57,8 @@ namespace Crosscheck.Bridge.App
               crosscheck [options]              open the Crosscheck window (create or join there)
               crosscheck create [options]       headless: create a session
               crosscheck join <CODE> [options]  headless: join a session
+              crosscheck restore                switch the sim's freezes off (after a crashed bridge
+                                                left the aircraft frozen)
 
             Options:
               --server <url>        session server, e.g. wss://your-server.up.railway.app/ws
@@ -81,7 +91,7 @@ namespace Crosscheck.Bridge.App
             {
                 if (args[0] is not ("create" or "join"))
                 {
-                    error = $"Unknown command {args[0]}. Use create, join, or no command for the UI.";
+                    error = $"Unknown command {args[0]}. Use create, join, restore, or no command for the UI.";
                     return false;
                 }
                 mode = args[0] == "create" ? SessionMode.Create : SessionMode.Join;
@@ -202,7 +212,7 @@ namespace Crosscheck.Bridge.App
             };
             _runtime = new BridgeRuntime(options, profile => cli.FakeSim
                 ? BridgeBackends.Fake(profile)
-                : new BridgeBackends(new SimConnectAdapter(profile, log), new FenixGraphQlClient(cli.GqlPollHz, log), new FenixManifestReader()), loggers);
+                : new BridgeBackends(new SimConnectAdapter(profile, log), new FenixGraphQlClient(cli.GqlPollHz, log), new FenixManifestReader(), new PhysicsLink(log)), loggers);
             _runtime.Events.Published += e => log.LogInformation("[{Type}] {Message}", e.Type, e.Message);
             try
             {
@@ -229,7 +239,7 @@ namespace Crosscheck.Bridge.App
                     _ = updater.StartAsync(ct);
                 }
                 log.LogInformation("Bridge log: {Path}", _runtime.Log.Path);
-                log.LogInformation("Commands: control | control @peer_lost | give | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");
+                log.LogInformation("Commands: control | control @peer_lost | give | release | status{Fake}", cli.FakeSim ? " | set <VAR> <VALUE> | turn <VAR> <CLICKS> | press <VAR>" : "");
                 await ConsoleLoop(log, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -263,6 +273,7 @@ namespace Crosscheck.Bridge.App
                         case ["control"]: Report(runtime.TakeControl(false)); break;
                         case ["control", "@peer_lost"]: Report(runtime.TakeControl(true)); break;
                         case ["give"]: Report(runtime.GiveControl()); break;
+                        case ["release"]: Report(runtime.ReleaseAircraft()); break;
                         case ["status"]: log.LogInformation("{Status}", runtime.StatusJson().ToJsonString()); break;
                         case ["set", var name, var value] when runtime.Sim is FakeSimAdapter f: f.PilotSet(name, double.Parse(value, System.Globalization.CultureInfo.InvariantCulture)); break;
                         case ["turn", var name, var clicks] when runtime.Sim is FakeSimAdapter f: f.PilotTurn(name, double.Parse(clicks, System.Globalization.CultureInfo.InvariantCulture)); break;

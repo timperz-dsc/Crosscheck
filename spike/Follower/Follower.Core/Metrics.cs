@@ -61,6 +61,14 @@ public sealed record FrameRow
     public double ElevDiffDeg { get; init; }
     public double AilDiffDeg { get; init; }
     public double RudDiffDeg { get; init; }
+    /// <summary>The follower's GROUND VELOCITY as read back, kt.</summary>
+    public double GsKt { get; init; }
+    /// <summary>The recording's ground speed at <see cref="TruthT"/>, kt.</summary>
+    public double TruthGsKt { get; init; }
+    /// <summary>|change of the follower's ground speed − change of the recording's| since the frame before, kt. NaN for the first frame.</summary>
+    public double GsJumpKt { get; init; } = double.NaN;
+    /// <summary>PC stopwatch time since the frame before, ms (NaN offline). Frame times above are on the sim clock.</summary>
+    public double WallMs { get; init; } = double.NaN;
 }
 
 public sealed record Stats(double Mean, double P95, double P99, double Max)
@@ -100,6 +108,10 @@ public sealed record PhaseSummary
     public int StickTouchedFrames { get; init; }
     public double LagMeanMs { get; init; }
     public Stats FrameMs { get; init; } = Stats.Empty;
+    /// <summary>|follower ground speed − recording ground speed|, kt.</summary>
+    public Stats GsErrKt { get; init; } = Stats.Empty;
+    public Stats GsJumpKt { get; init; } = Stats.Empty;
+    public Stats WallMs { get; init; } = Stats.Empty;
 }
 
 public sealed record MetricsSummary
@@ -124,11 +136,14 @@ public sealed class MetricsCollector(IReadOnlyList<Frame> truth, MetricsOptions 
     private double _lateStart = double.NaN;
     private double _longestLate;
     private int _lateStretches;
+    private (double Gs, double TruthGs)? _lastGs;
 
     public MetricsOptions Options { get; } = options;
     public IReadOnlyList<FrameRow> Rows => _rows;
 
-    public void Add(double now, PlayoutResult target, in Frame actual)
+    /// <param name="now">Session time on the player's clock (sim time when available).</param>
+    /// <param name="wallMs">PC stopwatch time since the last call, ms (for the report only).</param>
+    public void Add(double now, PlayoutResult target, in Frame actual, double wallMs = double.NaN)
     {
         var prev = _prev;
         var writtenBefore = _writtenBefore;
@@ -137,6 +152,7 @@ public sealed class MetricsCollector(IReadOnlyList<Frame> truth, MetricsOptions 
         if (prev is not { } p || p.Target.Status is PlayoutStatus.Empty or PlayoutStatus.Waiting)
         {
             _hist.Clear();
+            _lastGs = null;
             return;
         }
 
@@ -194,6 +210,9 @@ public sealed class MetricsCollector(IReadOnlyList<Frame> truth, MetricsOptions 
         }
         else _lateStart = double.NaN;
 
+        var gsJump = _lastGs is { } lg ? Math.Abs((actual.GroundSpeedKt - lg.Gs) - (tr.GroundSpeedKt - lg.TruthGs)) : double.NaN;
+        _lastGs = (actual.GroundSpeedKt, tr.GroundSpeedKt);
+
         _rows.Add(new FrameRow
         {
             Now = now,
@@ -218,6 +237,10 @@ public sealed class MetricsCollector(IReadOnlyList<Frame> truth, MetricsOptions 
             ElevDiffDeg = elev,
             AilDiffDeg = ail,
             RudDiffDeg = rud,
+            GsKt = actual.GroundSpeedKt,
+            TruthGsKt = tr.GroundSpeedKt,
+            GsJumpKt = gsJump,
+            WallMs = wallMs,
         });
     }
 
@@ -275,6 +298,9 @@ public sealed class MetricsCollector(IReadOnlyList<Frame> truth, MetricsOptions 
             StickTouchedFrames = rows.Count(r => !r.StickNeutral),
             LagMeanMs = rows.Count > 0 ? rows.Average(r => r.LagMs) : double.NaN,
             FrameMs = Stats.Of(rows.Select(r => r.FrameMs)),
+            GsErrKt = Stats.Of(rows.Select(r => Math.Abs(r.GsKt - r.TruthGsKt))),
+            GsJumpKt = Stats.Of(rows.Select(r => r.GsJumpKt)),
+            WallMs = Stats.Of(rows.Select(r => r.WallMs)),
         };
     }
 

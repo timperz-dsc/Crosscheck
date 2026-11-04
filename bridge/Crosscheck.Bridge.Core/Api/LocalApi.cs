@@ -74,7 +74,9 @@ public sealed class LocalApi : IAsyncDisposable
         app.MapPost("/api/session/join", async (HttpRequest req) =>
             await Body(req) is { } b && b["code"]?.GetValue<string>() is { } code ? Answer(await bridge.JoinAsync(code)) : BadRequest("code missing"));
         app.MapPost("/api/session/cancel", () => Answer(bridge.CancelPreflight()));
-        app.MapPost("/api/session/leave", async () => Answer(await bridge.LeaveAsync()));
+        app.MapPost("/api/session/leave", async (HttpRequest req) =>
+            Answer(await bridge.LeaveAsync((await Body(req))?["release_in_air"]?.GetValue<bool>() == true)));
+        app.MapPost("/api/aircraft/release", () => Answer(bridge.ReleaseAircraft()));
         app.MapPost("/api/control/take", async (HttpRequest req) =>
             Answer(bridge.TakeControl((await Body(req))?["confirm_peer_lost"]?.GetValue<bool>() == true)));
         app.MapPost("/api/control/give", () => Answer(bridge.GiveControl()));
@@ -113,7 +115,7 @@ public sealed class LocalApi : IAsyncDisposable
     }
 
     private static IResult Answer(ApiResult r) =>
-        r.Ok ? Results.Json(new { ok = true }) : Results.Json(new { ok = false, error = r.Error }, statusCode: StatusCodes.Status409Conflict);
+        r.Ok ? Results.Json(new { ok = true }) : Results.Json(new { ok = false, error = r.Error, confirm = r.Confirm }, statusCode: StatusCodes.Status409Conflict);
 
     private static IResult BadRequest(string error) => Results.Json(new { ok = false, error }, statusCode: StatusCodes.Status400BadRequest);
 

@@ -510,6 +510,10 @@ For the methods:
 
 In order. The first four need no sim to build and test.
 
+**Status 2026-11-04:** 1–5 are in the player, and 6 as `--handover-test`. They are built and
+unit tested, but not yet run in the sim (run steps in
+[docs/spikes/CRO-17-follower.md](../spikes/CRO-17-follower.md)). 7 is still open.
+
 1. **Stamp frames with sim time.** Record `SIMULATION TIME` (and `ABSOLUTE TIME` as a second
    candidate) in every frame, next to the stopwatch time. `inspect` shows which one advances
    smoothly with the position, and the player and metrics use that one. Drop frames whose

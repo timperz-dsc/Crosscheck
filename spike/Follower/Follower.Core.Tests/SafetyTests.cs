@@ -189,7 +189,7 @@ public class TripwireTests
         int Count(string word) => all.Values.Sum(t => Regex.Matches(t, Regex.Escape(word)).Count);
         Assert.Equal(1, Count("MapClientEventToSimEvent("));
         Assert.Equal(1, Count("TransmitClientEvent("));
-        Assert.Equal(2, Count("SetDataOnSimObject(")); // the placement write (with or without velocities), in SimLink.Place
+        Assert.Equal(4, Count("SetDataOnSimObject(")); // SimLink.Place (position only, mixed, body/world) and SimLink.PlaceExtra
         var link = all["SimLink.cs"];
         Assert.Contains("sc.MapClientEventToSimEvent((Ev)(uint)i, AllowedEvents.Check(AllowedEvents.All[i]));", link);
         Assert.Contains("IndexOf(AllowedEvents.Check(name))", link);

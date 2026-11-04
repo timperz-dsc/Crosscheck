@@ -21,7 +21,9 @@ The owner allowed this for the spike only, on these terms:
    player asks you to type `OFFLINE`. It also refuses to start while a known network pilot
    client is running (vPilot, xPilot, swift, IVAO Altitude, IvAp, PilotEdge). That check is
    only extra; your confirmation is what counts.
-2. **What it writes:** the follower's position, attitude and velocities, plus the events of
+2. **What it writes:** the follower's position, attitude and velocities (with method B by
+   default also `VERTICAL SPEED` and `G FORCE`; each stops at once if the sim refuses it),
+   plus the events of
    the chosen method and nothing else: `FREEZE_LATITUDE_LONGITUDE_SET`, `FREEZE_ALTITUDE_SET`,
    `FREEZE_ATTITUDE_SET` (method B), `SLEW_ON`/`SLEW_OFF` (method C). Pause and sim rate are
    never sent; the code has no way to send them (a test fails if the words appear in the
@@ -37,6 +39,11 @@ The owner allowed this for the spike only, on these terms:
    ground. The player refuses a recording (or a `--from/--to` cut) that ends in the air or
    still moving, unless you pass `--allow-air-end`. The stop key always works, also in the
    air; then the aircraft is yours to fly from where it is (the report says so).
+6. **Handover test** (`--handover-test`, B or C only): at the chosen point, which must be a
+   steady taxi (on the ground, 5–40 kt), the player releases the freezes exactly as the stop
+   key does, writes nothing more, logs 5 s and stops. **The aircraft is then yours and
+   rolling at taxi speed: be ready to brake and steer.** The player says so before you type
+   `OFFLINE`, and again at the release. Same offline rules as every playback.
 
 ## Build on the sim PC
 
@@ -48,7 +55,7 @@ dotnet build spike/Follower/Follower.sln -c Release
 dotnet test spike/Follower/Follower.Core.Tests
 ```
 
-The programs end up in `spike/Follower/Follower.Sim/bin/Release/net8.0/follower-sim.exe`
+The programs end up in `spike/Follower/Follower.Sim/bin/x64/Release/net8.0/follower-sim.exe`
 (sim) and `spike/Follower/Follower.Cli/bin/Release/net8.0/follower.exe` (offline tools).
 Below, `follower-sim` and `follower` mean those two.
 
@@ -65,24 +72,34 @@ landing, rollout, taxi off and stop. Every playback then ends on the ground. Pre
 recording once the aircraft is stopped. The recorder warns if the recording does not end
 stopped on the ground.
 
-It records every sim frame of your aircraft: time, lat/lon/alt, pitch/bank/heading, world and
+It records every sim frame of your aircraft: time (the PC's stopwatch, plus the sim's own
+clocks `SIMULATION TIME` and `ABSOLUTE TIME`), lat/lon/alt, pitch/bank/heading, world and
 body velocities, body rotation rates, on-ground, ground speed, height above ground, gear,
 flaps handle, and the controls: yoke/sidestick, rudder pedals, elevator, aileron, rudder and
-spoiler deflections, and the Fenix sidestick vars (`N_FC_SIDESTICK_CAPT/FO_PITCH/BANK`). About
-140 bytes per frame (8 KB/s at 60 fps). Check it:
+spoiler deflections, the Fenix sidestick vars (`N_FC_SIDESTICK_CAPT/FO_PITCH/BANK`) and
+`G FORCE`. About 160 bytes per frame (10 KB/s at 60 fps). Check it:
 
 ```
 follower inspect circuit1.cxrec
 ```
 
-This prints frame times, the phases, whether it ends on the ground, min/max of every field,
-and how well the recorded world velocities match the position changes. A mismatch above 5 %
-means the velocity axes are not what the code assumes (X east, Y up, Z north). Then use
-`--tangents fd`, and tell us. **Update 2026-11-04:** on `circuit1` the 10 % mismatch came from
-noisy time stamps (stopwatch, not sim time), not from the axes; over 0.5–2 s the velocities
-match within 1 %. Keep the default tangents. See
-[research §6.8](../research/yourcontrols.md#68-what-it-means-for-jerky-taxi-and-the-jumping-ground-speed-method-b---tangents-fd).
-The min/max of the `fnx_stick_*` fields show the Fenix stick
+This prints:
+
+- **The clocks.** For the stopwatch, `SIMULATION TIME` and `ABSOLUTE TIME`: frame step, steps
+  under 3 ms, repeated frames, and the *speed error* (position change ÷ clock step against the
+  recorded velocity, frame to frame). The smoothest clock is the one whose speed error is
+  lowest; `--clock auto` (the default) picks it and drops frames where position and clock
+  both repeat. Expect the sim clocks near 0 % and the stopwatch far higher.
+- Frame times on that clock, the phases, and whether it ends on the ground.
+- How well the recorded world velocities match the position changes over 0.5 s windows. Above
+  5 % the velocity axes are not what the code assumes (X east, Y up, Z north): tell us. (On
+  the first recording the old frame-to-frame check said 10 %; that was stopwatch noise, see
+  [research §6.8](../research/yourcontrols.md#68-what-it-means-for-jerky-taxi-and-the-jumping-ground-speed-method-b---tangents-fd).)
+- Steady taxi stretches, with a suggested `--handover-test` point for each.
+- Min/max of every field.
+
+Recordings made before 2026-11-04 have no sim clocks and no G force: they still play on the
+stopwatch, but their timing noise is in the data, so record again. The min/max of the `fnx_stick_*` fields show the Fenix stick
 range: pass the full deflection as `--fenix-stick-scale` when playing (the default 1 assumes
 −1..1).
 
@@ -101,15 +118,29 @@ On every sim frame it reads your aircraft back and writes where it should be. Th
 is simulated: the recording is "sent" at 20 or 30 Hz, each frame gets a network delay
 (default 35 ± 10 ms), and the follower plays it out of a buffer.
 
+**Timing.** The player's clock is your sim's own clock (the one `inspect` chose for the
+recording), so each sim frame moves the follower by exactly one sim frame's worth, whenever
+the PC gets round to handling it. If several messages are waiting, it handles them all and
+writes once, for the newest. A message whose sim time did not move (the same frame twice) is
+not played. If the sim clock stops moving, the player falls back to the stopwatch for the rest
+of the run and the report says so. `--clock sim|abs|stopwatch` forces a clock.
+
 ### The three methods
 
 | | What it does | What to expect |
 |---|---|---|
-| **A** | Writes position, attitude, body velocities and rotation rates every frame. Nothing else. | The aircraft stays live: the sim's physics and the **Fenix fly-by-wire** run between our writes and may push back against the placed attitude (the FBW holds the attitude it thinks it should have). Watch the reaction columns. Ground contact may fight the written altitude. |
-| **B** | A, plus the sim's freeze lat/lon, altitude and attitude. The player checks the freeze flags and sends a freeze again if one reads off (the YourControls approach). | The sim no longer moves the aircraft on its own, so only our writes move it. Risks known from YourControls: ground jitter, and what a role handover does to an aircraft that was frozen. |
+| **A** | Writes position, attitude, body velocities and rotation rates every frame (`--velocities body`). Nothing else. | The aircraft stays live: the sim's physics and the **Fenix fly-by-wire** run between our writes and may push back against the placed attitude (the FBW holds the attitude it thinks it should have). Watch the reaction columns. Ground contact may fight the written altitude. |
+| **B** | The sim's freeze lat/lon, altitude and attitude, and every frame position, attitude and the velocity set YourControls and FS Copilot write (`--velocities mixed`, below). The player checks the freeze flags and sends a freeze again if one reads off (what both projects do). | The sim no longer moves the aircraft on its own, so only our writes move it. Risks known from YourControls: ground jitter, and what a role handover does to an aircraft that was frozen. |
 | **C** | Slew mode on; writes position and attitude every frame (velocities mean nothing in slew). | No physics at all. Expect lost ground contact effects, gear/wheel and sound oddities, and whatever the Fenix does when slewed. |
 
-`--velocities world|none` writes world velocities or none at all (methods A and B).
+`--velocities` chooses what is written with the position (methods A and B):
+
+| Choice | Writes | Default for |
+|---|---|---|
+| `mixed` | `VELOCITY BODY Y/Z`, `VELOCITY WORLD X/Z`, `VERTICAL SPEED`, `G FORCE` (the set of both projects, research §6.1). The last two are written on their own: if the sim refuses one, only that one stops, and the report says so | B |
+| `body` | `VELOCITY BODY X/Y/Z` and the body rotation rates | A |
+| `world` | `VELOCITY WORLD X/Y/Z` and the body rotation rates | |
+| `none` | position and attitude only | |
 
 ### Smoothing
 
@@ -119,8 +150,9 @@ is simulated: the recording is "sent" at 20 or 30 Hz, each frame gets a network 
   does not move the playback clock. When it has to move, it moves gradually: a sudden change
   in clock rate would be a sudden change in speed.
 - **Interpolation:** position on a cubic curve through both frames, using their velocities
-  (`--tangents fd` uses the neighbouring positions instead); attitude as a rotation (no
-  trouble at north); the rest linear.
+  (default); attitude as a rotation (no trouble at north); the rest linear. `--tangents fd`
+  uses the neighbouring positions instead. It follows every bit of timing noise, so use it
+  only to compare.
 - **Late frames:** dead reckoning from the newest frame with its velocity and the
   acceleration and turn rate between the last two frames, at most `--extrapolate` (default
   250 ms). After that the follower **holds**, which in flight means it stops dead. When
@@ -137,6 +169,19 @@ is simulated: the recording is "sent" at 20 or 30 Hz, each frame gets a network 
 | `--reorder` | off | let frames overtake each other. Off by default because the bridge streams over a WebSocket (TCP), which delivers in order |
 | `--seed` | 1 | same seed, same delays: runs are repeatable |
 
+### Handover test
+
+```
+follower-sim play circuit1.cxrec --method B --handover-test 60
+```
+
+Plays method B up to 60 s into the recording (it must be a steady taxi there; `inspect`
+suggests points), then releases the freezes as the stop key does and only watches for 5 s.
+The run folder gets a `handover.csv` (every frame after the release) and a section in
+`report.md`: ground speed at the release, after 1 s and at the end, heading change, the
+largest jump in one frame, the largest vertical step, and whether the aircraft left the
+ground. The question: does the aircraft keep its speed and heading, or does it jump or stop?
+
 ### Run matrix
 
 All on the same circuit recording. Fly nothing during a playback (hands off the stick, so the
@@ -145,7 +190,9 @@ reaction columns mean something).
 | # | Command | Why |
 |---|---|---|
 | 1 | `play circuit1.cxrec --method A --rate 30` | baseline A |
-| 2 | `play circuit1.cxrec --method B --rate 30` | baseline B |
+| 2 | `play circuit1.cxrec --method B --rate 30` | baseline B (now with `mixed` velocities and the sim clock) |
+| 2a | the same with `--velocities world`, then `--velocities none` | which velocity set steadies the ground speed display? |
+| 2b | `play circuit1.cxrec --method B --handover-test <s>` | handover on the taxiway |
 | 3 | `play circuit1.cxrec --method C --rate 30` | baseline C |
 | 4–6 | the same with `--rate 20` | is 20 Hz enough? |
 | 7 | best method, `--rate 30 --burst 1` | 150 ms stalls: bridged by dead reckoning? |
@@ -159,7 +206,9 @@ not see everything.
 
 Each run writes a folder `runs/<time>-sim-<method>-<rate>Hz-<latency>ms/` with `report.md`
 (settings and one table per phase), `summary.json` (for `compare`) and `frames.csv` (one row
-per sim frame). Phases come from the recording: **gate** (on the ground, below 1 kt), **taxi**
+per sim frame), plus `handover.csv` for a handover test. All times, frame steps, jitter and
+spikes are on the player's clock (the sim's own clock when available), so the PC's handling
+delays no longer count as jitter. Phases come from the recording: **gate** (on the ground, below 1 kt), **taxi**
 (on the ground, below 40 kt), **runway** (takeoff and landing roll), **flight**.
 
 | Column | Meaning |
@@ -173,7 +222,10 @@ per sim frame). Phases come from the recording: **gate** (on the ground, below 1
 | extrap / hold | Frames played from dead reckoning, and frames held after the limit. Plus the number of late stretches and the longest one. |
 | reaction | Frames where the follower's elevator, aileron or rudder is more than 2° (`--surface-reaction`) from the recorded one **while the follower's own stick is neutral**: the aircraft (the Fenix FBW) reacting to what we placed, not our placement. Frames where the follower's stick is not neutral (someone touched it) are counted separately as "stick touched". |
 | lag | How far behind the recording the follower plays (fastest network delay + buffer + a frame). |
-| frame ms | Sim frame times during the run. |
+| GS err | \|the follower's `GROUND VELOCITY` as read back − the recording's\|, kt (`gs_kt`, `truth_gs_kt` in `frames.csv`). |
+| GS jump | How much more the follower's ground speed changed in one frame than the recording's, kt. "The ground speed jumps" as a number. |
+| frame ms | Sim frame times during the run (player's clock). |
+| PC ms | The same on the PC's stopwatch (`pc_ms`): shows the handling delays the sim clock removes. |
 
 What "good" looks like still has to be agreed. A starting point: cross-track and vertical
 p95 well under a metre, attitude p95 under 0.5°, jitter p99 under 1 m/s², no spikes at the
@@ -210,9 +262,9 @@ That is a reason to try a longer limit on the sim (run 8).
 Both ship our method B: the three freezes, plus position, attitude and a fixed set of
 velocities written once every sim frame from a WASM module inside the sim. Both use a straight
 line between points, a buffer (about 100 ms and 400 ms) and hold when data is late, and both
-have no special handling for the ground or the handover. Our differences are the timing (we
-write from outside the sim and time frames with a stopwatch) and the smoothing (cubic curve,
-prediction, blend). Details, known problems and the changes to try next:
+have no special handling for the ground or the handover. Our differences are where we write
+(from outside the sim, through SimConnect; since 2026-11-04 timed on the sim's own clock) and
+the smoothing (cubic curve, prediction, blend). Details, known problems and the changes to try next:
 [research §6](../research/yourcontrols.md#6-follower-how-yourcontrols-and-fs-copilot-place-the-aircraft).
 
 ## Notes

@@ -149,28 +149,124 @@ public class SafetyGuardTests
     public void Stream_writer_is_only_active_on_the_non_PF_side()
     {
         var writer = new GuardedStreamWriter();
-        var frame = new Dictionary<string, double> { ["lat"] = 47.4 };
-        Assert.False(writer.Apply(frame)); // no role yet: refuse
+        var passed = 0;
+        writer.FrameReceived += (_, _) => passed++;
+        var frame = new System.Text.Json.Nodes.JsonObject { ["lat"] = 47.4 };
+        Assert.False(writer.Apply(1, frame)); // no role yet: refuse
         writer.SetRole(isPf: true);
-        Assert.False(writer.Apply(frame));
+        Assert.False(writer.Apply(2, frame));
         writer.SetRole(isPf: false);
-        Assert.True(writer.Apply(frame));
+        Assert.True(writer.Apply(3, frame));
         Assert.Equal(2, writer.Refused);
         Assert.Equal(1, writer.Applied);
+        Assert.Equal(1, passed); // only the follower's frame reaches the physics side
     }
 }
 
 public class SafetyTripwireTests
 {
-    /// <summary>The SimConnect adapter must never map or send sim events (pause, sim rate, slew, position).</summary>
+    private static string Source(params string[] parts) => File.ReadAllText(Path.Combine([Repo.Root, "bridge", .. parts]));
+
+    /// <summary>Every C# source file of the bridge product (not tests, not build output).</summary>
+    private static IEnumerable<(string Path, string Text)> ProductSources() =>
+        Directory.GetFiles(Path.Combine(Repo.Root, "bridge"), "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+            .Where(f => !Path.GetFileName(Path.GetDirectoryName(f)!).Contains("Tests", StringComparison.Ordinal))
+            .Select(f => (f, File.ReadAllText(f)));
+
+    /// <summary>The SimConnect adapter (L: vars) must never map or send sim events (pause, sim rate, slew, freeze, position).</summary>
     [Fact]
     public void SimConnect_adapter_contains_no_event_APIs()
     {
-        var source = File.ReadAllText(Path.Combine(Repo.Root, "bridge", "Crosscheck.Bridge.SimConnect", "SimConnectAdapter.cs"));
+        var source = Source("Crosscheck.Bridge.SimConnect", "SimConnectAdapter.cs");
         foreach (var forbidden in new[] { "TransmitClientEvent", "MapClientEventToSimEvent", "MapInputEventToClientEvent", "PAUSE", "SIM_RATE", "SLEW", "PLANE LATITUDE", "PLANE LONGITUDE", "FREEZE" })
             Assert.DoesNotContain(forbidden, source, StringComparison.OrdinalIgnoreCase);
         // Every write goes through the guard.
         Assert.Contains("Guard.CheckWrite(name, value);", source);
+    }
+
+    /// <summary>
+    /// Owner decision 2026-11-04 (CRO-13): the only sim events the bridge may send are the three FREEZE_*_SET
+    /// events, only from PhysicsLink.cs, only through FollowerSafety. Pause, sim rate and slew nowhere.
+    /// </summary>
+    [Fact]
+    public void Only_the_three_freeze_events_exist_and_only_in_the_physics_link()
+    {
+        foreach (var (path, text) in ProductSources())
+        {
+            foreach (var forbidden in new[] { "PAUSE", "SIM_RATE", "SIM RATE", "SLEW", "MapInputEventToClientEvent" })
+                Assert.False(text.Contains(forbidden, StringComparison.OrdinalIgnoreCase), $"{forbidden} in {path}");
+            var name = Path.GetFileName(path);
+            if (name != "PhysicsLink.cs")
+            {
+                Assert.False(text.Contains("TransmitClientEvent", StringComparison.Ordinal), $"TransmitClientEvent in {path}");
+                Assert.False(text.Contains("MapClientEventToSimEvent", StringComparison.Ordinal), $"MapClientEventToSimEvent in {path}");
+            }
+            // Event and position var names: only in the allow list.
+            if (name != "FollowerSafety.cs")
+                foreach (var named in new[] { "\"FREEZE_", "\"PLANE LATITUDE", "\"PLANE LONGITUDE", "\"PLANE ALTITUDE", "\"VELOCITY BODY", "\"VELOCITY WORLD", "\"ELEVATOR POSITION", "\"AILERON POSITION", "\"RUDDER POSITION" })
+                    Assert.False(text.Contains(named, StringComparison.Ordinal), $"{named} in {path}"); // sim names are upper case
+        }
+
+        var link = Source("Crosscheck.Bridge.SimConnect", "PhysicsLink.cs");
+        Assert.Equal(1, Count(link, "MapClientEventToSimEvent("));
+        Assert.Equal(1, Count(link, "TransmitClientEvent("));
+        Assert.Contains("FollowerSafety.CheckEvent(FollowerSafety.Events[i])", link); // the mapping goes through the allow list
+        // Placement and freeze "on" are refused unless this side is the follower.
+        Assert.Contains("if (!_follower) throw new SafetyViolationException", link);
+        Assert.Contains("if (on && !_follower) throw new SafetyViolationException", link);
+        // Every written sim var is checked against the allow list.
+        Assert.Equal(Count(link, "AddToDataDefinition(Def.Place") + Count(link, "AddToDataDefinition(Def.ExtraBase"), Count(link, "FollowerSafety.CheckWriteVar(var)"));
+        Assert.Equal(["FREEZE_LATITUDE_LONGITUDE_SET", "FREEZE_ALTITUDE_SET", "FREEZE_ATTITUDE_SET"], Follow.FollowerSafety.Events);
+    }
+
+    [Theory]
+    [InlineData("PAUSE_ON")]
+    [InlineData("PAUSE_TOGGLE")]
+    [InlineData("SIM_RATE_INCR")]
+    [InlineData("SLEW_ON")]
+    [InlineData("SLEW_TOGGLE")]
+    [InlineData("FREEZE_LATITUDE_LONGITUDE_TOGGLE")]
+    [InlineData("freeze_altitude_set")]
+    [InlineData("")]
+    public void Follower_safety_refuses_every_other_event(string ev)
+    {
+        Assert.Throws<SafetyViolationException>(() => Follow.FollowerSafety.CheckEvent(ev));
+        Assert.Throws<SafetyViolationException>(() => new Follow.FakePhysicsLink().SendFreeze(ev, false));
+    }
+
+    [Theory]
+    [InlineData("SIM RATE")]
+    [InlineData("PLANE ALT ABOVE GROUND")]
+    [InlineData("FUEL TANK CENTER QUANTITY")]
+    [InlineData("L:S_OH_ELEC_BAT1")]
+    public void Follower_safety_refuses_every_other_sim_var(string var) =>
+        Assert.Throws<SafetyViolationException>(() => Follow.FollowerSafety.CheckWriteVar(var));
+
+    [Fact]
+    public void A_link_that_is_not_the_follower_refuses_placement_and_freeze_on_but_always_allows_off()
+    {
+        var link = new Follow.FakePhysicsLink();
+        Assert.False(link.IsFollower); // safe default
+        Assert.Throws<SafetyViolationException>(() => link.Place(new Follow.PhysicsFrame { Lat = 1 }));
+        foreach (var ev in Follow.FollowerSafety.Events)
+        {
+            Assert.Throws<SafetyViolationException>(() => link.SendFreeze(ev, true));
+            link.SendFreeze(ev, false);
+        }
+        Assert.Empty(link.Placed);
+        Assert.All(link.FreezeEvents, e => Assert.False(e.On));
+        link.SetFollower(true);
+        link.Place(new Follow.PhysicsFrame { Lat = 1 });
+        link.SendFreeze(Follow.FollowerSafety.FreezeLatLon, true);
+        Assert.Single(link.Placed);
+    }
+
+    private static int Count(string text, string what)
+    {
+        var n = 0;
+        for (var i = text.IndexOf(what, StringComparison.Ordinal); i >= 0; i = text.IndexOf(what, i + 1, StringComparison.Ordinal)) n++;
+        return n;
     }
 }
 

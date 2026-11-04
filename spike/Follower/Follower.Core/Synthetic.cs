@@ -12,6 +12,8 @@ public static class Synthetic
     public const double RefLon = 17.93;
     public const double GroundFt = 137;
     private const double G = 9.80665;
+    /// <summary>About year 2026 in ABSOLUTE TIME seconds.</summary>
+    public const double AbsTimeBase = 63_900_000_000;
 
     private sealed class S
     {
@@ -194,6 +196,10 @@ public static class Synthetic
             SpoilersLeft = s.Spoilers,
             FenixStickCaptPitch = Math.Clamp(-s.PitchRate / 3, -1, 1),
             FenixStickCaptBank = Math.Clamp(s.BankRate / 5, -1, 1),
+            // A perfect sim clock, and a second one far from zero like ABSOLUTE TIME.
+            SimTimeS = s.T,
+            AbsTimeS = AbsTimeBase + s.T,
+            GForce = 1 / Math.Cos(s.Bank * Math.PI / 180),
         };
     }
 }

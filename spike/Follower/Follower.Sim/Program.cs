@@ -65,7 +65,15 @@ try
                 Method.B => "as A, plus the sim's freeze lat/lon, altitude and attitude",
                 _ => "slew mode, setting position and attitude every frame",
             });
-            Console.WriteLine(settings.AllowAirEnd ? "the playback may END IN THE AIR (--allow-air-end): be ready to fly" : "the playback ends stopped on the ground");
+            if (settings.Method != Method.C) Console.WriteLine($"velocities written: {settings.Velocities.ToString().ToLowerInvariant()}");
+            Console.WriteLine($"clock: {session.Clock.Source} ({session.Clock.Why}); frames dropped: {session.Clock.DroppedDuplicates} repeated, {session.Clock.DroppedNotAdvancing} with a clock that did not move");
+            if (session.HandoverAt is { } at)
+            {
+                var h = Interpolator.Sample(session.Recording.Frames, at);
+                Console.WriteLine($"HANDOVER TEST at {settings.HandoverTestS:0.0} s: the freezes are released while taxiing at about {h.GroundSpeedKt:0} kt.");
+                Console.WriteLine($"From then on the aircraft is YOURS and rolling: be ready to brake and steer. The run ends {HandoverTest.LogS:0} s later.");
+            }
+            else Console.WriteLine(settings.AllowAirEnd ? "the playback may END IN THE AIR (--allow-air-end): be ready to fly" : "the playback ends stopped on the ground");
             Console.WriteLine();
             Console.Write(OfflineConfirmation.Prompt);
             if (!OfflineConfirmation.Accept(Console.ReadLine()))

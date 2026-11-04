@@ -283,7 +283,6 @@ public class RealProfileTests
 
     [Theory]
     [InlineData("S_WINDOW_CAPT_LATCH")]
-    [InlineData("A_FC_THROTTLE_LEFT_INPUT")]
     [InlineData("A_FC_THROTTLE_RIGHT_GATE")]
     [InlineData("N_FUEL_TOTAL_QTY")]
     [InlineData("N_CDU1_BRIGHTNESS")]
@@ -292,6 +291,24 @@ public class RealProfileTests
     [InlineData("N_FC_SIDESTICK_CAPT_PITCH")]
     [InlineData("N_MIP_CLOCK_CHRONO")]
     public void Noise_and_hardware_axes_are_ignored(string name) => Assert.Equal(SyncClass.Ignore, Var(name).Class);
+
+    /// <summary>
+    /// CRO-13 (owner decision 2026-11-04): the thrust levers ride on the stream, and are never written until the
+    /// owner confirms a measured range. Until then the guard refuses every write.
+    /// </summary>
+    [Theory]
+    [InlineData("A_FC_THROTTLE_LEFT_INPUT")]
+    [InlineData("A_FC_THROTTLE_RIGHT_INPUT")]
+    public void Thrust_levers_are_streamed_and_never_written_without_a_confirmed_range(string name)
+    {
+        var v = Var(name);
+        Assert.Equal(SyncClass.Stream, v.Class);
+        Assert.Null(v.Range);
+        Assert.NotNull(v.Tolerance);
+        var guard = new Sim.SimSafetyGuard(Real);
+        Assert.False(guard.IsWritable(name));
+        Assert.Throws<Sim.SafetyViolationException>(() => guard.CheckWrite(name, 2.5));
+    }
 
     [Theory]
     [InlineData("S_ASP_VOICE", "I_ASP_VOICE")]

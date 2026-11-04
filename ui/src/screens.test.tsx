@@ -2,7 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Screens } from './App';
-import { BLEED, NOW, at, bridge, idle, inSession, line, panel } from './test/fixtures';
+import { BLEED, NOW, at, bridge, idle, inSession, line, panel, physics } from './test/fixtures';
 import type { PanelItem, Preflight } from './types';
 
 const show = (b: ReturnType<typeof bridge>) => render(<Screens bridge={b} now={NOW} />);
@@ -441,5 +441,71 @@ describe('update notice', () => {
   it('tells the pilot where to download when no update was found', () => {
     show(bridge(update('error', 'unsupported_version')));
     expect(screen.getByRole('status')).toHaveTextContent('no update could be found');
+  });
+});
+
+describe('physics stream (CRO-13)', () => {
+  it('shows following with latency and buffer health in the status bar', () => {
+    show(bridge(inSession({ physics: physics() })));
+    expect(screen.getByText('Following the captain · about 48 ms · smooth')).not.toHaveClass('warning');
+    cleanup();
+    show(bridge(inSession({ physics: physics({ health: 'late', late_ms: 230 }) })));
+    expect(screen.getByText('Following the captain · about 48 ms · frames late, predicting 230 ms')).toHaveClass('warning');
+    cleanup();
+    show(bridge(inSession({ seat_side: 'captain', is_pf: true, role: 'pf', physics: physics({ mode: 'streaming', frozen: false }) })));
+    expect(screen.getByText('Streaming to the first officer')).toBeInTheDocument();
+  });
+
+  it('PF lost in the air: a red line, and only the pilot\'s yes takes control', async () => {
+    const b = bridge(inSession({ physics: physics({ mode: 'pf_lost', pf_lost_cause: 'peer', in_air: true }) }));
+    show(b);
+    const alert = screen.getByRole('alert');
+    expect(within(alert).getByRole('heading', { level: 1 })).toHaveTextContent('Captain lost – take control?');
+    expect(alert).toHaveTextContent('Your aircraft is held frozen in the air where it is.');
+    expect(screen.getByText('Holding your aircraft')).toHaveClass('warning');
+    expect(b.actions.takeControl).not.toHaveBeenCalled();
+    await userEvent.click(within(alert).getByRole('button', { name: 'Take control' }));
+    expect(b.actions.takeControl).toHaveBeenCalledWith(true);
+  });
+
+  it('server lost: the red line says so', () => {
+    show(bridge(inSession({ physics: physics({ mode: 'pf_lost', pf_lost_cause: 'server', in_air: true }) })));
+    expect(screen.getByRole('heading', { name: 'Server lost – take control?' })).toBeInTheDocument();
+  });
+
+  it('asks to match the thrust levers before taking control', async () => {
+    const b = bridge(inSession({ physics: physics({ levers: [{ var: 'A_FC_THROTTLE_LEFT_INPUT', pf: 3.5, mine: 2 }] }) }));
+    show(b);
+    expect(screen.getByText("Your thrust levers differ from the captain's. Match them before you take control.")).toHaveClass('warning');
+    await userEvent.click(screen.getByRole('button', { name: 'I have control' }));
+    expect(b.actions.takeControl).not.toHaveBeenCalled();
+    expect(screen.getByText(/Match your thrust levers to the captain's before you take control – left: 3.5 \(yours 2\)/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Take control anyway' }));
+    expect(b.actions.takeControl).toHaveBeenCalledWith(false);
+  });
+
+  it('leaving in the air asks before releasing the aircraft', async () => {
+    const question = 'You are in the air. Leaving releases the aircraft: it will fly on from where it is now.';
+    const b = bridge(inSession({ physics: physics({ in_air: true }) }), { confirmLeaveInAir: question });
+    show(b);
+    expect(screen.getByText(question)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Stay' }));
+    expect(b.cancelLeave).toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Release and leave' }));
+    expect(b.actions.leave).toHaveBeenCalledWith(true);
+  });
+
+  it('offers "Release aircraft" when the sim is frozen and nobody holds it', async () => {
+    const b = bridge(idle({ physics: physics({ mode: 'off', frozen: false, frozen_outside: true }) }));
+    show(b);
+    await userEvent.click(screen.getByRole('button', { name: 'Release aircraft' }));
+    expect(b.actions.releaseAircraft).toHaveBeenCalled();
+  });
+
+  it('reminds that only the PF may be on VATSIM, and warns about a running client', () => {
+    const p: Preflight = { code: 'K7RX2M', joinable: true, rows: [] };
+    show(bridge(idle({ phase: 'preflight', preflight: p, this_computer: { ...idle().this_computer, network_clients: ['vPilot'] } })));
+    expect(screen.getByText(/Only the pilot flying may be connected to VATSIM/)).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('vPilot is running on this computer. Disconnect it before you join.');
   });
 });

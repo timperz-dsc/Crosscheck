@@ -52,7 +52,11 @@ internal static class UiStatus
                 ["hash"] = r.ProfileHash,
             },
             ["server"] = r.ServerUrl.ToString(),
+            // Only the PF may be connected to VATSIM (CRO-13): the preflight and the follower show these.
+            ["network_clients"] = new JsonArray(Follow.NetworkClients.Running().Select(n => (JsonNode)n).ToArray()),
         };
+        // The physics stream (CRO-13): status bar, the red PF-lost line, "Release aircraft" (also between sessions).
+        json["physics"] = r.Physics?.StatusJson();
         // An incomplete link to the sim (refused SimConnect definitions) blocks every session, loudly (CRO-40).
         var setup = r.SimSetupProblem;
         json["start_blocked"] = setup is not null ? "sim_setup_error" : simConnected ? null : "sim_not_connected";

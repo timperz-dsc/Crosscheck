@@ -1,17 +1,31 @@
 {
-  "v": 5,
+  "v": 6,
   "type": "stream",
   "session": "s_k3J9xQ2mPa",
   "ts": 1793520000000,
   "body": {
     "frame": 1834,
     "data": {
-      "lat": 47.4612,
-      "lon": 8.5535,
-      "alt_ft": 1416,
-      "pitch_deg": 2.1,
-      "bank_deg": 0,
-      "hdg_deg": 280.4
+      "t": 612.4167,
+      "lat": 47.461231,
+      "lon": 8.553517,
+      "alt_ft": 1416.2,
+      "pitch": -2.1,
+      "bank": 0.3,
+      "hdg": 280.4,
+      "vby": 0.1,
+      "vbz": 25.3,
+      "vwx": -24.9,
+      "vwy": 0,
+      "vwz": 4.6,
+      "g": 1,
+      "on_ground": 1,
+      "gs_kt": 15,
+      "elev": 0,
+      "ail": 0,
+      "rud": 0.05,
+      "lv_a_fc_throttle_left_input": 2.4,
+      "lv_a_fc_throttle_right_input": 2.4
     },
     "from": "c_h7Gm2KxQ"
   }

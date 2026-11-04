@@ -1609,13 +1609,15 @@ overrides:
     note: "interim range from gate test 2 (owner confirmed); more positions can be learned (CRO-24)"
     evidence: "pilot input, gate test 2: -5 … 4 in steps of 1, both directions; owner confirmed (gate test 3 prep)"
   - name: A_FC_THROTTLE_LEFT_INPUT
-    class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    class: stream
+    tolerance: 0.2
+    note: "thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
+    evidence: "owner decision 2026-11-04 (CRO-13): stream, measure the full travel read-only before any write; gate test 1 saw 2 … 3.8"
   - name: A_FC_THROTTLE_RIGHT_INPUT
-    class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    class: stream
+    tolerance: 0.2
+    note: "thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
+    evidence: "owner decision 2026-11-04 (CRO-13): stream, measure the full travel read-only before any write; gate test 1 saw 2 … 3.8"
   - name: A_FC_THROTTLE_LEFT_GATE
     class: ignore
     note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"

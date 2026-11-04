@@ -11,9 +11,10 @@ public enum SimState
 public sealed record SimPlan(IReadOnlyList<string> Watched);
 
 /// <summary>
-/// The only way the bridge touches the sim. It can read and write profile L: vars and nothing
-/// else: there is no API for sim events, simvars, pause, sim rate, slew or position. Every
-/// write goes through <see cref="SimSafetyGuard"/> inside the adapter.
+/// How the bridge reads and writes cockpit L: vars. It can read and write profile L: vars and nothing else:
+/// there is no API for sim events, simvars, stopping or speeding up the sim, or position. (The follower's
+/// placement has its own, narrower link: Follow.IPhysicsLink.) Every write goes through
+/// <see cref="SimSafetyGuard"/> inside the adapter.
 /// </summary>
 public interface ISimAdapter : IAsyncDisposable
 {

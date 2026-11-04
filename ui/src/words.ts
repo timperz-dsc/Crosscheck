@@ -1,5 +1,5 @@
 // The sentences the UI shows. Plain, specific, sentence case.
-import type { AmberItem, ControlNotice, CrewMember, LineAction, OwnedRow, PanelItem, PanelLine, PreflightRow, Side, Status } from './types';
+import type { AmberItem, ControlNotice, CrewMember, LineAction, OwnedRow, PanelItem, PanelLine, Physics, PreflightRow, Side, Status } from './types';
 
 export const sideName = (side: Side) => (side === 'captain' ? 'captain' : 'first officer');
 export const SideName = (side: Side) => (side === 'captain' ? 'Captain' : 'First officer');
@@ -35,6 +35,61 @@ export function serverText(s: Status): string {
   if (s.server === 'connected') return s.rtt_ms != null ? `Connected, ${Math.round(s.rtt_ms)} ms` : 'Connected';
   if (s.server === 'reconnecting') return 'Reconnecting';
   return 'Not connected';
+}
+
+/**
+ * The physics stream in the status bar (CRO-13): "Following the captain · about 48 ms · smooth", or
+ * "Streaming to the first officer". warning: something the pilot should look at.
+ */
+export function physicsText(s: Status): { text: string; warning: boolean } | null {
+  const p = s.physics;
+  if (!p || s.phase !== 'session') return null;
+  const peer = sideName(otherSide(s));
+  if (!p.link) return { text: 'Aircraft link to the sim not connected', warning: true };
+  switch (p.mode) {
+    case 'streaming':
+      return { text: `Streaming to the ${peer}`, warning: false };
+    case 'waiting':
+      return { text: `Waiting for the ${peer}'s aircraft`, warning: false };
+    case 'following': {
+      const latency = p.latency_ms != null ? ` · about ${Math.round(p.latency_ms)} ms` : '';
+      return { text: `Following the ${peer}${latency} · ${bufferWord(p)}`, warning: p.health !== 'ok' };
+    }
+    case 'pf_lost':
+      return { text: 'Holding your aircraft', warning: true };
+    case 'released':
+      return { text: 'Flying unsynced', warning: true };
+    default:
+      return null;
+  }
+}
+
+function bufferWord(p: Physics): string {
+  switch (p.health) {
+    case 'ok': return 'smooth';
+    case 'late': return `frames late, predicting ${Math.round(p.late_ms)} ms`;
+    case 'holding': return 'frames too late, holding';
+    default: return 'waiting for frames';
+  }
+}
+
+/** The red line when the PF is lost while following (owner decision 2026-11-04): only the pilot's yes releases. */
+export function pfLostText(p: Physics, peer: Side): { title: string; detail: string } {
+  const who = p.pf_lost_cause === 'server' ? 'Server' : SideName(peer);
+  const where = p.in_air ? 'in the air where it is' : 'where it is';
+  return {
+    title: `${who} lost – take control?`,
+    detail: p.pf_lost_cause === 'server'
+      ? `The connection to the server is lost. Your aircraft is held frozen ${where}. Take control to fly it yourself; you fly unsynced until the server is back.`
+      : `The ${sideName(peer)} is not connected. Your aircraft is held frozen ${where}. Take control to fly it yourself.`,
+  };
+}
+
+/** "Match your thrust levers" before taking control (CRO-14). */
+export function leversText(p: Physics, peer: Side): string {
+  const n = (x: number) => (Math.round(x * 100) / 100).toString();
+  const parts = p.levers.map((l) => `${l.var.includes('LEFT') ? 'left' : l.var.includes('RIGHT') ? 'right' : l.var}: ${n(l.pf)} (yours ${n(l.mine)})`);
+  return `Match your thrust levers to the ${sideName(peer)}'s before you take control – ${parts.join(', ')}.`;
 }
 
 /** The sim in the status bar: "MSFS 2024 connected". */

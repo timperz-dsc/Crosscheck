@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
 import { SCHEMA_DIR, sharedValidator } from '../src/protocol/validate.js';
+import { PROTOCOL_VERSION } from '../src/protocol/types.js';
 import { startServer } from './fake/harness.js';
 
 const EXAMPLES = resolve(SCHEMA_DIR, '../examples');
@@ -22,7 +23,7 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
   });
 
   it('rejects malformed messages', () => {
-    const base = { v: 5, session: 's_abcdefg', ts: 1 };
+    const base = { v: PROTOCOL_VERSION, session: 's_abcdefg', ts: 1 };
     const bad = [
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'delta', value: 1, group: 'g', settle_ms: 10 } }, // delta with value
       { ...base, type: 'command', body: { id: 'a', var: 'X', class: 'verified', group: 'g', settle_ms: 10 } }, // no value
@@ -47,7 +48,7 @@ describe('protocol schema (protocol/schema, shared with the C# bridge)', () => {
       ws.on('message', (d) => replies.push(JSON.parse(d.toString())));
       ws.send('not json');
       ws.send(JSON.stringify({ v: 9, type: 'ping', session: null, ts: 1, body: {} }));
-      ws.send(JSON.stringify({ v: 5, type: 'command', session: null, ts: 1, body: { id: 'a', var: 'X', class: 'verified', value: 1, group: 'g', settle_ms: 1 } }));
+      ws.send(JSON.stringify({ v: PROTOCOL_VERSION, type: 'command', session: null, ts: 1, body: { id: 'a', var: 'X', class: 'verified', value: 1, group: 'g', settle_ms: 1 } }));
       await new Promise((r) => setTimeout(r, 100));
       expect(replies.map((r) => r.body.code)).toEqual(['invalid_json', 'unsupported_version', 'not_in_session']);
       expect(ws.readyState).toBe(WebSocket.OPEN);

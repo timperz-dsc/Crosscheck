@@ -4,11 +4,12 @@ import {
   type AckBody, type CommandBody, type CorrectionBody, type Envelope, type Preflight, type Timing,
 } from '../../src/protocol/types.js';
 import { sharedValidator } from '../../src/protocol/validate.js';
+import { PROTOCOL_VERSION } from '../../src/protocol/types.js';
 import { sameValue } from '../../src/session/corrections.js';
 import type { FakeSim } from './fakeSim.js';
 
 export const PREFLIGHT: Preflight = {
-  bridge_version: '0.5.0',
+  bridge_version: '0.6.0',
   profile_id: 'fenix-a320',
   profile_hash: 'sha256:7f3a9c1e2b4d5f60',
   aircraft: { package_version: '3.0.0.7613', app_version: '3.0.0.330' },
@@ -231,7 +232,7 @@ export class FakeBridge {
 
   /** Low-level send (tests use it for malformed or custom messages). */
   send(type: string, body: object, session: string | null = this.sessionId): void {
-    const env = { v: 5, type, session, ts: Date.now(), body };
+    const env = { v: PROTOCOL_VERSION, type, session, ts: Date.now(), body };
     const check = sharedValidator().validate(env);
     if (!check.ok) throw new Error(`fake bridge would send an invalid ${type}: ${check.message}`);
     this.sendText(JSON.stringify(env));

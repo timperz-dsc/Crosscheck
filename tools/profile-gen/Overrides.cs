@@ -19,7 +19,8 @@
 //       never_write: true              # deny list: never written on any path, watched and compared only
 //       compare_when: { powered: B_X, same: [I_A, I_B] }  # delta: compare the display only then
 //       control: E_X                   # panel: show this var under that control (or an id from `controls`)
-//       tolerance: 0.5                 # observe: allowed difference, compared outside the exact hash
+//       tolerance: 0.5                 # observe: allowed difference, compared outside the exact hash;
+//                                      # stream: thrust levers count as matching within this (CRO-13)
 //       powered: B_X                   # observe: compared only while this flag is non-zero in both sims
 //       priority: 2                    # panel priority instead of the group's (2 flight-critical ... 5)
 //       label: "FD (Capt)"             # the name the pilots see, instead of the generated one
@@ -196,13 +197,13 @@ sealed class OverrideFile
             NeverWrite = cls is "verified" or "pulse" && (o.NeverWrite || keep?.NeverWrite == true),
             CompareWhen = cls == "delta" ? o.CompareWhen ?? keep?.CompareWhen : null,
             Control = cls == "ignore" ? null : o.Control ?? keep?.Control,
-            Tolerance = cls == "observe" ? o.Tolerance ?? keep?.Tolerance : null,
+            Tolerance = cls is "observe" or "stream" ? o.Tolerance ?? keep?.Tolerance : null,
             Powered = cls == "observe" ? o.Powered ?? keep?.Powered : null,
             Priority = cls == "ignore" ? null : o.Priority ?? keep?.Priority,
             LabelOverride = o.Label ?? keep?.LabelOverride,
             Upstream = cls == "ignore" ? null : o.Upstream ?? keep?.Upstream,
         };
-        if (o.Tolerance is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: tolerance is only used by class observe");
+        if (o.Tolerance is not null && cls is not ("observe" or "stream")) throw new InvalidDataException($"{o.Name}: tolerance is only used by classes observe and stream");
         if (o.Notice is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: notice is only used by class observe");
         if (o.Powered is not null && cls != "observe") throw new InvalidDataException($"{o.Name}: powered is only used by class observe");
         e.Display = cls == "delta" ? o.Display ?? keep?.Display : null;

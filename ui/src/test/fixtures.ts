@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import type { BridgeState } from '../api';
-import type { Actions, Panel, PanelLine, Status } from '../types';
+import type { Actions, Panel, PanelLine, Physics, Status } from '../types';
 
 export const NOW = new Date('2026-11-01T12:43:30').getTime();
 export const at = (secondsAgo: number) => new Date(NOW - secondsAgo * 1000).toISOString();
@@ -92,10 +92,20 @@ type Mocked = { [K in keyof Actions]: ReturnType<typeof vi.fn> & Actions[K] };
 export function actions(): Mocked {
   const ok = () => vi.fn(async () => {});
   return {
-    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), pressHere: ok(), releaseIt: ok(), setServer: ok(), applyUpdate: ok(),
+    create: ok(), check: ok(), join: ok(), cancel: ok(), leave: ok(), releaseAircraft: ok(), takeControl: ok(), giveControl: ok(), setBoth: ok(), pressHere: ok(), releaseIt: ok(), setServer: ok(), applyUpdate: ok(),
   } as unknown as Mocked;
 }
 
 export function bridge(status: Status | null, over: Partial<BridgeState> = {}): BridgeState & { actions: Mocked } {
-  return { status, bridgeDown: false, error: null, confirmPeerLost: false, busy: false, actions: actions(), ...over } as BridgeState & { actions: Mocked };
+  return {
+    status, bridgeDown: false, error: null, confirmPeerLost: false, confirmLeaveInAir: null, cancelLeave: vi.fn(), busy: false, actions: actions(), ...over,
+  } as BridgeState & { actions: Mocked };
+}
+
+/** The physics stream part of the status (CRO-13): following the captain, smooth. */
+export function physics(over: Partial<Physics> = {}): Physics {
+  return {
+    mode: 'following', link: true, frozen: true, frozen_outside: false, in_air: false, pf_lost_cause: null, health: 'ok',
+    buffer_ms: 100, late_ms: 0, latency_ms: 48, no_stream: false, levers: [], refused: [], ...over,
+  };
 }

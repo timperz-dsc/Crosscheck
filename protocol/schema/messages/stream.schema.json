@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/crosscheck/protocol/v1/messages/stream.schema.json",
   "title": "stream",
-  "description": "Physics frame from the PF (position, attitude, velocity, sidestick), up to 30 Hz. Never logged per frame, never carries seq. Field set inside data is open until the follower spike. (both directions)",
+  "description": "Physics frame from the PF, up to 30 Hz (protocol.md section 9): sim time t, position, attitude, the mixed velocity set, control surfaces, on_ground and the profile's stream vars (lv_<name>). Latest wins: the server drops a frame not newer than the last one from the same PF and relays to every other client without seq. Never logged per frame, never replayed. (both directions)",
   "type": "object",
   "$ref": "../common.schema.json#/$defs/envelope",
   "properties": {
@@ -18,10 +18,12 @@
       ],
       "properties": {
         "frame": {
+          "description": "Counts up on the sending bridge, never repeats.",
           "type": "integer",
           "minimum": 0
         },
         "data": {
+          "description": "Field names and units: protocol.md section 9. The bridge ignores (and counts) a frame without its required fields.",
           "type": "object",
           "maxProperties": 64,
           "propertyNames": {

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AlertIcon, Button, Mark } from '../components/parts';
+import { AlertIcon, Button, Mark, PfLostLine } from '../components/parts';
 import { pickHeadline } from '../panel';
 import type { Actions, ControlNotice, Panel, PanelItem, PanelLine, Status } from '../types';
 import {
   SideName, actionLabel, amberText, driftText, driftWarningText, handoverDetail, handoverLine, indicatorsLine, itemValues, lastCompared,
-  lineText, moreText, notSyncedDetail, notSyncedLine, otherSide, outsideLine, peerLostText, roleName, sideName, timeOfDay,
+  leversText, lineText, moreText, notSyncedDetail, notSyncedLine, otherSide, outsideLine, peerLostText, roleName, sideName, timeOfDay,
 } from '../words';
 
 interface Props {
@@ -14,6 +14,9 @@ interface Props {
   busy: boolean;
   error: string | null;
   confirmPeerLost: boolean;
+  /** Leave asked while this aircraft is held frozen in the air: the bridge's question, or null. */
+  confirmLeaveInAir?: string | null;
+  cancelLeave?: () => void;
   /** Current time in ms (ticks every second). */
   now: number;
 }
@@ -28,7 +31,7 @@ const EMPTY: Panel = {
  * list on demand and everything else collapsed, and the crew with the control button at the bottom.
  * Right pane: the Panels summary and the log. Only the lists scroll, each inside its own pane.
  */
-export function Session({ status, actions, busy, error, confirmPeerLost, now }: Props) {
+export function Session({ status, actions, busy, error, confirmPeerLost, confirmLeaveInAir = null, cancelLeave = () => {}, now }: Props) {
   const panel = status.panel ?? EMPTY;
   const crew = status.crew ?? [];
   const me = crew.find((c) => c.you);
@@ -37,10 +40,21 @@ export function Session({ status, actions, busy, error, confirmPeerLost, now }: 
   const isPf = status.is_pf ?? status.role === 'pf';
   const notice = useNotice(status.control_notice ?? null);
   const red = useRedLines(panel.red);
+  const [askLevers, setAskLevers] = useState(false);
+  const levers = !isPf && status.physics && status.physics.levers.length > 0 ? leversText(status.physics, peer?.side ?? otherSide(status)) : null;
+  const takeControl = () => {
+    // "Match your thrust levers" first (CRO-14): the other aircraft's levers are where the PF left them.
+    if (levers && !askLevers) setAskLevers(true);
+    else {
+      setAskLevers(false);
+      void actions.takeControl(false);
+    }
+  };
 
   return (
     <div className="session">
       <div className="pane pane-main">
+        <PfLostLine status={status} actions={actions} busy={busy} />
         <Headline red={red} peerWord={peerWord} actions={actions} busy={busy} compared={lastCompared(status.last_compared_at, now)} />
 
         <div className="pane-scroll">
@@ -48,6 +62,15 @@ export function Session({ status, actions, busy, error, confirmPeerLost, now }: 
             <div id="red-lines">
               {red.others.map((l) => <ControlLine key={l.control} line={l} peerWord={peerWord} actions={actions} busy={busy} />)}
             </div>
+          )}
+          {confirmLeaveInAir && (
+            <section className="note" role="alert">
+              <span className="note-row">
+                <span className="differs">{confirmLeaveInAir}</span>
+                <Button small onClick={() => void actions.leave(true)} disabled={busy}>Release and leave</Button>
+                <Button small variant="secondary" onClick={cancelLeave}>Stay</Button>
+              </span>
+            </section>
           )}
           {notice.visible && notice.data && <ControlChange notice={notice.data} peerWord={peerWord} onDismiss={notice.dismiss} />}
           <CollapsedLines status={status} panel={panel} peerWord={peerWord} isPf={isPf} confirmPeerLost={confirmPeerLost} actions={actions} busy={busy} now={now} />
@@ -71,8 +94,13 @@ export function Session({ status, actions, busy, error, confirmPeerLost, now }: 
                 </>
               ) : (
                 <>
-                  <span className="hint">Takes over at once. The takeover button on your sidestick does the same.</span>
-                  <Button onClick={() => void actions.takeControl(false)} disabled={busy}>I have control</Button>
+                  {askLevers && levers ? (
+                    <span className="warning">{levers}</span>
+                  ) : (
+                    <span className="hint">Takes over at once. The takeover button on your sidestick does the same.</span>
+                  )}
+                  <Button onClick={takeControl} disabled={busy}>{askLevers && levers ? 'Take control anyway' : 'I have control'}</Button>
+                  {askLevers && levers && <Button variant="secondary" onClick={() => setAskLevers(false)}>Cancel</Button>}
                 </>
               )}
             </div>
@@ -289,7 +317,20 @@ function CollapsedLines({ status, panel, peerWord, isPf, confirmPeerLost, action
   if (peer && peer.state === 'lost' && status.peer_lost_at) {
     lines.push(<span key="peer" className="warning">{peerLostText(peer, status.peer_lost_at, status.session_ttl_ms ?? 300000, now)}</span>);
   }
-  if (confirmPeerLost && !isPf) {
+  const physics = status.physics;
+  if (physics?.mode === 'released') {
+    lines.push(<span key="released" className="differs">You took the aircraft while the {peerWord} was lost: you are flying unsynced. Crosscheck asks the server for control as soon as it is back.</span>);
+  }
+  if (physics?.no_stream) {
+    lines.push(<span key="no-stream" className="warning">No aircraft data from the {peerWord} for 2 seconds. Your aircraft holds where it is.</span>);
+  }
+  if (physics && physics.refused.length > 0) {
+    lines.push(<span key="refused" className="warning">The sim refused part of the aircraft data ({physics.refused.map((v) => v.toLowerCase()).join(', ')}). Position still follows.</span>);
+  }
+  if (levers(physics) && !isPf) {
+    lines.push(<span key="levers" className="warning">Your thrust levers differ from the {peerWord}'s. Match them before you take control.</span>);
+  }
+  if (confirmPeerLost && !isPf && physics?.mode !== 'pf_lost') {
     lines.push(
       <span key="confirm" className="note-row">
         <span className="warning">The {peerWord} is not connected. Take control anyway?</span>
@@ -324,6 +365,8 @@ function CollapsedLines({ status, panel, peerWord, isPf, confirmPeerLost, action
     </div>
   );
 }
+
+const levers = (p: Status['physics']) => !!p && p.levers.length > 0;
 
 /** One collapsed line with a count; the controls behind it on click. */
 function Expandable({ tone, text, listName, items, detail }: {

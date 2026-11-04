@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using Crosscheck.Bridge.Api;
 using Crosscheck.Bridge.Fenix;
+using Crosscheck.Bridge.Follow;
 using Crosscheck.Bridge.Logging;
 using Crosscheck.Bridge.Protocol;
 using Crosscheck.Bridge.Sim;
@@ -37,19 +38,23 @@ public sealed record BridgeOptions
     public string? SettingsPath { get; init; }
     public string? Airac { get; init; }
     public TimeSpan VersionTimeout { get; init; } = TimeSpan.FromSeconds(30);
-    public double StreamHz { get; init; }
+    /// <summary>Physics stream and follower settings (CRO-13): rate, playout buffer, extrapolation cap.</summary>
+    public PhysicsOptions Physics { get; init; } = new();
     public bool StrictValidation { get; init; }
     public EngineOptions Engine { get; init; } = new();
 }
 
-/// <summary>Sim, Fenix backend and package version source for one bridge (real or fake).</summary>
-public sealed record BridgeBackends(ISimAdapter Sim, IFenixGraphQl GraphQl, IPackageVersionSource Package)
+/// <summary>
+/// Sim, Fenix backend, package version source and physics link for one bridge (real or fake). Without a
+/// physics link the in-memory one is used (tests).
+/// </summary>
+public sealed record BridgeBackends(ISimAdapter Sim, IFenixGraphQl GraphQl, IPackageVersionSource Package, IPhysicsLink? Physics = null)
 {
     /// <summary>Everything in memory; the package version is the profile's first build.</summary>
-    public static BridgeBackends Fake(Profile profile, FakeSimOptions? options = null)
+    public static BridgeBackends Fake(Profile profile, FakeSimOptions? options = null, FakePhysicsOptions? physics = null)
     {
         var sim = new FakeSimAdapter(profile, options);
-        return new BridgeBackends(sim, new FakeFenixGraphQl(sim), new FixedPackageVersion(profile.Aircraft.Builds.FirstOrDefault()));
+        return new BridgeBackends(sim, new FakeFenixGraphQl(sim), new FixedPackageVersion(profile.Aircraft.Builds.FirstOrDefault()), new FakePhysicsLink(physics));
     }
 }
 
@@ -85,8 +90,6 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     private Task<AircraftVersions>? _versions;
     private CancellationTokenSource _life = new();
     private Uri _server = null!;
-    private Timer? _stream;
-    private long _frame;
 
     public BridgeRuntime(BridgeOptions options, Func<Profile, BridgeBackends> backends, ILoggerFactory? loggers = null)
     {
@@ -103,6 +106,8 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     public string ProfileHash { get; private set; } = "";
     public ISimAdapter Sim { get; private set; } = null!;
     public IFenixGraphQl GraphQl { get; private set; } = null!;
+    /// <summary>The physics stream: streams while PF, follows (freezes and places) while PM (CRO-13).</summary>
+    public PhysicsSync Physics { get; private set; } = null!;
     /// <summary>The current session's protocol client (null when not in a session).</summary>
     public ProtocolClient? Client { get; private set; }
     /// <summary>The current session's sync engine (null when not in a session).</summary>
@@ -160,6 +165,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         Sim.SimException += what => Log.Event("sim_exception", new JsonObject { ["what"] = what });
         await Sim.StartAsync(SyncEngine.PlanFor(Profile, Unsynced.Names), ct);
         Status.Sim = Sim.State == SimState.Connected ? "connected" : "disconnected";
+        StartPhysics(backends.Physics ?? new FakePhysicsLink());
         await GraphQl.StartAsync(SyncEngine.GraphQlPathsFor(Profile), ct);
         _versions = ReadVersionsAsync(_life.Token);
 
@@ -183,6 +189,34 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// The physics stream (CRO-13). The role comes from the sync engine through Sim.Stream (same call, so a
+    /// bridge that becomes PF releases at once); frames from the PF come the same way. Thrust levers (profile
+    /// stream vars) are read with the aircraft and written only once the profile gives them a range.
+    /// </summary>
+    private void StartPhysics(IPhysicsLink link)
+    {
+        var levers = Profile.Vars.Where(v => v.Class == SyncClass.Stream).ToList();
+        Physics = new PhysicsSync(link, Log, Events, _options.Physics,
+            levers.ToDictionary(v => v.Name, v => v.Tolerance ?? 0.1, StringComparer.Ordinal),
+            name => Sim.Guard.IsWritable(name), (name, value) => Sim.WriteAsync(name, value))
+        {
+            Rtt = () => Client?.RttMs,
+        };
+        Sim.Stream.RoleChanged += Physics.SetRole;
+        Sim.Stream.FrameReceived += Physics.OnStream;
+        Events.Published += e =>
+        {
+            switch (e.Type)
+            {
+                case "peer_lost" or "peer_left": Physics.OnPeerState(e.Type[5..]); break;
+                case "control_changed": Physics.OnNewPf(); break;
+            }
+        };
+        link.ConnectedChanged += c => Log.Event("physics_link", new JsonObject { ["connected"] = c });
+        link.Start(levers.Select(v => v.Name).ToList());
     }
 
     /// <summary>
@@ -286,7 +320,6 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             Hosting = true;
             Preflight = null;
             LastError = null;
-            StartStream();
             return ApiResult.Success;
         }
         catch (Exception e) when (e is System.Net.WebSockets.WebSocketException or TimeoutException or HttpRequestException)
@@ -371,7 +404,6 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             Hosting = false;
             Preflight = null;
             LastError = null;
-            StartStream();
             return ApiResult.Success;
         }
         catch (Exception e) when (e is System.Net.WebSockets.WebSocketException or TimeoutException or HttpRequestException)
@@ -392,12 +424,21 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         return ApiResult.Success;
     }
 
-    public async Task<ApiResult> LeaveAsync()
+    public Task<ApiResult> LeaveAsync() => LeaveAsync(releaseInAir: false);
+
+    /// <summary>
+    /// Leaves the session. Leaving releases the freezes; while this side holds the aircraft frozen in the air,
+    /// the pilot is asked first (owner decision 2026-11-04): the answer comes back with
+    /// <c>releaseInAir: true</c>, or the leave is cancelled.
+    /// </summary>
+    public async Task<ApiResult> LeaveAsync(bool releaseInAir)
     {
         await _sessionLock.WaitAsync();
         try
         {
             if (Engine is null) return ApiResult.Fail("Not in a session.");
+            if (Physics.Frozen && Physics.InAir && !releaseInAir)
+                return ApiResult.Fail("You are in the air. Leaving releases the aircraft: it will fly on from where it is now.") with { Confirm = "release_in_air" };
             await EndSessionAsync(leave: true);
             return ApiResult.Success;
         }
@@ -410,8 +451,24 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     public ApiResult TakeControl(bool confirmPeerLost)
     {
         if (Engine is null) return ApiResult.Fail("Not in a session.");
+        // The PF is lost and the server cannot be reached: the pilot's yes releases the aircraft here and now;
+        // this pilot flies on unsynced (owner decision 2026-11-04). Asked for control again once reconnected.
+        if (confirmPeerLost && Physics.Mode == FollowMode.PfLost && Client?.State != ServerState.Connected)
+        {
+            Physics.TakeAircraftByPilot();
+            Log.Event("took_aircraft_offline", new JsonObject());
+            return ApiResult.Success;
+        }
         Engine.RequestControl(confirmPeerLost ? ["@peer_lost"] : null);
         return ApiResult.Success;
+    }
+
+    /// <summary>"Release aircraft": every freeze off (a crashed bridge, or holding after the PF was lost). Pilot action.</summary>
+    public ApiResult ReleaseAircraft()
+    {
+        var r = Physics.ReleaseAircraft();
+        Log.Event("release_aircraft_request", new JsonObject { ["ok"] = r.Ok });
+        return r;
     }
 
     public ApiResult GiveControl()
@@ -486,6 +543,13 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
                 Events.Publish("server_" + Status.Server, s == ServerState.Ended ? "Session ended." : "Connection to the server lost; resuming.");
         };
         var engine = new SyncEngine(Profile, Sim, GraphQl, client, Events, Log, Status, _logger, options: _options.Engine, unsynced: Unsynced);
+        client.StateChanged += s => Physics.OnServerConnected(s == ServerState.Connected);
+        // A pilot who took the aircraft while the server was gone asks for control as soon as it is back.
+        client.Resumed += _ =>
+        {
+            if (Physics.Mode == FollowMode.Released && !engine.IsPf) engine.RequestControl(["@peer_lost"]);
+        };
+        Physics.StartSession((no, data) => engine.SendStreamFrame(no, data));
         engine.Start();
         Client = client;
         Engine = engine;
@@ -494,8 +558,9 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
 
     private async Task EndSessionAsync(bool leave)
     {
-        _stream?.Dispose();
-        _stream = null;
+        // Session end releases every freeze this side holds (owner decision 2026-11-04). A leave in the air
+        // was confirmed by the pilot (LeaveAsync); quitting the bridge is the pilot's decision too.
+        Physics?.EndSession(leave ? "left" : "session_end");
         var client = Client;
         var engine = Engine;
         Client = null;
@@ -510,14 +575,6 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         Hosting = false;
     }
 
-    private void StartStream()
-    {
-        if (_options.StreamHz <= 0) return;
-        var period = TimeSpan.FromSeconds(1 / Math.Min(30, _options.StreamHz));
-        // Placeholder frames until the follower spike (CRO-17) defines the field set; sent only while PF.
-        _stream = new Timer(_ => Engine?.SendStreamFrame(Interlocked.Increment(ref _frame), new Dictionary<string, double> { ["placeholder"] = 0 }), null, period, period);
-    }
-
     /// <summary>Counters for /status (safety guard, stream writer, engine).</summary>
     internal JsonObject StatusCounters()
     {
@@ -525,6 +582,8 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         c["safety_refused"] = Sim.Guard.Refused;
         c["stream_applied"] = Sim.Stream.Applied;
         c["stream_refused"] = Sim.Stream.Refused;
+        c["stream_sent"] = Physics.FramesSent;
+        c["stream_placed"] = Physics.FramesPlaced;
         Status.RttMs = Client?.RttMs;
         return c;
     }
@@ -542,7 +601,9 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
         if (Engine is not null || Client is not null) await EndSessionAsync(leave: false);
         if (Api is not null) await Api.DisposeAsync();
         if (GraphQl is not null) await GraphQl.DisposeAsync();
+        if (Physics is not null) await Physics.DisposeAsync();
         if (Sim is not null) await Sim.DisposeAsync();
+        Physics = null!;
         Api = null;
         GraphQl = null!;
         Sim = null!;

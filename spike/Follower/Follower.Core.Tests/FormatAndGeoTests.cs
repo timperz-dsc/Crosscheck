@@ -35,9 +35,9 @@ public class FormatTests
     {
         Assert.Equal(Fields.SimVarCount, Fields.SimVars.Count);
         Assert.Equal(Fields.All.Count, Fields.All.Select(f => f.Name).Distinct().Count());
-        // Time and position as doubles, the rest float32, one byte for the bool.
-        Assert.Equal(4 * 8 + (Fields.All.Count - 5) * 4 + 1, RecordingFormat.RecordSize(Fields.All));
-        Assert.True(RecordingFormat.RecordSize(Fields.All) < 150);
+        // Time, position and the two sim clocks as doubles, the rest float32, one byte for the bool.
+        Assert.Equal(6 * 8 + (Fields.All.Count - 7) * 4 + 1, RecordingFormat.RecordSize(Fields.All));
+        Assert.True(RecordingFormat.RecordSize(Fields.All) < 170);
     }
 
     [Fact]

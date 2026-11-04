@@ -49,6 +49,15 @@ export function Preflight({ status, actions, busy, error }: { status: Status; ac
             {open.map((r) => <p key={r.field} className="muted">{preflightExplanation(r, other)}</p>)}
           </div>
         )}
+        <p className="muted">
+          Only the pilot flying may be connected to VATSIM (or any other online network). You join as pilot monitoring:
+          your aircraft follows the captain's, so stay offline.
+        </p>
+        {(status.this_computer.network_clients ?? []).length > 0 && (
+          <p className="warning" role="alert">
+            {(status.this_computer.network_clients ?? []).join(', ')} is running on this computer. Disconnect it before you join.
+          </p>
+        )}
         {error && <p className="warning">{error}</p>}
         <div className="actions">
           {p.joinable ? (
