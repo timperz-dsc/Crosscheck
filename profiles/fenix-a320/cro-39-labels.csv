@@ -1,0 +1,1452 @@
+name,class,old,new
+A_ASP2_ADF_1_VOLUME,analog,ASP2 ADF 1 VOLUME,ASP 2 ADF 1 volume
+A_ASP2_ADF_2_VOLUME,analog,ASP2 ADF 2 VOLUME,ASP 2 ADF 2 volume
+A_ASP2_CAB_VOLUME,analog,ASP2 CAB VOLUME,ASP 2 cabin volume
+A_ASP2_HF_1_VOLUME,analog,ASP2 HF 1 VOLUME,ASP 2 HF 1 volume
+A_ASP2_HF_2_VOLUME,analog,ASP2 HF 2 VOLUME,ASP 2 HF 2 volume
+A_ASP2_ILS_VOLUME,analog,ASP2 ILS VOLUME,ASP 2 ILS volume
+A_ASP2_INT_VOLUME,analog,ASP2 INT VOLUME,ASP 2 INT volume
+A_ASP2_MARKER_VOLUME,analog,ASP2 MARKER VOLUME,ASP 2 marker volume
+A_ASP2_MLS_VOLUME,analog,ASP2 MLS VOLUME,ASP 2 MLS volume
+A_ASP2_PA_VOLUME,analog,ASP2 PA VOLUME,ASP 2 PA volume
+A_ASP2_SPKR_VOLUME,analog,ASP2 SPKR VOLUME,ASP 2 speaker volume
+A_ASP2_VHF_1_VOLUME,analog,ASP2 VHF 1 VOLUME,ASP 2 VHF 1 volume
+A_ASP2_VHF_2_VOLUME,analog,ASP2 VHF 2 VOLUME,ASP 2 VHF 2 volume
+A_ASP2_VHF_3_VOLUME,analog,ASP2 VHF 3 VOLUME,ASP 2 VHF 3 volume
+A_ASP2_VOR_1_VOLUME,analog,ASP2 VOR 1 VOLUME,ASP 2 VOR 1 volume
+A_ASP2_VOR_2_VOLUME,analog,ASP2 VOR 2 VOLUME,ASP 2 VOR 2 volume
+A_ASP3_ADF_1_VOLUME,analog,ASP3 ADF 1 VOLUME,ASP 3 ADF 1 volume
+A_ASP3_ADF_2_VOLUME,analog,ASP3 ADF 2 VOLUME,ASP 3 ADF 2 volume
+A_ASP3_CAB_VOLUME,analog,ASP3 CAB VOLUME,ASP 3 cabin volume
+A_ASP3_HF_1_VOLUME,analog,ASP3 HF 1 VOLUME,ASP 3 HF 1 volume
+A_ASP3_HF_2_VOLUME,analog,ASP3 HF 2 VOLUME,ASP 3 HF 2 volume
+A_ASP3_ILS_VOLUME,analog,ASP3 ILS VOLUME,ASP 3 ILS volume
+A_ASP3_INT_VOLUME,analog,ASP3 INT VOLUME,ASP 3 INT volume
+A_ASP3_MARKER_VOLUME,analog,ASP3 MARKER VOLUME,ASP 3 marker volume
+A_ASP3_MLS_VOLUME,analog,ASP3 MLS VOLUME,ASP 3 MLS volume
+A_ASP3_PA_VOLUME,analog,ASP3 PA VOLUME,ASP 3 PA volume
+A_ASP3_SPKR_VOLUME,analog,ASP3 SPKR VOLUME,ASP 3 speaker volume
+A_ASP3_VHF_1_VOLUME,analog,ASP3 VHF 1 VOLUME,ASP 3 VHF 1 volume
+A_ASP3_VHF_2_VOLUME,analog,ASP3 VHF 2 VOLUME,ASP 3 VHF 2 volume
+A_ASP3_VHF_3_VOLUME,analog,ASP3 VHF 3 VOLUME,ASP 3 VHF 3 volume
+A_ASP3_VOR_1_VOLUME,analog,ASP3 VOR 1 VOLUME,ASP 3 VOR 1 volume
+A_ASP3_VOR_2_VOLUME,analog,ASP3 VOR 2 VOLUME,ASP 3 VOR 2 volume
+A_ASP4_ADF_1_VOLUME,analog,ASP4 ADF 1 VOLUME,ASP 4 ADF 1 volume
+A_ASP4_ADF_2_VOLUME,analog,ASP4 ADF 2 VOLUME,ASP 4 ADF 2 volume
+A_ASP4_CAB_VOLUME,analog,ASP4 CAB VOLUME,ASP 4 cabin volume
+A_ASP4_HF_1_VOLUME,analog,ASP4 HF 1 VOLUME,ASP 4 HF 1 volume
+A_ASP4_HF_2_VOLUME,analog,ASP4 HF 2 VOLUME,ASP 4 HF 2 volume
+A_ASP4_ILS_VOLUME,analog,ASP4 ILS VOLUME,ASP 4 ILS volume
+A_ASP4_INT_VOLUME,analog,ASP4 INT VOLUME,ASP 4 INT volume
+A_ASP4_MARKER_VOLUME,analog,ASP4 MARKER VOLUME,ASP 4 marker volume
+A_ASP4_MLS_VOLUME,analog,ASP4 MLS VOLUME,ASP 4 MLS volume
+A_ASP4_PA_VOLUME,analog,ASP4 PA VOLUME,ASP 4 PA volume
+A_ASP4_SPKR_VOLUME,analog,ASP4 SPKR VOLUME,ASP 4 speaker volume
+A_ASP4_VHF_1_VOLUME,analog,ASP4 VHF 1 VOLUME,ASP 4 VHF 1 volume
+A_ASP4_VHF_2_VOLUME,analog,ASP4 VHF 2 VOLUME,ASP 4 VHF 2 volume
+A_ASP4_VHF_3_VOLUME,analog,ASP4 VHF 3 VOLUME,ASP 4 VHF 3 volume
+A_ASP4_VOR_1_VOLUME,analog,ASP4 VOR 1 VOLUME,ASP 4 VOR 1 volume
+A_ASP4_VOR_2_VOLUME,analog,ASP4 VOR 2 VOLUME,ASP 4 VOR 2 volume
+A_ASP_ADF_1_VOLUME,analog,ASP ADF 1 VOLUME,ASP ADF 1 volume
+A_ASP_ADF_2_VOLUME,analog,ASP ADF 2 VOLUME,ASP ADF 2 volume
+A_ASP_CAB_VOLUME,analog,ASP CAB VOLUME,ASP cabin volume
+A_ASP_HF_1_VOLUME,analog,ASP HF 1 VOLUME,ASP HF 1 volume
+A_ASP_HF_2_VOLUME,analog,ASP HF 2 VOLUME,ASP HF 2 volume
+A_ASP_ILS_VOLUME,analog,ASP ILS VOLUME,ASP ILS volume
+A_ASP_INT_VOLUME,analog,ASP INT VOLUME,ASP INT volume
+A_ASP_MARKER_VOLUME,analog,ASP MARKER VOLUME,ASP marker volume
+A_ASP_MLS_VOLUME,analog,ASP MLS VOLUME,ASP MLS volume
+A_ASP_PA_VOLUME,analog,ASP PA VOLUME,ASP PA volume
+A_ASP_SPKR_VOLUME,analog,ASP SPKR VOLUME,ASP speaker volume
+A_ASP_VHF_1_VOLUME,analog,ASP VHF 1 VOLUME,ASP VHF 1 volume
+A_ASP_VHF_2_VOLUME,analog,ASP VHF 2 VOLUME,ASP VHF 2 volume
+A_ASP_VHF_3_VOLUME,analog,ASP VHF 3 VOLUME,ASP VHF 3 volume
+A_ASP_VOR_1_VOLUME,analog,ASP VOR 1 VOLUME,ASP VOR 1 volume
+A_ASP_VOR_2_VOLUME,analog,ASP VOR 2 VOLUME,ASP VOR 2 volume
+A_DISPLAY_BRIGHTNESS_CI,analog,DISPLAY BRIGHTNESS CI,Display brightness CI
+A_DISPLAY_BRIGHTNESS_CI_OUTER,analog,DISPLAY BRIGHTNESS CI OUTER,Display brightness CI outer
+A_DISPLAY_BRIGHTNESS_CO,analog,DISPLAY BRIGHTNESS CO,Display brightness CO
+A_DISPLAY_BRIGHTNESS_ECAM_L,analog,DISPLAY BRIGHTNESS ECAM L,Display brightness ECAM (lower)
+A_DISPLAY_BRIGHTNESS_ECAM_U,analog,DISPLAY BRIGHTNESS ECAM U,Display brightness ECAM (upper)
+A_DISPLAY_BRIGHTNESS_FI,analog,DISPLAY BRIGHTNESS FI,Display brightness FI
+A_DISPLAY_BRIGHTNESS_FI_OUTER,analog,DISPLAY BRIGHTNESS FI OUTER,Display brightness FI outer
+A_DISPLAY_BRIGHTNESS_FO,analog,DISPLAY BRIGHTNESS FO,Display brightness (F/O)
+A_EXT_CARGO_DOOR_BULK_HANDLE,analog,EXT CARGO DOOR BULK HANDLE,Cargo door bulk handle
+A_FCU_LIGHTING,analog,LIGHTING,Lighting
+A_FCU_LIGHTING_TEXT,analog,LIGHTING TEXT,Lighting text
+A_FC_ELEVATOR_TRIM,ignore,FC ELEVATOR TRIM,Elevator trim
+A_FC_SPEEDBRAKE,analog,FC SPEEDBRAKE knob,Speedbrake knob
+A_FC_THROTTLE_LEFT_GATE,ignore,FC THROTTLE LEFT GATE,Throttle left gate
+A_FC_THROTTLE_LEFT_INPUT,ignore,FC THROTTLE LEFT INPUT,Throttle left input
+A_FC_THROTTLE_RIGHT_GATE,ignore,FC THROTTLE RIGHT GATE,Throttle right gate
+A_FC_THROTTLE_RIGHT_INPUT,ignore,FC THROTTLE RIGHT INPUT,Throttle right input
+A_MIP_AIR_VENT_CAPT_OPEN,analog,AIR VENT CAPT OPEN,Air vent open (Capt)
+A_MIP_AIR_VENT_CAPT_PITCH,analog,AIR VENT CAPT PITCH,Air vent pitch (Capt)
+A_MIP_AIR_VENT_CAPT_YAW,analog,AIR VENT CAPT YAW,Air vent yaw (Capt)
+A_MIP_AIR_VENT_FO_OPEN,analog,AIR VENT FO OPEN,Air vent open (F/O)
+A_MIP_AIR_VENT_FO_PITCH,analog,AIR VENT FO PITCH,Air vent pitch (F/O)
+A_MIP_AIR_VENT_FO_YAW,analog,AIR VENT FO YAW,Air vent yaw (F/O)
+A_MIP_LIGHTING_FLOOD_MAIN,analog,LIGHTING FLOOD MAIN,Lighting flood main
+A_MIP_LIGHTING_FLOOD_PEDESTAL,analog,LIGHTING FLOOD PEDESTAL,Lighting flood pedestal
+A_MIP_LIGHTING_MAP_L,analog,LIGHTING MAP L,Lighting map (left)
+A_MIP_LIGHTING_MAP_R,analog,LIGHTING MAP R,Lighting map (right)
+A_MIP_LOUDSPEAKER_CAPT,analog,LOUDSPEAKER CAPT,Loudspeaker (Capt)
+A_MIP_LOUDSPEAKER_FO,analog,LOUDSPEAKER FO,Loudspeaker (F/O)
+A_OH_LIGHTING_OVD,analog,LIGHTING OVD,Lighting override
+A_OH_LIGHTING_READING_CAPT,analog,LIGHTING READING CAPT,Lighting reading (Capt)
+A_OH_LIGHTING_READING_FO,analog,LIGHTING READING FO,Lighting reading (F/O)
+A_OH_PNEUMATIC_AFT_TEMP,analog,AFT TEMP,Aft temperature
+A_OH_PNEUMATIC_CARGO_AFT_TEMP,analog,CARGO AFT TEMP,Cargo aft temperature
+A_OH_PNEUMATIC_FWD_TEMP,analog,FWD TEMP,Forward temperature
+A_OH_PNEUMATIC_LDG_ELEV,analog,LDG ELEV,Landing elevation
+A_PED_DRAIMS1_BRIGHTNESS,analog,DRAIMS1 BRIGHTNESS,DRAIMS 1 brightness
+A_PED_DRAIMS1_NAV_REC,analog,DRAIMS1 NAV REC knob,DRAIMS 1 NAV rec knob
+A_PED_DRAIMS2_BRIGHTNESS,analog,DRAIMS2 BRIGHTNESS,DRAIMS 2 brightness
+A_PED_DRAIMS2_NAV_REC,analog,DRAIMS2 NAV REC knob,DRAIMS 2 NAV rec knob
+A_PED_DRAIMS3_BRIGHTNESS,analog,DRAIMS3 BRIGHTNESS,DRAIMS 3 brightness
+A_PED_DRAIMS3_NAV_REC,analog,DRAIMS3 NAV REC knob,DRAIMS 3 NAV rec knob
+A_PED_LIGHTING_PEDESTAL,analog,LIGHTING PEDESTAL,Lighting pedestal
+A_WR_GAIN,analog,WR GAIN knob,Weather radar gain knob
+A_WR_TILT,analog,WR TILT,Weather radar tilt
+B_CABIN_CURTAIN_OPEN,observe,CABIN CURTAIN OPEN,Cabin curtain open
+B_DOORS_COCKPIT_LOCKED,observe,DOORS COCKPIT LOCKED,Doors cockpit locked
+B_DOOR_AFT_CARGO,observe,DOOR AFT CARGO,Door aft cargo
+B_DOOR_FWD_CARGO,observe,DOOR FWD CARGO,Door forward cargo
+B_ELEC_BUS_POWER_AC_1,observe,BUS POWER AC 1,Bus power AC 1
+B_ELEC_BUS_POWER_AC_2,observe,BUS POWER AC 2,Bus power AC 2
+B_ELEC_BUS_POWER_AC_ESS,observe,BUS POWER AC ESS,Bus power AC ESS
+B_ELEC_BUS_POWER_AC_ESS_SHED,observe,BUS POWER AC ESS SHED,Bus power AC ESS shed
+B_ELEC_BUS_POWER_AC_STAT_INV,observe,BUS POWER AC STAT INV,Bus power AC static inverter
+B_ELEC_BUS_POWER_DC_1,observe,BUS POWER DC 1,Bus power DC 1
+B_ELEC_BUS_POWER_DC_2,observe,BUS POWER DC 2,Bus power DC 2
+B_ELEC_BUS_POWER_DC_BAT,observe,BUS POWER DC BAT,Bus power DC BAT
+B_ELEC_BUS_POWER_DC_ESS,observe,BUS POWER DC ESS,Bus power DC ESS
+B_ELEC_BUS_POWER_DC_ESS_SHED,observe,BUS POWER DC ESS SHED,Bus power DC ESS shed
+B_ELEC_BUS_POWER_DC_SERVICE,observe,BUS POWER DC SERVICE,Bus power DC service
+B_EXT_HYD_GEAR_DOOR_PRESSURE,observe,EXT HYD GEAR DOOR PRESSURE,Hydraulic gear door pressure
+B_FCU_EFIS1_BARO_INCH,observe,BARO INCH (Capt),BARO inch (Capt)
+B_FCU_EFIS2_BARO_INCH,observe,BARO INCH (F/O),BARO inch (F/O)
+B_FCU_HEADING_DASHED,observe,HEADING DASHED,Heading dashed
+B_FCU_POWER,observe,POWER,FCU power
+B_FCU_SPEED_DASHED,observe,SPEED DASHED,Speed dashed
+B_FCU_SPEED_MACH,observe,SPEED MACH,Speed Mach
+B_FCU_TRACK_FPA_MODE,observe,TRACK FPA MODE,Track FPA mode
+B_FCU_VERTICALSPEED_DASHED,observe,VERTICALSPEED DASHED,Vertical speed dashed
+B_FC_ELEVATOR_TRIM_MOTOR_POWER,observe,FC ELEVATOR TRIM MOTOR POWER,Elevator trim motor power
+B_FC_RUDDER_TRIM,observe,FC RUDDER TRIM,Rudder trim
+B_FC_RUDDER_TRIM_DASHED,observe,FC RUDDER TRIM DASHED,Rudder trim dashed
+B_FC_SPEEDBRAKE,ignore,FC SPEEDBRAKE,Speedbrake
+B_MIP_ISFD_BARO_INCH,observe,ISFD BARO INCH,ISFD BARO inch
+B_PED_RMP1_COURSE_DISPLAYED,observe,RMP 1 COURSE DISPLAYED,RMP 1 course displayed
+B_PED_RMP1_DATA_DISPLAYED_ACT,observe,RMP 1 DATA DISPLAYED ACT,RMP 1 data displayed ACT
+B_PED_RMP1_DATA_DISPLAYED_STDBY,observe,RMP 1 DATA DISPLAYED STDBY,RMP 1 data displayed standby
+B_PED_RMP1_POWER,observe,RMP 1 POWER,RMP 1 power
+B_PED_RMP2_COURSE_DISPLAYED,observe,RMP 2 COURSE DISPLAYED,RMP 2 course displayed
+B_PED_RMP2_DATA_DISPLAYED_ACT,observe,RMP 2 DATA DISPLAYED ACT,RMP 2 data displayed ACT
+B_PED_RMP2_DATA_DISPLAYED_STDBY,observe,RMP 2 DATA DISPLAYED STDBY,RMP 2 data displayed standby
+B_PED_RMP2_POWER,observe,RMP 2 POWER,RMP 2 power
+B_PED_RMP3_COURSE_DISPLAYED,observe,RMP 3 COURSE DISPLAYED,RMP 3 course displayed
+B_PED_RMP3_DATA_DISPLAYED_ACT,observe,RMP 3 DATA DISPLAYED ACT,RMP 3 data displayed ACT
+B_PED_RMP3_DATA_DISPLAYED_STDBY,observe,RMP 3 DATA DISPLAYED STDBY,RMP 3 data displayed standby
+B_PED_RMP3_POWER,observe,RMP 3 POWER,RMP 3 power
+E_MIP_CLOCK_SET,delta,CLOCK SET encoder,Clock set encoder
+E_MIP_TRAFFIC_CAPT,delta,TRAFFIC CAPT,Traffic (Capt)
+E_MIP_TRAFFIC_FO,delta,TRAFFIC FO,Traffic (F/O)
+E_PED_RMP1_INNER,delta,RMP 1 INNER,RMP 1 inner
+E_PED_RMP1_OUTER,delta,RMP 1 OUTER,RMP 1 outer
+E_PED_RMP2_INNER,delta,RMP 2 INNER,RMP 2 inner
+E_PED_RMP2_OUTER,delta,RMP 2 OUTER,RMP 2 outer
+E_PED_RMP3_INNER,delta,RMP 3 INNER,RMP 3 inner
+E_PED_RMP3_OUTER,delta,RMP 3 OUTER,RMP 3 outer
+E_STANDBY_ALT_IMPERIAL_BARO,delta,STANDBY ALT IMPERIAL BARO,Standby ALT imperial BARO
+E_STANDBY_ALT_METRIC_BARO,delta,STANDBY ALT METRIC BARO,Standby ALT metric BARO
+I_ASP2_ADF_1_REC,observe,ASP2 ADF 1 REC light,ASP 2 ADF 1 rec light
+I_ASP2_ADF_2_REC,observe,ASP2 ADF 2 REC light,ASP 2 ADF 2 rec light
+I_ASP2_CAB_CALL,observe,ASP2 CAB CALL light,ASP 2 cabin call light
+I_ASP2_CAB_REC,observe,ASP2 CAB REC light,ASP 2 cabin rec light
+I_ASP2_CAB_SEND,observe,ASP2 CAB SEND light,ASP 2 cabin send light
+I_ASP2_HF_1_CALL,observe,ASP2 HF 1 CALL light,ASP 2 HF 1 call light
+I_ASP2_HF_1_REC,observe,ASP2 HF 1 REC light,ASP 2 HF 1 rec light
+I_ASP2_HF_1_SEND,observe,ASP2 HF 1 SEND light,ASP 2 HF 1 send light
+I_ASP2_HF_2_CALL,observe,ASP2 HF 2 CALL light,ASP 2 HF 2 call light
+I_ASP2_HF_2_REC,observe,ASP2 HF 2 REC light,ASP 2 HF 2 rec light
+I_ASP2_HF_2_SEND,observe,ASP2 HF 2 SEND light,ASP 2 HF 2 send light
+I_ASP2_ILS_REC,observe,ASP2 ILS REC light,ASP 2 ILS rec light
+I_ASP2_INT_CALL,observe,ASP2 INT CALL light,ASP 2 INT call light
+I_ASP2_INT_REC,observe,ASP2 INT REC light,ASP 2 INT rec light
+I_ASP2_INT_SEND,observe,ASP2 INT SEND light,ASP 2 INT send light
+I_ASP2_MARKER_REC,observe,ASP2 MARKER REC light,ASP 2 marker rec light
+I_ASP2_MLS_1_REC,observe,ASP2 MLS 1 REC light,ASP 2 MLS 1 rec light
+I_ASP2_MLS_REC,observe,ASP2 MLS REC light,ASP 2 MLS rec light
+I_ASP2_NAV_1_REC,observe,ASP2 NAV 1 REC light,ASP 2 NAV 1 rec light
+I_ASP2_NAV_2_REC,observe,ASP2 NAV 2 REC light,ASP 2 NAV 2 rec light
+I_ASP2_PA_REC,observe,ASP2 PA REC light,ASP 2 PA rec light
+I_ASP2_PA_SEND,observe,ASP2 PA SEND light,ASP 2 PA send light
+I_ASP2_SPKR_REC,observe,ASP2 SPKR REC light,ASP 2 speaker rec light
+I_ASP2_VHF_1_CALL,observe,ASP2 VHF 1 CALL light,ASP 2 VHF 1 call light
+I_ASP2_VHF_1_REC,observe,ASP2 VHF 1 REC light,ASP 2 VHF 1 rec light
+I_ASP2_VHF_1_SEND,observe,ASP2 VHF 1 SEND light,ASP 2 VHF 1 send light
+I_ASP2_VHF_2_CALL,observe,ASP2 VHF 2 CALL light,ASP 2 VHF 2 call light
+I_ASP2_VHF_2_REC,observe,ASP2 VHF 2 REC light,ASP 2 VHF 2 rec light
+I_ASP2_VHF_2_SEND,observe,ASP2 VHF 2 SEND light,ASP 2 VHF 2 send light
+I_ASP2_VHF_3_CALL,observe,ASP2 VHF 3 CALL light,ASP 2 VHF 3 call light
+I_ASP2_VHF_3_REC,observe,ASP2 VHF 3 REC light,ASP 2 VHF 3 rec light
+I_ASP2_VHF_3_SEND,observe,ASP2 VHF 3 SEND light,ASP 2 VHF 3 send light
+I_ASP2_VOICE,observe,ASP2 VOICE light,ASP 2 voice light
+I_ASP3_ADF_1_REC,observe,ASP3 ADF 1 REC light,ASP 3 ADF 1 rec light
+I_ASP3_ADF_2_REC,observe,ASP3 ADF 2 REC light,ASP 3 ADF 2 rec light
+I_ASP3_CAB_CALL,observe,ASP3 CAB CALL light,ASP 3 cabin call light
+I_ASP3_CAB_REC,observe,ASP3 CAB REC light,ASP 3 cabin rec light
+I_ASP3_CAB_SEND,observe,ASP3 CAB SEND light,ASP 3 cabin send light
+I_ASP3_HF_1_CALL,observe,ASP3 HF 1 CALL light,ASP 3 HF 1 call light
+I_ASP3_HF_1_REC,observe,ASP3 HF 1 REC light,ASP 3 HF 1 rec light
+I_ASP3_HF_1_SEND,observe,ASP3 HF 1 SEND light,ASP 3 HF 1 send light
+I_ASP3_HF_2_CALL,observe,ASP3 HF 2 CALL light,ASP 3 HF 2 call light
+I_ASP3_HF_2_REC,observe,ASP3 HF 2 REC light,ASP 3 HF 2 rec light
+I_ASP3_HF_2_SEND,observe,ASP3 HF 2 SEND light,ASP 3 HF 2 send light
+I_ASP3_ILS_REC,observe,ASP3 ILS REC light,ASP 3 ILS rec light
+I_ASP3_INT_CALL,observe,ASP3 INT CALL light,ASP 3 INT call light
+I_ASP3_INT_REC,observe,ASP3 INT REC light,ASP 3 INT rec light
+I_ASP3_INT_SEND,observe,ASP3 INT SEND light,ASP 3 INT send light
+I_ASP3_MARKER_REC,observe,ASP3 MARKER REC light,ASP 3 marker rec light
+I_ASP3_MLS_1_REC,observe,ASP3 MLS 1 REC light,ASP 3 MLS 1 rec light
+I_ASP3_MLS_REC,observe,ASP3 MLS REC light,ASP 3 MLS rec light
+I_ASP3_NAV_1_REC,observe,ASP3 NAV 1 REC light,ASP 3 NAV 1 rec light
+I_ASP3_NAV_2_REC,observe,ASP3 NAV 2 REC light,ASP 3 NAV 2 rec light
+I_ASP3_PA_REC,observe,ASP3 PA REC light,ASP 3 PA rec light
+I_ASP3_PA_SEND,observe,ASP3 PA SEND light,ASP 3 PA send light
+I_ASP3_SPKR_REC,observe,ASP3 SPKR REC light,ASP 3 speaker rec light
+I_ASP3_VHF_1_CALL,observe,ASP3 VHF 1 CALL light,ASP 3 VHF 1 call light
+I_ASP3_VHF_1_REC,observe,ASP3 VHF 1 REC light,ASP 3 VHF 1 rec light
+I_ASP3_VHF_1_SEND,observe,ASP3 VHF 1 SEND light,ASP 3 VHF 1 send light
+I_ASP3_VHF_2_CALL,observe,ASP3 VHF 2 CALL light,ASP 3 VHF 2 call light
+I_ASP3_VHF_2_REC,observe,ASP3 VHF 2 REC light,ASP 3 VHF 2 rec light
+I_ASP3_VHF_2_SEND,observe,ASP3 VHF 2 SEND light,ASP 3 VHF 2 send light
+I_ASP3_VHF_3_CALL,observe,ASP3 VHF 3 CALL light,ASP 3 VHF 3 call light
+I_ASP3_VHF_3_REC,observe,ASP3 VHF 3 REC light,ASP 3 VHF 3 rec light
+I_ASP3_VHF_3_SEND,observe,ASP3 VHF 3 SEND light,ASP 3 VHF 3 send light
+I_ASP3_VOICE,observe,ASP3 VOICE light,ASP 3 voice light
+I_ASP4_ADF_1_REC,observe,ASP4 ADF 1 REC light,ASP 4 ADF 1 rec light
+I_ASP4_ADF_2_REC,observe,ASP4 ADF 2 REC light,ASP 4 ADF 2 rec light
+I_ASP4_CAB_CALL,observe,ASP4 CAB CALL light,ASP 4 cabin call light
+I_ASP4_CAB_REC,observe,ASP4 CAB REC light,ASP 4 cabin rec light
+I_ASP4_CAB_SEND,observe,ASP4 CAB SEND light,ASP 4 cabin send light
+I_ASP4_HF_1_CALL,observe,ASP4 HF 1 CALL light,ASP 4 HF 1 call light
+I_ASP4_HF_1_REC,observe,ASP4 HF 1 REC light,ASP 4 HF 1 rec light
+I_ASP4_HF_1_SEND,observe,ASP4 HF 1 SEND light,ASP 4 HF 1 send light
+I_ASP4_HF_2_CALL,observe,ASP4 HF 2 CALL light,ASP 4 HF 2 call light
+I_ASP4_HF_2_REC,observe,ASP4 HF 2 REC light,ASP 4 HF 2 rec light
+I_ASP4_HF_2_SEND,observe,ASP4 HF 2 SEND light,ASP 4 HF 2 send light
+I_ASP4_ILS_REC,observe,ASP4 ILS REC light,ASP 4 ILS rec light
+I_ASP4_INT_CALL,observe,ASP4 INT CALL light,ASP 4 INT call light
+I_ASP4_INT_REC,observe,ASP4 INT REC light,ASP 4 INT rec light
+I_ASP4_INT_SEND,observe,ASP4 INT SEND light,ASP 4 INT send light
+I_ASP4_MARKER_REC,observe,ASP4 MARKER REC light,ASP 4 marker rec light
+I_ASP4_MLS_REC,observe,ASP4 MLS REC light,ASP 4 MLS rec light
+I_ASP4_NAV_1_REC,observe,ASP4 NAV 1 REC light,ASP 4 NAV 1 rec light
+I_ASP4_NAV_2_REC,observe,ASP4 NAV 2 REC light,ASP 4 NAV 2 rec light
+I_ASP4_PA_REC,observe,ASP4 PA REC light,ASP 4 PA rec light
+I_ASP4_PA_SEND,observe,ASP4 PA SEND light,ASP 4 PA send light
+I_ASP4_SPKR_REC,observe,ASP4 SPKR REC light,ASP 4 speaker rec light
+I_ASP4_VHF_1_CALL,observe,ASP4 VHF 1 CALL light,ASP 4 VHF 1 call light
+I_ASP4_VHF_1_REC,observe,ASP4 VHF 1 REC light,ASP 4 VHF 1 rec light
+I_ASP4_VHF_1_SEND,observe,ASP4 VHF 1 SEND light,ASP 4 VHF 1 send light
+I_ASP4_VHF_2_CALL,observe,ASP4 VHF 2 CALL light,ASP 4 VHF 2 call light
+I_ASP4_VHF_2_REC,observe,ASP4 VHF 2 REC light,ASP 4 VHF 2 rec light
+I_ASP4_VHF_2_SEND,observe,ASP4 VHF 2 SEND light,ASP 4 VHF 2 send light
+I_ASP4_VHF_3_CALL,observe,ASP4 VHF 3 CALL light,ASP 4 VHF 3 call light
+I_ASP4_VHF_3_REC,observe,ASP4 VHF 3 REC light,ASP 4 VHF 3 rec light
+I_ASP4_VHF_3_SEND,observe,ASP4 VHF 3 SEND light,ASP 4 VHF 3 send light
+I_ASP4_VOICE,observe,ASP4 VOICE light,ASP 4 voice light
+I_ASP_ADF_1_REC,observe,ASP ADF 1 REC light,ASP ADF 1 rec light
+I_ASP_ADF_2_REC,observe,ASP ADF 2 REC light,ASP ADF 2 rec light
+I_ASP_CAB_CALL,observe,ASP CAB CALL light,ASP cabin call light
+I_ASP_CAB_REC,observe,ASP CAB REC light,ASP cabin rec light
+I_ASP_CAB_SEND,observe,ASP CAB SEND light,ASP cabin send light
+I_ASP_HF_1_CALL,observe,ASP HF 1 CALL light,ASP HF 1 call light
+I_ASP_HF_1_REC,observe,ASP HF 1 REC light,ASP HF 1 rec light
+I_ASP_HF_1_SEND,observe,ASP HF 1 SEND light,ASP HF 1 send light
+I_ASP_HF_2_CALL,observe,ASP HF 2 CALL light,ASP HF 2 call light
+I_ASP_HF_2_REC,observe,ASP HF 2 REC light,ASP HF 2 rec light
+I_ASP_HF_2_SEND,observe,ASP HF 2 SEND light,ASP HF 2 send light
+I_ASP_ILS_REC,observe,ASP ILS REC light,ASP ILS rec light
+I_ASP_INT_CALL,observe,ASP INT CALL light,ASP INT call light
+I_ASP_INT_REC,observe,ASP INT REC light,ASP INT rec light
+I_ASP_INT_SEND,observe,ASP INT SEND light,ASP INT send light
+I_ASP_MARKER_REC,observe,ASP MARKER REC light,ASP marker rec light
+I_ASP_MLS_1_REC,observe,ASP MLS 1 REC light,ASP MLS 1 rec light
+I_ASP_MLS_REC,observe,ASP MLS REC light,ASP MLS rec light
+I_ASP_NAV_1_REC,observe,ASP NAV 1 REC light,ASP NAV 1 rec light
+I_ASP_NAV_2_REC,observe,ASP NAV 2 REC light,ASP NAV 2 rec light
+I_ASP_PA_REC,observe,ASP PA REC light,ASP PA rec light
+I_ASP_PA_SEND,observe,ASP PA SEND light,ASP PA send light
+I_ASP_SPKR_REC,observe,ASP SPKR REC light,ASP speaker rec light
+I_ASP_VHF_1_CALL,observe,ASP VHF 1 CALL light,ASP VHF 1 call light
+I_ASP_VHF_1_REC,observe,ASP VHF 1 REC light,ASP VHF 1 rec light
+I_ASP_VHF_1_SEND,observe,ASP VHF 1 SEND light,ASP VHF 1 send light
+I_ASP_VHF_2_CALL,observe,ASP VHF 2 CALL light,ASP VHF 2 call light
+I_ASP_VHF_2_REC,observe,ASP VHF 2 REC light,ASP VHF 2 rec light
+I_ASP_VHF_2_SEND,observe,ASP VHF 2 SEND light,ASP VHF 2 send light
+I_ASP_VHF_3_CALL,observe,ASP VHF 3 CALL light,ASP VHF 3 call light
+I_ASP_VHF_3_REC,observe,ASP VHF 3 REC light,ASP VHF 3 rec light
+I_ASP_VHF_3_SEND,observe,ASP VHF 3 SEND light,ASP VHF 3 send light
+I_ASP_VOICE,observe,ASP VOICE light,ASP voice light
+I_CDU1_DASH,observe,CDU 1 DASH light,MCDU DASH light (Capt)
+I_CDU1_FAIL,observe,CDU 1 FAIL light,MCDU FAIL light (Capt)
+I_CDU1_FM,observe,CDU 1 FM light,MCDU FM light (Capt)
+I_CDU1_FM1,observe,CDU 1 FM1 light,MCDU FM1 light (Capt)
+I_CDU1_FM2,observe,CDU 1 FM2 light,MCDU FM2 light (Capt)
+I_CDU1_IND,observe,CDU 1 IND light,MCDU IND light (Capt)
+I_CDU1_MCDU_MENU,observe,CDU 1 MCDU MENU light,MCDU MCDU MENU light (Capt)
+I_CDU1_RDY,observe,CDU 1 RDY light,MCDU RDY light (Capt)
+I_CDU2_DASH,observe,CDU 2 DASH light,MCDU DASH light (F/O)
+I_CDU2_FAIL,observe,CDU 2 FAIL light,MCDU FAIL light (F/O)
+I_CDU2_FM,observe,CDU 2 FM light,MCDU FM light (F/O)
+I_CDU2_FM1,observe,CDU 2 FM1 light,MCDU FM1 light (F/O)
+I_CDU2_FM2,observe,CDU 2 FM2 light,MCDU FM2 light (F/O)
+I_CDU2_IND,observe,CDU 2 IND light,MCDU IND light (F/O)
+I_CDU2_MCDU_MENU,observe,CDU 2 MCDU MENU light,MCDU MCDU MENU light (F/O)
+I_CDU2_RDY,observe,CDU 2 RDY light,MCDU RDY light (F/O)
+I_ECAM_CLR_LEFT,observe,ECAM CLR LEFT light,ECAM CLR light (left)
+I_ECAM_CLR_RIGHT,observe,ECAM CLR RIGHT light,ECAM CLR light (right)
+I_EXT_CARGO_DOOR_OPEN_AFT,observe,EXT CARGO DOOR OPEN AFT light,Cargo door open light (aft)
+I_EXT_CARGO_DOOR_OPEN_FWD,observe,EXT CARGO DOOR OPEN FWD light,Cargo door open light (forward)
+I_EXT_DOOR_L1_CABPR,observe,EXT DOOR L1 CABPR light,Door L1 cabin pressure light
+I_EXT_DOOR_L2_CABPR,observe,EXT DOOR L2 CABPR light,Door L2 cabin pressure light
+I_EXT_DOOR_L3_CABPR,observe,EXT DOOR L3 CABPR light,Door L3 cabin pressure light
+I_EXT_DOOR_L4_CABPR,observe,EXT DOOR L4 CABPR light,Door L4 cabin pressure light
+I_EXT_DOOR_R1_CABPR,observe,EXT DOOR R1 CABPR light,Door R1 cabin pressure light
+I_EXT_DOOR_R2_CABPR,observe,EXT DOOR R2 CABPR light,Door R2 cabin pressure light
+I_EXT_DOOR_R3_CABPR,observe,EXT DOOR R3 CABPR light,Door R3 cabin pressure light
+I_EXT_DOOR_R4_CABPR,observe,EXT DOOR R4 CABPR light,Door R4 cabin pressure light
+I_EXT_GPU_ADIRU_AVNCS_VENT,observe,EXT GPU ADIRU AVNCS VENT light,GPU ADIRU avionics vent light
+I_EXT_GPU_APU_FIRE,observe,EXT GPU APU FIRE light,GPU APU fire light
+I_EXT_GPU_AVAIL,observe,EXT GPU AVAIL light,GPU avail light
+I_EXT_GPU_CKPT_CALL,observe,EXT GPU CKPT CALL light,GPU cockpit call light
+I_EXT_GPU_ELT,observe,EXT GPU ELT light,GPU ELT light
+I_EXT_GPU_NOT_IN_USE,observe,EXT GPU NOT IN USE light,GPU not in use light
+I_EXT_REFUELINGL_VALVE_CENTER,observe,EXT REFUELINGL VALVE CENTER light,Refueling valve center light
+I_EXT_REFUELING_ACT_VALVE_1,observe,EXT REFUELING ACT VALVE 1 light,Refueling ACT valve 1 light
+I_EXT_REFUELING_ACT_VALVE_2,observe,EXT REFUELING ACT VALVE 2 light,Refueling ACT valve 2 light
+I_EXT_REFUELING_COCKPIT_LT,observe,EXT REFUELING COCKPIT LT light,Refueling cockpit light
+I_EXT_REFUELING_END_LT,observe,EXT REFUELING END LT light,Refueling end light
+I_EXT_REFUELING_MODE,observe,EXT REFUELING MODE light,Refueling mode light
+I_EXT_REFUELING_VALVE_LEFT,observe,EXT REFUELING VALVE LEFT light,Refueling valve light (left)
+I_EXT_REFUELING_VALVE_RIGHT,observe,EXT REFUELING VALVE RIGHT light,Refueling valve light (right)
+I_FCU_ALTITUDE_MANAGED,observe,ALTITUDE MANAGED light,Altitude managed light
+I_FCU_AP1,observe,AP1 light,AP 1 light
+I_FCU_AP2,observe,AP2 light,AP 2 light
+I_FCU_HEADING_MANAGED,observe,HEADING MANAGED light,Heading managed light
+I_FCU_HEADING_VS_MODE,observe,HEADING VS MODE light,Heading VS mode light
+I_FCU_MACH_MODE,observe,MACH MODE light,Mach mode light
+I_FCU_SPEED_MANAGED,observe,SPEED MANAGED light,Speed managed light
+I_FCU_SPEED_MODE,observe,SPEED MODE light,Speed mode light
+I_FCU_TRACK_FPA_MODE,observe,TRACK FPA MODE light,Track FPA mode light
+I_FC_SIDESTICK_PRIORITY_CAPT,observe,FC SIDESTICK PRIORITY CAPT light,Sidestick priority light (Capt)
+I_FC_SIDESTICK_PRIORITY_CAPT_ARROW,observe,FC SIDESTICK PRIORITY CAPT ARROW light,Sidestick priority arrow light (Capt)
+I_FC_SIDESTICK_PRIORITY_FO,observe,FC SIDESTICK PRIORITY FO light,Sidestick priority light (F/O)
+I_FC_SIDESTICK_PRIORITY_FO_ARROW,observe,FC SIDESTICK PRIORITY FO ARROW light,Sidestick priority arrow light (F/O)
+I_MIP_ATC_MSG_CAPT_L,observe,ATC MSG CAPT light (lower),"ATC MSG light (Capt, lower)"
+I_MIP_ATC_MSG_CAPT_U,observe,ATC MSG CAPT light (upper),"ATC MSG light (Capt, upper)"
+I_MIP_ATC_MSG_FO_L,observe,ATC MSG FO light (lower),"ATC MSG light (F/O, lower)"
+I_MIP_ATC_MSG_FO_U,observe,ATC MSG FO light (upper),"ATC MSG light (F/O, upper)"
+I_MIP_AUTOBRAKE_LO_L,observe,AUTOBRAKE LO light (lower),Autobrake LO light (lower)
+I_MIP_AUTOBRAKE_LO_U,observe,AUTOBRAKE LO light (upper),Autobrake LO light (upper)
+I_MIP_AUTOBRAKE_MAX_L,observe,AUTOBRAKE MAX light (lower),Autobrake MAX light (lower)
+I_MIP_AUTOBRAKE_MAX_U,observe,AUTOBRAKE MAX light (upper),Autobrake MAX light (upper)
+I_MIP_AUTOBRAKE_MED_L,observe,AUTOBRAKE MED light (lower),Autobrake MED light (lower)
+I_MIP_AUTOBRAKE_MED_U,observe,AUTOBRAKE MED light (upper),Autobrake MED light (upper)
+I_MIP_AUTOLAND_CAPT,observe,AUTOLAND CAPT light,Autoland light (Capt)
+I_MIP_AUTOLAND_CAPT_L,observe,AUTOLAND CAPT light (lower),"Autoland light (Capt, lower)"
+I_MIP_AUTOLAND_CAPT_U,observe,AUTOLAND CAPT light (upper),"Autoland light (Capt, upper)"
+I_MIP_AUTOLAND_FO,observe,AUTOLAND FO light,Autoland light (F/O)
+I_MIP_AUTOLAND_FO_L,observe,AUTOLAND FO light (lower),"Autoland light (F/O, lower)"
+I_MIP_AUTOLAND_FO_U,observe,AUTOLAND FO light (upper),"Autoland light (F/O, upper)"
+I_MIP_BRAKE_FAN_L,observe,BRAKE FAN light (lower),Brake fan light (lower)
+I_MIP_BRAKE_FAN_U,observe,BRAKE FAN light (upper),Brake fan light (upper)
+I_MIP_GEAR_1_U,observe,GEAR 1 light (upper),Gear 1 light (upper)
+I_MIP_GEAR_2_L,observe,GEAR 2 light (lower),Gear 2 light (lower)
+I_MIP_GEAR_2_U,observe,GEAR 2 light (upper),Gear 2 light (upper)
+I_MIP_GEAR_3_L,observe,GEAR 3 light (lower),Gear 3 light (lower)
+I_MIP_GEAR_3_U,observe,GEAR 3 light (upper),Gear 3 light (upper)
+I_MIP_GEAR_RED,observe,GEAR RED light,Gear red light
+I_MIP_GPWS_TERRAIN_ON_ND_CAPT_L,observe,TERRAIN ON ND CAPT light (lower),"Terrain on ND light (Capt, lower)"
+I_MIP_GPWS_TERRAIN_ON_ND_FO_L,observe,TERRAIN ON ND FO light (lower),"Terrain on ND light (F/O, lower)"
+I_MIP_GPWS_VISUAL_ALERT_CAPT_L,observe,VISUAL ALERT CAPT light (lower),"Visual alert light (Capt, lower)"
+I_MIP_GPWS_VISUAL_ALERT_CAPT_U,observe,VISUAL ALERT CAPT light (upper),"Visual alert light (Capt, upper)"
+I_MIP_GPWS_VISUAL_ALERT_FO_L,observe,VISUAL ALERT FO light (lower),"Visual alert light (F/O, lower)"
+I_MIP_GPWS_VISUAL_ALERT_FO_u,observe,VISUAL ALERT FO u light,"Visual alert light (F/O, upper)"
+I_MIP_MASTER_CAUTION_CAPT,observe,MASTER CAUTION CAPT light,Master caution light (Capt)
+I_MIP_MASTER_CAUTION_CAPT_L,observe,MASTER CAUTION CAPT light (lower),"Master caution light (Capt, lower)"
+I_MIP_MASTER_CAUTION_FO,observe,MASTER CAUTION FO light,Master caution light (F/O)
+I_MIP_MASTER_CAUTION_FO_L,observe,MASTER CAUTION FO light (lower),"Master caution light (F/O, lower)"
+I_MIP_MASTER_WARNING_CAPT,observe,MASTER WARNING CAPT light,Master warning light (Capt)
+I_MIP_MASTER_WARNING_CAPT_L,observe,MASTER WARNING CAPT light (lower),"Master warning light (Capt, lower)"
+I_MIP_MASTER_WARNING_FO,observe,MASTER WARNING FO light,Master warning light (F/O)
+I_MIP_MASTER_WARNING_FO_L,observe,MASTER WARNING FO light (lower),"Master warning light (F/O, lower)"
+I_MIP_NORTH_REF_L,observe,NORTH REF light (lower),North reference light (lower)
+I_OH_AFT_FADEC_GND_1_L,observe,FADEC GND 1 light (lower),FADEC ground 1 light (lower)
+I_OH_AFT_FADEC_GND_2_L,observe,FADEC GND 2 light (lower),FADEC ground 2 light (lower)
+I_OH_APU_AUTOEXTING_TEST_L,observe,APU AUTOEXTING TEST light (lower),APU auto exting test light (lower)
+I_OH_APU_AUTOEXTING_TEST_U,observe,APU AUTOEXTING TEST light (upper),APU auto exting test light (upper)
+I_OH_CALLS_EMER_L,observe,EMER light (lower),Emergency light (lower)
+I_OH_CALLS_EMER_U,observe,EMER light (upper),Emergency light (upper)
+I_OH_CARGO_SMOKE_AFT_L,observe,SMOKE AFT light (lower),"Smoke light (aft, lower)"
+I_OH_CARGO_SMOKE_AFT_U,observe,SMOKE AFT light (upper),"Smoke light (aft, upper)"
+I_OH_CARGO_SMOKE_DISCHARGE_1,observe,SMOKE DISCHARGE 1 light,Smoke discharge 1 light
+I_OH_CARGO_SMOKE_DISCHARGE_2,observe,SMOKE DISCHARGE 2 light,Smoke discharge 2 light
+I_OH_CARGO_SMOKE_DISCHARGE_AGENT_2,observe,SMOKE DISCHARGE AGENT 2 light,Smoke discharge agent 2 light
+I_OH_CARGO_SMOKE_FWD_L,observe,SMOKE FWD light (lower),"Smoke light (forward, lower)"
+I_OH_CARGO_SMOKE_FWD_U,observe,SMOKE FWD light (upper),"Smoke light (forward, upper)"
+I_OH_COCKPIT_DOOR_VIDEO,observe,COCKPIT DOOR VIDEO light,Cockpit door video light
+I_OH_COM_IFE_IN_USE,observe,IFE IN USE light,IFE in use light
+I_OH_COM_PA_IN_USE,observe,PA IN USE light,PA in use light
+I_OH_COM_VIDEO_IN_USE,observe,VIDEO IN USE light,Video in use light
+I_OH_DOOR_CTL_L,observe,DOOR CTL light (lower),Door control light (lower)
+I_OH_DOOR_CTL_U,observe,DOOR CTL light (upper),Door control light (upper)
+I_OH_ELEC_AC_ESS_FEED_L,observe,AC ESS FEED light (lower),AC ESS feed light (lower)
+I_OH_ELEC_AC_ESS_FEED_U,observe,AC ESS FEED light (upper),AC ESS feed light (upper)
+I_OH_ELEC_APU_GENERATOR_L,observe,APU GENERATOR light (lower),APU generator light (lower)
+I_OH_ELEC_APU_GENERATOR_U,observe,APU GENERATOR light (upper),APU generator light (upper)
+I_OH_ELEC_APU_MASTER_L,observe,APU MASTER light,APU master light
+I_OH_ELEC_APU_MASTER_U,observe,APU MASTER light (upper),APU master light (upper)
+I_OH_ELEC_APU_START_L,observe,APU START light (lower),APU start light (lower)
+I_OH_ELEC_APU_START_U,observe,APU START light (upper),APU start light (upper)
+I_OH_ELEC_BAT1_L,observe,BAT1 light (lower),BAT 1 light (lower)
+I_OH_ELEC_BAT1_U,observe,BAT1 light (upper),BAT 1 light (upper)
+I_OH_ELEC_BAT2_L,observe,BAT2 light (lower),BAT 2 light (lower)
+I_OH_ELEC_BAT2_U,observe,BAT2 light (upper),BAT 2 light (upper)
+I_OH_ELEC_BUSTIE_L,observe,BUSTIE light (lower),Bus tie light (lower)
+I_OH_ELEC_COMMERCIAL_L,observe,COMMERCIAL light (lower),Commercial light (lower)
+I_OH_ELEC_EMERG_GEN_FAULT,observe,EMERG GEN FAULT light,Emergency GEN fault light
+I_OH_ELEC_EXT_PWR_L,observe,EXT PWR light (lower),External power light (lower)
+I_OH_ELEC_EXT_PWR_U,observe,EXT PWR light (upper),External power light (upper)
+I_OH_ELEC_GALY_L,observe,GALY light (lower),Galley light (lower)
+I_OH_ELEC_GALY_U,observe,GALY light (upper),Galley light (upper)
+I_OH_ELEC_GEN1_L,observe,GEN1 light (lower),GEN 1 light (lower)
+I_OH_ELEC_GEN1_LINE_L,observe,GEN1 LINE light (lower),GEN 1 line light (lower)
+I_OH_ELEC_GEN1_LINE_U,observe,GEN1 LINE light (upper),GEN 1 line light (upper)
+I_OH_ELEC_GEN1_U,observe,GEN1 light (upper),GEN 1 light (upper)
+I_OH_ELEC_GEN2_L,observe,GEN2 light (lower),GEN 2 light (lower)
+I_OH_ELEC_GEN2_U,observe,GEN2 light (upper),GEN 2 light (upper)
+I_OH_ELEC_IDG1_U,observe,IDG1 light (upper),IDG 1 light (upper)
+I_OH_ELEC_IDG2_U,observe,IDG2 light (upper),IDG 2 light (upper)
+I_OH_ENG_DUAL_COOLING_L,observe,DUAL COOLING light (lower),Dual cooling light (lower)
+I_OH_ENG_MANSTART_1_L,observe,MANSTART 1 light (lower),Manual start 1 light (lower)
+I_OH_ENG_MANSTART_2_L,observe,MANSTART 2 light (lower),Manual start 2 light (lower)
+I_OH_ENG_N1_MODE_1_L,observe,N1 MODE 1 light (lower),N1 mode 1 light (lower)
+I_OH_ENG_N1_MODE_2_L,observe,N1 MODE 2 light (lower),N1 mode 2 light (lower)
+I_OH_EVAC_COMMAND_L,observe,COMMAND light (lower),Command light (lower)
+I_OH_EVAC_COMMAND_U,observe,COMMAND light (upper),Command light (upper)
+I_OH_FIRE_APU_AGENT_L,observe,APU AGENT light (lower),APU agent light (lower)
+I_OH_FIRE_APU_AGENT_U,observe,APU AGENT light (upper),APU agent light (upper)
+I_OH_FIRE_APU_BUTTON,observe,APU BUTTON light,APU button light
+I_OH_FIRE_APU_BUTTON_COL1,observe,APU BUTTON COL1 light,APU button column 1 light
+I_OH_FIRE_APU_BUTTON_COL2,observe,APU BUTTON COL2 light,APU button column 2 light
+I_OH_FIRE_APU_BUTTON_ON_BATT,observe,APU BUTTON ON BATT light,APU button on battery light
+I_OH_FIRE_ENG1_AGENT1_L,observe,ENG1 AGENT1 light (lower),Engine 1 agent 1 light (lower)
+I_OH_FIRE_ENG1_AGENT1_U,observe,ENG1 AGENT1 light (upper),Engine 1 agent 1 light (upper)
+I_OH_FIRE_ENG1_AGENT2_L,observe,ENG1 AGENT2 light (lower),Engine 1 agent 2 light (lower)
+I_OH_FIRE_ENG1_AGENT2_U,observe,ENG1 AGENT2 light (upper),Engine 1 agent 2 light (upper)
+I_OH_FIRE_ENG1_BUTTON,observe,ENG1 BUTTON light,Engine 1 button light
+I_OH_FIRE_ENG1_BUTTON_COL1,observe,ENG1 BUTTON COL1 light,Engine 1 button column 1 light
+I_OH_FIRE_ENG1_BUTTON_COL2,observe,ENG1 BUTTON COL2 light,Engine 1 button column 2 light
+I_OH_FIRE_ENG2_AGENT1_L,observe,ENG2 AGENT1 light (lower),Engine 2 agent 1 light (lower)
+I_OH_FIRE_ENG2_AGENT1_U,observe,ENG2 AGENT1 light (upper),Engine 2 agent 1 light (upper)
+I_OH_FIRE_ENG2_AGENT2_L,observe,ENG2 AGENT2 light (lower),Engine 2 agent 2 light (lower)
+I_OH_FIRE_ENG2_AGENT2_U,observe,ENG2 AGENT2 light (upper),Engine 2 agent 2 light (upper)
+I_OH_FIRE_ENG2_BUTTON,observe,ENG2 BUTTON light,Engine 2 button light
+I_OH_FIRE_ENG2_BUTTON_COL1,observe,ENG2 BUTTON COL1 light,Engine 2 button column 1 light
+I_OH_FIRE_ENG2_BUTTON_COL2,observe,ENG2 BUTTON COL2 light,Engine 2 button column 2 light
+I_OH_FLT_CTL_ELAC_1_L,observe,CTL ELAC 1 light (lower),ELAC 1 light (lower)
+I_OH_FLT_CTL_ELAC_1_U,observe,CTL ELAC 1 light (upper),ELAC 1 light (upper)
+I_OH_FLT_CTL_ELAC_2_L,observe,CTL ELAC 2 light (lower),ELAC 2 light (lower)
+I_OH_FLT_CTL_ELAC_2_U,observe,CTL ELAC 2 light (upper),ELAC 2 light (upper)
+I_OH_FLT_CTL_FAC_1_L,observe,CTL FAC 1 light (lower),FAC 1 light (lower)
+I_OH_FLT_CTL_FAC_1_U,observe,CTL FAC 1 light (upper),FAC 1 light (upper)
+I_OH_FLT_CTL_FAC_2_L,observe,CTL FAC 2 light (lower),FAC 2 light (lower)
+I_OH_FLT_CTL_FAC_2_U,observe,CTL FAC 2 light (upper),FAC 2 light (upper)
+I_OH_FLT_CTL_SEC_1_L,observe,CTL SEC 1 light (lower),SEC 1 light (lower)
+I_OH_FLT_CTL_SEC_1_U,observe,CTL SEC 1 light (upper),SEC 1 light (upper)
+I_OH_FLT_CTL_SEC_2_L,observe,CTL SEC 2 light (lower),SEC 2 light (lower)
+I_OH_FLT_CTL_SEC_2_U,observe,CTL SEC 2 light (upper),SEC 2 light (upper)
+I_OH_FLT_CTL_SEC_3_L,observe,CTL SEC 3 light (lower),SEC 3 light (lower)
+I_OH_FLT_CTL_SEC_3_U,observe,CTL SEC 3 light (upper),SEC 3 light (upper)
+I_OH_FUEL_CENTER_1_L,observe,CENTER 1 light (lower),Center 1 light (lower)
+I_OH_FUEL_CENTER_1_U,observe,CENTER 1 light (upper),Center 1 light (upper)
+I_OH_FUEL_CENTER_2_L,observe,CENTER 2 light (lower),Center 2 light (lower)
+I_OH_FUEL_CENTER_2_U,observe,CENTER 2 light (upper),Center 2 light (upper)
+I_OH_FUEL_LEFT_1_L,observe,LEFT 1 light (lower),Left 1 light (lower)
+I_OH_FUEL_LEFT_1_U,observe,LEFT 1 light (upper),Left 1 light (upper)
+I_OH_FUEL_LEFT_2_L,observe,LEFT 2 light (lower),Left 2 light (lower)
+I_OH_FUEL_LEFT_2_U,observe,LEFT 2 light (upper),Left 2 light (upper)
+I_OH_FUEL_MODE_SEL_L,observe,MODE SEL light (lower),Mode selector light (lower)
+I_OH_FUEL_MODE_SEL_U,observe,MODE SEL light (upper),Mode selector light (upper)
+I_OH_FUEL_RIGHT_1_L,observe,RIGHT 1 light (lower),Right 1 light (lower)
+I_OH_FUEL_RIGHT_1_U,observe,RIGHT 1 light (upper),Right 1 light (upper)
+I_OH_FUEL_RIGHT_2_L,observe,RIGHT 2 light (lower),Right 2 light (lower)
+I_OH_FUEL_RIGHT_2_U,observe,RIGHT 2 light (upper),Right 2 light (upper)
+I_OH_FUEL_XFEED_L,observe,XFEED light (lower),Crossfeed light (lower)
+I_OH_FUEL_XFEED_U,observe,XFEED light (upper),Crossfeed light (upper)
+I_OH_GPWS_FLAP_MODE_L,observe,FLAP MODE light (lower),Flap mode light (lower)
+I_OH_GPWS_GS_MODE_L,observe,GS MODE light (lower),GS mode light (lower)
+I_OH_GPWS_LDG_FLAP3_L,observe,LDG FLAP3 light (lower),Landing flap 3 light (lower)
+I_OH_GPWS_SYS_L,observe,SYS light (lower),System light (lower)
+I_OH_GPWS_SYS_U,observe,SYS light (upper),System light (upper)
+I_OH_HYD_BLUE_ELEC_PUMP_L,observe,BLUE ELEC PUMP light (lower),Blue electric pump light (lower)
+I_OH_HYD_BLUE_ELEC_PUMP_U,observe,BLUE ELEC PUMP light (upper),Blue electric pump light (upper)
+I_OH_HYD_BLUE_PUMP_OVERRIDE_L,observe,BLUE PUMP OVERRIDE light (lower),Blue pump override light (lower)
+I_OH_HYD_ENG_1_PUMP_L,observe,ENG 1 PUMP light (lower),Engine 1 pump light (lower)
+I_OH_HYD_ENG_1_PUMP_U,observe,ENG 1 PUMP light (upper),Engine 1 pump light (upper)
+I_OH_HYD_ENG_2_PUMP_L,observe,ENG 2 PUMP light (lower),Engine 2 pump light (lower)
+I_OH_HYD_ENG_2_PUMP_U,observe,ENG 2 PUMP light (upper),Engine 2 pump light (upper)
+I_OH_HYD_LMV_BLUE_L,observe,LMV BLUE light (lower),LMV blue light (lower)
+I_OH_HYD_LMV_GREEN_L,observe,LMV GREEN light (lower),LMV green light (lower)
+I_OH_HYD_LMV_YELLOW_L,observe,LMV YELLOW light (lower),LMV yellow light (lower)
+I_OH_HYD_YELLOW_ELEC_PUMP_L,observe,YELLOW ELEC PUMP light (lower),Yellow electric pump light (lower)
+I_OH_HYD_YELLOW_ELEC_PUMP_U,observe,YELLOW ELEC PUMP light (upper),Yellow electric pump light (upper)
+I_OH_INT_LT_EMER_OFF,observe,INT LT EMER OFF light,Emergency off light
+I_OH_IN_LT_ICE,observe,IN LT ICE light,Ice light
+I_OH_LIGHTING_AVIONICS_COMPT,observe,LIGHTING AVIONICS COMPT light,Lighting avionics compartment light
+I_OH_NAV_ADIRS_ON_BAT,observe,ADIRS ON BAT light,ADIRS on BAT light
+I_OH_NAV_ADIRS_QUEUE_CLR,observe,ADIRS QUEUE CLR light,ADIRS queue CLR light
+I_OH_NAV_ADIRS_QUEUE_ENT,observe,ADIRS QUEUE ENT light,ADIRS queue ENT light
+I_OH_NAV_ADR1_L,observe,ADR1 light (lower),ADR 1 light (lower)
+I_OH_NAV_ADR1_U,observe,ADR1 light (upper),ADR 1 light (upper)
+I_OH_NAV_ADR2_L,observe,ADR2 light (lower),ADR 2 light (lower)
+I_OH_NAV_ADR2_U,observe,ADR2 light (upper),ADR 2 light (upper)
+I_OH_NAV_ADR3_L,observe,ADR3 light (lower),ADR 3 light (lower)
+I_OH_NAV_ADR3_U,observe,ADR3 light (upper),ADR 3 light (upper)
+I_OH_NAV_IR1_ALIGN,observe,IR1 ALIGN light,IR 1 align light
+I_OH_NAV_IR1_FAULT,observe,IR1 FAULT light,IR 1 fault light
+I_OH_NAV_IR1_SWITCH_L,observe,IR1 SWITCH light (lower),IR 1 switch light (lower)
+I_OH_NAV_IR1_SWITCH_U,observe,IR1 SWITCH light (upper),IR 1 switch light (upper)
+I_OH_NAV_IR2_ALIGN,observe,IR2 ALIGN light,IR 2 align light
+I_OH_NAV_IR2_FAULT,observe,IR2 FAULT light,IR 2 fault light
+I_OH_NAV_IR2_SWITCH_L,observe,IR2 SWITCH light (lower),IR 2 switch light (lower)
+I_OH_NAV_IR2_SWITCH_U,observe,IR2 SWITCH light (upper),IR 2 switch light (upper)
+I_OH_NAV_IR3_ALIGN,observe,IR3 ALIGN light,IR 3 align light
+I_OH_NAV_IR3_FAULT,observe,IR3 FAULT light,IR 3 fault light
+I_OH_NAV_IR3_SWITCH_L,observe,IR3 SWITCH light (lower),IR 3 switch light (lower)
+I_OH_NAV_IR3_SWITCH_U,observe,IR3 SWITCH light (upper),IR 3 switch light (upper)
+I_OH_OXYGEN_CREW_OXYGEN_L,observe,CREW OXYGEN light (lower),Crew oxygen light (lower)
+I_OH_OXYGEN_HIGH_ALT_L,observe,HIGH ALT light (lower),High ALT light (lower)
+I_OH_OXYGEN_PASSENGER_U,observe,PASSENGER light (upper),Passenger light (upper)
+I_OH_OXYGEN_TMR_RESET_L,observe,TMR RESET light (lower),Timer reset light (lower)
+I_OH_OXYGEN_TMR_RESET_U,observe,TMR RESET light (upper),Timer reset light (upper)
+I_OH_PNEUMATIC_APU_BLEED_L,observe,APU BLEED light (lower),APU bleed light (lower)
+I_OH_PNEUMATIC_APU_BLEED_U,observe,APU BLEED light (upper),APU bleed light (upper)
+I_OH_PNEUMATIC_BLOWER_L,observe,BLOWER light (lower),Blower light (lower)
+I_OH_PNEUMATIC_BLOWER_U,observe,BLOWER light (upper),Blower light (upper)
+I_OH_PNEUMATIC_CAB_FANS_L,observe,CAB FANS light (lower),Cabin fans light (lower)
+I_OH_PNEUMATIC_CAB_FANS_U,observe,CAB FANS light (upper),Cabin fans light (upper)
+I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_L,observe,CARGO AFT ISOL VALVE light (lower),Cargo aft isolation valve light (lower)
+I_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_U,observe,CARGO AFT ISOL VALVE light (upper),Cargo aft isolation valve light (upper)
+I_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE_L,observe,CARGO FWD ISOL VALVE light (lower),Cargo forward isolation valve light (lower)
+I_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE_U,observe,CARGO FWD ISOL VALVE light (upper),Cargo forward isolation valve light (upper)
+I_OH_PNEUMATIC_DITCHING_L,observe,DITCHING light (lower),Ditching light (lower)
+I_OH_PNEUMATIC_ECON_FLOW_L,observe,ECON FLOW light (lower),ECON flow light (lower)
+I_OH_PNEUMATIC_ENG1_ANTI_ICE_L,observe,ENG1 ANTI ICE light (lower),Engine 1 anti ice light (lower)
+I_OH_PNEUMATIC_ENG1_ANTI_ICE_U,observe,ENG1 ANTI ICE light (upper),Engine 1 anti ice light (upper)
+I_OH_PNEUMATIC_ENG1_BLEED_L,observe,ENG1 BLEED light (lower),Engine 1 bleed light (lower)
+I_OH_PNEUMATIC_ENG1_BLEED_U,observe,ENG1 BLEED light (upper),Engine 1 bleed light (upper)
+I_OH_PNEUMATIC_ENG2_ANTI_ICE_L,observe,ENG2 ANTI ICE light (lower),Engine 2 anti ice light (lower)
+I_OH_PNEUMATIC_ENG2_ANTI_ICE_U,observe,ENG2 ANTI ICE light (upper),Engine 2 anti ice light (upper)
+I_OH_PNEUMATIC_ENG2_BLEED_L,observe,ENG2 BLEED light (lower),Engine 2 bleed light (lower)
+I_OH_PNEUMATIC_ENG2_BLEED_U,observe,ENG2 BLEED light (upper),Engine 2 bleed light (upper)
+I_OH_PNEUMATIC_EXTRACT_L,observe,EXTRACT light (lower),Extract light (lower)
+I_OH_PNEUMATIC_EXTRACT_U,observe,EXTRACT light (upper),Extract light (upper)
+I_OH_PNEUMATIC_HOT_AIR_AFT_CARGO_L,observe,HOT AIR AFT CARGO light (lower),Hot air aft cargo light (lower)
+I_OH_PNEUMATIC_HOT_AIR_AFT_CARGO_U,observe,HOT AIR AFT CARGO light (upper),Hot air aft cargo light (upper)
+I_OH_PNEUMATIC_HOT_AIR_L,observe,HOT AIR light (lower),Hot air light (lower)
+I_OH_PNEUMATIC_HOT_AIR_U,observe,HOT AIR light (upper),Hot air light (upper)
+I_OH_PNEUMATIC_PACK_1_L,observe,PACK 1 light (lower),Pack 1 light (lower)
+I_OH_PNEUMATIC_PACK_1_U,observe,PACK 1 light (upper),Pack 1 light (upper)
+I_OH_PNEUMATIC_PACK_2_L,observe,PACK 2 light (lower),Pack 2 light (lower)
+I_OH_PNEUMATIC_PACK_2_U,observe,PACK 2 light (upper),Pack 2 light (upper)
+I_OH_PNEUMATIC_PRESS_MODE_L,observe,PRESS MODE light (lower),Pressurization mode light (lower)
+I_OH_PNEUMATIC_PRESS_MODE_U,observe,PRESS MODE light (upper),Pressurization mode light (upper)
+I_OH_PNEUMATIC_RAM_AIR_L,observe,RAM AIR light (lower),Ram air light (lower)
+I_OH_PNEUMATIC_WING_ANTI_ICE_L,observe,WING ANTI ICE light (lower),Wing anti ice light (lower)
+I_OH_PNEUMATIC_WING_ANTI_ICE_U,observe,WING ANTI ICE light (upper),Wing anti ice light (upper)
+I_OH_PROBE_HEAT_L,observe,HEAT light (lower),Heat light (lower)
+I_OH_PROBE_HEAT_U,observe,HEAT light (upper),Heat light (upper)
+I_OH_RCRD_GND_CTL_L,observe,RCRD GND CTL light (lower),Record ground control light (lower)
+I_OH_SVCE_INT_OVRD,observe,SVCE INT OVRD light,SVCE INT override light
+I_OH_TOILET,observe,TOILET light,Toilet light
+I_PED_COCKPIT_DOOR_L,observe,COCKPIT DOOR light (lower),Cockpit door light (lower)
+I_PED_COCKPIT_DOOR_U,observe,COCKPIT DOOR light (upper),Cockpit door light (upper)
+I_PED_RMP1_HF1,observe,RMP 1 HF1 light,RMP 1 HF 1 light
+I_PED_RMP1_HF2,observe,RMP 1 HF2 light,RMP 1 HF 2 light
+I_PED_RMP1_SEL,observe,RMP 1 SEL light,RMP 1 selector light
+I_PED_RMP1_VHF1,observe,RMP 1 VHF1 light,RMP 1 VHF 1 light
+I_PED_RMP1_VHF2,observe,RMP 1 VHF2 light,RMP 1 VHF 2 light
+I_PED_RMP1_VHF3,observe,RMP 1 VHF3 light,RMP 1 VHF 3 light
+I_PED_RMP2_HF1,observe,RMP 2 HF1 light,RMP 2 HF 1 light
+I_PED_RMP2_HF2,observe,RMP 2 HF2 light,RMP 2 HF 2 light
+I_PED_RMP2_SEL,observe,RMP 2 SEL light,RMP 2 selector light
+I_PED_RMP2_VHF1,observe,RMP 2 VHF1 light,RMP 2 VHF 1 light
+I_PED_RMP2_VHF2,observe,RMP 2 VHF2 light,RMP 2 VHF 2 light
+I_PED_RMP2_VHF3,observe,RMP 2 VHF3 light,RMP 2 VHF 3 light
+I_PED_RMP3_HF1,observe,RMP 3 HF1 light,RMP 3 HF 1 light
+I_PED_RMP3_HF2,observe,RMP 3 HF2 light,RMP 3 HF 2 light
+I_PED_RMP3_SEL,observe,RMP 3 SEL light,RMP 3 selector light
+I_PED_RMP3_VHF1,observe,RMP 3 VHF1 light,RMP 3 VHF 1 light
+I_PED_RMP3_VHF2,observe,RMP 3 VHF2 light,RMP 3 VHF 2 light
+I_PED_RMP3_VHF3,observe,RMP 3 VHF3 light,RMP 3 VHF 3 light
+I_XPDR_FAIL,observe,XPDR FAIL light,XPDR fail light
+N_CDU1_BRIGHTNESS,ignore,CDU 1 BRIGHTNESS display,MCDU brightness display (Capt)
+N_CDU2_BRIGHTNESS,ignore,CDU 2 BRIGHTNESS display,MCDU brightness display (F/O)
+N_DCDU1_BRIGHTNESS,ignore,DCDU1 BRIGHTNESS display,DCDU brightness display (Capt)
+N_DCDU2_BRIGHTNESS,ignore,DCDU2 BRIGHTNESS display,DCDU brightness display (F/O)
+N_ELEC_VOLT_BAT_1,observe,VOLT BAT 1 display,Volt BAT 1 display
+N_ELEC_VOLT_BAT_2,observe,VOLT BAT 2 display,Volt BAT 2 display
+N_EXT_REFUELING_LIGHTING,ignore,EXT REFUELING LIGHTING display,Refueling lighting display
+N_FCU_EFIS1_BARO_INCH,observe,BARO INCH display (Capt),BARO inch display (Capt)
+N_FCU_EFIS2_BARO_INCH,observe,BARO INCH display (F/O),BARO inch display (F/O)
+N_FCU_HEADING,observe,HEADING display,Heading display
+N_FCU_LIGHTING,ignore,LIGHTING display,Lighting display
+N_FCU_LIGHTING_TEXT,ignore,LIGHTING TEXT display,Lighting text display
+N_FCU_SPEED,observe,SPEED display,Speed display
+N_FC_BRAKE_LEFT,ignore,FC BRAKE LEFT display,Brake display (left)
+N_FC_BRAKE_RIGHT,ignore,FC BRAKE RIGHT display,Brake display (right)
+N_FC_CAPT_TILLER,ignore,FC CAPT TILLER display,Tiller display (Capt)
+N_FC_ELEVATOR_TRIM,ignore,FC ELEVATOR TRIM display,Elevator trim display
+N_FC_FO_TILLER,ignore,FC FO TILLER display,Tiller display (F/O)
+N_FC_RUDDER,ignore,FC RUDDER display,Rudder display
+N_FC_RUDDER_TRIM_DECIMAL,observe,FC RUDDER TRIM DECIMAL display,Rudder trim decimal display
+N_FC_SIDESTICK_CAPT_BANK,ignore,FC SIDESTICK CAPT BANK display,Sidestick bank display (Capt)
+N_FC_SIDESTICK_CAPT_PITCH,ignore,FC SIDESTICK CAPT PITCH display,Sidestick pitch display (Capt)
+N_FC_SIDESTICK_FO_BANK,ignore,FC SIDESTICK FO BANK display,Sidestick bank display (F/O)
+N_FC_SIDESTICK_FO_PITCH,ignore,FC SIDESTICK FO PITCH display,Sidestick pitch display (F/O)
+N_FUEL_CTR_TANK,ignore,CTR TANK display,Center tank display
+N_FUEL_PRESEL,ignore,PRESEL display,Preselect display
+N_FUEL_TOTAL_QTY,ignore,TOTAL QTY display,Total quantity display
+N_FUEL_WING_TANK_L,ignore,WING TANK L display,Wing tank display (left)
+N_FUEL_WING_TANK_R,ignore,WING TANK R display,Wing tank display (right)
+N_HYD_PRESSURE_BRAKE_ACCU,ignore,PRESSURE BRAKE ACCU display,Pressure brake accu display
+N_HYD_PRESSURE_BRAKE_LEFT,observe,PRESSURE BRAKE LEFT display,Pressure brake display (left)
+N_HYD_PRESSURE_BRAKE_RIGHT,observe,PRESSURE BRAKE RIGHT display,Pressure brake display (right)
+N_MIP_CLOCK_CHRONO,ignore,CLOCK CHRONO display,Clock chrono display
+N_MIP_CLOCK_ELAPSED,ignore,CLOCK ELAPSED display,Clock elapsed display
+N_MIP_CLOCK_MODE,observe,CLOCK MODE display,Clock mode display
+N_MIP_CLOCK_UTC,ignore,CLOCK UTC display,Clock UTC display
+N_MIP_ISFD_BARO_INCH,observe,ISFD BARO INCH display,ISFD BARO inch display
+N_MIP_LIGHTING_FLOOD_CENTER_L,ignore,LIGHTING FLOOD CENTER L display,Lighting flood center display (left)
+N_MIP_LIGHTING_FLOOD_CENTER_R,ignore,LIGHTING FLOOD CENTER R display,Lighting flood center display (right)
+N_MIP_LIGHTING_FLOOD_MAIN_L,ignore,LIGHTING FLOOD MAIN L display,Lighting flood main display (left)
+N_MIP_LIGHTING_FLOOD_MAIN_R,ignore,LIGHTING FLOOD MAIN R display,Lighting flood main display (right)
+N_MIP_LIGHTING_FLOOD_PEDESTAL,ignore,LIGHTING FLOOD PEDESTAL display,Lighting flood pedestal display
+N_MIP_LIGHTING_FLOOD_PEDESTAL_L,ignore,LIGHTING FLOOD PEDESTAL L display,Lighting flood pedestal display (left)
+N_MIP_LIGHTING_FLOOD_PEDESTAL_R,ignore,LIGHTING FLOOD PEDESTAL R display,Lighting flood pedestal display (right)
+N_MIP_LIGHTING_MAP_L,ignore,LIGHTING MAP L display,Lighting map display (left)
+N_MIP_LIGHTING_MAP_R,ignore,LIGHTING MAP R display,Lighting map display (right)
+N_OH_ADIRS_LEFT,observe,ADIRS LEFT display,ADIRS display (left)
+N_OH_ADIRS_MODE_LEFT,observe,ADIRS MODE LEFT display,ADIRS mode display (left)
+N_OH_ADIRS_MODE_RIGHT,observe,ADIRS MODE RIGHT display,ADIRS mode display (right)
+N_OH_ADIRS_RIGHT,observe,ADIRS RIGHT display,ADIRS display (right)
+N_OH_LIGHTING_OVD,ignore,LIGHTING OVD display,Lighting override display
+N_PED_LIGHTING_PEDESTAL,ignore,LIGHTING PEDESTAL display,Lighting pedestal display
+N_PED_RMP1_ACTIVE,observe,RMP 1 ACTIVE display,RMP 1 active display
+N_PED_RMP1_STDBY,observe,RMP 1 STDBY display,RMP 1 standby display
+N_PED_RMP2_ACTIVE,observe,RMP 2 ACTIVE display,RMP 2 active display
+N_PED_RMP2_STDBY,observe,RMP 2 STDBY display,RMP 2 standby display
+N_PED_RMP3_ACTIVE,observe,RMP 3 ACTIVE display,RMP 3 active display
+N_PED_RMP3_STDBY,observe,RMP 3 STDBY display,RMP 3 standby display
+N_PED_XPDR_CHAR_DISPLAYED,observe,XPDR CHAR DISPLAYED display,XPDR char displayed display
+N_SEAT_DISTANCE_CAPT,ignore,SEAT DISTANCE CAPT display,Seat distance display (Capt)
+N_SEAT_DISTANCE_FO,ignore,SEAT DISTANCE FO display,Seat distance display (F/O)
+N_SEAT_HEIGHT_CAPT,ignore,SEAT HEIGHT CAPT display,Seat height display (Capt)
+N_SEAT_HEIGHT_FO,ignore,SEAT HEIGHT FO display,Seat height display (F/O)
+N_WINDOW_CAPT,ignore,WINDOW CAPT display,Window display (Capt)
+N_WINDOW_FO,ignore,WINDOW FO display,Window display (F/O)
+S_ARMREST_LEFT_CAPT,verified,ARMREST LEFT CAPT,"Armrest (Capt, left)"
+S_ARMREST_LEFT_FO,verified,ARMREST LEFT FO,"Armrest (F/O, left)"
+S_ARMREST_RIGHT_CAPT,verified,ARMREST RIGHT CAPT,"Armrest (Capt, right)"
+S_ARMREST_RIGHT_FO,verified,ARMREST RIGHT FO,"Armrest (F/O, right)"
+S_ASP2_ADF_1_REC,ignore,ASP2 ADF 1 REC,ASP 2 ADF 1 rec
+S_ASP2_ADF_1_REC_LATCH,verified,ASP2 ADF 1 REC LATCH,ASP 2 ADF 1 rec latch
+S_ASP2_ADF_2_REC,ignore,ASP2 ADF 2 REC,ASP 2 ADF 2 rec
+S_ASP2_ADF_2_REC_LATCH,verified,ASP2 ADF 2 REC LATCH,ASP 2 ADF 2 rec latch
+S_ASP2_CAB_REC,ignore,ASP2 CAB REC,ASP 2 cabin rec
+S_ASP2_CAB_REC_LATCH,verified,ASP2 CAB REC LATCH,ASP 2 cabin rec latch
+S_ASP2_CAB_SEND,pulse,ASP2 CAB SEND,ASP 2 cabin send
+S_ASP2_HF_1_REC,ignore,ASP2 HF 1 REC,ASP 2 HF 1 rec
+S_ASP2_HF_1_REC_LATCH,verified,ASP2 HF 1 REC LATCH,ASP 2 HF 1 rec latch
+S_ASP2_HF_1_SEND,pulse,ASP2 HF 1 SEND,ASP 2 HF 1 send
+S_ASP2_HF_2_REC,ignore,ASP2 HF 2 REC,ASP 2 HF 2 rec
+S_ASP2_HF_2_REC_LATCH,verified,ASP2 HF 2 REC LATCH,ASP 2 HF 2 rec latch
+S_ASP2_HF_2_SEND,pulse,ASP2 HF 2 SEND,ASP 2 HF 2 send
+S_ASP2_ILS_REC,ignore,ASP2 ILS REC,ASP 2 ILS rec
+S_ASP2_ILS_REC_LATCH,verified,ASP2 ILS REC LATCH,ASP 2 ILS rec latch
+S_ASP2_INT_REC,ignore,ASP2 INT REC,ASP 2 INT rec
+S_ASP2_INT_REC_LATCH,verified,ASP2 INT REC LATCH,ASP 2 INT rec latch
+S_ASP2_INT_SEND,pulse,ASP2 INT SEND,ASP 2 INT send
+S_ASP2_MARKER_REC,ignore,ASP2 MARKER REC,ASP 2 marker rec
+S_ASP2_MARKER_REC_LATCH,verified,ASP2 MARKER REC LATCH,ASP 2 marker rec latch
+S_ASP2_MLS_REC,ignore,ASP2 MLS REC,ASP 2 MLS rec
+S_ASP2_MLS_REC_LATCH,verified,ASP2 MLS REC LATCH,ASP 2 MLS rec latch
+S_ASP2_PA_REC,ignore,ASP2 PA REC,ASP 2 PA rec
+S_ASP2_PA_REC_LATCH,verified,ASP2 PA REC LATCH,ASP 2 PA rec latch
+S_ASP2_PA_SEND,pulse,ASP2 PA SEND,ASP 2 PA send
+S_ASP2_RESET,pulse,ASP2 RESET,ASP 2 reset
+S_ASP2_VHF_1_REC,ignore,ASP2 VHF 1 REC,ASP 2 VHF 1 rec
+S_ASP2_VHF_1_REC_LATCH,verified,ASP2 VHF 1 REC LATCH,ASP 2 VHF 1 rec latch
+S_ASP2_VHF_1_SEND,pulse,ASP2 VHF 1 SEND,ASP 2 VHF 1 send
+S_ASP2_VHF_2_REC,ignore,ASP2 VHF 2 REC,ASP 2 VHF 2 rec
+S_ASP2_VHF_2_REC_LATCH,verified,ASP2 VHF 2 REC LATCH,ASP 2 VHF 2 rec latch
+S_ASP2_VHF_2_SEND,pulse,ASP2 VHF 2 SEND,ASP 2 VHF 2 send
+S_ASP2_VHF_3_REC,ignore,ASP2 VHF 3 REC,ASP 2 VHF 3 rec
+S_ASP2_VHF_3_REC_LATCH,verified,ASP2 VHF 3 REC LATCH,ASP 2 VHF 3 rec latch
+S_ASP2_VHF_3_SEND,pulse,ASP2 VHF 3 SEND,ASP 2 VHF 3 send
+S_ASP2_VOICE,pulse,ASP2 VOICE,ASP 2 voice
+S_ASP2_VOICE_LATCH,verified,ASP2 VOICE LATCH,ASP 2 voice latch
+S_ASP2_VOR_1_REC,ignore,ASP2 VOR 1 REC,ASP 2 VOR 1 rec
+S_ASP2_VOR_1_REC_LATCH,verified,ASP2 VOR 1 REC LATCH,ASP 2 VOR 1 rec latch
+S_ASP2_VOR_2_REC,ignore,ASP2 VOR 2 REC,ASP 2 VOR 2 rec
+S_ASP2_VOR_2_REC_LATCH,verified,ASP2 VOR 2 REC LATCH,ASP 2 VOR 2 rec latch
+S_ASP3_ADF_1_REC,ignore,ASP3 ADF 1 REC,ASP 3 ADF 1 rec
+S_ASP3_ADF_1_REC_LATCH,verified,ASP3 ADF 1 REC LATCH,ASP 3 ADF 1 rec latch
+S_ASP3_ADF_2_REC,ignore,ASP3 ADF 2 REC,ASP 3 ADF 2 rec
+S_ASP3_ADF_2_REC_LATCH,verified,ASP3 ADF 2 REC LATCH,ASP 3 ADF 2 rec latch
+S_ASP3_CAB_REC,ignore,ASP3 CAB REC,ASP 3 cabin rec
+S_ASP3_CAB_REC_LATCH,verified,ASP3 CAB REC LATCH,ASP 3 cabin rec latch
+S_ASP3_CAB_SEND,pulse,ASP3 CAB SEND,ASP 3 cabin send
+S_ASP3_HF_1_REC,ignore,ASP3 HF 1 REC,ASP 3 HF 1 rec
+S_ASP3_HF_1_REC_LATCH,verified,ASP3 HF 1 REC LATCH,ASP 3 HF 1 rec latch
+S_ASP3_HF_1_SEND,pulse,ASP3 HF 1 SEND,ASP 3 HF 1 send
+S_ASP3_HF_2_REC,ignore,ASP3 HF 2 REC,ASP 3 HF 2 rec
+S_ASP3_HF_2_REC_LATCH,verified,ASP3 HF 2 REC LATCH,ASP 3 HF 2 rec latch
+S_ASP3_HF_2_SEND,pulse,ASP3 HF 2 SEND,ASP 3 HF 2 send
+S_ASP3_ILS_REC,ignore,ASP3 ILS REC,ASP 3 ILS rec
+S_ASP3_ILS_REC_LATCH,verified,ASP3 ILS REC LATCH,ASP 3 ILS rec latch
+S_ASP3_INT_REC,ignore,ASP3 INT REC,ASP 3 INT rec
+S_ASP3_INT_REC_LATCH,verified,ASP3 INT REC LATCH,ASP 3 INT rec latch
+S_ASP3_INT_SEND,pulse,ASP3 INT SEND,ASP 3 INT send
+S_ASP3_MARKER_REC,ignore,ASP3 MARKER REC,ASP 3 marker rec
+S_ASP3_MARKER_REC_LATCH,verified,ASP3 MARKER REC LATCH,ASP 3 marker rec latch
+S_ASP3_MLS_REC,ignore,ASP3 MLS REC,ASP 3 MLS rec
+S_ASP3_MLS_REC_LATCH,verified,ASP3 MLS REC LATCH,ASP 3 MLS rec latch
+S_ASP3_PA_REC,ignore,ASP3 PA REC,ASP 3 PA rec
+S_ASP3_PA_REC_LATCH,verified,ASP3 PA REC LATCH,ASP 3 PA rec latch
+S_ASP3_PA_SEND,pulse,ASP3 PA SEND,ASP 3 PA send
+S_ASP3_RESET,pulse,ASP3 RESET,ASP 3 reset
+S_ASP3_VHF_1_REC,ignore,ASP3 VHF 1 REC,ASP 3 VHF 1 rec
+S_ASP3_VHF_1_REC_LATCH,verified,ASP3 VHF 1 REC LATCH,ASP 3 VHF 1 rec latch
+S_ASP3_VHF_1_SEND,pulse,ASP3 VHF 1 SEND,ASP 3 VHF 1 send
+S_ASP3_VHF_2_REC,ignore,ASP3 VHF 2 REC,ASP 3 VHF 2 rec
+S_ASP3_VHF_2_REC_LATCH,verified,ASP3 VHF 2 REC LATCH,ASP 3 VHF 2 rec latch
+S_ASP3_VHF_2_SEND,pulse,ASP3 VHF 2 SEND,ASP 3 VHF 2 send
+S_ASP3_VHF_3_REC,ignore,ASP3 VHF 3 REC,ASP 3 VHF 3 rec
+S_ASP3_VHF_3_REC_LATCH,verified,ASP3 VHF 3 REC LATCH,ASP 3 VHF 3 rec latch
+S_ASP3_VHF_3_SEND,pulse,ASP3 VHF 3 SEND,ASP 3 VHF 3 send
+S_ASP3_VOICE,pulse,ASP3 VOICE,ASP 3 voice
+S_ASP3_VOICE_LATCH,verified,ASP3 VOICE LATCH,ASP 3 voice latch
+S_ASP3_VOR_1_REC,ignore,ASP3 VOR 1 REC,ASP 3 VOR 1 rec
+S_ASP3_VOR_1_REC_LATCH,verified,ASP3 VOR 1 REC LATCH,ASP 3 VOR 1 rec latch
+S_ASP3_VOR_2_REC,ignore,ASP3 VOR 2 REC,ASP 3 VOR 2 rec
+S_ASP3_VOR_2_REC_LATCH,verified,ASP3 VOR 2 REC LATCH,ASP 3 VOR 2 rec latch
+S_ASP4_CAB_SEND,pulse,ASP4 CAB SEND,ASP 4 cabin send
+S_ASP4_HF_1_SEND,pulse,ASP4 HF 1 SEND,ASP 4 HF 1 send
+S_ASP4_HF_2_SEND,pulse,ASP4 HF 2 SEND,ASP 4 HF 2 send
+S_ASP4_INT_SEND,pulse,ASP4 INT SEND,ASP 4 INT send
+S_ASP4_PA_SEND,pulse,ASP4 PA SEND,ASP 4 PA send
+S_ASP4_RESET,pulse,ASP4 RESET,ASP 4 reset
+S_ASP4_VHF_1_SEND,pulse,ASP4 VHF 1 SEND,ASP 4 VHF 1 send
+S_ASP4_VHF_2_SEND,pulse,ASP4 VHF 2 SEND,ASP 4 VHF 2 send
+S_ASP4_VHF_3_SEND,pulse,ASP4 VHF 3 SEND,ASP 4 VHF 3 send
+S_ASP4_VOICE,pulse,ASP4 VOICE,ASP 4 voice
+S_ASP_ADF_1_REC,ignore,ASP ADF 1 REC,ASP ADF 1 rec
+S_ASP_ADF_1_REC_LATCH,verified,ASP ADF 1 REC LATCH,ASP ADF 1 rec latch
+S_ASP_ADF_2_REC,ignore,ASP ADF 2 REC,ASP ADF 2 rec
+S_ASP_ADF_2_REC_LATCH,verified,ASP ADF 2 REC LATCH,ASP ADF 2 rec latch
+S_ASP_CAB_REC,ignore,ASP CAB REC,ASP cabin rec
+S_ASP_CAB_REC_LATCH,verified,ASP CAB REC LATCH,ASP cabin rec latch
+S_ASP_CAB_SEND,pulse,ASP CAB SEND,ASP cabin send
+S_ASP_HF_1_REC,ignore,ASP HF 1 REC,ASP HF 1 rec
+S_ASP_HF_1_REC_LATCH,verified,ASP HF 1 REC LATCH,ASP HF 1 rec latch
+S_ASP_HF_1_SEND,pulse,ASP HF 1 SEND,ASP HF 1 send
+S_ASP_HF_2_REC,ignore,ASP HF 2 REC,ASP HF 2 rec
+S_ASP_HF_2_REC_LATCH,verified,ASP HF 2 REC LATCH,ASP HF 2 rec latch
+S_ASP_HF_2_SEND,pulse,ASP HF 2 SEND,ASP HF 2 send
+S_ASP_ILS_REC,ignore,ASP ILS REC,ASP ILS rec
+S_ASP_ILS_REC_LATCH,verified,ASP ILS REC LATCH,ASP ILS rec latch
+S_ASP_INT_REC,ignore,ASP INT REC,ASP INT rec
+S_ASP_INT_REC_LATCH,verified,ASP INT REC LATCH,ASP INT rec latch
+S_ASP_INT_SEND,pulse,ASP INT SEND,ASP INT send
+S_ASP_MARKER_REC,ignore,ASP MARKER REC,ASP marker rec
+S_ASP_MARKER_REC_LATCH,verified,ASP MARKER REC LATCH,ASP marker rec latch
+S_ASP_MLS_REC,ignore,ASP MLS REC,ASP MLS rec
+S_ASP_MLS_REC_LATCH,verified,ASP MLS REC LATCH,ASP MLS rec latch
+S_ASP_PA_REC,ignore,ASP PA REC,ASP PA rec
+S_ASP_PA_REC_LATCH,verified,ASP PA REC LATCH,ASP PA rec latch
+S_ASP_PA_SEND,pulse,ASP PA SEND,ASP PA send
+S_ASP_RESET,pulse,ASP RESET,ASP reset
+S_ASP_VHF_1_REC,ignore,ASP VHF 1 REC,ASP VHF 1 rec
+S_ASP_VHF_1_REC_LATCH,verified,ASP VHF 1 REC LATCH,ASP VHF 1 rec latch
+S_ASP_VHF_1_SEND,pulse,ASP VHF 1 SEND,ASP VHF 1 send
+S_ASP_VHF_2_REC,ignore,ASP VHF 2 REC,ASP VHF 2 rec
+S_ASP_VHF_2_REC_LATCH,verified,ASP VHF 2 REC LATCH,ASP VHF 2 rec latch
+S_ASP_VHF_2_SEND,pulse,ASP VHF 2 SEND,ASP VHF 2 send
+S_ASP_VHF_3_REC,ignore,ASP VHF 3 REC,ASP VHF 3 rec
+S_ASP_VHF_3_REC_LATCH,verified,ASP VHF 3 REC LATCH,ASP VHF 3 rec latch
+S_ASP_VHF_3_SEND,pulse,ASP VHF 3 SEND,ASP VHF 3 send
+S_ASP_VOICE,pulse,ASP VOICE,ASP voice
+S_ASP_VOICE_LATCH,verified,ASP VOICE LATCH,ASP voice latch
+S_ASP_VOR_1_REC,ignore,ASP VOR 1 REC,ASP VOR 1 rec
+S_ASP_VOR_1_REC_LATCH,verified,ASP VOR 1 REC LATCH,ASP VOR 1 rec latch
+S_ASP_VOR_2_REC,ignore,ASP VOR 2 REC,ASP VOR 2 rec
+S_ASP_VOR_2_REC_LATCH,verified,ASP VOR 2 REC LATCH,ASP VOR 2 rec latch
+S_AUDIO_SWITCHING,verified,AUDIO SWITCHING,Audio switching
+S_CDU1_BRIGHTNESS_DOWN,pulse,CDU 1 BRIGHTNESS DOWN,MCDU brightness down (Capt)
+S_CDU1_BRIGHTNESS_UP,pulse,CDU 1 BRIGHTNESS UP,MCDU brightness up (Capt)
+S_CDU1_KEY_0,pulse,CDU 1 0,MCDU 0 (Capt)
+S_CDU1_KEY_1,pulse,CDU 1 1,MCDU 1 (Capt)
+S_CDU1_KEY_2,pulse,CDU 1 2,MCDU 2 (Capt)
+S_CDU1_KEY_3,pulse,CDU 1 3,MCDU 3 (Capt)
+S_CDU1_KEY_4,pulse,CDU 1 4,MCDU 4 (Capt)
+S_CDU1_KEY_5,pulse,CDU 1 5,MCDU 5 (Capt)
+S_CDU1_KEY_6,pulse,CDU 1 6,MCDU 6 (Capt)
+S_CDU1_KEY_7,pulse,CDU 1 7,MCDU 7 (Capt)
+S_CDU1_KEY_8,pulse,CDU 1 8,MCDU 8 (Capt)
+S_CDU1_KEY_9,pulse,CDU 1 9,MCDU 9 (Capt)
+S_CDU1_KEY_A,pulse,CDU 1 A,MCDU A (Capt)
+S_CDU1_KEY_AIRPORT,pulse,CDU 1 AIRPORT,MCDU AIRPORT (Capt)
+S_CDU1_KEY_ARROW_DOWN,pulse,CDU 1 ARROW DOWN,MCDU arrow down (Capt)
+S_CDU1_KEY_ARROW_LEFT,pulse,CDU 1 ARROW LEFT,MCDU arrow left (Capt)
+S_CDU1_KEY_ARROW_RIGHT,pulse,CDU 1 ARROW RIGHT,MCDU arrow right (Capt)
+S_CDU1_KEY_ARROW_UP,pulse,CDU 1 ARROW UP,MCDU arrow up (Capt)
+S_CDU1_KEY_ATC_COM,pulse,CDU 1 ATC COM,MCDU ATC COM (Capt)
+S_CDU1_KEY_B,pulse,CDU 1 B,MCDU B (Capt)
+S_CDU1_KEY_C,pulse,CDU 1 C,MCDU C (Capt)
+S_CDU1_KEY_CLEAR,pulse,CDU 1 CLEAR,MCDU CLEAR (Capt)
+S_CDU1_KEY_CLEAR_LINE,pulse,CDU 1 CLEAR LINE,MCDU CLEAR LINE (Capt)
+S_CDU1_KEY_D,pulse,CDU 1 D,MCDU D (Capt)
+S_CDU1_KEY_DATA,pulse,CDU 1 DATA,MCDU DATA (Capt)
+S_CDU1_KEY_DIR,pulse,CDU 1 DIR,MCDU DIR (Capt)
+S_CDU1_KEY_DOT,pulse,CDU 1 DOT,MCDU DOT (Capt)
+S_CDU1_KEY_E,pulse,CDU 1 E,MCDU E (Capt)
+S_CDU1_KEY_F,pulse,CDU 1 F,MCDU F (Capt)
+S_CDU1_KEY_FPLN,pulse,CDU 1 F-PLN,MCDU F-PLN (Capt)
+S_CDU1_KEY_FUEL_PRED,pulse,CDU 1 FUEL PRED,MCDU FUEL PRED (Capt)
+S_CDU1_KEY_G,pulse,CDU 1 G,MCDU G (Capt)
+S_CDU1_KEY_H,pulse,CDU 1 H,MCDU H (Capt)
+S_CDU1_KEY_I,pulse,CDU 1 I,MCDU I (Capt)
+S_CDU1_KEY_INIT,pulse,CDU 1 INIT,MCDU INIT (Capt)
+S_CDU1_KEY_J,pulse,CDU 1 J,MCDU J (Capt)
+S_CDU1_KEY_K,pulse,CDU 1 K,MCDU K (Capt)
+S_CDU1_KEY_L,pulse,CDU 1 L,MCDU L (Capt)
+S_CDU1_KEY_LSK1L,pulse,CDU 1 LSK1L,MCDU LSK1L (Capt)
+S_CDU1_KEY_LSK1R,pulse,CDU 1 LSK1R,MCDU LSK1R (Capt)
+S_CDU1_KEY_LSK2L,pulse,CDU 1 LSK2L,MCDU LSK2L (Capt)
+S_CDU1_KEY_LSK2R,pulse,CDU 1 LSK2R,MCDU LSK2R (Capt)
+S_CDU1_KEY_LSK3L,pulse,CDU 1 LSK3L,MCDU LSK3L (Capt)
+S_CDU1_KEY_LSK3R,pulse,CDU 1 LSK3R,MCDU LSK3R (Capt)
+S_CDU1_KEY_LSK4L,pulse,CDU 1 LSK4L,MCDU LSK4L (Capt)
+S_CDU1_KEY_LSK4R,pulse,CDU 1 LSK4R,MCDU LSK4R (Capt)
+S_CDU1_KEY_LSK5L,pulse,CDU 1 LSK5L,MCDU LSK5L (Capt)
+S_CDU1_KEY_LSK5R,pulse,CDU 1 LSK5R,MCDU LSK5R (Capt)
+S_CDU1_KEY_LSK6L,pulse,CDU 1 LSK6L,MCDU LSK6L (Capt)
+S_CDU1_KEY_LSK6R,pulse,CDU 1 LSK6R,MCDU LSK6R (Capt)
+S_CDU1_KEY_M,pulse,CDU 1 M,MCDU M (Capt)
+S_CDU1_KEY_MENU,pulse,CDU 1 MENU,MCDU MENU (Capt)
+S_CDU1_KEY_MINUS,pulse,CDU 1 MINUS,MCDU MINUS (Capt)
+S_CDU1_KEY_N,pulse,CDU 1 N,MCDU N (Capt)
+S_CDU1_KEY_O,pulse,CDU 1 O,MCDU O (Capt)
+S_CDU1_KEY_OVFLY,pulse,CDU 1 OVFLY,MCDU OVFLY (Capt)
+S_CDU1_KEY_P,pulse,CDU 1 P,MCDU P (Capt)
+S_CDU1_KEY_PERF,pulse,CDU 1 PERF,MCDU PERF (Capt)
+S_CDU1_KEY_PROG,pulse,CDU 1 PROG,MCDU PROG (Capt)
+S_CDU1_KEY_Q,pulse,CDU 1 Q,MCDU Q (Capt)
+S_CDU1_KEY_R,pulse,CDU 1 R,MCDU R (Capt)
+S_CDU1_KEY_RAD_NAV,pulse,CDU 1 RAD NAV,MCDU RAD NAV (Capt)
+S_CDU1_KEY_S,pulse,CDU 1 S,MCDU S (Capt)
+S_CDU1_KEY_SEC_FPLN,pulse,CDU 1 SEC FPLN,MCDU SEC F-PLN (Capt)
+S_CDU1_KEY_SLASH,pulse,CDU 1 SLASH,MCDU SLASH (Capt)
+S_CDU1_KEY_SPACE,pulse,CDU 1 SPACE,MCDU SPACE (Capt)
+S_CDU1_KEY_T,pulse,CDU 1 T,MCDU T (Capt)
+S_CDU1_KEY_U,pulse,CDU 1 U,MCDU U (Capt)
+S_CDU1_KEY_V,pulse,CDU 1 V,MCDU V (Capt)
+S_CDU1_KEY_W,pulse,CDU 1 W,MCDU W (Capt)
+S_CDU1_KEY_X,pulse,CDU 1 X,MCDU X (Capt)
+S_CDU1_KEY_Y,pulse,CDU 1 Y,MCDU Y (Capt)
+S_CDU1_KEY_Z,pulse,CDU 1 Z,MCDU Z (Capt)
+S_CDU2_BRIGHTNESS_DOWN,pulse,CDU 2 BRIGHTNESS DOWN,MCDU brightness down (F/O)
+S_CDU2_BRIGHTNESS_UP,pulse,CDU 2 BRIGHTNESS UP,MCDU brightness up (F/O)
+S_CDU2_KEY_0,pulse,CDU 2 0,MCDU 0 (F/O)
+S_CDU2_KEY_1,pulse,CDU 2 1,MCDU 1 (F/O)
+S_CDU2_KEY_2,pulse,CDU 2 2,MCDU 2 (F/O)
+S_CDU2_KEY_3,pulse,CDU 2 3,MCDU 3 (F/O)
+S_CDU2_KEY_4,pulse,CDU 2 4,MCDU 4 (F/O)
+S_CDU2_KEY_5,pulse,CDU 2 5,MCDU 5 (F/O)
+S_CDU2_KEY_6,pulse,CDU 2 6,MCDU 6 (F/O)
+S_CDU2_KEY_7,pulse,CDU 2 7,MCDU 7 (F/O)
+S_CDU2_KEY_8,pulse,CDU 2 8,MCDU 8 (F/O)
+S_CDU2_KEY_9,pulse,CDU 2 9,MCDU 9 (F/O)
+S_CDU2_KEY_A,pulse,CDU 2 A,MCDU A (F/O)
+S_CDU2_KEY_AIRPORT,pulse,CDU 2 AIRPORT,MCDU AIRPORT (F/O)
+S_CDU2_KEY_ARROW_DOWN,pulse,CDU 2 ARROW DOWN,MCDU arrow down (F/O)
+S_CDU2_KEY_ARROW_LEFT,pulse,CDU 2 ARROW LEFT,MCDU arrow left (F/O)
+S_CDU2_KEY_ARROW_RIGHT,pulse,CDU 2 ARROW RIGHT,MCDU arrow right (F/O)
+S_CDU2_KEY_ARROW_UP,pulse,CDU 2 ARROW UP,MCDU arrow up (F/O)
+S_CDU2_KEY_ATC_COM,pulse,CDU 2 ATC COM,MCDU ATC COM (F/O)
+S_CDU2_KEY_B,pulse,CDU 2 B,MCDU B (F/O)
+S_CDU2_KEY_C,pulse,CDU 2 C,MCDU C (F/O)
+S_CDU2_KEY_CLB,pulse,CDU 2 CLB,MCDU CLB (F/O)
+S_CDU2_KEY_CLEAR,pulse,CDU 2 CLEAR,MCDU CLEAR (F/O)
+S_CDU2_KEY_CLEAR_LINE,pulse,CDU 2 CLEAR LINE,MCDU CLEAR LINE (F/O)
+S_CDU2_KEY_D,pulse,CDU 2 D,MCDU D (F/O)
+S_CDU2_KEY_DATA,pulse,CDU 2 DATA,MCDU DATA (F/O)
+S_CDU2_KEY_DIR,pulse,CDU 2 DIR,MCDU DIR (F/O)
+S_CDU2_KEY_DOT,pulse,CDU 2 DOT,MCDU DOT (F/O)
+S_CDU2_KEY_E,pulse,CDU 2 E,MCDU E (F/O)
+S_CDU2_KEY_F,pulse,CDU 2 F,MCDU F (F/O)
+S_CDU2_KEY_FPLN,pulse,CDU 2 FPLN,MCDU F-PLN (F/O)
+S_CDU2_KEY_FUEL_PRED,pulse,CDU 2 FUEL PRED,MCDU FUEL PRED (F/O)
+S_CDU2_KEY_G,pulse,CDU 2 G,MCDU G (F/O)
+S_CDU2_KEY_H,pulse,CDU 2 H,MCDU H (F/O)
+S_CDU2_KEY_I,pulse,CDU 2 I,MCDU I (F/O)
+S_CDU2_KEY_INIT,pulse,CDU 2 INIT,MCDU INIT (F/O)
+S_CDU2_KEY_J,pulse,CDU 2 J,MCDU J (F/O)
+S_CDU2_KEY_K,pulse,CDU 2 K,MCDU K (F/O)
+S_CDU2_KEY_L,pulse,CDU 2 L,MCDU L (F/O)
+S_CDU2_KEY_LSK1L,pulse,CDU 2 LSK1L,MCDU LSK1L (F/O)
+S_CDU2_KEY_LSK1R,pulse,CDU 2 LSK1R,MCDU LSK1R (F/O)
+S_CDU2_KEY_LSK2L,pulse,CDU 2 LSK2L,MCDU LSK2L (F/O)
+S_CDU2_KEY_LSK2R,pulse,CDU 2 LSK2R,MCDU LSK2R (F/O)
+S_CDU2_KEY_LSK3L,pulse,CDU 2 LSK3L,MCDU LSK3L (F/O)
+S_CDU2_KEY_LSK3R,pulse,CDU 2 LSK3R,MCDU LSK3R (F/O)
+S_CDU2_KEY_LSK4L,pulse,CDU 2 LSK4L,MCDU LSK4L (F/O)
+S_CDU2_KEY_LSK4R,pulse,CDU 2 LSK4R,MCDU LSK4R (F/O)
+S_CDU2_KEY_LSK5L,pulse,CDU 2 LSK5L,MCDU LSK5L (F/O)
+S_CDU2_KEY_LSK5R,pulse,CDU 2 LSK5R,MCDU LSK5R (F/O)
+S_CDU2_KEY_LSK6L,pulse,CDU 2 LSK6L,MCDU LSK6L (F/O)
+S_CDU2_KEY_LSK6R,pulse,CDU 2 LSK6R,MCDU LSK6R (F/O)
+S_CDU2_KEY_M,pulse,CDU 2 M,MCDU M (F/O)
+S_CDU2_KEY_MENU,pulse,CDU 2 MENU,MCDU MENU (F/O)
+S_CDU2_KEY_MINUS,pulse,CDU 2 MINUS,MCDU MINUS (F/O)
+S_CDU2_KEY_N,pulse,CDU 2 N,MCDU N (F/O)
+S_CDU2_KEY_O,pulse,CDU 2 O,MCDU O (F/O)
+S_CDU2_KEY_OVFLY,pulse,CDU 2 OVFLY,MCDU OVFLY (F/O)
+S_CDU2_KEY_P,pulse,CDU 2 P,MCDU P (F/O)
+S_CDU2_KEY_PERF,pulse,CDU 2 PERF,MCDU PERF (F/O)
+S_CDU2_KEY_PROG,pulse,CDU 2 PROG,MCDU PROG (F/O)
+S_CDU2_KEY_Q,pulse,CDU 2 Q,MCDU Q (F/O)
+S_CDU2_KEY_R,pulse,CDU 2 R,MCDU R (F/O)
+S_CDU2_KEY_RAD_NAV,pulse,CDU 2 RAD NAV,MCDU RAD NAV (F/O)
+S_CDU2_KEY_S,pulse,CDU 2 S,MCDU S (F/O)
+S_CDU2_KEY_SEC_FPLN,pulse,CDU 2 SEC FPLN,MCDU SEC F-PLN (F/O)
+S_CDU2_KEY_SLASH,pulse,CDU 2 SLASH,MCDU SLASH (F/O)
+S_CDU2_KEY_SPACE,pulse,CDU 2 SPACE,MCDU SPACE (F/O)
+S_CDU2_KEY_T,pulse,CDU 2 T,MCDU T (F/O)
+S_CDU2_KEY_U,pulse,CDU 2 U,MCDU U (F/O)
+S_CDU2_KEY_V,pulse,CDU 2 V,MCDU V (F/O)
+S_CDU2_KEY_W,pulse,CDU 2 W,MCDU W (F/O)
+S_CDU2_KEY_X,pulse,CDU 2 X,MCDU X (F/O)
+S_CDU2_KEY_Y,pulse,CDU 2 Y,MCDU Y (F/O)
+S_CDU2_KEY_Z,pulse,CDU 2 Z,MCDU Z (F/O)
+S_CHART_LIGHT_TEMP_CAPT,verified,CHART LIGHT TEMP CAPT,Chart light temperature (Capt)
+S_CHART_LIGHT_TEMP_FO,verified,CHART LIGHT TEMP FO,Chart light temperature (F/O)
+S_COCKPIT_DOOR,verified,COCKPIT DOOR,Cockpit door
+S_DCDU1_BRT,pulse,DCDU1 BRT,DCDU BRT (Capt)
+S_DCDU1_DIM,pulse,DCDU1 DIM,DCDU DIM (Capt)
+S_DCDU1_DIM_BRT,verified,DCDU1 DIM BRT,DCDU DIM BRT (Capt)
+S_DCDU1_LSK1L,pulse,DCDU1 LSK1L,DCDU LSK1L (Capt)
+S_DCDU1_LSK1R,pulse,DCDU1 LSK1R,DCDU LSK1R (Capt)
+S_DCDU1_LSK2L,pulse,DCDU1 LSK2L,DCDU LSK2L (Capt)
+S_DCDU1_LSK2R,pulse,DCDU1 LSK2R,DCDU LSK2R (Capt)
+S_DCDU1_MSGDWN,pulse,DCDU1 MSGDWN,DCDU MSGDWN (Capt)
+S_DCDU1_MSGUP,pulse,DCDU1 MSGUP,DCDU MSGUP (Capt)
+S_DCDU1_PGDN,pulse,DCDU1 PGDN,DCDU PGDN (Capt)
+S_DCDU1_PGUP,pulse,DCDU1 PGUP,DCDU PGUP (Capt)
+S_DCDU1_PRINT,pulse,DCDU1 PRINT,DCDU PRINT (Capt)
+S_DCDU2_BRT,pulse,DCDU2 BRT,DCDU BRT (F/O)
+S_DCDU2_DIM,pulse,DCDU2 DIM,DCDU DIM (F/O)
+S_DCDU2_DIM_BRT,verified,DCDU2 DIM BRT,DCDU DIM BRT (F/O)
+S_DCDU2_LSK1L,pulse,DCDU2 LSK1L,DCDU LSK1L (F/O)
+S_DCDU2_LSK1R,pulse,DCDU2 LSK1R,DCDU LSK1R (F/O)
+S_DCDU2_LSK2L,pulse,DCDU2 LSK2L,DCDU LSK2L (F/O)
+S_DCDU2_LSK2R,pulse,DCDU2 LSK2R,DCDU LSK2R (F/O)
+S_DCDU2_MSGDWN,pulse,DCDU2 MSGDWN,DCDU MSGDWN (F/O)
+S_DCDU2_MSGUP,pulse,DCDU2 MSGUP,DCDU MSGUP (F/O)
+S_DCDU2_PGDN,pulse,DCDU2 PGDN,DCDU PGDN (F/O)
+S_DCDU2_PGUP,pulse,DCDU2 PGUP,DCDU PGUP (F/O)
+S_DCDU2_PRINT,pulse,DCDU2 PRINT,DCDU PRINT (F/O)
+S_DISPLAY_AIR_DATA,verified,DISPLAY AIR DATA,Display air data
+S_DISPLAY_ATT_HDG,verified,DISPLAY ATT HDG,Display ATT HDG
+S_DISPLAY_ECAM_ND_XFR,verified,DISPLAY ECAM ND XFR,Display ECAM ND transfer
+S_DISPLAY_EIS_DMC,verified,DISPLAY EIS DMC,Display EIS DMC
+S_DISPLAY_PFDND_XFER_CAPT,pulse,DISPLAY PFDND XFER CAPT,Display PFD/ND transfer (Capt)
+S_DISPLAY_PFDND_XFER_FO,pulse,DISPLAY PFDND XFER FO,Display PFD/ND transfer (F/O)
+S_ECAM_CLR_LEFT,pulse,ECAM CLR LEFT,ECAM CLR (left)
+S_ECAM_CLR_RIGHT,pulse,ECAM CLR RIGHT,ECAM CLR (right)
+S_EFB_CHARGING_CABLE_CAPT_TEMP,ignore,EFB CHARGING CABLE CAPT TEMP,EFB charging cable temperature (Capt)
+S_EFB_CHARGING_CABLE_FO_TEMP,ignore,EFB CHARGING CABLE FO TEMP,EFB charging cable temperature (F/O)
+S_ENG_MASTER_1,verified,MASTER 1,Master 1
+S_ENG_MASTER_2,verified,MASTER 2,Master 2
+S_ENG_MODE,verified,MODE,Mode
+S_EXT_CARGO_BAY_AFT_LT,verified,EXT CARGO BAY AFT LT,Cargo bay light (aft)
+S_EXT_CARGO_BAY_FWD_LT,verified,EXT CARGO BAY FWD LT,Cargo bay light (forward)
+S_EXT_CARGO_DOOR_OPEN_AFT,verified,EXT CARGO DOOR OPEN AFT,Cargo door open (aft)
+S_EXT_CARGO_DOOR_OPEN_FWD,verified,EXT CARGO DOOR OPEN FWD,Cargo door open (forward)
+S_EXT_CARGO_DOOR_SELECTOR_AFT,verified,EXT CARGO DOOR SELECTOR AFT,Cargo door selector (aft)
+S_EXT_CARGO_DOOR_SELECTOR_FWD,verified,EXT CARGO DOOR SELECTOR FWD,Cargo door selector (forward)
+S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT,verified,EXT CARGO DOOR SELECTOR LOADING AREA LT AFT,Cargo door selector loading area light (aft)
+S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD,verified,EXT CARGO DOOR SELECTOR LOADING AREA LT FWD,Cargo door selector loading area light (forward)
+S_EXT_CARGO_DOOR_SELECTOR_SWITCH_AFT,verified,EXT CARGO DOOR SELECTOR SWITCH AFT,Cargo door selector switch (aft)
+S_EXT_CARGO_DOOR_SELECTOR_SWITCH_FWD,verified,EXT CARGO DOOR SELECTOR SWITCH FWD,Cargo door selector switch (forward)
+S_EXT_GPU_APU_SHUTOFF_Cover,verified,EXT GPU APU SHUTOFF cover,GPU APU shutoff cover
+S_EXT_GPU_COCKPIT_CALL,pulse,EXT GPU COCKPIT CALL,GPU cockpit call
+S_EXT_GPU_LIGHT_TEST,pulse,EXT GPU LIGHT TEST,GPU light test
+S_EXT_GPU_PLUG,verified,EXT GPU PLUG,GPU plug
+S_EXT_GPU_RESET,pulse,EXT GPU RESET,GPU reset
+S_EXT_HYD_ACCESS_DOOR_LEFT,verified,EXT HYD ACCESS DOOR LEFT,Hydraulic access door (left)
+S_EXT_HYD_ACCESS_DOOR_RIGHT,verified,EXT HYD ACCESS DOOR RIGHT,Hydraulic access door (right)
+S_EXT_HYD_GEAR_DOOR_LEFT,verified,EXT HYD GEAR DOOR LEFT,Hydraulic gear door (left)
+S_EXT_HYD_GEAR_DOOR_NOSE,verified,EXT HYD GEAR DOOR NOSE,Hydraulic gear door nose
+S_EXT_HYD_GEAR_DOOR_RIGHT,verified,EXT HYD GEAR DOOR RIGHT,Hydraulic gear door (right)
+S_EXT_MAINT_BUS,verified,EXT MAINT BUS,Maintenance bus
+S_EXT_REFUELINGL_VALVE_CENTER,verified,EXT REFUELINGL VALVE CENTER,Refueling valve center
+S_EXT_REFUELINGL_VALVE_CENTER_Cover,verified,EXT REFUELINGL VALVE CENTER cover,Refueling valve center cover
+S_EXT_REFUELING_ACT_VALVE_1,verified,EXT REFUELING ACT VALVE 1,Refueling ACT valve 1
+S_EXT_REFUELING_ACT_VALVE_2,verified,EXT REFUELING ACT VALVE 2,Refueling ACT valve 2
+S_EXT_REFUELING_BATTERY,verified,EXT REFUELING BATTERY,Refueling battery
+S_EXT_REFUELING_DOOR,verified,EXT REFUELING DOOR,Refueling door
+S_EXT_REFUELING_MODE_Cover,verified,EXT REFUELING MODE cover,Refueling mode cover
+S_EXT_REFUELING_TEST,pulse,EXT REFUELING TEST,Refueling test
+S_EXT_REFUELING_VALVE_LEFT,verified,EXT REFUELING VALVE LEFT,Refueling valve (left)
+S_EXT_REFUELING_VALVE_LEFT_Cover,verified,EXT REFUELING VALVE LEFT cover,Refueling valve cover (left)
+S_EXT_REFUELING_VALVE_RIGHT,verified,EXT REFUELING VALVE RIGHT,Refueling valve (right)
+S_EXT_REFUELING_VALVE_RIGHT_Cover,verified,EXT REFUELING VALVE RIGHT cover,Refueling valve cover (right)
+S_EXT_WASTE_SERVICE_DOOR,verified,EXT WASTE SERVICE DOOR,Waste service door
+S_EXT_WATER_SERVICE_DOOR,verified,EXT WATER SERVICE DOOR,Water service door
+S_FCU_ALTITUDE_SCALE,verified,ALTITUDE SCALE,Altitude scale
+S_FCU_AP1,pulse,AP1,AP 1
+S_FCU_AP2,pulse,AP2,AP 2
+S_FCU_EFIS1_BARO_MODE,verified,BARO MODE (Capt),BARO mode (Capt)
+S_FCU_EFIS1_NAV1,verified,NAV1 (Capt),NAV 1 (Capt)
+S_FCU_EFIS1_NAV2,verified,NAV2 (Capt),NAV 2 (Capt)
+S_FCU_EFIS1_ND_MODE,verified,Captain ND mode,ND mode (Capt)
+S_FCU_EFIS1_ND_ZOOM,verified,ND ZOOM (Capt),ND zoom (Capt)
+S_FCU_EFIS2_BARO_MODE,verified,BARO MODE (F/O),BARO mode (F/O)
+S_FCU_EFIS2_NAV1,verified,NAV1 (F/O),NAV 1 (F/O)
+S_FCU_EFIS2_NAV2,verified,NAV2 (F/O),NAV 2 (F/O)
+S_FCU_EFIS2_ND_MODE,verified,ND MODE (F/O),ND mode (F/O)
+S_FCU_EFIS2_ND_ZOOM,verified,ND ZOOM (F/O),ND zoom (F/O)
+S_FCU_HDGVS_TRKFPA,pulse,HDGVS TRKFPA,HDG/V/S TRK/FPA
+S_FCU_METRIC_ALT,pulse,METRIC ALT,Metric ALT
+S_FCU_SPD_MACH,pulse,SPD MACH,SPD Mach
+S_FC_FLAPS,verified,FC FLAPS,Flaps
+S_FC_MIP_ANTI_SKID,verified,FC MIP ANTI SKID,Mip anti skid
+S_FC_RUDDER_TRIM,verified,FC RUDDER TRIM switch,Rudder trim switch
+S_FC_RUDDER_TRIM_RESET,pulse,FC RUDDER TRIM RESET,Rudder trim reset
+S_GALLEY_AFT_BREAKERS_COVER,verified,GALLEY AFT BREAKERS COVER,Galley aft breakers cover
+S_GALLEY_FWD_BREAKERS_COVER,verified,GALLEY FWD BREAKERS COVER,Galley forward breakers cover
+S_HYD_GRAVITY_GEAR_EXTEND,analog,GRAVITY GEAR EXTEND,Gravity gear extend
+S_HYD_GRAVITY_GEAR_HANDLE,verified,GRAVITY GEAR HANDLE,Gravity gear handle
+S_JUMPSEAT,verified,JUMPSEAT,Jumpseat
+S_JUMPSEAT_HEADREST,verified,JUMPSEAT HEADREST,Jumpseat headrest
+S_MIP_ATC_MSG_CAPT,pulse,ATC MSG CAPT,ATC MSG (Capt)
+S_MIP_ATC_MSG_FO,pulse,ATC MSG FO,ATC MSG (F/O)
+S_MIP_AUTOBRAKE_LO,pulse,AUTOBRAKE LO,Autobrake LO
+S_MIP_AUTOBRAKE_MAX,pulse,AUTOBRAKE MAX,Autobrake MAX
+S_MIP_AUTOBRAKE_MED,pulse,AUTOBRAKE MED,Autobrake MED
+S_MIP_AUTOLAND_CAPT,pulse,AUTOLAND CAPT,Autoland (Capt)
+S_MIP_AUTOLAND_FO,pulse,AUTOLAND FO,Autoland (F/O)
+S_MIP_BRAKE_FAN,verified,BRAKE FAN,Brake fan
+S_MIP_CHRONO_CAPT,pulse,CHRONO CAPT,Chrono (Capt)
+S_MIP_CHRONO_FO,pulse,CHRONO FO,Chrono (F/O)
+S_MIP_CLOCK_CHR,pulse,CLOCK CHR,Clock CHR
+S_MIP_CLOCK_ET,verified,CLOCK ET,Clock ET
+S_MIP_CLOCK_RST,pulse,CLOCK RST,Clock reset
+S_MIP_CLOCK_SET,pulse,CLOCK SET button,Clock set button
+S_MIP_CLOCK_UTC,verified,CLOCK UTC,Clock UTC
+S_MIP_GEAR,verified,GEAR,Gear
+S_MIP_GPWS_TERRAIN_ON_ND_CAPT,pulse,TERRAIN ON ND CAPT,Terrain on ND (Capt)
+S_MIP_GPWS_TERRAIN_ON_ND_FO,pulse,TERRAIN ON ND FO,Terrain on ND (F/O)
+S_MIP_GPWS_VISUAL_ALERT_CAPT,pulse,VISUAL ALERT CAPT,Visual alert (Capt)
+S_MIP_GPWS_VISUAL_ALERT_FO,pulse,VISUAL ALERT FO,Visual alert (F/O)
+S_MIP_ISFD_BARO_BUTTON,pulse,ISFD BARO BUTTON,ISFD BARO button
+S_MIP_LIGHT_CONSOLEFLOOR_CAPT,verified,LIGHT CONSOLEFLOOR CAPT,Light console floor (Capt)
+S_MIP_LIGHT_CONSOLEFLOOR_FO,verified,LIGHT CONSOLEFLOOR FO,Light console floor (F/O)
+S_MIP_MASTER_CAUTION_CAPT,pulse,MASTER CAUTION CAPT,Master caution (Capt)
+S_MIP_MASTER_CAUTION_FO,pulse,MASTER CAUTION FO,Master caution (F/O)
+S_MIP_MASTER_WARNING_CAPT,pulse,MASTER WARNING CAPT,Master warning (Capt)
+S_MIP_MASTER_WARNING_FO,pulse,MASTER WARNING FO,Master warning (F/O)
+S_MIP_NORTH_REF,verified,NORTH REF,North reference
+S_MIP_PARKING_BRAKE,verified,PARKING BRAKE,Parking brake
+S_MISC_WIPER_CAPT,verified,MISC WIPER CAPT,Misc wiper (Capt)
+S_MISC_WIPER_FO,verified,MISC WIPER FO,Misc wiper (F/O)
+S_MISC_WIPER_REPELLENT_CAPT,pulse,MISC WIPER REPELLENT CAPT,Misc wiper repellent (Capt)
+S_MISC_WIPER_REPELLENT_FO,pulse,MISC WIPER REPELLENT FO,Misc wiper repellent (F/O)
+S_OH_ADIRS_KEY_0,pulse,ADIRS KEY 0,ADIRS key 0
+S_OH_ADIRS_KEY_1,pulse,ADIRS KEY 1,ADIRS key 1
+S_OH_ADIRS_KEY_2,pulse,ADIRS KEY 2,ADIRS key 2
+S_OH_ADIRS_KEY_3,pulse,ADIRS KEY 3,ADIRS key 3
+S_OH_ADIRS_KEY_4,pulse,ADIRS KEY 4,ADIRS key 4
+S_OH_ADIRS_KEY_5,pulse,ADIRS KEY 5,ADIRS key 5
+S_OH_ADIRS_KEY_6,pulse,ADIRS KEY 6,ADIRS key 6
+S_OH_ADIRS_KEY_7,pulse,ADIRS KEY 7,ADIRS key 7
+S_OH_ADIRS_KEY_8,pulse,ADIRS KEY 8,ADIRS key 8
+S_OH_ADIRS_KEY_9,pulse,ADIRS KEY 9,ADIRS key 9
+S_OH_ADIRS_KEY_CLR,pulse,ADIRS KEY CLR,ADIRS key CLR
+S_OH_ADIRS_KEY_ENT,pulse,ADIRS KEY ENT,ADIRS key ENT
+S_OH_AFT_FADEC_GND_1,verified,FADEC GND 1,FADEC ground 1
+S_OH_AFT_FADEC_GND_1_Cover,verified,FADEC GND 1 cover,FADEC ground 1 cover
+S_OH_AFT_FADEC_GND_2,verified,FADEC GND 2,FADEC ground 2
+S_OH_AFT_FADEC_GND_2_Cover,verified,FADEC GND 2 cover,FADEC ground 2 cover
+S_OH_APU_AUTOEXTING_RESET,pulse,APU AUTO EXTING RESET,APU auto exting reset
+S_OH_APU_AUTOEXTING_TEST,pulse,APU AUTOEXTING TEST,APU auto exting test
+S_OH_CALLS_AFT,pulse,AFT,Calls (aft)
+S_OH_CALLS_ALL,pulse,ALL,All
+S_OH_CALLS_EMER,pulse,EMER,Emergency
+S_OH_CALLS_EMER_Cover,verified,EMER cover,Emergency cover
+S_OH_CALLS_EXIT,pulse,EXIT,Exit
+S_OH_CALLS_FWD,pulse,FWD,Calls (forward)
+S_OH_CALLS_MECH,pulse,MECH,Mechanic
+S_OH_CALLS_MID,pulse,MID,Mid
+S_OH_CARGO_DISC_1_OLD_LAYOUT,verified,DISC 1 OLD LAYOUT,Disc 1 old layout
+S_OH_CARGO_DISC_1_OLD_LAYOUT_Cover,verified,DISC 1 OLD LAYOUT cover,Disc 1 old layout cover
+S_OH_CARGO_DISC_2_OLD_LAYOUT,verified,DISC 2 OLD LAYOUT,Disc 2 old layout
+S_OH_CARGO_DISC_2_OLD_LAYOUT_Cover,verified,DISC 2 OLD LAYOUT cover,Disc 2 old layout cover
+S_OH_CARGO_SMOKE_AFT,verified,SMOKE AFT,Smoke (aft)
+S_OH_CARGO_SMOKE_FWD,verified,SMOKE FWD,Smoke (forward)
+S_OH_CARGO_SMOKE_TEST,pulse,SMOKE TEST,Smoke test
+S_OH_COCKPIT_DOOR_VIDEO,verified,COCKPIT DOOR VIDEO,Cockpit door video
+S_OH_ELEC_AC_ESS_FEED,verified,AC ESS FEED,AC ESS feed
+S_OH_ELEC_APU_GENERATOR,verified,APU GENERATOR,APU generator
+S_OH_ELEC_APU_GENERATOR_Anim,ignore,APU GENERATOR animation,APU generator animation
+S_OH_ELEC_APU_MASTER,verified,APU MASTER,APU master
+S_OH_ELEC_APU_MASTER_Anim,ignore,APU MASTER animation,APU master animation
+S_OH_ELEC_APU_START,pulse,APU START,APU start
+S_OH_ELEC_BAT1,verified,BAT1,BAT 1
+S_OH_ELEC_BAT1_Anim,ignore,BAT1 animation,BAT 1 animation
+S_OH_ELEC_BAT2,verified,BAT2,BAT 2
+S_OH_ELEC_BAT2_Anim,ignore,BAT2 animation,BAT 2 animation
+S_OH_ELEC_BUSTIE,pulse,BUSTIE,Bus tie
+S_OH_ELEC_COMMERCIAL,verified,COMMERCIAL,Commercial
+S_OH_ELEC_EMER_GEN_MAN_ON_Cover,verified,EMER GEN MAN ON cover,Emergency GEN manual on cover
+S_OH_ELEC_EMER_GEN_TEST,pulse,EMER GEN TEST,Emergency GEN test
+S_OH_ELEC_EMER_GEN_TEST_Cover,verified,EMER GEN TEST cover,Emergency GEN test cover
+S_OH_ELEC_EXT_PWR,pulse,EXT PWR,External power
+S_OH_ELEC_GALY,verified,GALY,Galley
+S_OH_ELEC_GEN1,verified,GEN1,GEN 1
+S_OH_ELEC_GEN1_Anim,ignore,GEN1 animation,GEN 1 animation
+S_OH_ELEC_GEN1_LINE,verified,GEN1 LINE,GEN 1 line
+S_OH_ELEC_GEN1_LINE_Anim,ignore,GEN1 LINE animation,GEN 1 line animation
+S_OH_ELEC_GEN2,verified,GEN2,GEN 2
+S_OH_ELEC_GEN2_Anim,ignore,GEN2 animation,GEN 2 animation
+S_OH_ELEC_IDG1,pulse,IDG1,IDG 1
+S_OH_ELEC_IDG1_Cover,verified,IDG1 cover,IDG 1 cover
+S_OH_ELEC_IDG2,pulse,IDG2,IDG 2
+S_OH_ELEC_IDG2_Cover,verified,IDG2 cover,IDG 2 cover
+S_OH_ELT_TEST,pulse,ELT TEST,ELT test
+S_OH_ENG_DUAL_COOLING,verified,DUAL COOLING,Dual cooling
+S_OH_ENG_MANSTART_1,verified,MANSTART 1,Manual start 1
+S_OH_ENG_MANSTART_1_Anim,ignore,MANSTART 1 animation,Manual start 1 animation
+S_OH_ENG_MANSTART_1_Cover,verified,MANSTART 1 cover,Manual start 1 cover
+S_OH_ENG_MANSTART_1_L,verified,MANSTART 1 L,Manual start 1 (left)
+S_OH_ENG_MANSTART_2,verified,MANSTART 2,Manual start 2
+S_OH_ENG_MANSTART_2_Anim,ignore,MANSTART 2 animation,Manual start 2 animation
+S_OH_ENG_MANSTART_2_Cover,verified,MANSTART 2 cover,Manual start 2 cover
+S_OH_ENG_MANSTART_2_L,verified,MANSTART 2 L,Manual start 2 (left)
+S_OH_ENG_N1_MODE_1,verified,N1 MODE 1,N1 mode 1
+S_OH_ENG_N1_MODE_1_Cover,verified,N1 MODE 1 cover,N1 mode 1 cover
+S_OH_ENG_N1_MODE_2,verified,N1 MODE 2,N1 mode 2
+S_OH_ENG_N1_MODE_2_Cover,verified,N1 MODE 2 cover,N1 mode 2 cover
+S_OH_EVAC_CAPT_PURSER,verified,CAPT PURSER,Purser (Capt)
+S_OH_EVAC_COMMAND,verified,COMMAND,Command
+S_OH_EVAC_COMMAND_Cover,verified,COMMAND cover,Command cover
+S_OH_EXT_LT_BEACON,verified,EXT LT BEACON,Beacon light
+S_OH_EXT_LT_LANDING_BOTH,verified,EXT LT LANDING BOTH,Landing both light
+S_OH_EXT_LT_LANDING_L,verified,EXT LT LANDING L,Landing light (left)
+S_OH_EXT_LT_LANDING_R,verified,EXT LT LANDING R,Landing light (right)
+S_OH_EXT_LT_NAV_LOGO,verified,EXT LT NAV LOGO,Logo light
+S_OH_EXT_LT_NOSE,verified,EXT LT NOSE,Nose light
+S_OH_EXT_LT_RWY_TURNOFF,verified,EXT LT RWY TURNOFF,Runway turnoff light
+S_OH_EXT_LT_STROBE,verified,EXT LT STROBE,Strobe light
+S_OH_EXT_LT_WING,verified,EXT LT WING,Wing light
+S_OH_FIRE_APU_AGENT,pulse,APU AGENT,APU agent
+S_OH_FIRE_APU_BUTTON,pulse,APU BUTTON,APU button
+S_OH_FIRE_APU_BUTTON_Cover,verified,APU BUTTON cover,APU button cover
+S_OH_FIRE_APU_TEST,pulse,APU TEST,APU test
+S_OH_FIRE_ENG1_AGENT1,pulse,ENG1 AGENT1,Engine 1 agent 1
+S_OH_FIRE_ENG1_AGENT2,pulse,ENG1 AGENT2,Engine 1 agent 2
+S_OH_FIRE_ENG1_BUTTON,pulse,ENG1 BUTTON,Engine 1 button
+S_OH_FIRE_ENG1_BUTTON_Cover,verified,ENG1 BUTTON cover,Engine 1 button cover
+S_OH_FIRE_ENG1_TEST,pulse,ENG1 TEST,Engine 1 test
+S_OH_FIRE_ENG2_AGENT1,pulse,ENG2 AGENT1,Engine 2 agent 1
+S_OH_FIRE_ENG2_AGENT2,pulse,ENG2 AGENT2,Engine 2 agent 2
+S_OH_FIRE_ENG2_BUTTON,pulse,ENG2 BUTTON,Engine 2 button
+S_OH_FIRE_ENG2_BUTTON_Cover,verified,ENG2 BUTTON cover,Engine 2 button cover
+S_OH_FIRE_ENG2_TEST,pulse,ENG2 TEST,Engine 2 test
+S_OH_FLT_CTL_ELAC_1,verified,CTL ELAC 1,ELAC 1
+S_OH_FLT_CTL_ELAC_1_Anim,ignore,CTL ELAC 1 animation,ELAC 1 animation
+S_OH_FLT_CTL_ELAC_2,verified,CTL ELAC 2,ELAC 2
+S_OH_FLT_CTL_ELAC_2_Anim,ignore,CTL ELAC 2 animation,ELAC 2 animation
+S_OH_FLT_CTL_FAC_1,verified,CTL FAC 1,FAC 1
+S_OH_FLT_CTL_FAC_1_Anim,ignore,CTL FAC 1 animation,FAC 1 animation
+S_OH_FLT_CTL_FAC_2,verified,CTL FAC 2,FAC 2
+S_OH_FLT_CTL_FAC_2_Anim,ignore,CTL FAC 2 animation,FAC 2 animation
+S_OH_FLT_CTL_SEC_1,verified,CTL SEC 1,SEC 1
+S_OH_FLT_CTL_SEC_1_Anim,ignore,CTL SEC 1 animation,SEC 1 animation
+S_OH_FLT_CTL_SEC_2,verified,CTL SEC 2,SEC 2
+S_OH_FLT_CTL_SEC_2_Anim,ignore,CTL SEC 2 animation,SEC 2 animation
+S_OH_FLT_CTL_SEC_3,verified,CTL SEC 3,SEC 3
+S_OH_FLT_CTL_SEC_3_Anim,ignore,CTL SEC 3 animation,SEC 3 animation
+S_OH_FUEL_CENTER_1,verified,CENTER 1,Center 1
+S_OH_FUEL_CENTER_1_Anim,ignore,CENTER 1 animation,Center 1 animation
+S_OH_FUEL_CENTER_2,verified,CENTER 2,Center 2
+S_OH_FUEL_CENTER_2_Anim,ignore,CENTER 2 animation,Center 2 animation
+S_OH_FUEL_LEFT_1,verified,LEFT 1,Left 1
+S_OH_FUEL_LEFT_1_Anim,ignore,LEFT 1 animation,Left 1 animation
+S_OH_FUEL_LEFT_2,verified,LEFT 2,Left 2
+S_OH_FUEL_LEFT_2_Anim,ignore,LEFT 2 animation,Left 2 animation
+S_OH_FUEL_MODE_SEL,verified,MODE SEL,Mode selector
+S_OH_FUEL_MODE_SEL_Anim,ignore,MODE SEL animation,Mode selector animation
+S_OH_FUEL_RIGHT_1,verified,RIGHT 1,Right 1
+S_OH_FUEL_RIGHT_1_Anim,ignore,RIGHT 1 animation,Right 1 animation
+S_OH_FUEL_RIGHT_2,verified,RIGHT 2,Right 2
+S_OH_FUEL_RIGHT_2_Anim,ignore,RIGHT 2 animation,Right 2 animation
+S_OH_FUEL_XFEED,verified,XFEED,Crossfeed
+S_OH_GPWS_FLAP_MODE,verified,FLAP MODE,Flap mode
+S_OH_GPWS_FLAP_MODE_Anim,ignore,FLAP MODE animation,Flap mode animation
+S_OH_GPWS_GS_MODE,verified,GS MODE,GS mode
+S_OH_GPWS_GS_MODE_Anim,ignore,GS MODE animation,GS mode animation
+S_OH_GPWS_LDG_FLAP3,verified,LDG FLAP3,Landing flap 3
+S_OH_GPWS_LDG_FLAP3_Anim,ignore,LDG FLAP3 animation,Landing flap 3 animation
+S_OH_GPWS_SYS,verified,SYS,System
+S_OH_GPWS_SYS_Anim,ignore,SYS animation,System animation
+S_OH_HYD_BLUE_ELEC_PUMP,verified,BLUE ELEC PUMP,Blue electric pump
+S_OH_HYD_BLUE_ELEC_PUMP_Anim,ignore,BLUE ELEC PUMP animation,Blue electric pump animation
+S_OH_HYD_BLUE_ELEC_PUMP_Cover,verified,BLUE ELEC PUMP cover,Blue electric pump cover
+S_OH_HYD_BLUE_PUMP_OVERRIDE,verified,BLUE PUMP OVERRIDE,Blue pump override
+S_OH_HYD_BLUE_PUMP_OVERRIDE_Cover,verified,BLUE PUMP OVERRIDE cover,Blue pump override cover
+S_OH_HYD_ENG_1_PUMP,verified,ENG 1 PUMP,Engine 1 pump
+S_OH_HYD_ENG_1_PUMP_Anim,ignore,ENG 1 PUMP animation,Engine 1 pump animation
+S_OH_HYD_ENG_2_PUMP,verified,ENG 2 PUMP,Engine 2 pump
+S_OH_HYD_ENG_2_PUMP_Anim,ignore,ENG 2 PUMP animation,Engine 2 pump animation
+S_OH_HYD_LMV_BLUE,verified,LMV BLUE,LMV blue
+S_OH_HYD_LMV_BLUE_Anim,ignore,LMV BLUE animation,LMV blue animation
+S_OH_HYD_LMV_BLUE_Cover,verified,LMV BLUE cover,LMV blue cover
+S_OH_HYD_LMV_GREEN,verified,LMV GREEN,LMV green
+S_OH_HYD_LMV_GREEN_Anim,ignore,LMV GREEN animation,LMV green animation
+S_OH_HYD_LMV_GREEN_Cover,verified,LMV GREEN cover,LMV green cover
+S_OH_HYD_LMV_YELLOW,verified,LMV YELLOW,LMV yellow
+S_OH_HYD_LMV_YELLOW_Anim,ignore,LMV YELLOW animation,LMV yellow animation
+S_OH_HYD_LMV_YELLOW_Cover,verified,LMV YELLOW cover,LMV yellow cover
+S_OH_HYD_RAT_MAN_ON,pulse,RAT MAN ON,RAT manual on
+S_OH_HYD_RAT_MAN_ON_Cover,verified,RAT MAN ON cover,RAT manual on cover
+S_OH_HYD_YELLOW_ELEC_PUMP,pulse,YELLOW ELEC PUMP,Yellow electric pump
+S_OH_INT_LT_DOME,verified,INT LT DOME,Dome light
+S_OH_INT_LT_EMER,verified,INT LT EMER,Emergency light
+S_OH_IN_LT_ANN_LT,verified,IN LT ANN LT,Annunciator light
+S_OH_IN_LT_ICE,verified,IN LT ICE,Ice light switch
+S_OH_LIGHTING_AVIONICS_COMPT,pulse,LIGHTING AVIONICS COMPT,Lighting avionics compartment
+S_OH_NAV_ADR1,pulse,ADR1,ADR 1
+S_OH_NAV_ADR2,pulse,ADR2,ADR 2
+S_OH_NAV_ADR3,pulse,ADR3,ADR 3
+S_OH_NAV_DATA_DISP,verified,DATA DISP,Data display
+S_OH_NAV_IR1_MODE,verified,IR1 MODE,IR 1 mode
+S_OH_NAV_IR1_SWITCH,pulse,IR1 SWITCH,IR 1 switch
+S_OH_NAV_IR2_MODE,verified,IR2 MODE,IR 2 mode
+S_OH_NAV_IR2_SWITCH,pulse,IR2 SWITCH,IR 2 switch
+S_OH_NAV_IR3_MODE,verified,IR3 MODE,IR 3 mode
+S_OH_NAV_IR3_SWITCH,pulse,IR3 SWITCH,IR 3 switch
+S_OH_NAV_SYS_DISP,verified,SYS DISP,System display
+S_OH_OXYGEN_CREW_OXYGEN,verified,CREW OXYGEN,Crew oxygen
+S_OH_OXYGEN_CREW_OXYGEN_Anim,ignore,CREW OXYGEN animation,Crew oxygen animation
+S_OH_OXYGEN_HIGH_ALT,verified,HIGH ALT,High ALT
+S_OH_OXYGEN_HIGH_ALT_Cover,verified,HIGH ALT cover,High ALT cover
+S_OH_OXYGEN_MASK_MAN_ON,pulse,MASK MAN ON,Mask manual on
+S_OH_OXYGEN_MASK_MAN_ON_Cover,verified,MASK MAN ON cover,Mask manual on cover
+S_OH_OXYGEN_TMR_RESET,pulse,TMR RESET,Timer reset
+S_OH_PNEUMATIC_APU_BLEED,verified,APU BLEED,APU bleed
+S_OH_PNEUMATIC_APU_BLEED_Anim,ignore,APU BLEED animation,APU bleed animation
+S_OH_PNEUMATIC_BLOWER,verified,BLOWER,Blower
+S_OH_PNEUMATIC_BLOWER_Anim,ignore,BLOWER animation,Blower animation
+S_OH_PNEUMATIC_CAB_FANS,verified,CAB FANS,Cabin fans
+S_OH_PNEUMATIC_CAB_FANS_Anim,ignore,CAB FANS animation,Cabin fans animation
+S_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE,verified,CARGO AFT ISOL VALVE,Cargo aft isolation valve
+S_OH_PNEUMATIC_CARGO_AFT_ISOL_VALVE_Anim,ignore,CARGO AFT ISOL VALVE animation,Cargo aft isolation valve animation
+S_OH_PNEUMATIC_CARGO_FWD_ISOL_VALVE,verified,CARGO FWD ISOL VALVE,Cargo forward isolation valve
+S_OH_PNEUMATIC_DITCHING,verified,DITCHING,Ditching
+S_OH_PNEUMATIC_DITCHING_Cover,verified,DITCHING cover,Ditching cover
+S_OH_PNEUMATIC_ECON_FLOW,verified,ECON FLOW,ECON flow
+S_OH_PNEUMATIC_ENG1_ANTI_ICE,verified,ENG1 ANTI ICE,Engine 1 anti ice
+S_OH_PNEUMATIC_ENG1_BLEED,verified,ENG1 BLEED,Engine 1 bleed
+S_OH_PNEUMATIC_ENG1_BLEED_Anim,ignore,ENG1 BLEED animation,Engine 1 bleed animation
+S_OH_PNEUMATIC_ENG2_ANTI_ICE,verified,ENG2 ANTI ICE,Engine 2 anti ice
+S_OH_PNEUMATIC_ENG2_BLEED,verified,ENG2 BLEED,Engine 2 bleed
+S_OH_PNEUMATIC_ENG2_BLEED_Anim,ignore,ENG2 BLEED animation,Engine 2 bleed animation
+S_OH_PNEUMATIC_EXTRACT,verified,EXTRACT,Extract
+S_OH_PNEUMATIC_EXTRACT_Anim,ignore,EXTRACT animation,Extract animation
+S_OH_PNEUMATIC_HOT_AIR,verified,HOT AIR,Hot air
+S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO,verified,HOT AIR AFT CARGO,Hot air aft cargo
+S_OH_PNEUMATIC_HOT_AIR_AFT_CARGO_Anim,ignore,HOT AIR AFT CARGO animation,Hot air aft cargo animation
+S_OH_PNEUMATIC_HOT_AIR_Anim,ignore,HOT AIR animation,Hot air animation
+S_OH_PNEUMATIC_PACK_1,verified,PACK 1,Pack 1
+S_OH_PNEUMATIC_PACK_1_Anim,ignore,PACK 1 animation,Pack 1 animation
+S_OH_PNEUMATIC_PACK_2,verified,PACK 2,Pack 2
+S_OH_PNEUMATIC_PACK_2_Anim,ignore,PACK 2 animation,Pack 2 animation
+S_OH_PNEUMATIC_PACK_FLOW,verified,PACK FLOW,Pack flow
+S_OH_PNEUMATIC_PRESS_MAN,verified,PRESS MAN,Pressurization manual
+S_OH_PNEUMATIC_PRESS_MODE,verified,PRESS MODE,Pressurization mode
+S_OH_PNEUMATIC_PRESS_MODE_Anim,ignore,PRESS MODE animation,Pressurization mode animation
+S_OH_PNEUMATIC_RAM_AIR,verified,RAM AIR,Ram air
+S_OH_PNEUMATIC_RAM_AIR_Cover,verified,RAM AIR cover,Ram air cover
+S_OH_PNEUMATIC_WING_ANTI_ICE,verified,WING ANTI ICE,Wing anti ice
+S_OH_PNEUMATIC_XBLEED_SELECTOR,verified,XBLEED SELECTOR,Crossbleed selector
+S_OH_PROBE_HEAT,verified,HEAT,Heat
+S_OH_RCRD_GND_CTL,pulse,RCRD GND CTL,Record ground control
+S_OH_RCRD_TEST,pulse,RCRD TEST,Record test
+S_OH_SIGNS,verified,SIGNS,Signs
+S_OH_SIGNS_SMOKING,verified,SIGNS SMOKING,Signs smoking
+S_OH_SVCE_INT_OVRD,pulse,SVCE INT OVRD,SVCE INT override
+S_OXYGEN_MASK_COVER_CAPT,verified,MASK COVER CAPT,Mask cover (Capt)
+S_OXYGEN_MASK_COVER_FO,verified,MASK COVER FO,Mask cover (F/O)
+S_PED_COCKPIT_DOOR,verified,COCKPIT DOOR,Cockpit door
+S_PED_COCKPIT_DOOR_VIDEO,pulse,COCKPIT DOOR VIDEO,Cockpit door video
+S_PED_DRAIMS1_0,pulse,DRAIMS1 0,DRAIMS 1 0
+S_PED_DRAIMS1_1,pulse,DRAIMS1 1,DRAIMS 1 1
+S_PED_DRAIMS1_2,pulse,DRAIMS1 2,DRAIMS 1 2
+S_PED_DRAIMS1_3,pulse,DRAIMS1 3,DRAIMS 1 3
+S_PED_DRAIMS1_4,pulse,DRAIMS1 4,DRAIMS 1 4
+S_PED_DRAIMS1_5,pulse,DRAIMS1 5,DRAIMS 1 5
+S_PED_DRAIMS1_6,pulse,DRAIMS1 6,DRAIMS 1 6
+S_PED_DRAIMS1_7,pulse,DRAIMS1 7,DRAIMS 1 7
+S_PED_DRAIMS1_8,pulse,DRAIMS1 8,DRAIMS 1 8
+S_PED_DRAIMS1_9,pulse,DRAIMS1 9,DRAIMS 1 9
+S_PED_DRAIMS1_ARROW_DOWN,pulse,DRAIMS1 ARROW DOWN,DRAIMS 1 arrow down
+S_PED_DRAIMS1_ARROW_UP,pulse,DRAIMS1 ARROW UP,DRAIMS 1 arrow up
+S_PED_DRAIMS1_ATC,pulse,DRAIMS1 ATC,DRAIMS 1 ATC
+S_PED_DRAIMS1_CLR,pulse,DRAIMS1 CLR,DRAIMS 1 CLR
+S_PED_DRAIMS1_DOT,pulse,DRAIMS1 DOT,DRAIMS 1 dot
+S_PED_DRAIMS1_HF,pulse,DRAIMS1 HF,DRAIMS 1 HF
+S_PED_DRAIMS1_LSK1B,pulse,DRAIMS1 LSK1B,DRAIMS 1 LSK1B
+S_PED_DRAIMS1_LSK1L,pulse,DRAIMS1 LSK1L,DRAIMS 1 LSK1L
+S_PED_DRAIMS1_LSK1R,pulse,DRAIMS1 LSK1R,DRAIMS 1 LSK1R
+S_PED_DRAIMS1_LSK2B,pulse,DRAIMS1 LSK2B,DRAIMS 1 LSK2B
+S_PED_DRAIMS1_LSK2L,pulse,DRAIMS1 LSK2L,DRAIMS 1 LSK2L
+S_PED_DRAIMS1_LSK2R,pulse,DRAIMS1 LSK2R,DRAIMS 1 LSK2R
+S_PED_DRAIMS1_LSK3L,pulse,DRAIMS1 LSK3L,DRAIMS 1 LSK3L
+S_PED_DRAIMS1_LSK3R,pulse,DRAIMS1 LSK3R,DRAIMS 1 LSK3R
+S_PED_DRAIMS1_LSK4L,pulse,DRAIMS1 LSK4L,DRAIMS 1 LSK4L
+S_PED_DRAIMS1_LSK4R,pulse,DRAIMS1 LSK4R,DRAIMS 1 LSK4R
+S_PED_DRAIMS1_MENU,pulse,DRAIMS1 MENU,DRAIMS 1 menu
+S_PED_DRAIMS1_NAV,pulse,DRAIMS1 NAV,DRAIMS 1 NAV
+S_PED_DRAIMS1_NAV_REC,pulse,DRAIMS1 NAV REC button,DRAIMS 1 NAV rec button
+S_PED_DRAIMS1_NAV_REC_LATCHED,pulse,DRAIMS1 NAV REC LATCHED,DRAIMS 1 NAV rec latched
+S_PED_DRAIMS1_VHF,pulse,DRAIMS1 VHF,DRAIMS 1 VHF
+S_PED_DRAIMS2_0,pulse,DRAIMS2 0,DRAIMS 2 0
+S_PED_DRAIMS2_1,pulse,DRAIMS2 1,DRAIMS 2 1
+S_PED_DRAIMS2_2,pulse,DRAIMS2 2,DRAIMS 2 2
+S_PED_DRAIMS2_3,pulse,DRAIMS2 3,DRAIMS 2 3
+S_PED_DRAIMS2_4,pulse,DRAIMS2 4,DRAIMS 2 4
+S_PED_DRAIMS2_5,pulse,DRAIMS2 5,DRAIMS 2 5
+S_PED_DRAIMS2_6,pulse,DRAIMS2 6,DRAIMS 2 6
+S_PED_DRAIMS2_7,pulse,DRAIMS2 7,DRAIMS 2 7
+S_PED_DRAIMS2_8,pulse,DRAIMS2 8,DRAIMS 2 8
+S_PED_DRAIMS2_9,pulse,DRAIMS2 9,DRAIMS 2 9
+S_PED_DRAIMS2_ARROW_DOWN,pulse,DRAIMS2 ARROW DOWN,DRAIMS 2 arrow down
+S_PED_DRAIMS2_ARROW_UP,pulse,DRAIMS2 ARROW UP,DRAIMS 2 arrow up
+S_PED_DRAIMS2_ATC,pulse,DRAIMS2 ATC,DRAIMS 2 ATC
+S_PED_DRAIMS2_CLR,pulse,DRAIMS2 CLR,DRAIMS 2 CLR
+S_PED_DRAIMS2_DOT,pulse,DRAIMS2 DOT,DRAIMS 2 dot
+S_PED_DRAIMS2_HF,pulse,DRAIMS2 HF,DRAIMS 2 HF
+S_PED_DRAIMS2_LSK1B,pulse,DRAIMS2 LSK1B,DRAIMS 2 LSK1B
+S_PED_DRAIMS2_LSK1L,pulse,DRAIMS2 LSK1L,DRAIMS 2 LSK1L
+S_PED_DRAIMS2_LSK1R,pulse,DRAIMS2 LSK1R,DRAIMS 2 LSK1R
+S_PED_DRAIMS2_LSK2B,pulse,DRAIMS2 LSK2B,DRAIMS 2 LSK2B
+S_PED_DRAIMS2_LSK2L,pulse,DRAIMS2 LSK2L,DRAIMS 2 LSK2L
+S_PED_DRAIMS2_LSK2R,pulse,DRAIMS2 LSK2R,DRAIMS 2 LSK2R
+S_PED_DRAIMS2_LSK3L,pulse,DRAIMS2 LSK3L,DRAIMS 2 LSK3L
+S_PED_DRAIMS2_LSK3R,pulse,DRAIMS2 LSK3R,DRAIMS 2 LSK3R
+S_PED_DRAIMS2_LSK4L,pulse,DRAIMS2 LSK4L,DRAIMS 2 LSK4L
+S_PED_DRAIMS2_LSK4R,pulse,DRAIMS2 LSK4R,DRAIMS 2 LSK4R
+S_PED_DRAIMS2_MENU,pulse,DRAIMS2 MENU,DRAIMS 2 menu
+S_PED_DRAIMS2_NAV,pulse,DRAIMS2 NAV,DRAIMS 2 NAV
+S_PED_DRAIMS2_NAV_REC,pulse,DRAIMS2 NAV REC button,DRAIMS 2 NAV rec button
+S_PED_DRAIMS2_NAV_REC_LATCHED,pulse,DRAIMS2 NAV REC LATCHED,DRAIMS 2 NAV rec latched
+S_PED_DRAIMS2_VHF,pulse,DRAIMS2 VHF,DRAIMS 2 VHF
+S_PED_DRAIMS3_0,pulse,DRAIMS3 0,DRAIMS 3 0
+S_PED_DRAIMS3_1,pulse,DRAIMS3 1,DRAIMS 3 1
+S_PED_DRAIMS3_2,pulse,DRAIMS3 2,DRAIMS 3 2
+S_PED_DRAIMS3_3,pulse,DRAIMS3 3,DRAIMS 3 3
+S_PED_DRAIMS3_4,pulse,DRAIMS3 4,DRAIMS 3 4
+S_PED_DRAIMS3_5,pulse,DRAIMS3 5,DRAIMS 3 5
+S_PED_DRAIMS3_6,pulse,DRAIMS3 6,DRAIMS 3 6
+S_PED_DRAIMS3_7,pulse,DRAIMS3 7,DRAIMS 3 7
+S_PED_DRAIMS3_8,pulse,DRAIMS3 8,DRAIMS 3 8
+S_PED_DRAIMS3_9,pulse,DRAIMS3 9,DRAIMS 3 9
+S_PED_DRAIMS3_ARROW_DOWN,pulse,DRAIMS3 ARROW DOWN,DRAIMS 3 arrow down
+S_PED_DRAIMS3_ARROW_UP,pulse,DRAIMS3 ARROW UP,DRAIMS 3 arrow up
+S_PED_DRAIMS3_ATC,pulse,DRAIMS3 ATC,DRAIMS 3 ATC
+S_PED_DRAIMS3_CLR,pulse,DRAIMS3 CLR,DRAIMS 3 CLR
+S_PED_DRAIMS3_DOT,pulse,DRAIMS3 DOT,DRAIMS 3 dot
+S_PED_DRAIMS3_HF,pulse,DRAIMS3 HF,DRAIMS 3 HF
+S_PED_DRAIMS3_LSK1B,pulse,DRAIMS3 LSK1B,DRAIMS 3 LSK1B
+S_PED_DRAIMS3_LSK1L,pulse,DRAIMS3 LSK1L,DRAIMS 3 LSK1L
+S_PED_DRAIMS3_LSK1R,pulse,DRAIMS3 LSK1R,DRAIMS 3 LSK1R
+S_PED_DRAIMS3_LSK2B,pulse,DRAIMS3 LSK2B,DRAIMS 3 LSK2B
+S_PED_DRAIMS3_LSK2L,pulse,DRAIMS3 LSK2L,DRAIMS 3 LSK2L
+S_PED_DRAIMS3_LSK2R,pulse,DRAIMS3 LSK2R,DRAIMS 3 LSK2R
+S_PED_DRAIMS3_LSK3L,pulse,DRAIMS3 LSK3L,DRAIMS 3 LSK3L
+S_PED_DRAIMS3_LSK3R,pulse,DRAIMS3 LSK3R,DRAIMS 3 LSK3R
+S_PED_DRAIMS3_LSK4L,pulse,DRAIMS3 LSK4L,DRAIMS 3 LSK4L
+S_PED_DRAIMS3_LSK4R,pulse,DRAIMS3 LSK4R,DRAIMS 3 LSK4R
+S_PED_DRAIMS3_MENU,pulse,DRAIMS3 MENU,DRAIMS 3 menu
+S_PED_DRAIMS3_NAV,pulse,DRAIMS3 NAV,DRAIMS 3 NAV
+S_PED_DRAIMS3_NAV_REC,pulse,DRAIMS3 NAV REC button,DRAIMS 3 NAV rec button
+S_PED_DRAIMS3_NAV_REC_LATCHED,pulse,DRAIMS3 NAV REC LATCHED,DRAIMS 3 NAV rec latched
+S_PED_DRAIMS3_VHF,pulse,DRAIMS3 VHF,DRAIMS 3 VHF
+S_PED_RMP1_HF1,pulse,RMP 1 HF1,RMP 1 HF 1
+S_PED_RMP1_HF2,pulse,RMP 1 HF2,RMP 1 HF 2
+S_PED_RMP1_POWER,verified,RMP 1 POWER switch,RMP 1 power switch
+S_PED_RMP1_VHF1,pulse,RMP 1 VHF1,RMP 1 VHF 1
+S_PED_RMP1_VHF2,pulse,RMP 1 VHF2,RMP 1 VHF 2
+S_PED_RMP1_VHF3,pulse,RMP 1 VHF3,RMP 1 VHF 3
+S_PED_RMP1_XFER,pulse,RMP 1 XFER,RMP 1 transfer
+S_PED_RMP2_HF1,pulse,RMP 2 HF1,RMP 2 HF 1
+S_PED_RMP2_HF2,pulse,RMP 2 HF2,RMP 2 HF 2
+S_PED_RMP2_POWER,verified,RMP 2 POWER switch,RMP 2 power switch
+S_PED_RMP2_VHF1,pulse,RMP 2 VHF1,RMP 2 VHF 1
+S_PED_RMP2_VHF2,pulse,RMP 2 VHF2,RMP 2 VHF 2
+S_PED_RMP2_VHF3,pulse,RMP 2 VHF3,RMP 2 VHF 3
+S_PED_RMP2_XFER,pulse,RMP 2 XFER,RMP 2 transfer
+S_PED_RMP3_HF1,pulse,RMP 3 HF1,RMP 3 HF 1
+S_PED_RMP3_HF2,pulse,RMP 3 HF2,RMP 3 HF 2
+S_PED_RMP3_POWER,verified,RMP 3 POWER switch,RMP 3 power switch
+S_PED_RMP3_VHF1,pulse,RMP 3 VHF1,RMP 3 VHF 1
+S_PED_RMP3_VHF2,pulse,RMP 3 VHF2,RMP 3 VHF 2
+S_PED_RMP3_VHF3,pulse,RMP 3 VHF3,RMP 3 VHF 3
+S_PED_RMP3_XFER,pulse,RMP 3 XFER,RMP 3 transfer
+S_SEAT_DISTANCE_CAPT,verified,SEAT DISTANCE CAPT,Seat distance (Capt)
+S_SEAT_DISTANCE_FO,verified,SEAT DISTANCE FO,Seat distance (F/O)
+S_SEAT_HEIGHT_CAPT,verified,SEAT HEIGHT CAPT,Seat height (Capt)
+S_SEAT_HEIGHT_FO,verified,SEAT HEIGHT FO,Seat height (F/O)
+S_STAIRS_BLOCKER,verified,STAIRS BLOCKER,Stairs blocker
+S_TCAS_HORIZONTAL_RANGE,verified,TCAS HORIZONTAL RANGE,TCAS horizontal range
+S_TCAS_RANGE,verified,TCAS RANGE,TCAS range
+S_TRAY_TABLE_CAPT,verified,TRAY TABLE CAPT,Tray table (Capt)
+S_TRAY_TABLE_FO,verified,TRAY TABLE FO,Tray table (F/O)
+S_WINDOW_BLINDS_CAPT,verified,WINDOW BLINDS CAPT,Window blinds (Capt)
+S_WINDOW_BLINDS_FO,verified,WINDOW BLINDS FO,Window blinds (F/O)
+S_WINDOW_BLINDS_REAR_CAPT,verified,WINDOW BLINDS REAR CAPT,Window blinds rear (Capt)
+S_WINDOW_BLINDS_REAR_FO,verified,WINDOW BLINDS REAR FO,Window blinds rear (F/O)
+S_WINDOW_CAPT_LATCH,ignore,WINDOW CAPT LATCH,Window latch (Capt)
+S_WINDOW_CAPT_LEVER,ignore,WINDOW CAPT LEVER,Window lever (Capt)
+S_WINDOW_CAPT_LEVER_BUTTON,ignore,WINDOW CAPT LEVER BUTTON,Window lever button (Capt)
+S_WINDOW_FO_LATCH,ignore,WINDOW FO LATCH,Window latch (F/O)
+S_WINDOW_FO_LEVER,ignore,WINDOW FO LEVER,Window lever (F/O)
+S_WINDOW_FO_LEVER_BUTTON,ignore,WINDOW FO LEVER BUTTON,Window lever button (F/O)
+S_WR_GAIN,verified,WR GAIN switch,Weather radar gain switch
+S_WR_GCS,pulse,WR GCS,Weather radar gcs
+S_WR_MODE,verified,WR MODE,Weather radar mode
+S_WR_MULTISCAN,verified,WR MULTISCAN,Weather radar multiscan
+S_WR_PRED_WS,verified,WR PRED WS,Weather radar PRED WS
+S_WR_SYS,verified,WR SYS,Weather radar system
+S_XPDR_ALTREPORTING,verified,XPDR ALTREPORTING,XPDR altitude reporting
+S_XPDR_IDENT,pulse,XPDR IDENT,XPDR ident
+S_XPDR_MODE,verified,XPDR MODE,XPDR mode
+S_XPDR_OPERATION,verified,XPDR OPERATION,XPDR operation

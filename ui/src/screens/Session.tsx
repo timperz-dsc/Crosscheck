@@ -4,10 +4,9 @@ import { AlertIcon, Button, Mark } from '../components/parts';
 import { pickHeadline } from '../panel';
 import type { Actions, ControlNotice, Panel, PanelItem, PanelLine, Status } from '../types';
 import {
-  SideName, actionLabel, amberText, driftText, driftWarningText, indicatorsLine, itemValues, lastCompared, lineText, moreText,
-  notSyncedDetail, notSyncedLine, otherSide, outsideLine, peerLostText, roleName, sideName, timeOfDay,
+  SideName, actionLabel, amberText, driftText, driftWarningText, handoverDetail, handoverLine, indicatorsLine, itemValues, lastCompared,
+  lineText, moreText, notSyncedDetail, notSyncedLine, otherSide, outsideLine, peerLostText, roleName, sideName, timeOfDay,
 } from '../words';
-import { SessionHeader } from './Waiting';
 
 interface Props {
   status: Status;
@@ -24,9 +23,10 @@ const EMPTY: Panel = {
 };
 
 /**
- * The session panel (CRO-34), for a quick glance in flight: one headline line with the most important
- * red line and its action, the full red list on demand, everything else collapsed below, and the
- * Panels summary and the log on the right.
+ * The session panel (CRO-34, laid out as a desktop window in CRO-39), for a quick glance in flight.
+ * Left pane: the headline line (the most important red line and its action), below it the full red
+ * list on demand and everything else collapsed, and the crew with the control button at the bottom.
+ * Right pane: the Panels summary and the log. Only the lists scroll, each inside its own pane.
  */
 export function Session({ status, actions, busy, error, confirmPeerLost, now }: Props) {
   const panel = status.panel ?? EMPTY;
@@ -36,92 +36,91 @@ export function Session({ status, actions, busy, error, confirmPeerLost, now }: 
   const peerWord = sideName(peer?.side ?? otherSide(status));
   const isPf = status.is_pf ?? status.role === 'pf';
   const notice = useNotice(status.control_notice ?? null);
+  const red = useRedLines(panel.red);
 
   return (
-    <>
-      <SessionHeader status={status} actions={actions} busy={busy} />
-      <main className="main main-session">
-        <div className="session-col">
-          <RedLines lines={panel.red} peerWord={peerWord} actions={actions} busy={busy} compared={lastCompared(status.last_compared_at, now)} />
+    <div className="session">
+      <div className="pane pane-main">
+        <Headline red={red} peerWord={peerWord} actions={actions} busy={busy} compared={lastCompared(status.last_compared_at, now)} />
 
+        <div className="pane-scroll">
+          {red.open && red.others.length > 0 && (
+            <div id="red-lines">
+              {red.others.map((l) => <ControlLine key={l.control} line={l} peerWord={peerWord} actions={actions} busy={busy} />)}
+            </div>
+          )}
           {notice.visible && notice.data && <ControlChange notice={notice.data} peerWord={peerWord} onDismiss={notice.dismiss} />}
-
           <CollapsedLines status={status} panel={panel} peerWord={peerWord} isPf={isPf} confirmPeerLost={confirmPeerLost} actions={actions} busy={busy} now={now} />
-
-          <section className="stack-wide">
-            <dl className="list list-crew">
-              {[...crew].sort((a, b) => (a.side === 'captain' ? 0 : 1) - (b.side === 'captain' ? 0 : 1)).map((c) => (
-                <div key={c.side} style={{ display: 'contents' }}>
-                  <dt>{SideName(c.side)}{c.you ? ' (you)' : ''}</dt>
-                  <dd className="muted">{roleName(c.role)}{c.state === 'lost' ? ', lost connection' : ''}</dd>
-                </div>
-              ))}
-            </dl>
-            {me && peer && (
-              <div className="row-wide">
-                {isPf ? (
-                  <>
-                    <Button onClick={() => void actions.giveControl()} disabled={busy || peer.state !== 'connected'}>You have control</Button>
-                    <span className="hint">Gives control to the {peerWord} at once.</span>
-                  </>
-                ) : (
-                  <>
-                    <Button onClick={() => void actions.takeControl(false)} disabled={busy}>I have control</Button>
-                    <span className="hint">Takes over at once. The takeover button on your sidestick does the same.</span>
-                  </>
-                )}
-              </div>
-            )}
-            {error && <p className="warning">{error}</p>}
-          </section>
         </div>
 
-        <aside className="session-aside">
-          <section className="stack" style={{ gap: 10 }} aria-labelledby="panels-title">
-            <h2 id="panels-title">Panels</h2>
-            <dl className="panels">
-              {(status.groups ?? []).map((g) => (
-                <div key={g.id} style={{ display: 'contents' }}>
-                  <dt className={g.differs > 0 ? 'strong' : undefined}>{g.label}</dt>
-                  <dd className={g.differs > 0 ? 'differs' : 'muted'}>{g.differs > 0 ? `${g.differs} ${g.differs === 1 ? 'differs' : 'differ'}` : 'Match'}</dd>
-                </div>
+        <div className="pane-foot">
+          <dl className="crew">
+            {[...crew].sort((a, b) => (a.side === 'captain' ? 0 : 1) - (b.side === 'captain' ? 0 : 1)).map((c) => (
+              <div key={c.side}>
+                <dt>{SideName(c.side)}{c.you ? ' (you)' : ''}</dt>
+                <dd className="muted">{roleName(c.role)}{c.state === 'lost' ? ', lost connection' : ''}</dd>
+              </div>
+            ))}
+          </dl>
+          {me && peer && (
+            <div className="row">
+              {isPf ? (
+                <>
+                  <span className="hint">Gives control to the {peerWord} at once.</span>
+                  <Button onClick={() => void actions.giveControl()} disabled={busy || peer.state !== 'connected'}>You have control</Button>
+                </>
+              ) : (
+                <>
+                  <span className="hint">Takes over at once. The takeover button on your sidestick does the same.</span>
+                  <Button onClick={() => void actions.takeControl(false)} disabled={busy}>I have control</Button>
+                </>
+              )}
+            </div>
+          )}
+          {error && <p className="warning" style={{ flexBasis: '100%' }}>{error}</p>}
+        </div>
+      </div>
+
+      <aside className="pane pane-side">
+        <section className="side-section side-panels" aria-labelledby="panels-title">
+          <h2 id="panels-title">Panels</h2>
+          <dl className="panels">
+            {(status.groups ?? []).map((g) => (
+              <div key={g.id} style={{ display: 'contents' }}>
+                <dt className={g.differs > 0 ? 'strong' : undefined}>{g.label}</dt>
+                <dd className={g.differs > 0 ? 'differs' : 'muted'}>{g.differs > 0 ? `${g.differs} ${g.differs === 1 ? 'differs' : 'differ'}` : 'Match'}</dd>
+              </div>
+            ))}
+            {(status.owned ?? []).map((o) => (
+              <div key={o.var} style={{ display: 'contents' }}>
+                <dt>{o.label}</dt>
+                <dd className="muted">{driftText(o.delta, o.unit)}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+        <section className="side-section side-log" aria-labelledby="log-title">
+          <h2 id="log-title">Log</h2>
+          {panel.log.length === 0 ? (
+            <p className="muted">Nothing yet. Every change either of you makes appears here.</p>
+          ) : (
+            <ol className="recent log" aria-label="Log">
+              {panel.log.map((r, i) => (
+                <li key={`${r.at}-${i}`}>
+                  <time dateTime={r.at}>{timeOfDay(r.at)}</time>
+                  <span>{r.text}</span>
+                </li>
               ))}
-              {(status.owned ?? []).map((o) => (
-                <div key={o.var} style={{ display: 'contents' }}>
-                  <dt>{o.label}</dt>
-                  <dd className="muted">{driftText(o.delta, o.unit)}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-          <section className="log-section" aria-labelledby="log-title">
-            <h2 id="log-title">Log</h2>
-            {panel.log.length === 0 ? (
-              <p className="muted">Nothing yet. Every change either of you makes appears here.</p>
-            ) : (
-              <ol className="recent log" aria-label="Log">
-                {panel.log.map((r, i) => (
-                  <li key={`${r.at}-${i}`}>
-                    <time dateTime={r.at}>{timeOfDay(r.at)}</time>
-                    <span>{r.text}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
-        </aside>
-      </main>
-    </>
+            </ol>
+          )}
+        </section>
+      </aside>
+    </div>
   );
 }
 
-/**
- * The headline (the most important red line, with its action and "+N more") and, when opened, every
- * other red line. When nothing is red: one calm line.
- */
-function RedLines({ lines, peerWord, actions, busy, compared }: {
-  lines: PanelLine[]; peerWord: string; actions: Actions; busy: boolean; compared: string;
-}) {
+/** The headline (it does not jump, see pickHeadline) and whether the full red list is open. */
+function useRedLines(lines: PanelLine[]) {
   const [open, setOpen] = useState(false);
   const previous = useRef<string | null>(null);
   const headline = pickHeadline(previous.current, lines);
@@ -129,49 +128,54 @@ function RedLines({ lines, peerWord, actions, busy, compared }: {
   useEffect(() => {
     if (lines.length <= 1) setOpen(false);
   }, [lines.length]);
+  const others = headline ? lines.filter((l) => l.control !== headline.control) : [];
+  return { headline, others, open, setOpen };
+}
 
+/**
+ * The headline line: the most important red line with its action and "+N more". When nothing is
+ * red: one calm line. A status line, not a page title.
+ */
+function Headline({ red, peerWord, actions, busy, compared }: {
+  red: ReturnType<typeof useRedLines>; peerWord: string; actions: Actions; busy: boolean; compared: string;
+}) {
+  const { headline, others, open, setOpen } = red;
   if (!headline) {
     return (
-      <div className="headline">
+      <div className="pane-head headline">
         <div className="headline-title">
-          <Mark size={30} />
+          <Mark />
           <h1>All controls match</h1>
+          <span className="muted compared">{compared}</span>
         </div>
-        <p className="muted">{compared}</p>
       </div>
     );
   }
 
-  const others = lines.filter((l) => l.control !== headline.control);
   const text = lineText(headline, peerWord);
   return (
-    <>
-      <section className="headline" aria-labelledby="headline-title">
-        <div className="headline-title">
-          <AlertIcon />
-          <h1 id="headline-title">{headline.label}</h1>
-          <span className="headline-short">{text.short}</span>
-        </div>
-        {open && <LineDetails line={headline} peerWord={peerWord} />}
+    <section className="pane-head headline" aria-labelledby="headline-title">
+      <div className="headline-title">
+        <AlertIcon />
+        <h1 id="headline-title">{headline.label}</h1>
+        <span className="headline-short">{text.short}</span>
+        <span className="muted compared">{compared}</span>
+      </div>
+      {open && <LineDetails line={headline} peerWord={peerWord} />}
+      {(headline.action || others.length > 0) && (
         <div className="row">
           <LineActions line={headline} actions={actions} busy={busy} />
           {others.length > 0 && (
-            <span className="note-row">
+            <>
               <span className="strong">{moreText(others.length)}</span>
               <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="red-lines">
                 {open ? 'Hide' : 'Show'}
               </Button>
-            </span>
+            </>
           )}
         </div>
-        <p className="muted">{compared}</p>
-      </section>
-      {open && others.length > 0 && (
-        <div className="blocks" id="red-lines">
-          {others.map((l) => <ControlLine key={l.control} line={l} peerWord={peerWord} actions={actions} busy={busy} />)}
-        </div>
       )}
-    </>
+    </section>
   );
 }
 
@@ -179,34 +183,35 @@ function RedLines({ lines, peerWord, actions, busy, compared }: {
 function LineDetails({ line, peerWord }: { line: PanelLine; peerWord: string }) {
   const text = lineText(line, peerWord);
   return (
-    <>
+    <div className="row-wide">
       {line.you && line.other && (
         <dl className="values">
           <dt>You</dt>
-          <dt>{peerWord.charAt(0).toUpperCase() + peerWord.slice(1)}</dt>
           <dd>{line.you.text}</dd>
+          <dt>{peerWord.charAt(0).toUpperCase() + peerWord.slice(1)}</dt>
           <dd>{line.other.text}</dd>
         </dl>
       )}
-      <p className="prose">{line.message ?? text.long}</p>
-    </>
+      <p className="muted">{line.message ?? text.long}</p>
+    </div>
   );
 }
 
+/** One red line in the open list: label, what differs, where and since when, its action. */
 function ControlLine({ line, peerWord, actions, busy }: { line: PanelLine; peerWord: string; actions: Actions; busy: boolean }) {
   const id = `line-${line.control}`;
   const where = [line.group_label, `since ${timeOfDay(line.since)}`].filter(Boolean).join(', ');
   const text = lineText(line, peerWord);
   return (
-    <section className="block" aria-labelledby={id}>
-      <div className="block-title">
+    <section className="item" aria-labelledby={id}>
+      <div className="item-title">
         <h2 id={id}>{line.label}</h2>
-        <span className="muted">{where.charAt(0).toUpperCase() + where.slice(1)}</span>
+        {/* A switch shows both values below; the sentence would repeat them. */}
+        {!(line.kind === 'set_both' && line.you && line.other) && <span>{text.short}</span>}
+        <span className="muted small">{where.charAt(0).toUpperCase() + where.slice(1)}</span>
       </div>
-      {/* A switch shows both values below; the sentence would repeat them. */}
-      {!(line.kind === 'set_both' && line.you && line.other) && <p className="prose">{text.short}</p>}
       <LineDetails line={line} peerWord={peerWord} />
-      {line.action && <div className="row"><LineActions line={line} actions={actions} busy={busy} /></div>}
+      {line.action && <div className="actions"><LineActions line={line} actions={actions} busy={busy} /></div>}
     </section>
   );
 }
@@ -246,22 +251,23 @@ function useNotice(data: ControlNotice | null) {
   };
 }
 
+/** One line: "You have control · 3 differences at handover · Show", and OK to dismiss it. */
 function ControlChange({ notice, peerWord, onDismiss }: { notice: ControlNotice; peerWord: string; onDismiss: () => void }) {
-  const how = notice.kind === 'give' ? `The ${peerWord} gave you control.` : 'You took control.';
-  const open = [...notice.groups, ...notice.vars];
-  const differences =
-    open.length === 0
-      ? 'Both cockpits matched at the handover.'
-      : `Open differences at the handover: ${open.join(', ')}. They are listed for your information; nothing was changed.`;
+  const [open, setOpen] = useState(false);
+  const count = notice.groups.length + notice.vars.length;
   return (
-    <section className="block" aria-labelledby="control-change">
-      <div className="block-title">
-        <h2 id="control-change">You have control</h2>
-        {notice.at && <span className="muted">since {timeOfDay(notice.at)}</span>}
-      </div>
-      <p className="prose">{how} {differences}</p>
-      <div className="row">
-        <Button variant="secondary" onClick={onDismiss}>OK</Button>
+    <section className="note" aria-labelledby="control-change">
+      <div className="note-stack">
+        <div className="note-row">
+          <span id="control-change" className="strong">You have control</span>
+          <span className="sep" aria-hidden="true">·</span>
+          <span>{handoverLine(count)}</span>
+          {count > 0 && (
+            <Button small variant="secondary" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? 'Hide' : 'Show'}</Button>
+          )}
+          <Button small variant="secondary" onClick={onDismiss}>OK</Button>
+        </div>
+        {open && <p className="muted small">{handoverDetail(notice, peerWord)}</p>}
       </div>
     </section>
   );

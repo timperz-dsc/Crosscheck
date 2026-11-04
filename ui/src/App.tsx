@@ -1,59 +1,60 @@
 import { useEffect, useState } from 'react';
 import { useBridge, type BridgeState } from './api';
-import { Button, Header, Line } from './components/parts';
+import { Button, Line, Shell, StatusBar } from './components/parts';
 import { Preflight } from './screens/Preflight';
 import { Session } from './screens/Session';
 import { Start } from './screens/Start';
-import { SessionHeader, Waiting } from './screens/Waiting';
+import { Waiting } from './screens/Waiting';
 
-/** Picks the screen from the bridge's phase. */
+/** Picks the screen from the bridge's phase; every screen sits in the same window with the status bar. */
 export function Screens({ bridge, now }: { bridge: BridgeState; now: number }) {
   const { status, actions, busy, error, confirmPeerLost, bridgeDown } = bridge;
 
   if (!status) {
     return (
-      <>
-        <Header />
+      <Shell bar={<StatusBar status={null} />}>
         {bridgeDown && <Line tone="warning">The Crosscheck bridge is not running. Start crosscheck.exe, then reload this page.</Line>}
-      </>
+      </Shell>
     );
   }
 
   const down = bridgeDown && <Line tone="warning">The Crosscheck bridge stopped answering. Both sims keep flying, just not synced.</Line>;
+  const bar = <StatusBar status={status} actions={actions} busy={busy} />;
   switch (status.phase) {
     case 'preflight':
-      return <>{down}<Preflight status={status} actions={actions} busy={busy} error={error} /></>;
+      return <Shell bar={bar}>{down}<Preflight status={status} actions={actions} busy={busy} error={error} /></Shell>;
     case 'waiting':
-      return <>{down}<Waiting status={status} actions={actions} busy={busy} /></>;
+      return <Shell bar={bar}>{down}<Waiting status={status} /></Shell>;
     case 'session':
       return (
-        <>
+        <Shell bar={bar}>
           {down}
           <Session status={status} actions={actions} busy={busy} error={error} confirmPeerLost={confirmPeerLost} now={now} />
-        </>
+        </Shell>
       );
     case 'ended':
       return (
-        <>
-          <SessionHeader status={status} actions={actions} busy={busy} />
-          <main className="main main-start">
-            <div className="intro">
-              <h1>The session has ended</h1>
-              <p className="lead">The other pilot left or the server closed the session. Your sim keeps flying as it is.</p>
-            </div>
-            {status.log && (
-              <p className="muted">
-                Your log of this session is in <span className="mono">{status.log.folder}</span>. Send the newest file there if something went wrong.
-              </p>
-            )}
-            <div className="row">
-              <Button onClick={() => void actions.leave()} disabled={busy}>Back to start</Button>
+        <Shell bar={bar}>
+          <main className="page">
+            <div className="page-inner">
+              <div className="intro">
+                <h1>The session has ended</h1>
+                <p className="lead">The other pilot left or the server closed the session. Your sim keeps flying as it is.</p>
+              </div>
+              {status.log && (
+                <p className="muted">
+                  Your log of this session is in <span className="mono">{status.log.folder}</span>. Send the newest file there if something went wrong.
+                </p>
+              )}
+              <div className="actions">
+                <Button onClick={() => void actions.leave()} disabled={busy}>Back to start</Button>
+              </div>
             </div>
           </main>
-        </>
+        </Shell>
       );
     default:
-      return <>{down}<Start status={status} actions={actions} busy={busy} error={error} /></>;
+      return <Shell bar={bar}>{down}<Start status={status} actions={actions} busy={busy} error={error} /></Shell>;
   }
 }
 

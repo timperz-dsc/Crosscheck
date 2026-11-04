@@ -67,10 +67,10 @@ export function panel(over: Partial<Panel> = {}): Panel {
   };
 }
 
-/** ENG 1 BLEED: on for you, off for the captain, Set both. */
+/** Engine 1 bleed: on for you, off for the captain, Set both. */
 export const BLEED: PanelLine = {
   control: 'S_OH_PNEUMATIC_ENG1_BLEED',
-  label: 'ENG 1 BLEED',
+  label: 'Engine 1 bleed',
   group: 'overhead',
   group_label: 'Overhead',
   since: at(20),

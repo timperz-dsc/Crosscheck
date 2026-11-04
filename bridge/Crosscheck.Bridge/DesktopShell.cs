@@ -176,9 +176,12 @@ internal sealed class AppWindow : Form
         Text = "Crosscheck";
         Icon = Mark.Icon(64);
         ClientSize = new Size(1100, 760);
-        MinimumSize = new Size(640, 480);
+        // The UI fits its panes into the window down to 900 x 600 (CRO-39); below that it would scroll.
+        MinimumSize = SizeFromClientSize(new Size(900, 600));
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.White;
+        // The page follows the Windows app theme; so does the window behind it, so dark mode never flashes white.
+        BackColor = Mark.AppsAreLight() ? Color.White : Color.FromArgb(0x11, 0x13, 0x15);
+        _web.DefaultBackgroundColor = BackColor;
         Controls.Add(_web);
         Load += async (_, _) => await InitAsync();
     }
@@ -260,6 +263,20 @@ internal static class Mark
         {
             using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
             return key?.GetValue("SystemUsesLightTheme") is not int value || value != 0;
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>True when Windows apps use the light theme (HKCU Personalize AppsUseLightTheme = 1). Unknown = light.</summary>
+    public static bool AppsAreLight()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("AppsUseLightTheme") is not int value || value != 0;
         }
         catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException)
         {

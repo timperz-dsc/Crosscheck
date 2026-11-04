@@ -90,13 +90,9 @@ var labelled = entries.Select(e => (e, l: Rules.LabelOf(e.Name))).ToList();
 var shortClash = labelled.GroupBy(x => (x.e.Group, x.l.Short)).Where(g => g.Count() > 1).SelectMany(g => g).Select(x => x.e).ToHashSet();
 foreach (var (e, l) in labelled) e.Label = shortClash.Contains(e) ? l.Long : l.Short;
 var longClash = entries.GroupBy(e => (e.Group, e.Label)).Where(g => g.Count() > 1).SelectMany(g => g).ToList();
-foreach (var e in longClash) e.Label += e.Name[0] switch { 'E' => " encoder", 'A' => " knob", 'S' when e.Class == "pulse" => " button", 'S' => " switch", _ => "" };
-// Plain words for the side and unit (CRO-34): "EFIS1 LS" -> "LS (Capt)", "RMP1 INNER" -> "RMP 1 INNER".
-foreach (var e in entries)
-{
-    e.Label = System.Text.RegularExpressions.Regex.Replace(e.Label, @"^EFIS([12]) (.+)$", m => $"{m.Groups[2].Value} ({(m.Groups[1].Value == "1" ? "Capt" : "F/O")})");
-    e.Label = System.Text.RegularExpressions.Regex.Replace(e.Label, @"\bRMP([123])\b", "RMP $1");
-}
+foreach (var e in longClash)
+    e.Label = e.Name[0] switch { 'E' => "encoder", 'A' => "knob", 'S' when e.Class == "pulse" => "button", 'S' => "switch", _ => null } is { } word
+        ? Labels.WithWord(e.Label, word) : e.Label;
 foreach (var e in entries) if (e.LabelOverride is { } label) e.Label = label;
 
 // 5b. Panel controls (CRO-34): synthetic controls by name, lights at priority 5. Their labels live in
@@ -144,6 +140,6 @@ return 0;
 static string FindRepoRoot()
 {
     for (var d = new DirectoryInfo(Directory.GetCurrentDirectory()); d is not null; d = d.Parent)
-        if (File.Exists(Path.Combine(d.FullName, "CLAUDE.md"))) return d.FullName;
-    throw new DirectoryNotFoundException("Run from inside the repository (CLAUDE.md not found).");
+        if (File.Exists(Path.Combine(d.FullName, "CLAUDE.md")) || Directory.Exists(Path.Combine(d.FullName, ".git"))) return d.FullName;
+    throw new DirectoryNotFoundException("Run from inside the repository (CLAUDE.md or .git not found).");
 }

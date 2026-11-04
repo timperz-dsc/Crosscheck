@@ -105,7 +105,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -136,27 +136,27 @@
           },
           {
             "type": "desync",
-            "text": "EXT CARGO DOOR OPEN AFT: the indicator differs between the cockpits.",
+            "text": "Cargo door open (aft): the indicator differs between the cockpits.",
             "at": "2026-11-02T18:51:13.2930000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 2 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 2 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:51:13.2880000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:51:13.2870000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EFIS1 BARO STD matches again.",
+            "text": "BARO STD (Capt) matches again.",
             "at": "2026-11-02T18:51:11.1400000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:51:03.3710000\u002B00:00"
           }
         ]
@@ -281,7 +281,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -300,7 +300,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -313,7 +313,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -329,7 +329,7 @@
         "log": [
           {
             "type": "desync",
-            "text": "EXT CARGO DOOR OPEN AFT: the indicator differs between the cockpits.",
+            "text": "Cargo door open (aft): the indicator differs between the cockpits.",
             "at": "2026-11-02T18:52:19.1220000\u002B00:00"
           },
           {
@@ -339,27 +339,27 @@
           },
           {
             "type": "desync",
-            "text": "PRESSURE BRAKE RIGHT display: the indicator differs between the cockpits.",
+            "text": "Pressure brake display (right): the indicator differs between the cockpits.",
             "at": "2026-11-02T18:52:11.2780000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "PRESSURE BRAKE LEFT display: the indicator differs between the cockpits.",
+            "text": "Pressure brake display (left): the indicator differs between the cockpits.",
             "at": "2026-11-02T18:52:11.2770000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:52:05.3160000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:52:05.3150000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT CARGO DOOR OPEN AFT matches again in both cockpits.",
+            "text": "Cargo door open (aft) matches again in both cockpits.",
             "at": "2026-11-02T18:52:05.2850000\u002B00:00"
           },
           {
@@ -486,7 +486,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -509,7 +509,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -528,7 +528,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -541,7 +541,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -554,7 +554,7 @@
             },
             {
               "control": "N_ELEC_VOLT_BAT_1",
-              "label": "VOLT BAT 1 display",
+              "label": "Volt BAT 1 display",
               "you": {
                 "value": 28.6,
                 "text": "28.6"
@@ -570,62 +570,62 @@
         "log": [
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.6500000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.6060000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.5270000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.4800000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.4020000\u002B00:00"
           }
         ]
@@ -727,7 +727,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -750,7 +750,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -769,7 +769,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -782,7 +782,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -795,7 +795,7 @@
             },
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -811,62 +811,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:45.2250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:41.7840000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:41.3760000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:38.4540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:57:23.2620000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           }
         ]
@@ -968,7 +968,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -991,7 +991,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1010,7 +1010,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1023,7 +1023,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1036,7 +1036,7 @@
             },
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1052,62 +1052,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:45.2250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:41.7840000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:41.3760000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:38.4540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:57:23.2620000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           }
         ]
@@ -1209,7 +1209,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -1232,7 +1232,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1251,7 +1251,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1264,7 +1264,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1277,7 +1277,7 @@
             },
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1293,62 +1293,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:45.2250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:41.7840000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:41.3760000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:38.4540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:57:23.2620000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           }
         ]
@@ -1450,7 +1450,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -1473,7 +1473,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1492,7 +1492,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1505,7 +1505,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1518,7 +1518,7 @@
             },
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1534,62 +1534,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:45.2250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:41.7840000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:41.3760000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:38.4540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:57:23.2620000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           }
         ]
@@ -1691,7 +1691,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -1714,7 +1714,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1733,7 +1733,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1746,7 +1746,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1759,7 +1759,7 @@
             },
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1775,62 +1775,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:45.2250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:41.7840000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:41.3760000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:38.4540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:57:23.2620000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           }
         ]
@@ -1932,7 +1932,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -1955,7 +1955,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -1974,7 +1974,7 @@
           "items": [
             {
               "control": "N_HYD_PRESSURE_BRAKE_LEFT",
-              "label": "PRESSURE BRAKE LEFT display",
+              "label": "Pressure brake display (left)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -1987,7 +1987,7 @@
             },
             {
               "control": "N_HYD_PRESSURE_BRAKE_RIGHT",
-              "label": "PRESSURE BRAKE RIGHT display",
+              "label": "Pressure brake display (right)",
               "you": {
                 "value": 2.1029999999999998,
                 "text": "2.103"
@@ -2000,7 +2000,7 @@
             },
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2016,62 +2016,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:45.2250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:41.7840000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: Crosscheck could not set it to match.",
+            "text": "BARO STD (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T18:57:41.3760000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EFIS1 BARO STD: the change did not arrive in the other cockpit.",
+            "text": "BARO STD (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T18:57:38.4540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 1 display matches again in both cockpits.",
+            "text": "Volt BAT 1 display matches again in both cockpits.",
             "at": "2026-11-02T18:57:23.2620000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "VOLT BAT 2 display matches again in both cockpits.",
+            "text": "Volt BAT 2 display matches again in both cockpits.",
             "at": "2026-11-02T18:55:39.2800000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: held down in one cockpit only.",
+            "text": "APU auto exting reset: held down in one cockpit only.",
             "at": "2026-11-02T18:55:25.1850000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "APU AUTO EXTING RESET matches again in both cockpits.",
+            "text": "APU auto exting reset matches again in both cockpits.",
             "at": "2026-11-02T18:55:21.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "APU AUTO EXTING RESET: released by Crosscheck, the release never arrived.",
+            "text": "APU auto exting reset: released by Crosscheck, the release never arrived.",
             "at": "2026-11-02T18:55:20.8410000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "VOLT BAT 1 display: the indicator differs between the cockpits.",
+            "text": "Volt BAT 1 display: the indicator differs between the cockpits.",
             "at": "2026-11-02T18:54:25.2790000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "SVCE INT OVRD matches again in both cockpits.",
+            "text": "SVCE INT override matches again in both cockpits.",
             "at": "2026-11-02T18:53:25.9300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "SVCE INT OVRD: its light differs between the cockpits.",
+            "text": "SVCE INT override: its light differs between the cockpits.",
             "at": "2026-11-02T18:53:25.8500000\u002B00:00"
           }
         ]
@@ -2152,7 +2152,7 @@
         "red": [
           {
             "control": "S_OH_ELEC_IDG1",
-            "label": "IDG1",
+            "label": "IDG 1",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T19:29:41.2670000\u002B00:00",
@@ -2167,7 +2167,7 @@
           },
           {
             "control": "S_OH_ELEC_IDG2",
-            "label": "IDG2",
+            "label": "IDG 2",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T19:29:41.9770000\u002B00:00",
@@ -2203,7 +2203,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -2226,7 +2226,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2245,7 +2245,7 @@
           "items": [
             {
               "control": "S_FCU_EFIS1_BARO_STD",
-              "label": "EFIS1 BARO STD",
+              "label": "BARO STD (Capt)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2261,62 +2261,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "IDG2: Crosscheck could not set it to match.",
+            "text": "IDG 2: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:30:01.2090000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG2: the change did not arrive in the other cockpit.",
+            "text": "IDG 2: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:29:57.4380000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG1: Crosscheck could not set it to match.",
+            "text": "IDG 1: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:29:57.3370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG1: the change did not arrive in the other cockpit.",
+            "text": "IDG 1: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:29:51.5620000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG1: Crosscheck could not set it to match.",
+            "text": "IDG 1: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:29:51.3300000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG1: the change did not arrive in the other cockpit.",
+            "text": "IDG 1: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:29:47.6080000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG2: Crosscheck could not set it to match.",
+            "text": "IDG 2: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:29:47.3820000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG2: the change did not arrive in the other cockpit.",
+            "text": "IDG 2: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:29:44.9130000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG2: Crosscheck could not set it to match.",
+            "text": "IDG 2: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:29:43.3320000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG1: Crosscheck could not set it to match.",
+            "text": "IDG 1: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:29:43.3310000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG2: the change did not arrive in the other cockpit.",
+            "text": "IDG 2: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:29:41.9770000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "IDG1: the change did not arrive in the other cockpit.",
+            "text": "IDG 1: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:29:41.2670000\u002B00:00"
           }
         ]
@@ -2418,7 +2418,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -2441,7 +2441,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2472,32 +2472,32 @@
           },
           {
             "type": "desync_cleared",
-            "text": "ECAM CLR RIGHT matches again in both cockpits.",
+            "text": "ECAM CLR (right) matches again in both cockpits.",
             "at": "2026-11-02T19:35:29.0930000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "ECAM CLR LEFT matches again in both cockpits.",
+            "text": "ECAM CLR (left) matches again in both cockpits.",
             "at": "2026-11-02T19:35:29.0920000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "MASTER CAUTION FO light (lower) matches again in both cockpits.",
+            "text": "Master caution light (F/O, lower) matches again in both cockpits.",
             "at": "2026-11-02T19:35:29.0920000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "MASTER CAUTION FO light matches again in both cockpits.",
+            "text": "Master caution light (F/O) matches again in both cockpits.",
             "at": "2026-11-02T19:35:29.0910000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "MASTER CAUTION CAPT light (lower) matches again in both cockpits.",
+            "text": "Master caution light (Capt, lower) matches again in both cockpits.",
             "at": "2026-11-02T19:35:29.0910000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "MASTER CAUTION CAPT light matches again in both cockpits.",
+            "text": "Master caution light (Capt) matches again in both cockpits.",
             "at": "2026-11-02T19:35:29.0900000\u002B00:00"
           },
           {
@@ -2512,12 +2512,12 @@
           },
           {
             "type": "desync",
-            "text": "MASTER CAUTION FO light (lower): the indicator differs between the cockpits.",
+            "text": "Master caution light (F/O, lower): the indicator differs between the cockpits.",
             "at": "2026-11-02T19:35:25.0980000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "MASTER CAUTION FO light: the indicator differs between the cockpits.",
+            "text": "Master caution light (F/O): the indicator differs between the cockpits.",
             "at": "2026-11-02T19:35:25.0980000\u002B00:00"
           }
         ]
@@ -2619,7 +2619,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -2642,7 +2642,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2655,7 +2655,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2668,7 +2668,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2681,7 +2681,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2694,7 +2694,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2707,7 +2707,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2720,7 +2720,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2741,62 +2741,62 @@
         "log": [
           {
             "type": "desync",
-            "text": "COCKPIT DOOR VIDEO: Crosscheck could not set it to match.",
+            "text": "Cockpit door video: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:40:47.3030000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "COCKPIT DOOR VIDEO: the change did not arrive in the other cockpit.",
+            "text": "Cockpit door video: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:40:44.5740000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "COCKPIT DOOR VIDEO: Crosscheck could not set it to match.",
+            "text": "Cockpit door video: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:40:43.2870000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "COCKPIT DOOR VIDEO: the change did not arrive in the other cockpit.",
+            "text": "Cockpit door video: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:40:30.4380000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "FC RUDDER TRIM RESET matches again in both cockpits.",
+            "text": "Rudder trim reset matches again in both cockpits.",
             "at": "2026-11-02T19:40:23.7130000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "FC RUDDER TRIM RESET: the change did not arrive in the other cockpit.",
+            "text": "Rudder trim reset: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:40:23.6860000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "FC RUDDER TRIM switch matches again in both cockpits.",
+            "text": "Rudder trim switch matches again in both cockpits.",
             "at": "2026-11-02T19:40:14.5560000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "FC RUDDER TRIM switch: the change did not arrive in the other cockpit.",
+            "text": "Rudder trim switch: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:40:13.9040000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "FC RUDDER TRIM switch matches again in both cockpits.",
+            "text": "Rudder trim switch matches again in both cockpits.",
             "at": "2026-11-02T19:40:12.0450000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "FC RUDDER TRIM switch: the change did not arrive in the other cockpit.",
+            "text": "Rudder trim switch: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:40:11.3090000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "FC RUDDER TRIM switch matches again in both cockpits.",
+            "text": "Rudder trim switch matches again in both cockpits.",
             "at": "2026-11-02T19:39:58.0970000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "FC RUDDER TRIM switch: the change did not arrive in the other cockpit.",
+            "text": "Rudder trim switch: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:39:57.3850000\u002B00:00"
           }
         ]
@@ -2898,7 +2898,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -2913,7 +2913,7 @@
           },
           {
             "control": "A_WR_TILT",
-            "label": "WR TILT",
+            "label": "Weather radar tilt",
             "group": "pedestal",
             "group_label": "Pedestal",
             "since": "2026-11-02T19:43:28.0700000\u002B00:00",
@@ -2963,7 +2963,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2976,7 +2976,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -2989,7 +2989,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3002,7 +3002,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3015,7 +3015,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3028,7 +3028,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3041,7 +3041,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3062,62 +3062,62 @@
         "log": [
           {
             "type": "desync_cleared",
-            "text": "WR GAIN knob matches again in both cockpits.",
+            "text": "Weather radar gain knob matches again in both cockpits.",
             "at": "2026-11-02T19:45:20.9950000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR GAIN knob: the change did not arrive in the other cockpit.",
+            "text": "Weather radar gain knob: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:45:17.6020000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "WR GAIN knob matches again in both cockpits.",
+            "text": "Weather radar gain knob matches again in both cockpits.",
             "at": "2026-11-02T19:45:14.3190000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR GAIN knob: the change did not arrive in the other cockpit.",
+            "text": "Weather radar gain knob: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:45:11.5150000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR GAIN knob: Crosscheck could not set it to match.",
+            "text": "Weather radar gain knob: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:45:11.3590000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR GAIN knob: the change did not arrive in the other cockpit.",
+            "text": "Weather radar gain knob: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:45:11.0170000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "WR GAIN knob matches again in both cockpits.",
+            "text": "Weather radar gain knob matches again in both cockpits.",
             "at": "2026-11-02T19:44:31.1890000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR GAIN knob: the change did not arrive in the other cockpit.",
+            "text": "Weather radar gain knob: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:44:27.5320000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR TILT: Crosscheck could not set it to match.",
+            "text": "Weather radar tilt: Crosscheck could not set it to match.",
             "at": "2026-11-02T19:43:31.2770000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR TILT: the change did not arrive in the other cockpit.",
+            "text": "Weather radar tilt: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:43:28.0700000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "WR TILT matches again in both cockpits.",
+            "text": "Weather radar tilt matches again in both cockpits.",
             "at": "2026-11-02T19:43:25.4400000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WR TILT: the change did not arrive in the other cockpit.",
+            "text": "Weather radar tilt: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T19:43:22.9870000\u002B00:00"
           }
         ]
@@ -3219,7 +3219,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -3234,7 +3234,7 @@
           },
           {
             "control": "A_WR_TILT",
-            "label": "WR TILT",
+            "label": "Weather radar tilt",
             "group": "pedestal",
             "group_label": "Pedestal",
             "since": "2026-11-02T19:43:28.0700000\u002B00:00",
@@ -3272,14 +3272,14 @@
           "items": [
             {
               "control": "A_DISPLAY_BRIGHTNESS_ECAM_L",
-              "label": "DISPLAY BRIGHTNESS ECAM L",
+              "label": "Display brightness ECAM (lower)",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T19:49:29.4830000\u002B00:00"
             },
             {
               "control": "A_DISPLAY_BRIGHTNESS_ECAM_U",
-              "label": "DISPLAY BRIGHTNESS ECAM U",
+              "label": "Display brightness ECAM (upper)",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T19:49:25.3540000\u002B00:00"
@@ -3291,7 +3291,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3304,7 +3304,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3317,7 +3317,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3330,7 +3330,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3343,7 +3343,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3356,7 +3356,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3369,7 +3369,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3400,7 +3400,7 @@
           },
           {
             "type": "desync_cleared",
-            "text": "RMP 1 HF2 light matches again in both cockpits.",
+            "text": "RMP 1 HF 2 light matches again in both cockpits.",
             "at": "2026-11-02T19:47:39.2570000\u002B00:00"
           },
           {
@@ -3410,22 +3410,22 @@
           },
           {
             "type": "desync_cleared",
-            "text": "RMP 2 SEL light matches again in both cockpits.",
+            "text": "RMP 2 selector light matches again in both cockpits.",
             "at": "2026-11-02T19:47:39.2540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "RMP 1 VHF1 light matches again in both cockpits.",
+            "text": "RMP 1 VHF 1 light matches again in both cockpits.",
             "at": "2026-11-02T19:47:39.2540000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "RMP 1 SEL light matches again in both cockpits.",
+            "text": "RMP 1 selector light matches again in both cockpits.",
             "at": "2026-11-02T19:47:39.2530000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "RMP 1 HF2 light: the indicator differs between the cockpits.",
+            "text": "RMP 1 HF 2 light: the indicator differs between the cockpits.",
             "at": "2026-11-02T19:46:53.2810000\u002B00:00"
           },
           {
@@ -3435,17 +3435,17 @@
           },
           {
             "type": "desync",
-            "text": "RMP 2 SEL light: the indicator differs between the cockpits.",
+            "text": "RMP 2 selector light: the indicator differs between the cockpits.",
             "at": "2026-11-02T19:46:51.2600000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "RMP 1 VHF1 light: the indicator differs between the cockpits.",
+            "text": "RMP 1 VHF 1 light: the indicator differs between the cockpits.",
             "at": "2026-11-02T19:46:51.2600000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "RMP 1 SEL light: the indicator differs between the cockpits.",
+            "text": "RMP 1 selector light: the indicator differs between the cockpits.",
             "at": "2026-11-02T19:46:51.2590000\u002B00:00"
           }
         ]
@@ -3547,7 +3547,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -3566,7 +3566,7 @@
           "items": [
             {
               "control": "S_MIP_CLOCK_SET",
-              "label": "CLOCK SET button",
+              "label": "Clock set button",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T19:54:36.1000000\u002B00:00"
@@ -3578,7 +3578,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3591,7 +3591,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3604,7 +3604,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3617,7 +3617,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3630,7 +3630,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3643,7 +3643,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3656,7 +3656,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3677,57 +3677,57 @@
         "log": [
           {
             "type": "desync",
-            "text": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD: Crosscheck could not set it to match.",
+            "text": "Cargo door selector loading area light (forward): Crosscheck could not set it to match.",
             "at": "2026-11-02T19:55:05.4720000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT: Crosscheck could not set it to match.",
+            "text": "Cargo door selector loading area light (aft): Crosscheck could not set it to match.",
             "at": "2026-11-02T19:55:05.4710000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EXT CARGO DOOR SELECTOR FWD: Crosscheck could not set it to match.",
+            "text": "Cargo door selector (forward): Crosscheck could not set it to match.",
             "at": "2026-11-02T19:55:05.4700000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EXT CARGO BAY FWD LT: Crosscheck could not set it to match.",
+            "text": "Cargo bay light (forward): Crosscheck could not set it to match.",
             "at": "2026-11-02T19:55:05.4690000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EXT CARGO BAY AFT LT: Crosscheck could not set it to match.",
+            "text": "Cargo bay light (aft): Crosscheck could not set it to match.",
             "at": "2026-11-02T19:55:05.4680000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT matches again.",
+            "text": "Cargo door selector loading area light (aft) matches again.",
             "at": "2026-11-02T19:55:03.2170000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT CARGO BAY AFT LT matches again.",
+            "text": "Cargo bay light (aft) matches again.",
             "at": "2026-11-02T19:55:02.4030000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT CARGO DOOR SELECTOR FWD matches again.",
+            "text": "Cargo door selector (forward) matches again.",
             "at": "2026-11-02T19:55:01.7090000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD matches again.",
+            "text": "Cargo door selector loading area light (forward) matches again.",
             "at": "2026-11-02T19:55:00.8720000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT CARGO BAY FWD LT matches again.",
+            "text": "Cargo bay light (forward) matches again.",
             "at": "2026-11-02T19:55:00.1450000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "WR TILT matches again.",
+            "text": "Weather radar tilt matches again.",
             "at": "2026-11-02T19:54:58.7530000\u002B00:00"
           },
           {
@@ -3870,7 +3870,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -3901,7 +3901,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3914,7 +3914,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3927,7 +3927,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3940,7 +3940,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3953,7 +3953,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3966,7 +3966,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -3979,7 +3979,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4229,7 +4229,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -4248,14 +4248,14 @@
           "items": [
             {
               "control": "S_PED_COCKPIT_DOOR",
-              "label": "COCKPIT DOOR",
+              "label": "Cockpit door",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:05:55.2600000\u002B00:00"
             },
             {
               "control": "A_DISPLAY_BRIGHTNESS_CO",
-              "label": "DISPLAY BRIGHTNESS CO",
+              "label": "Display brightness CO",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:04:29.2370000\u002B00:00"
@@ -4267,7 +4267,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4280,7 +4280,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4293,7 +4293,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4306,7 +4306,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4319,7 +4319,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4332,7 +4332,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4345,7 +4345,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4364,7 +4364,7 @@
           "items": [
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
-              "label": "BARO INCH display (Capt)",
+              "label": "BARO inch display (Capt)",
               "you": {
                 "value": 29.795771484374995,
                 "text": "29.795771"
@@ -4380,22 +4380,22 @@
         "log": [
           {
             "type": "desync_cleared",
-            "text": "LIGHT CONSOLEFLOOR CAPT matches again in both cockpits.",
+            "text": "Light console floor (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:03:40.2270000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "LIGHT CONSOLEFLOOR CAPT: the change did not arrive in the other cockpit.",
+            "text": "Light console floor (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:03:38.4080000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "LIGHT CONSOLEFLOOR CAPT matches again in both cockpits.",
+            "text": "Light console floor (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:03:37.9330000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "LIGHT CONSOLEFLOOR CAPT: the change did not arrive in the other cockpit.",
+            "text": "Light console floor (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:03:37.3100000\u002B00:00"
           },
           {
@@ -4405,7 +4405,7 @@
           },
           {
             "type": "desync",
-            "text": "BARO INCH display (Capt): the indicator differs between the cockpits.",
+            "text": "BARO inch display (Capt): the indicator differs between the cockpits.",
             "at": "2026-11-02T20:02:53.0820000\u002B00:00"
           },
           {
@@ -4609,7 +4609,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -4624,7 +4624,7 @@
           },
           {
             "control": "S_WINDOW_BLINDS_REAR_CAPT",
-            "label": "WINDOW BLINDS REAR CAPT",
+            "label": "Window blinds rear (Capt)",
             "group": "cabin",
             "group_label": "Cabin",
             "since": "2026-11-02T20:07:45.3330000\u002B00:00",
@@ -4662,14 +4662,14 @@
           "items": [
             {
               "control": "A_DISPLAY_BRIGHTNESS_CI",
-              "label": "DISPLAY BRIGHTNESS CI",
+              "label": "Display brightness CI",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:07:17.2650000\u002B00:00"
             },
             {
               "control": "S_OXYGEN_MASK_COVER_CAPT",
-              "label": "MASK COVER CAPT",
+              "label": "Mask cover (Capt)",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:06:57.8830000\u002B00:00"
@@ -4690,7 +4690,7 @@
             },
             {
               "control": "S_WINDOW_CAPT_LEVER_BUTTON",
-              "label": "WINDOW CAPT LEVER BUTTON",
+              "label": "Window lever button (Capt)",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:06:08.8260000\u002B00:00"
@@ -4704,7 +4704,7 @@
             },
             {
               "control": "S_PED_COCKPIT_DOOR",
-              "label": "COCKPIT DOOR",
+              "label": "Cockpit door",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:05:55.2600000\u002B00:00"
@@ -4716,7 +4716,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4729,7 +4729,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4742,7 +4742,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4755,7 +4755,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4768,7 +4768,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4781,7 +4781,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4794,7 +4794,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -4813,7 +4813,7 @@
           "items": [
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
-              "label": "BARO INCH display (Capt)",
+              "label": "BARO inch display (Capt)",
               "you": {
                 "value": 29.795771484374995,
                 "text": "29.795771"
@@ -4829,42 +4829,42 @@
         "log": [
           {
             "type": "desync",
-            "text": "WINDOW BLINDS REAR CAPT: the change did not arrive in the other cockpit.",
+            "text": "Window blinds rear (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:07:45.3330000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "WINDOW CAPT LEVER matches again.",
+            "text": "Window lever (Capt) matches again.",
             "at": "2026-11-02T20:06:08.9610000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WINDOW CAPT LEVER: Crosscheck could not set it to match.",
+            "text": "Window lever (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T20:06:07.9540000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WINDOW CAPT LEVER: the change did not arrive in the other cockpit.",
+            "text": "Window lever (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:06:04.1710000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "LIGHT CONSOLEFLOOR CAPT matches again in both cockpits.",
+            "text": "Light console floor (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:03:40.2270000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "LIGHT CONSOLEFLOOR CAPT: the change did not arrive in the other cockpit.",
+            "text": "Light console floor (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:03:38.4080000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "LIGHT CONSOLEFLOOR CAPT matches again in both cockpits.",
+            "text": "Light console floor (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:03:37.9330000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "LIGHT CONSOLEFLOOR CAPT: the change did not arrive in the other cockpit.",
+            "text": "Light console floor (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:03:37.3100000\u002B00:00"
           },
           {
@@ -4874,7 +4874,7 @@
           },
           {
             "type": "desync",
-            "text": "BARO INCH display (Capt): the indicator differs between the cockpits.",
+            "text": "BARO inch display (Capt): the indicator differs between the cockpits.",
             "at": "2026-11-02T20:02:53.0820000\u002B00:00"
           },
           {
@@ -5058,7 +5058,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -5096,7 +5096,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5109,7 +5109,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5122,7 +5122,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5135,7 +5135,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5148,7 +5148,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5161,7 +5161,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5174,7 +5174,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5193,7 +5193,7 @@
           "items": [
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
-              "label": "BARO INCH display (Capt)",
+              "label": "BARO inch display (Capt)",
               "you": {
                 "value": 29.795771484374995,
                 "text": "29.795771"
@@ -5209,62 +5209,62 @@
         "log": [
           {
             "type": "desync_cleared",
-            "text": "COCKPIT DOOR matches again in both cockpits.",
+            "text": "Cockpit door matches again in both cockpits.",
             "at": "2026-11-02T20:10:01.3000000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "COCKPIT DOOR: the change did not arrive in the other cockpit.",
+            "text": "Cockpit door: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:10:00.6510000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "COCKPIT DOOR matches again in both cockpits.",
+            "text": "Cockpit door matches again in both cockpits.",
             "at": "2026-11-02T20:09:19.1590000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "COCKPIT DOOR: the change did not arrive in the other cockpit.",
+            "text": "Cockpit door: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:09:18.1890000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "EXT MAINT BUS matches again.",
+            "text": "Maintenance bus matches again.",
             "at": "2026-11-02T20:08:30.8690000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "GALLEY FWD BREAKERS COVER matches again.",
+            "text": "Galley forward breakers cover matches again.",
             "at": "2026-11-02T20:08:29.2200000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EXT MAINT BUS: Crosscheck could not set it to match.",
+            "text": "Maintenance bus: Crosscheck could not set it to match.",
             "at": "2026-11-02T20:08:24.0370000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "GALLEY FWD BREAKERS COVER: Crosscheck could not set it to match.",
+            "text": "Galley forward breakers cover: Crosscheck could not set it to match.",
             "at": "2026-11-02T20:08:24.0360000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "EXT MAINT BUS: the change did not arrive in the other cockpit.",
+            "text": "Maintenance bus: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:08:20.2430000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "GALLEY FWD BREAKERS COVER: the change did not arrive in the other cockpit.",
+            "text": "Galley forward breakers cover: the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:08:19.3010000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "WINDOW BLINDS REAR CAPT matches again in both cockpits.",
+            "text": "Window blinds rear (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:07:49.3740000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "WINDOW BLINDS REAR CAPT: the change did not arrive in the other cockpit.",
+            "text": "Window blinds rear (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:07:45.3330000\u002B00:00"
           }
         ]
@@ -5438,7 +5438,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -5476,7 +5476,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5489,7 +5489,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5502,7 +5502,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5515,7 +5515,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5528,7 +5528,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5541,7 +5541,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5554,7 +5554,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5573,7 +5573,7 @@
           "items": [
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
-              "label": "BARO INCH display (Capt)",
+              "label": "BARO inch display (Capt)",
               "you": {
                 "value": 29.795771484374995,
                 "text": "29.795771"
@@ -5589,62 +5589,62 @@
         "log": [
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again.",
+            "text": "Chart light temperature (Capt) matches again.",
             "at": "2026-11-02T20:15:28.7480000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: Crosscheck could not set it to match.",
+            "text": "Chart light temperature (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T20:15:27.2980000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:24.1280000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again in both cockpits.",
+            "text": "Chart light temperature (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:15:22.0870000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:21.4490000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again in both cockpits.",
+            "text": "Chart light temperature (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:15:20.3970000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:19.0430000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again.",
+            "text": "Chart light temperature (Capt) matches again.",
             "at": "2026-11-02T20:15:18.2030000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: Crosscheck could not set it to match.",
+            "text": "Chart light temperature (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T20:15:17.2950000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:14.2410000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again.",
+            "text": "Chart light temperature (Capt) matches again.",
             "at": "2026-11-02T20:15:12.0250000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: Crosscheck could not set it to match.",
+            "text": "Chart light temperature (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T20:15:09.2960000\u002B00:00"
           }
         ]
@@ -5818,7 +5818,7 @@
           },
           {
             "control": "S_OH_APU_AUTOEXTING_RESET",
-            "label": "APU AUTO EXTING RESET",
+            "label": "APU auto exting reset",
             "group": "overhead",
             "group_label": "Overhead",
             "since": "2026-11-02T18:55:25.1850000\u002B00:00",
@@ -5837,7 +5837,7 @@
           "items": [
             {
               "control": "A_DISPLAY_BRIGHTNESS_ECAM_U",
-              "label": "DISPLAY BRIGHTNESS ECAM U",
+              "label": "Display brightness ECAM (upper)",
               "mine": false,
               "who": "captain",
               "at": "2026-11-02T20:17:20.1620000\u002B00:00"
@@ -5849,7 +5849,7 @@
           "items": [
             {
               "control": "S_EXT_CARGO_BAY_FWD_LT",
-              "label": "EXT CARGO BAY FWD LT",
+              "label": "Cargo bay light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5862,7 +5862,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_FWD",
-              "label": "EXT CARGO DOOR OPEN FWD",
+              "label": "Cargo door open (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5875,7 +5875,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_OPEN_AFT",
-              "label": "EXT CARGO DOOR OPEN AFT",
+              "label": "Cargo door open (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5888,7 +5888,7 @@
             },
             {
               "control": "S_EXT_CARGO_BAY_AFT_LT",
-              "label": "EXT CARGO BAY AFT LT",
+              "label": "Cargo bay light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5901,7 +5901,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_FWD",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT FWD",
+              "label": "Cargo door selector loading area light (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5914,7 +5914,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_LOADING_AREA_LT_AFT",
-              "label": "EXT CARGO DOOR SELECTOR LOADING AREA LT AFT",
+              "label": "Cargo door selector loading area light (aft)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5927,7 +5927,7 @@
             },
             {
               "control": "S_EXT_CARGO_DOOR_SELECTOR_FWD",
-              "label": "EXT CARGO DOOR SELECTOR FWD",
+              "label": "Cargo door selector (forward)",
               "you": {
                 "value": 0,
                 "text": "0"
@@ -5956,7 +5956,7 @@
           "items": [
             {
               "control": "N_FCU_EFIS1_BARO_INCH",
-              "label": "BARO INCH display (Capt)",
+              "label": "BARO inch display (Capt)",
               "you": {
                 "value": 29.795771484374995,
                 "text": "29.795771"
@@ -5982,52 +5982,52 @@
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again.",
+            "text": "Chart light temperature (Capt) matches again.",
             "at": "2026-11-02T20:15:28.7480000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: Crosscheck could not set it to match.",
+            "text": "Chart light temperature (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T20:15:27.2980000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:24.1280000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again in both cockpits.",
+            "text": "Chart light temperature (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:15:22.0870000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:21.4490000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again in both cockpits.",
+            "text": "Chart light temperature (Capt) matches again in both cockpits.",
             "at": "2026-11-02T20:15:20.3970000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:19.0430000\u002B00:00"
           },
           {
             "type": "desync_cleared",
-            "text": "CHART LIGHT TEMP CAPT matches again.",
+            "text": "Chart light temperature (Capt) matches again.",
             "at": "2026-11-02T20:15:18.2030000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: Crosscheck could not set it to match.",
+            "text": "Chart light temperature (Capt): Crosscheck could not set it to match.",
             "at": "2026-11-02T20:15:17.2950000\u002B00:00"
           },
           {
             "type": "desync",
-            "text": "CHART LIGHT TEMP CAPT: the change did not arrive in the other cockpit.",
+            "text": "Chart light temperature (Capt): the change did not arrive in the other cockpit.",
             "at": "2026-11-02T20:15:14.2410000\u002B00:00"
           }
         ]

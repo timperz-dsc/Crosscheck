@@ -40,7 +40,7 @@ describe('gate test 2 replay through the session panel', () => {
       }
     }
     // One region per red control, and nothing else red: regions are exactly the red lines.
-    const column = document.querySelector<HTMLElement>('.session-col')!;
+    const column = document.querySelector<HTMLElement>('.pane-main')!;
     const regions = within(column).queryAllByRole('region').map((r) => r.getAttribute('aria-labelledby') === 'headline-title'
       ? within(r).getByRole('heading', { level: 1 }).textContent : within(r).getByRole('heading', { level: 2 }).textContent);
     expect(regions.sort()).toEqual(red.map((l) => l.label).sort());

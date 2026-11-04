@@ -1,22 +1,10 @@
 import { useState } from 'react';
-import { Button, Header } from '../components/parts';
-import type { Actions, Status } from '../types';
-import { serverText } from '../words';
+import { Button } from '../components/parts';
+import type { Status } from '../types';
 import { ThisComputer } from './Start';
 
-export function SessionHeader({ status, actions, busy }: { status: Status; actions: Actions; busy: boolean }) {
-  return (
-    <Header>
-      <div className="header-meta">
-        <span className="muted">Session <span className="mono">{status.join_code}</span></span>
-        <span className="muted">{serverText(status)}</span>
-        <Button variant="secondary" small onClick={() => void actions.leave()} disabled={busy}>Leave</Button>
-      </div>
-    </Header>
-  );
-}
-
-export function Waiting({ status, actions, busy }: { status: Status; actions: Actions; busy: boolean }) {
+/** The captain waits for the first officer: the code, large (the one big thing on this screen). Leave is in the status bar. */
+export function Waiting({ status }: { status: Status }) {
   const [copied, setCopied] = useState(false);
   const code = status.join_code ?? '';
 
@@ -30,9 +18,8 @@ export function Waiting({ status, actions, busy }: { status: Status; actions: Ac
   };
 
   return (
-    <>
-      <SessionHeader status={status} actions={actions} busy={busy} />
-      <main className="main main-start">
+    <main className="page">
+      <div className="page-inner">
         <div className="intro">
           <h1>Waiting for the first officer</h1>
           <p className="lead">Send this code to your first officer. They enter it under Join on their computer.</p>
@@ -46,7 +33,7 @@ export function Waiting({ status, actions, busy }: { status: Status; actions: Ac
           <p className="muted">Nothing is synced until the first officer has joined.</p>
         </section>
         <ThisComputer status={status} />
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

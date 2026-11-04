@@ -2499,7 +2499,7 @@ overrides:
     priority: 2
     evidence: "owner plan CRO-34: engine controls are flight-critical on the panel"
   - name: S_OH_APU_AUTOEXTING_RESET
-    label: "APU AUTO EXTING RESET"
+    label: "APU auto exting reset"
     evidence: "plain label for the panel (CRO-34)"
   # --- gate test 3 prep: positions run 2026-11-03 (positions-report-gate3.md), clear results only
   - name: S_OH_ENG_N1_MODE_1

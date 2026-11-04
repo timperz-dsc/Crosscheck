@@ -223,31 +223,6 @@ static class Rules
 
     // ---- labels ----
 
-    static readonly HashSet<string> PanelTokens = ["OH", "MIP", "PED", "FCU"];
-    static readonly HashSet<string> SystemTokens =
-        ["ELEC", "HYD", "FUEL", "PNEUMATIC", "ENG", "FIRE", "FLT", "NAV", "COM", "CALLS", "GPWS", "OXYGEN", "CARGO", "AFT", "EVAC", "PROBE"];
-
-    /// <summary>Short label (system token dropped) and long label (system token kept) for the entry.</summary>
-    public static (string Short, string Long) LabelOf(string name)
-    {
-        if (!IsFenix(name)) return (name, name);
-        if (name.StartsWith("E_CB_")) { var l = "CB " + name[5..].Replace('_', ' '); return (l, l); }
-        var kind = name[0];
-        var tokens = name[2..].Split('_').ToList();
-        var suffix = "";
-        if (tokens[^1] == "Cover") { tokens.RemoveAt(tokens.Count - 1); suffix = " cover"; }
-        else if (tokens[^1] == "Anim") { tokens.RemoveAt(tokens.Count - 1); suffix = " animation"; }
-        if (kind == 'I')
-        {
-            if (tokens[^1] is "L" or "U") { suffix = tokens[^1] == "L" ? " light (lower)" : " light (upper)"; tokens.RemoveAt(tokens.Count - 1); }
-            else suffix = " light";
-        }
-        if (kind == 'N') suffix = " display";
-        if (kind == 'S' && tokens.Count > 1 && Regex.IsMatch(tokens[0], "^CDU[12]$") && tokens[1] == "KEY") tokens.RemoveAt(1);
-        if (tokens.Count > 1 && Regex.IsMatch(tokens[0], "^CDU[12]$")) tokens[0] = "CDU " + tokens[0][3];
-        if (tokens.Count > 1 && PanelTokens.Contains(tokens[0])) tokens.RemoveAt(0);
-        var longText = string.Join(' ', tokens) + suffix;
-        if (tokens.Count > 1 && SystemTokens.Contains(tokens[0])) tokens.RemoveAt(0);
-        return (string.Join(' ', tokens) + suffix, longText);
-    }
+    /// <summary>Short label (system token dropped) and long label (system token kept) for the entry (Labels.cs).</summary>
+    public static (string Short, string Long) LabelOf(string name) => IsFenix(name) ? Labels.Of(name) : (name, name);
 }

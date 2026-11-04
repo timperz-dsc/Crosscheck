@@ -173,8 +173,8 @@ describe('session', () => {
   it('one red line: the headline says what differs and offers its action, Set both', async () => {
     const b = bridge(inSession({ panel: panel({ red: [BLEED] }), groups: [{ id: 'overhead', label: 'Overhead', differs: 1 }] }));
     show(b);
-    const headline = screen.getByRole('region', { name: 'ENG 1 BLEED' });
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ENG 1 BLEED');
+    const headline = screen.getByRole('region', { name: 'Engine 1 bleed' });
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Engine 1 bleed');
     expect(within(headline).getByText('You ON, the captain OFF.')).toBeInTheDocument();
     expect(within(headline).queryByText(/more/)).toBeNull();
     expect(screen.getByText('1 differs')).toHaveClass('differs');
@@ -185,7 +185,7 @@ describe('session', () => {
 
   it('several red lines: the most important one on top with +N more; Show opens one line per control', async () => {
     const stuck = line({
-      control: 'S_OH_APU_AUTOEXTING_RESET', label: 'APU AUTO EXTING RESET', priority: 1, kind: 'release', where: 'here',
+      control: 'S_OH_APU_AUTOEXTING_RESET', label: 'APU auto exting reset', priority: 1, kind: 'release', where: 'here',
       action: { type: 'release', var: 'S_OH_APU_AUTOEXTING_RESET' }, reason: 'stuck_pressed',
     });
     const alt = line({
@@ -198,7 +198,7 @@ describe('session', () => {
     });
     const b = bridge(inSession({ panel: panel({ red: [stuck, alt, ls] }) }));
     show(b);
-    const headline = screen.getByRole('region', { name: 'APU AUTO EXTING RESET' });
+    const headline = screen.getByRole('region', { name: 'APU auto exting reset' });
     expect(within(headline).getByText('Stuck pressed in your cockpit.')).toBeInTheDocument();
     expect(within(headline).getByText('+2 more')).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'FCU ALT' })).toBeNull(); // collapsed by default
@@ -221,7 +221,7 @@ describe('session', () => {
 
   it('the headline does not jump: a new lower or equal priority line stays behind +N more', () => {
     const a = line({ control: 'A', label: 'LS (Capt)', priority: 2, kind: 'lamp', where: 'here' });
-    const older = line({ control: 'B', label: 'WR TILT', priority: 2, kind: 'by_hand', since: at(60) });
+    const older = line({ control: 'B', label: 'Weather radar tilt', priority: 2, kind: 'by_hand', since: at(60) });
     const safety = line({ control: 'C', label: 'IDG 1', priority: 1, kind: 'not_mirrored', where: 'there' });
     const view = show(bridge(inSession({ panel: panel({ red: [a] }) })));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('LS (Capt)');
@@ -234,43 +234,65 @@ describe('session', () => {
     expect(screen.getByText("Pressed in the captain's cockpit only.")).toBeInTheDocument();
     // It clears: the next most important line.
     view.rerender(<Screens bridge={bridge(inSession({ panel: panel({ red: [older, a] }) }))} now={NOW} />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('WR TILT');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Weather radar tilt');
   });
 
   it('every kind says what to do (gate test 2 section 4 templates)', async () => {
     const kinds = [
       line({ control: 'K1', label: 'IDG 1', kind: 'not_mirrored', where: 'there', priority: 1 }),
-      line({ control: 'K2', label: 'FLAPS', kind: 'by_hand' }),
-      line({ control: 'K3', label: 'APU AUTO EXTING RESET', kind: 'release', where: 'there' }),
+      line({ control: 'K2', label: 'Flaps', kind: 'by_hand' }),
+      line({ control: 'K3', label: 'APU auto exting reset', kind: 'release', where: 'there' }),
       line({ control: 'K4', label: 'FD (Capt)', kind: 'press_lost', where: 'there' }),
       line({ control: 'K5', label: 'FCU HDG', kind: 'mode', message: 'HDG managed differs between the cockpits – push or pull the knob in the cockpit that is wrong.' }),
-      line({ control: 'K6', label: 'ENG 1 FIRE TEST', kind: 'held', where: 'here' }),
-      line({ control: 'K7', label: 'SVCE INT OVRD', kind: 'released', where: 'here' }),
-      line({ control: 'K8', label: 'TRAY TABLE CAPT', kind: 'cannot_write', where: 'there' }),
+      line({ control: 'K6', label: 'Engine 1 fire test', kind: 'held', where: 'here' }),
+      line({ control: 'K7', label: 'SVCE INT override', kind: 'released', where: 'here' }),
+      line({ control: 'K8', label: 'Tray table (Capt)', kind: 'cannot_write', where: 'there' }),
     ];
     show(bridge(inSession({ panel: panel({ red: kinds }) })));
     await userEvent.click(screen.getByRole('button', { name: 'Show' }));
     const region = (name: string) => screen.getByRole('region', { name });
     // The headline shows its full sentence when the list is open.
     expect(within(region('IDG 1')).getByText('Not mirrored (irreversible). Do the same in your cockpit if intended.')).toBeInTheDocument();
-    expect(within(region('FLAPS')).getByText('Set it by hand in both cockpits.')).toBeInTheDocument();
-    expect(within(region('APU AUTO EXTING RESET')).getByText('The captain can release it there.')).toBeInTheDocument();
-    expect(within(region('APU AUTO EXTING RESET')).queryByRole('button', { name: 'Release it' })).toBeNull();
+    expect(within(region('Flaps')).getByText('Set it by hand in both cockpits.')).toBeInTheDocument();
+    expect(within(region('APU auto exting reset')).getByText('The captain can release it there.')).toBeInTheDocument();
+    expect(within(region('APU auto exting reset')).queryByRole('button', { name: 'Release it' })).toBeNull();
     expect(within(region('FD (Capt)')).getByText('Press FD (Capt) in the cockpit that is wrong.')).toBeInTheDocument();
     expect(within(region('FCU HDG')).getByText(/push or pull the knob in the cockpit that is wrong/)).toBeInTheDocument();
-    expect(within(region('ENG 1 FIRE TEST')).getByText('Held down in your cockpit only.')).toBeInTheDocument();
-    expect(within(region('SVCE INT OVRD')).getByText('The release never arrived there. Check it in both cockpits.')).toBeInTheDocument();
-    expect(within(region('TRAY TABLE CAPT')).getByText("Crosscheck cannot write TRAY TABLE CAPT in the captain's cockpit.")).toBeInTheDocument();
-    expect(within(region('TRAY TABLE CAPT')).getByText('Set it by hand in both cockpits. Send the log after the flight.')).toBeInTheDocument();
+    expect(within(region('Engine 1 fire test')).getByText('Held down in your cockpit only.')).toBeInTheDocument();
+    expect(within(region('SVCE INT override')).getByText('The release never arrived there. Check it in both cockpits.')).toBeInTheDocument();
+    expect(within(region('Tray table (Capt)')).getByText("Crosscheck cannot write Tray table (Capt) in the captain's cockpit.")).toBeInTheDocument();
+    expect(within(region('Tray table (Capt)')).getByText('Set it by hand in both cockpits. Send the log after the flight.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Set both|here only|Release it/ })).toBeNull();
   });
 
-  it('after taking control: You have control with the open differences as information', async () => {
+  it('after taking control: one line, You have control · 2 differences at handover · Show', async () => {
     show(bridge(inSession({ is_pf: true, role: 'pf', control_notice: { at: at(3), kind: 'take', groups: ['Main panel'], vars: ['Gear indicator'] } })));
     const notice = screen.getByRole('region', { name: 'You have control' });
-    expect(within(notice).getByText(/You took control. Open differences at the handover: Main panel, Gear indicator/)).toBeInTheDocument();
+    expect(within(notice).getByText('2 differences at handover')).toBeInTheDocument();
+    expect(within(notice).queryByText(/Gear indicator/)).toBeNull();
+    await userEvent.click(within(notice).getByRole('button', { name: 'Show' }));
+    expect(within(notice).getByText(/^You took control at 12:43:27\. Open differences at the handover: Main panel, Gear indicator\. Listed for your information; nothing was changed\.$/)).toBeInTheDocument();
     await userEvent.click(within(notice).getByRole('button', { name: 'OK' }));
     expect(screen.queryByRole('region', { name: 'You have control' })).toBeNull();
+  });
+
+  it('a handover with nothing open says so in the same line, with no Show', () => {
+    show(bridge(inSession({ is_pf: true, role: 'pf', control_notice: { at: at(3), kind: 'give', groups: [], vars: [] } })));
+    const notice = screen.getByRole('region', { name: 'You have control' });
+    expect(within(notice).getByText('Both cockpits matched at handover')).toBeInTheDocument();
+    expect(within(notice).queryByRole('button', { name: 'Show' })).toBeNull();
+  });
+
+  it('the status bar: session code, connection, sim, version and Leave', async () => {
+    const b = bridge(inSession({ bridge_version: '0.5.0' }));
+    show(b);
+    const bar = screen.getByRole('contentinfo');
+    expect(within(bar).getByText('K7RX2M')).toHaveClass('mono');
+    expect(within(bar).getByText('Connected, 38 ms')).toBeInTheDocument();
+    expect(within(bar).getByText('MSFS 2024 connected')).toBeInTheDocument();
+    expect(within(bar).getByText('Crosscheck 0.5.0')).toBeInTheDocument();
+    await userEvent.click(within(bar).getByRole('button', { name: 'Leave' }));
+    expect(b.actions.leave).toHaveBeenCalled();
   });
 
   it('peer lost: one line, and the confirm flow for taking control', async () => {
@@ -320,7 +342,7 @@ describe('session: everything else collapsed under the red lines (CRO-34)', () =
       }),
       owned: [{ var: 'fuel', label: 'Left tank fuel', unit: 'kg', delta: -400, warn: true }],
     })));
-    const red = screen.getByRole('region', { name: 'ENG 1 BLEED' });
+    const red = screen.getByRole('region', { name: 'Engine 1 bleed' });
     const amber = screen.getByText('Not synced yet: 1 control');
     const fuel = screen.getByText('Fuel differs by 400 kg – load the same fuel in the EFB.');
     const quiet = screen.getByText('Indicators differ (1)');
@@ -346,20 +368,20 @@ describe('session: everything else collapsed under the red lines (CRO-34)', () =
 
   it('walkaround items are one amber "outside" line, never red', async () => {
     show(bridge(inSession({
-      panel: panel({ outside: { count: 2, items: [item('EXT CARGO BAY AFT LT'), item('EXT MAINT BUS')] } }),
+      panel: panel({ outside: { count: 2, items: [item('Cargo bay light (aft)'), item('Maintenance bus')] } }),
     })));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
     expect(screen.getByText('Outside the aircraft: 2 items differ')).toHaveClass('warning');
     await userEvent.click(screen.getByRole('button', { name: 'Show' }));
-    expect(within(screen.getByRole('list', { name: 'Outside the aircraft' })).getByText('EXT MAINT BUS')).toBeInTheDocument();
-    expect(screen.queryByRole('region', { name: 'EXT MAINT BUS' })).toBeNull();
+    expect(within(screen.getByRole('list', { name: 'Outside the aircraft' })).getByText('Maintenance bus')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Maintenance bus' })).toBeNull();
   });
 
   it('indicators are one grey line; details on click; never red', async () => {
     show(bridge(inSession({
       panel: panel({ indicators: { count: 2, items: [
         item('Gear indicator', { you: { value: 1, text: '1' }, other: { value: 0, text: '0' }, since: at(30) }),
-        item('VOLT BAT 1 display', { you: { value: 26, text: '26' }, other: { value: 27.8, text: '27.8' }, since: at(30) }),
+        item('Volt BAT 1 display', { you: { value: 26, text: '26' }, other: { value: 27.8, text: '27.8' }, since: at(30) }),
       ] } }),
     })));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');
@@ -374,8 +396,8 @@ describe('session: everything else collapsed under the red lines (CRO-34)', () =
     show(bridge(inSession({
       panel: panel({
         amber: [
-          { key: 'hardware_fighting:S_MIP_PARKING_BRAKE', kind: 'hardware_fighting', label: 'PARKING BRAKE', mine: false, who: 'captain', at: at(3) },
-          { key: 'counter_suspect:S_X', kind: 'counter_suspect', label: 'DOOR VIDEO', mine: false, who: 'captain', at: at(4) },
+          { key: 'hardware_fighting:S_MIP_PARKING_BRAKE', kind: 'hardware_fighting', label: 'Parking brake', mine: false, who: 'captain', at: at(3) },
+          { key: 'counter_suspect:S_X', kind: 'counter_suspect', label: 'Door video', mine: false, who: 'captain', at: at(4) },
           { key: 'sim_disconnected:host', kind: 'sim_disconnected', label: null, mine: false, who: 'captain', at: at(5) },
           {
             key: 'indicator:N_FC_RUDDER_TRIM_DECIMAL', kind: 'indicator_differs', label: 'RUDDER TRIM', mine: false, who: 'captain', at: at(6),
@@ -384,8 +406,8 @@ describe('session: everything else collapsed under the red lines (CRO-34)', () =
         ],
       }),
     })));
-    expect(screen.getByText(/Hardware fighting: PARKING BRAKE keeps switching back and forth between the two cockpits/)).toHaveClass('warning');
-    expect(screen.getByText(/DOOR VIDEO looks like a press counter/)).toHaveClass('warning');
+    expect(screen.getByText(/Hardware fighting: Parking brake keeps switching back and forth between the two cockpits/)).toHaveClass('warning');
+    expect(screen.getByText(/Door video looks like a press counter/)).toHaveClass('warning');
     expect(screen.getByText("The captain's simulator is not connected. Panels are not compared until it is back.")).toHaveClass('warning');
     expect(screen.getByText('Rudder trim differs – press RESET or adjust it.')).toHaveClass('warning'); // CRO-40: the profile's own text
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('All controls match');

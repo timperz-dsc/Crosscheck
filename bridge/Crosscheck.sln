@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileProbe", "..\tools\pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileProbe.Tests", "..\tools\profile-probe.Tests\ProfileProbe.Tests.csproj", "{EBD116B9-4591-49A4-824F-4FB6453BEE4E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileGen.Tests", "..\tools\profile-gen.Tests\ProfileGen.Tests.csproj", "{69F940D6-210E-4A92-8177-1E4EB9683B8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,5 +80,9 @@ Global
 		{EBD116B9-4591-49A4-824F-4FB6453BEE4E}.Debug|Any CPU.Build.0 = Debug|x64
 		{EBD116B9-4591-49A4-824F-4FB6453BEE4E}.Release|Any CPU.ActiveCfg = Release|x64
 		{EBD116B9-4591-49A4-824F-4FB6453BEE4E}.Release|Any CPU.Build.0 = Release|x64
+		{69F940D6-210E-4A92-8177-1E4EB9683B8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69F940D6-210E-4A92-8177-1E4EB9683B8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69F940D6-210E-4A92-8177-1E4EB9683B8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69F940D6-210E-4A92-8177-1E4EB9683B8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

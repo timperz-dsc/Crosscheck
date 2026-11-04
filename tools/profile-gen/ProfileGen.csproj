@@ -16,6 +16,7 @@
     <!-- tools/profile-probe (CRO-8 step 2) reuses the naming rules and the scan reader. -->
     <InternalsVisibleTo Include="ProfileProbe" />
     <InternalsVisibleTo Include="ProfileProbe.Tests" />
+    <InternalsVisibleTo Include="ProfileGen.Tests" />
   </ItemGroup>
 
 </Project>

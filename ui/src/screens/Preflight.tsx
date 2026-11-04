@@ -1,4 +1,4 @@
-import { Button, Header } from '../components/parts';
+import { Button } from '../components/parts';
 import type { Actions, Preflight as PreflightData, Status } from '../types';
 import { preflightExplanation, preflightResult } from '../words';
 
@@ -18,42 +18,39 @@ export function Preflight({ status, actions, busy, error }: { status: Status; ac
       : `Both cockpits must run the same versions before anything is synced. ${count(open.length)} ${open.length === 1 ? 'difference needs' : 'differences need'} your attention.`;
 
   return (
-    <>
-      <Header>
-        <span className="header-note">Joining <span className="mono ink">{p.code}</span></span>
-      </Header>
-      <main className="main main-preflight">
+    <main className="page">
+      <div className="page-inner">
         <div className="intro">
           <h1>{p.joinable ? "Your setup matches the captain's" : "Your setup does not match the captain's"}</h1>
-          <p className="lead" style={{ maxWidth: 600 }}>{lead}</p>
+          <p className="lead">{lead}</p>
         </div>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>You</th>
-                <th>Captain</th>
-                <th>Result</th>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>You</th>
+              <th>Captain</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.rows.map((r) => (
+              <tr key={r.field}>
+                <td>{r.item}</td>
+                <td className="mono">{r.you}</td>
+                <td className="mono">{r.other}</td>
+                <td className={r.result === 'reject' ? 'differs' : r.result === 'warn' ? 'warning' : undefined}>{preflightResult(r)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {p.rows.map((r) => (
-                <tr key={r.field}>
-                  <td>{r.item}</td>
-                  <td className="mono">{r.you}</td>
-                  <td className="mono">{r.other}</td>
-                  <td className={r.result === 'reject' ? 'differs' : r.result === 'warn' ? 'warning' : undefined}>{preflightResult(r)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {open.map((r) => (
-          <p key={r.field} className="prose">{preflightExplanation(r, other)}</p>
-        ))}
+            ))}
+          </tbody>
+        </table>
+        {open.length > 0 && (
+          <div className="explanations">
+            {open.map((r) => <p key={r.field} className="muted">{preflightExplanation(r, other)}</p>)}
+          </div>
+        )}
         {error && <p className="warning">{error}</p>}
-        <div className="row">
+        <div className="actions">
           {p.joinable ? (
             <Button onClick={() => void actions.join(p.code)} disabled={busy}>Join session</Button>
           ) : (
@@ -61,7 +58,7 @@ export function Preflight({ status, actions, busy, error }: { status: Status; ac
           )}
           <Button variant="secondary" onClick={() => void actions.cancel()} disabled={busy}>Cancel</Button>
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

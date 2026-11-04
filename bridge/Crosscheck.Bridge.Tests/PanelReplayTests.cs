@@ -184,7 +184,7 @@ public class PanelReplayTests
         // Its lamp is part of the same line, not an indicator of its own.
         Assert.Equal(0, panel["indicators"]!["count"]!.GetValue<int>());
         // The correction itself is only in the log, in plain words.
-        Assert.Contains(panel["log"]!.AsArray(), row => row!["text"]!.GetValue<string>() == "ENG1 BLEED: Crosscheck could not set it to match.");
+        Assert.Contains(panel["log"]!.AsArray(), row => row!["text"]!.GetValue<string>() == "Engine 1 bleed: Crosscheck could not set it to match.");
 
         // Values that match again: no line, even while the entry is still open.
         var r2 = new PanelReplay();

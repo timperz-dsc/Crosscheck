@@ -36,6 +36,12 @@ npm run e2e          # builds UI and bridge, starts the session server and two f
                      # and drives both pilots in headless Edge (needs npm install in server/)
 ```
 
+`npm run e2e:panel` replays gate test 2 through the session panel (no bridge needed) and saves the
+screenshots in [docs/design/ui/screens/](../docs/design/ui/screens/), in the light and the dark Windows theme.
+It also checks that the window never scrolls, down to the minimum size of 900 × 600. On Linux (Codespaces)
+use Playwright's Chromium instead of Edge: `npx playwright install chromium`, then
+`CROSSCHECK_BROWSER=chromium npm run e2e:panel`.
+
 `CROSSCHECK_SCREENSHOTS=<folder> npx playwright test` saves a screenshot of each screen, to
 compare with the mockups.
 
@@ -45,4 +51,4 @@ compare with the mockups.
 - `src/App.tsx`: picks the screen from the bridge's `phase`
 - `src/screens/`: Start, Waiting (code for the first officer), Preflight, Session
 - `src/words.ts`: every sentence the UI shows
-- `src/styles.css`: the design tokens and patterns; no other colours, no shadows, no gradients
+- `src/styles.css`: the design tokens (light and dark, following the Windows theme) and patterns; no other colours, no shadows, no gradients

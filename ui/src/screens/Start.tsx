@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Button, Header } from '../components/parts';
+import { Button } from '../components/parts';
 import type { Actions, Status } from '../types';
 import { aircraftText, profileText, simSetupText } from '../words';
 
@@ -59,7 +59,7 @@ export function ServerSetting({ status, actions, busy }: { status: Status; actio
         />
         <Button type="submit" variant="secondary" disabled={busy || !changed}>Save</Button>
       </div>
-      <p className="muted">Both pilots must use the same server. Saved on this computer.</p>
+      <p className="hint">Both pilots must use the same server. Saved on this computer.</p>
     </form>
   );
 }
@@ -71,7 +71,7 @@ function UpdateNotice({ status, actions, busy }: { status: Status; actions: Acti
   const refused = update.reason === 'unsupported_version';
   if (update.state === 'ready') {
     return (
-      <div className="stack-wide update-notice" role="status">
+      <div className="row-wide update-notice" role="status">
         <p className={refused ? 'warning' : 'muted'}>
           {refused ? 'The server needs a newer Crosscheck. ' : ''}Update ready{update.version ? ` (${update.version})` : ''} – restart to install.
         </p>
@@ -81,7 +81,7 @@ function UpdateNotice({ status, actions, busy }: { status: Status; actions: Acti
   }
   if (!refused) return null;
   return (
-    <div className="stack-wide update-notice" role="status">
+    <div className="row-wide update-notice" role="status">
       <p className="warning">
         {update.state === 'checking'
           ? 'Your Crosscheck is out of date. Looking for an update…'
@@ -102,17 +102,14 @@ export function Start({ status, actions, busy, error }: { status: Status; action
   };
 
   return (
-    <>
-      <Header>
-        <span className="header-note">Not in a session</span>
-      </Header>
-      <main className="main main-start">
+    <main className="page">
+      <div className="page-inner">
         <div className="intro">
           <h1>Start a shared cockpit</h1>
           <p className="lead">Create a session and send the code to your first officer, or join with a code you were given.</p>
         </div>
         <UpdateNotice status={status} actions={actions} busy={busy} />
-        <div className="stack-wide">
+        <div className="stack">
           <div className="choices">
             <section className="choice">
               <h2>Create</h2>
@@ -144,7 +141,7 @@ export function Start({ status, actions, busy, error }: { status: Status; action
         </div>
         <ServerSetting status={status} actions={actions} busy={busy} />
         <ThisComputer status={status} />
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

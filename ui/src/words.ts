@@ -1,5 +1,5 @@
 // The sentences the UI shows. Plain, specific, sentence case.
-import type { AmberItem, CrewMember, LineAction, OwnedRow, PanelItem, PanelLine, PreflightRow, Side, Status } from './types';
+import type { AmberItem, ControlNotice, CrewMember, LineAction, OwnedRow, PanelItem, PanelLine, PreflightRow, Side, Status } from './types';
 
 export const sideName = (side: Side) => (side === 'captain' ? 'captain' : 'first officer');
 export const SideName = (side: Side) => (side === 'captain' ? 'Captain' : 'First officer');
@@ -35,6 +35,12 @@ export function serverText(s: Status): string {
   if (s.server === 'connected') return s.rtt_ms != null ? `Connected, ${Math.round(s.rtt_ms)} ms` : 'Connected';
   if (s.server === 'reconnecting') return 'Reconnecting';
   return 'Not connected';
+}
+
+/** The sim in the status bar: "MSFS 2024 connected". */
+export function simText(s: Status): string {
+  const sim = s.this_computer.sim;
+  return sim.connected ? `${sim.name} connected` : `${sim.name} not connected`;
 }
 
 export function aircraftText(s: Status): string {
@@ -232,4 +238,22 @@ export function driftText(delta: number, unit: string | null): string {
 /** The start screen when the link to the sim is incomplete (refused SimConnect definitions, CRO-40). */
 export function simSetupText(detail: string | null | undefined): string {
   return detail ?? 'Crosscheck could not set up its link to the sim. Do not fly with Crosscheck – send the log.';
+}
+
+// ---- control handover (one line: "You have control · 3 differences at handover · Show") ----
+
+/** The middle part of the handover line. */
+export function handoverLine(n: number): string {
+  if (n === 0) return 'Both cockpits matched at handover';
+  return `${n} ${n === 1 ? 'difference' : 'differences'} at handover`;
+}
+
+/** Behind Show: how it happened and what differed. */
+export function handoverDetail(notice: ControlNotice, peer: string): string {
+  const how = notice.kind === 'give' ? `The ${peer} gave you control` : 'You took control';
+  const open = [...notice.groups, ...notice.vars];
+  const at = notice.at ? ` at ${timeOfDay(notice.at)}` : '';
+  return open.length === 0
+    ? `${how}${at}.`
+    : `${how}${at}. Open differences at the handover: ${open.join(', ')}. Listed for your information; nothing was changed.`;
 }
