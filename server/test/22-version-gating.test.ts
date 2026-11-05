@@ -81,7 +81,7 @@ describe('22. version gating', () => {
     const guest = new FakeBridge({ url: server.url, name: 'guest', sim: new FakeSim() });
     bridges.push(guest);
     await guest.connect();
-    expect(PREFLIGHT.bridge_version).toBe('0.6.1');
+    expect(PREFLIGHT.bridge_version).toBe('0.6.2');
     expect((await guest.join(host.joinCode)).type).toBe('joined');
   });
 

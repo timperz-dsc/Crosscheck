@@ -120,6 +120,12 @@ public sealed class FakePhysicsLink : IPhysicsLink
         lock (_gate) _lvars[name] = value;
     }
 
+    /// <summary>The L: var's current value as the link reports it (NaN if unknown).</summary>
+    public double ReadLvar(string name)
+    {
+        lock (_gate) return _lvars.TryGetValue(name, out var v) ? v : double.NaN;
+    }
+
     /// <summary>
     /// One own sim frame, by hand (for <see cref="FakePhysicsOptions.Manual"/>): the frame as the real link would read it
     /// (T = this sim's clock, chosen by the test). Returns after the handlers ran.

@@ -34,7 +34,9 @@ static class BridgePath
             .Concat(controls.Select(c => c.Var))
             .Distinct(StringComparer.Ordinal).OrderBy(n => n, StringComparer.Ordinal).ToList();
         var vars = real.Vars.Select(v => allowed.TryGetValue(v.Name, out var a) ? v with { Values = a, Rest = null }
-            : Writable.Contains(v.Class) ? ReadOnly(v) : v).ToList();
+            : Writable.Contains(v.Class) ? ReadOnly(v)
+            // A stream var with a range (the thrust levers, 0.6.2) is writable by the bridge: never by this test.
+            : v.Class == SyncClass.Stream ? v with { Range = null } : v).ToList();
         return (real with { Vars = vars, Datarefs = null, Roles = null }, watched);
     }
 

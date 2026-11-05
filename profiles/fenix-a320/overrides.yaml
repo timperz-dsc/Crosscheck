@@ -1610,22 +1610,24 @@ overrides:
     evidence: "pilot input, gate test 2: -5 … 4 in steps of 1, both directions; owner confirmed (gate test 3 prep)"
   - name: A_FC_THROTTLE_LEFT_INPUT
     class: stream
-    tolerance: 0.2
-    note: "thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
-    evidence: "owner decision 2026-11-04 (CRO-13): stream, measure the full travel read-only before any write; gate test 1 saw 2 … 3.8"
+    range: [0, 5]
+    tolerance: 0.1
+    note: "thrust lever: the PF streams it, the follower writes it (CRO-13); detents MAX REV 0, REV IDLE 1, IDLE 2, CL 3, FLX/MCT 4, TOGA 5"
+    evidence: "read-only throttle probe 2026-11-05 (throttle-results.md): holds MAX REV 0, REV IDLE 1, IDLE 2, CL 3, FLX/MCT 4, TOGA 5 on both levers; full travel 0 … 5; noise 0 (band 0.005); left = right; owner confirmed range [0, 5] and tolerance 0.1 (2026-11-05)"
   - name: A_FC_THROTTLE_RIGHT_INPUT
     class: stream
-    tolerance: 0.2
-    note: "thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
-    evidence: "owner decision 2026-11-04 (CRO-13): stream, measure the full travel read-only before any write; gate test 1 saw 2 … 3.8"
+    range: [0, 5]
+    tolerance: 0.1
+    note: "thrust lever: the PF streams it, the follower writes it (CRO-13); detents MAX REV 0, REV IDLE 1, IDLE 2, CL 3, FLX/MCT 4, TOGA 5"
+    evidence: "read-only throttle probe 2026-11-05 (throttle-results.md): holds MAX REV 0, REV IDLE 1, IDLE 2, CL 3, FLX/MCT 4, TOGA 5 on both levers; full travel 0 … 5; noise 0 (band 0.005); left = right; owner confirmed range [0, 5] and tolerance 0.1 (2026-11-05)"
   - name: A_FC_THROTTLE_LEFT_GATE
     class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    note: "Fenix-computed detent value: never written (owner decision 2026-11-05)"
+    evidence: "read-only throttle probe 2026-11-05: MAX REV 10, REV IDLE 1, IDLE 8, CL 3, FLX/MCT 4, TOGA 5 (not the lever position); owner decision 2026-11-05: Fenix computes it, never write it; gate test 1 values 3, 6, 7, 8 were refused"
   - name: A_FC_THROTTLE_RIGHT_GATE
     class: ignore
-    note: "hardware axis: never written or corrected; synced by the stream later (CRO-13)"
-    evidence: "owner decision (CRO-27): ignore until the stream (CRO-13); gate test 1 values 2 … 3.8 (input) and 3, 6, 7, 8 (gate) were refused and a correction was sent"
+    note: "Fenix-computed detent value: never written (owner decision 2026-11-05)"
+    evidence: "read-only throttle probe 2026-11-05: MAX REV 10, REV IDLE 1, IDLE 8, CL 3, FLX/MCT 4, TOGA 5 (not the lever position); owner decision 2026-11-05: Fenix computes it, never write it; gate test 1 values 3, 6, 7, 8 were refused"
   - name: N_OH_LIGHTING_OVD
     class: ignore
     note: "brightness follows the analog knob, which is synced itself; not compared (CRO-27)"

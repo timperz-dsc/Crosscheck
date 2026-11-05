@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AlertIcon, Button, Mark, PfLostLine } from '../components/parts';
+import { AlertIcon, Button, Mark, PfLostLine, TakeoverLeversLine } from '../components/parts';
 import { pickHeadline } from '../panel';
 import type { Actions, ControlNotice, Panel, PanelItem, PanelLine, Status } from '../types';
 import {
@@ -40,21 +40,34 @@ export function Session({ status, actions, busy, error, confirmPeerLost, confirm
   const isPf = status.is_pf ?? status.role === 'pf';
   const notice = useNotice(status.control_notice ?? null);
   const red = useRedLines(panel.red);
-  const [askLevers, setAskLevers] = useState(false);
+  // When "I have control" was clicked while the thrust levers did not match (ms), or null.
+  const [askLeversAt, setAskLeversAt] = useState<number | null>(null);
+  const askLevers = askLeversAt !== null;
   const levers = !isPf && status.physics && status.physics.levers.length > 0 ? leversText(status.physics, peer?.side ?? otherSide(status)) : null;
   const takeControl = () => {
-    // "Match your thrust levers" first (CRO-14): the other aircraft's levers are where the PF left them.
-    if (levers && !askLevers) setAskLevers(true);
+    // "Match your thrust levers" first (CRO-14): checked against this pilot's hardware levers (0.6.2).
+    if (levers && !askLevers) setAskLeversAt(now);
     else {
-      setAskLevers(false);
+      setAskLeversAt(null);
       void actions.takeControl(false);
     }
   };
+  // Owner decision 2026-11-05: once the levers match, control is taken, but only within 30 s of the click;
+  // after that the request expires and nothing happens.
+  useEffect(() => {
+    if (askLeversAt === null) return;
+    if (isPf || now - askLeversAt > LEVER_ASK_MS) setAskLeversAt(null);
+    else if (!levers) {
+      setAskLeversAt(null);
+      void actions.takeControl(false);
+    }
+  }, [askLeversAt, levers, isPf, now, actions]);
 
   return (
     <div className="session">
       <div className="pane pane-main">
         <PfLostLine status={status} actions={actions} busy={busy} />
+        {isPf && <TakeoverLeversLine status={status} />}
         <Headline red={red} peerWord={peerWord} actions={actions} busy={busy} compared={lastCompared(status.last_compared_at, now)} />
 
         <div className="pane-scroll">
@@ -100,7 +113,7 @@ export function Session({ status, actions, busy, error, confirmPeerLost, confirm
                     <span className="hint">Takes over at once. The takeover button on your sidestick does the same.</span>
                   )}
                   <Button onClick={takeControl} disabled={busy}>{askLevers && levers ? 'Take control anyway' : 'I have control'}</Button>
-                  {askLevers && levers && <Button variant="secondary" onClick={() => setAskLevers(false)}>Cancel</Button>}
+                  {askLevers && levers && <Button variant="secondary" onClick={() => setAskLeversAt(null)}>Cancel</Button>}
                 </>
               )}
             </div>
@@ -327,6 +340,9 @@ function CollapsedLines({ status, panel, peerWord, isPf, confirmPeerLost, action
   if (physics && physics.refused.length > 0) {
     lines.push(<span key="refused" className="warning">The sim refused part of the aircraft data ({physics.refused.map((v) => v.toLowerCase()).join(', ')}). Position still follows.</span>);
   }
+  if (physics?.levers_moved && !isPf) {
+    lines.push(<span key="levers-moved" className="warning">Your thrust levers moved. The pilot flying's position is used.</span>);
+  }
   if (levers(physics) && !isPf) {
     lines.push(<span key="levers" className="warning">Your thrust levers differ from the {peerWord}'s. Match them before you take control.</span>);
   }
@@ -366,7 +382,11 @@ function CollapsedLines({ status, panel, peerWord, isPf, confirmPeerLost, action
   );
 }
 
-const levers = (p: Status['physics']) => !!p && p.levers.length > 0;
+/** Levers whose hardware position is known and differs (never-moved hardware is only asked for at "I have control"). */
+const levers = (p: Status['physics']) => !!p && p.levers.some((l) => l.mine !== null);
+
+/** How long a click on "I have control" waits for the thrust levers to match (owner decision 2026-11-05). */
+const LEVER_ASK_MS = 30_000;
 
 /** One collapsed line with a count; the controls behind it on click. */
 function Expandable({ tone, text, listName, items, detail }: {

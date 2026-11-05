@@ -271,20 +271,6 @@ public sealed class PhysicsSyncTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Thrust_levers_that_differ_are_reported_but_never_written_without_a_range()
-    {
-        _sync.StartSession((_, _) => { });
-        _sync.SetRole(isPf: false);
-        Feed(Synthetic.From(Circuit, 30), new Dictionary<string, double> { ["A_FC_THROTTLE_LEFT_INPUT"] = 3.5 });
-        _link.SetLvar("A_FC_THROTTLE_LEFT_INPUT", 2.0);
-        await Wait.Until(() => _sync.LeverDifferences().Count == 1, "lever difference");
-        var d = _sync.LeverDifferences()[0];
-        Assert.Equal((3.5, 2.0), (d.Pf, d.Mine));
-        _link.SetLvar("A_FC_THROTTLE_LEFT_INPUT", 3.4); // within the tolerance
-        await Wait.Until(() => _sync.LeverDifferences().Count == 0, "levers match");
-    }
-
-    [Fact]
     public async Task Stream_stats_are_logged_for_CRO_18()
     {
         await Following(Synthetic.From(Circuit, 30));

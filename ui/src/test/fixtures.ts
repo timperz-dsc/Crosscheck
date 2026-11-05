@@ -106,6 +106,6 @@ export function bridge(status: Status | null, over: Partial<BridgeState> = {}): 
 export function physics(over: Partial<Physics> = {}): Physics {
   return {
     mode: 'following', link: true, frozen: true, frozen_outside: false, in_air: false, pf_lost_cause: null, health: 'ok',
-    buffer_ms: 100, late_ms: 0, latency_ms: 48, no_stream: false, levers: [], refused: [], ...over,
+    buffer_ms: 100, late_ms: 0, latency_ms: 48, no_stream: false, levers: [], levers_moved: false, takeover_levers: [], refused: [], ...over,
   };
 }

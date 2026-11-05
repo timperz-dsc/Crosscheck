@@ -217,14 +217,17 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
     /// <summary>
     /// The physics stream (CRO-13). The role comes from the sync engine through Sim.Stream (same call, so a
     /// bridge that becomes PF releases at once); frames from the PF come the same way. Thrust levers (profile
-    /// stream vars) are read with the aircraft and written only once the profile gives them a range.
+    /// stream vars) are read with the aircraft and written on the follower within the profile range (0.6.2:
+    /// [0, 5], owner confirmed); detent names come from the profile note.
     /// </summary>
     private void StartPhysics(IPhysicsLink link)
     {
         var levers = Profile.Vars.Where(v => v.Class == SyncClass.Stream).ToList();
         Physics = new PhysicsSync(link, Log, Events, _options.Physics,
             levers.ToDictionary(v => v.Name, v => v.Tolerance ?? 0.1, StringComparer.Ordinal),
-            name => Sim.Guard.IsWritable(name), (name, value) => Sim.WriteAsync(name, value))
+            name => Sim.Guard.IsWritable(name), (name, value) => Sim.WriteAsync(name, value),
+            levers.Select(v => new LeverSpec(v.Name, v.Range is [var min, _] ? min : null, v.Range is [_, var max] ? max : null)).ToList(),
+            levers.Select(v => LeverDetents.Parse(v.Note)).FirstOrDefault(d => d.Count > 0) ?? [])
         {
             Rtt = () => Client?.RttMs,
         };
@@ -236,6 +239,7 @@ public sealed class BridgeRuntime : IBridgeControl, IAsyncDisposable
             {
                 case "peer_lost" or "peer_left": Physics.OnPeerState(e.Type[5..]); break;
                 case "control_changed": Physics.OnNewPf(); break;
+                case "takeover_pressed": Physics.OnTakeoverPressed(); break;
             }
         };
         link.ConnectedChanged += c => Log.Event("physics_link", new JsonObject { ["connected"] = c });

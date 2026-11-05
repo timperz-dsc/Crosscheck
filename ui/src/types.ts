@@ -38,8 +38,15 @@ export interface Physics {
   latency_ms: number | null;
   /** No frame for 2 s while following. */
   no_stream: boolean;
-  /** Thrust levers that differ from the PF's (match them before taking control). */
-  levers: { var: string; pf: number; mine: number }[];
+  /**
+   * Thrust levers whose hardware differs from the PF's lever (match them before taking control). mine: this pilot's
+   * hardware position, null if never seen to move; detent: the PF's lever by name ("CL").
+   */
+  levers: { var: string; pf: number; mine: number | null; detent: string }[];
+  /** The follower pilot's hardware levers moved (the PF's position was written back): one amber line, at most every 30 s. */
+  levers_moved: boolean;
+  /** After a sidestick takeover: levers whose hardware is not where the aircraft's lever was (red until matched). */
+  takeover_levers: { var: string; aircraft: number; aircraft_detent: string; mine: number | null; mine_detent: string | null }[];
   /** Placement vars the sim refused (no longer written). */
   refused: string[];
 }

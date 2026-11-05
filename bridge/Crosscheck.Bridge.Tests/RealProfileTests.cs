@@ -293,21 +293,36 @@ public class RealProfileTests
     public void Noise_and_hardware_axes_are_ignored(string name) => Assert.Equal(SyncClass.Ignore, Var(name).Class);
 
     /// <summary>
-    /// CRO-13 (owner decision 2026-11-04): the thrust levers ride on the stream, and are never written until the
-    /// owner confirms a measured range. Until then the guard refuses every write.
+    /// 0.6.2 (owner confirmed 2026-11-05, throttle-results.md): the thrust levers ride on the stream and the follower
+    /// writes them, only within the measured range [0, 5]. Takeover tolerance 0.1; detent names in the note.
     /// </summary>
     [Theory]
     [InlineData("A_FC_THROTTLE_LEFT_INPUT")]
     [InlineData("A_FC_THROTTLE_RIGHT_INPUT")]
-    public void Thrust_levers_are_streamed_and_never_written_without_a_confirmed_range(string name)
+    public void Thrust_levers_are_streamed_and_written_only_within_the_measured_range(string name)
     {
         var v = Var(name);
         Assert.Equal(SyncClass.Stream, v.Class);
-        Assert.Null(v.Range);
-        Assert.NotNull(v.Tolerance);
+        Assert.Equal([0.0, 5.0], v.Range);
+        Assert.Equal(0.1, v.Tolerance);
+        var guard = new Sim.SimSafetyGuard(Real);
+        Assert.True(guard.IsWritable(name));
+        guard.CheckWrite(name, 2.5);
+        Assert.Throws<Sim.SafetyViolationException>(() => guard.CheckWrite(name, 5.1));
+        Assert.Throws<Sim.SafetyViolationException>(() => guard.CheckWrite(name, -0.1));
+        Assert.Equal(["MAX REV", "REV IDLE", "IDLE", "CL", "FLX/MCT", "TOGA"], Follow.LeverDetents.Parse(v.Note).Select(d => d.Name));
+    }
+
+    /// <summary>Owner decision 2026-11-05: the GATE vars are Fenix-computed and never written on any path.</summary>
+    [Theory]
+    [InlineData("A_FC_THROTTLE_LEFT_GATE")]
+    [InlineData("A_FC_THROTTLE_RIGHT_GATE")]
+    public void Thrust_lever_gates_are_never_written(string name)
+    {
+        Assert.Equal(SyncClass.Ignore, Var(name).Class);
         var guard = new Sim.SimSafetyGuard(Real);
         Assert.False(guard.IsWritable(name));
-        Assert.Throws<Sim.SafetyViolationException>(() => guard.CheckWrite(name, 2.5));
+        Assert.Throws<Sim.SafetyViolationException>(() => guard.CheckWrite(name, 8));
     }
 
     [Theory]

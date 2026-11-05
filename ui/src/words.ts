@@ -85,11 +85,36 @@ export function pfLostText(p: Physics, peer: Side): { title: string; detail: str
   };
 }
 
-/** "Match your thrust levers" before taking control (CRO-14). */
+const leverSide = (v: string) => (v.includes('LEFT') ? 'left' : v.includes('RIGHT') ? 'right' : v);
+
+/** "Move your thrust levers to CL." or, when the levers need different detents, "...: left to CL, right to IDLE." */
+export function moveLeversText(levers: { var: string; detent: string }[]): string {
+  const detents = [...new Set(levers.map((l) => l.detent))];
+  return detents.length === 1
+    ? `Move your thrust levers to ${detents[0]}.`
+    : `Move your thrust levers: ${levers.map((l) => `${leverSide(l.var)} to ${l.detent}`).join(', ')}.`;
+}
+
+/**
+ * Before taking control (CRO-14, 0.6.2): against this pilot's hardware levers. Never seen to move: "Move your thrust
+ * levers to CL."; otherwise "Match your thrust levers ...".
+ */
 export function leversText(p: Physics, peer: Side): string {
+  if (p.levers.some((l) => l.mine === null)) return moveLeversText(p.levers);
   const n = (x: number) => (Math.round(x * 100) / 100).toString();
-  const parts = p.levers.map((l) => `${l.var.includes('LEFT') ? 'left' : l.var.includes('RIGHT') ? 'right' : l.var}: ${n(l.pf)} (yours ${n(l.mine)})`);
+  const parts = p.levers.map((l) => `${leverSide(l.var)}: ${n(l.pf)} (yours ${n(l.mine ?? 0)})`);
   return `Match your thrust levers to the ${sideName(peer)}'s before you take control – ${parts.join(', ')}.`;
+}
+
+/** The red line after a sidestick takeover (0.6.2): this pilot's hardware levers are not where the aircraft's were. */
+export function takeoverLeversText(p: Physics): string {
+  const t = p.takeover_levers;
+  if (t.some((l) => l.mine === null)) return moveLeversText(t.map((l) => ({ var: l.var, detent: l.aircraft_detent })));
+  const pairs = [...new Set(t.map((l) => `${l.mine_detent}|${l.aircraft_detent}`))];
+  const [first] = t;
+  if (pairs.length === 1 && first) return `Thrust levers: yours at ${first.mine_detent}, the aircraft was at ${first.aircraft_detent}. Move them before you touch them.`;
+  const parts = t.map((l) => `${leverSide(l.var)}: yours at ${l.mine_detent}, the aircraft was at ${l.aircraft_detent}`);
+  return `Thrust levers: ${parts.join('; ')}. Move them before you touch them.`;
 }
 
 /** The sim in the status bar: "MSFS 2024 connected". */

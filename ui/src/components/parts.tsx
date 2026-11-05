@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { Actions, Status } from '../types';
-import { otherSide, pfLostText, physicsText, serverText, simText } from '../words';
+import { otherSide, pfLostText, physicsText, serverText, simText, takeoverLeversText } from '../words';
 
 /** The Crosscheck mark, in the theme's ink and green. */
 export function Mark({ size = 18 }: { size?: number }) {
@@ -57,6 +57,21 @@ export function PfLostLine({ status, actions, busy }: { status: Status; actions:
         <Button onClick={() => void actions.takeControl(true)} disabled={busy}>Take control</Button>
       </div>
     </section>
+  );
+}
+
+/**
+ * After a sidestick takeover (0.6.2): this pilot's hardware thrust levers are not where the aircraft's levers were.
+ * Red until they are within 0.1; the bridge clears it.
+ */
+export function TakeoverLeversLine({ status }: { status: Status }) {
+  const p = status.physics;
+  if (!p || !p.takeover_levers || p.takeover_levers.length === 0) return null;
+  return (
+    <div className="line row" role="alert">
+      <AlertIcon />
+      <span className="differs">{takeoverLeversText(p)}</span>
+    </div>
   );
 }
 

@@ -77,6 +77,7 @@ possibly the follower's laws commanding roll spoilers against the written attitu
    PF's values to the PM. Bigger change; only if 1–3 are not enough.
 
 **Sim test needed:** yes, for 2 and 3 (and to confirm 1).
+**Status (0.6.2):** option 2 is built. The range was measured (item 7) and confirmed, and the follower writes the levers.
 
 ## 2. Fuel burn, gross weight, brake temperatures
 
@@ -216,7 +217,7 @@ at least 5 s before stopping again (no flicker around 40 kt). The PF frame alrea
 the surfaces start following at 40 kt, well before rotation. Check for a visible jump when writing resumes.
 **Sim test needed:** yes (control check on the ground, then a takeoff to see the hand-over at 40 kt).
 
-## 7. Thrust lever range: read-only probe (built, not run yet)
+## 7. Thrust lever range: read-only probe (run 2026-11-05, range confirmed)
 
 Goal: the real range and detent values of `A_FC_THROTTLE_LEFT_INPUT` / `A_FC_THROTTLE_RIGHT_INPUT`, so Sebastian can
 confirm a `range:` and the follower may write the levers (CLAUDE.md, follower placement rule).
@@ -240,6 +241,9 @@ dotnet run -c Release --project tools/profile-probe -- throttle
 ```
 
 **Sim test needed:** yes – this is the sim test. Read-only.
+**Result (2026-11-05):** `profiles/fenix-a320/throttle-results.md`. INPUT 0 … 5, detents MAX REV 0, REV IDLE 1, IDLE 2,
+CL 3, FLX/MCT 4, TOGA 5, no noise, left = right. GATE is a Fenix-computed detent value (10, 1, 8, 3, 4, 5). The owner
+confirmed range [0, 5] and tolerance 0.1. GATE stays `ignore` and is never written.
 
 ## 8. Remaining desyncs, grouped
 
@@ -330,3 +334,25 @@ light I_OH_TOILET (cabin crew runs on separate timers per sim; 13 and 5 quiet li
 encoder timing, a delta var, so it needs the same missing delta tolerance); I_ECAM_CLR_LEFT/RIGHT (ECAM state timing per
 sim); MASTER CAUTION and MASTER WARNING lamps (the flight 2 shutdown cluster); the MCDU display hashes in flight 2
 (whole-screen hash, FMGC recomputes per sim); E_FCU_SPEED (1 unit, knob timing). E_FCU_HEADING is not noise.
+
+## 0.6.2: thrust levers on the follower (2026-11-05)
+
+- Profile: `A_FC_THROTTLE_LEFT/RIGHT_INPUT` get `range: [0, 5]`, tolerance 0.1 and the detent names in the note
+  (`profiles/fenix-a320/lever-range-profile-changes.md`).
+- The follower writes both levers from the PF's stream. It clamps to [0, 5], writes only on a difference above
+  0.005, and writes on the ground too. The PF never writes them. Logged as `follow_levers` on/off.
+- The follower pilot's hardware: a lever move that is not the bridge's own write is remembered as the pilot's
+  hardware position. The PF's value is written back, and the pilot sees one amber line at most every 30 s
+  (`lever_hardware`).
+- "I have control" checks the PF's lever against that hardware position (0.1). It asks "Move your thrust levers to
+  <detent>" if the hardware was never seen to move, and takes control by itself once the levers match within 30 s.
+- Sidestick takeover stays instant. If the new PF's hardware is not within 0.1 of the old PF's lever, a red line
+  shows "Thrust levers: yours at <detent>, the aircraft was at <detent>. Move them before you touch them."
+- Not covered: "Take control anyway" with levers that do not match gives no red line afterwards (only the sidestick
+  path does).
+
+**Sim test needed:** yes. Check that:
+- the follower's levers follow the PF on the ground and in flight, and N1 matches (item 1);
+- moving the follower's hardware shows the amber line once and the lever snaps back;
+- "I have control" asks for the levers and takes control when they match;
+- a sidestick takeover with the hardware in another detent shows the red line until the hardware matches.

@@ -13,6 +13,12 @@
 // Becoming PF releases at once, in the same call (GuardedStreamWriter.RoleChanged). If the PF is lost (or the
 // server), the follower stays frozen where it is and the pilot sees a red line; only the pilot's yes releases
 // it (TakeControlByPilot). Never released automatically in the air. Session end releases.
+//
+// Thrust levers (0.6.2, owner decision 2026-11-05): the follower writes the PF's lever values, clamped to the
+// profile range [0, 5], when they differ by more than 0.005; on the ground too; never on the PF (LeverFollower).
+// A lever move that is not our own write is the pilot's hardware: remembered per lever, the PF's value is written
+// back, and one amber line at most every 30 s. The takeover checks compare the PF's lever with that remembered
+// hardware position, not with the value written into the sim.
 
 using System.Diagnostics;
 using System.Text.Json.Nodes;
@@ -37,6 +43,12 @@ public sealed record PhysicsOptions
     public double StatsEveryS { get; init; } = 5;
     /// <summary>No frame for this long while following: "no stream" (amber), seconds.</summary>
     public double NoStreamAfterS { get; init; } = 2;
+    /// <summary>"Your thrust levers moved" is shown at most this often, seconds.</summary>
+    public double LeverNoticeEveryS { get; init; } = 30;
+    /// <summary>... and stays this long, seconds.</summary>
+    public double LeverNoticeShowS { get; init; } = 10;
+    /// <summary>Becoming PF this soon after a takeover pushbutton press counts as a sidestick takeover, seconds.</summary>
+    public double TakeoverPressWindowS { get; init; } = 10;
 }
 
 public enum FollowMode
@@ -58,8 +70,14 @@ public enum FollowMode
 /// <summary>Ground speed and ground flag of the own aircraft and of the last placed PF frame; SurfacesOn is the follower's surface rule.</summary>
 public sealed record PhysicsReading(double? OwnGsKt, bool? OwnOnGround, double? PfGsKt, bool? PfOnGround, bool? SurfacesOn);
 
-/// <summary>A thrust lever (profile stream var) that differs between this cockpit and the PF's stream.</summary>
-public sealed record LeverDifference(string Var, double Pf, double Mine);
+/// <summary>
+/// A thrust lever whose pilot's hardware differs from the PF's lever by more than the profile tolerance, or was never
+/// seen to move (Mine null). Detent: the PF's lever by detent name ("CL").
+/// </summary>
+public sealed record LeverDifference(string Var, double Pf, double? Mine, string Detent);
+
+/// <summary>After a sidestick takeover: the aircraft's lever (the previous PF's) and this pilot's hardware (null: never seen).</summary>
+public sealed record TakeoverLever(string Var, double Aircraft, string AircraftDetent, double? Mine, string? MineDetent);
 
 public sealed class PhysicsSync : IAsyncDisposable
 {
@@ -71,6 +89,9 @@ public sealed class PhysicsSync : IAsyncDisposable
     private readonly IReadOnlyDictionary<string, double> _leverTolerance;
     private readonly Func<string, bool> _leverWritable;
     private readonly Func<string, double, Task> _writeLever;
+    private readonly IClock _clock;
+    private readonly LeverFollower _levers;
+    private readonly IReadOnlyList<Detent> _detents;
     private readonly Stopwatch _sw = Stopwatch.StartNew();
     private readonly Timer? _statsTimer;
 
@@ -95,7 +116,13 @@ public sealed class PhysicsSync : IAsyncDisposable
     private bool _flagsKnown;
     private string? _pfLostCause;
     private Dictionary<string, double> _pfLevers = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, double> _leverWritten = new(StringComparer.Ordinal);
+    private bool _leversOn;
+    private double _leverFrameT = double.NegativeInfinity;
+    private bool _leverFrameStale;
+    private double _leverNoticeMs = double.NegativeInfinity;
+    private double _takeoverPressedMs = double.NegativeInfinity;
+    /// <summary>Armed by a sidestick takeover: the previous PF's lever values ("the aircraft was at").</summary>
+    private Dictionary<string, double>? _takeoverAircraft;
     private readonly HashSet<string> _refusedVars = new(StringComparer.Ordinal);
     private Stats _stats = new();
 
@@ -111,7 +138,8 @@ public sealed class PhysicsSync : IAsyncDisposable
 
     public PhysicsSync(IPhysicsLink link, BridgeLog log, EventHub hub, PhysicsOptions? options = null,
         IReadOnlyDictionary<string, double>? leverTolerance = null, Func<string, bool>? leverWritable = null,
-        Func<string, double, Task>? writeLever = null)
+        Func<string, double, Task>? writeLever = null, IReadOnlyList<LeverSpec>? leverSpecs = null,
+        IReadOnlyList<Detent>? detents = null, IClock? clock = null)
     {
         _link = link;
         _log = log;
@@ -120,6 +148,9 @@ public sealed class PhysicsSync : IAsyncDisposable
         _leverTolerance = leverTolerance ?? new Dictionary<string, double>();
         _leverWritable = leverWritable ?? (_ => false);
         _writeLever = writeLever ?? ((_, _) => Task.CompletedTask);
+        _clock = clock ?? new StopwatchClock(_sw);
+        _levers = new LeverFollower(leverSpecs ?? _leverTolerance.Keys.Select(n => new LeverSpec(n, null, null)).ToList(), _clock);
+        _detents = detents ?? [];
         _buffer = new PlayoutBuffer(_options.Playout);
         _link.FrameRead += OnOwnFrame;
         _link.FlagsRead += OnFlags;
@@ -178,7 +209,13 @@ public sealed class PhysicsSync : IAsyncDisposable
     /// <summary>A session starts: <paramref name="send"/> sends one stream frame (frame number, data).</summary>
     public void StartSession(Action<long, JsonObject> send)
     {
-        lock (_gate) _send = send;
+        lock (_gate)
+        {
+            _send = send;
+            _levers.Reset();
+            _leverNoticeMs = double.NegativeInfinity;
+            _takeoverAircraft = null;
+        }
     }
 
     /// <summary>The session is over (left, ended, bridge stopping): every freeze Crosscheck holds is released.</summary>
@@ -189,6 +226,7 @@ public sealed class PhysicsSync : IAsyncDisposable
             _send = null;
             ReleaseLocked(cause);
             _link.SetFollower(false);
+            EndTakeoverCheckLocked(cause);
             SetMode(FollowMode.Off, cause);
         }
     }
@@ -207,14 +245,24 @@ public sealed class PhysicsSync : IAsyncDisposable
                 // Never frozen or placed on the PF: the gate first, then the release.
                 _link.SetFollower(false);
                 if (_mode == FollowMode.Streaming) return;
+                var sidestick = _mode is FollowMode.Waiting or FollowMode.Following or FollowMode.PfLost
+                    && _clock.NowMs - _takeoverPressedMs <= _options.TakeoverPressWindowS * 1000;
+                if (sidestick) StartTakeoverCheckLocked();
                 ReleaseLocked("became_pf");
                 _nextSendT = double.NegativeInfinity;
                 SetMode(FollowMode.Streaming, "became_pf");
                 return;
             }
             if (_mode is FollowMode.Waiting or FollowMode.Following or FollowMode.PfLost or FollowMode.Released) return;
+            EndTakeoverCheckLocked("became_pm");
             StartFollowingLocked("became_pm");
         }
+    }
+
+    /// <summary>The takeover pushbutton on this side's sidestick was pressed (it requests control at once).</summary>
+    public void OnTakeoverPressed()
+    {
+        lock (_gate) _takeoverPressedMs = _clock.NowMs;
     }
 
     /// <summary>A different PF (control changed hands): the buffer starts fresh on the new PF's clock.</summary>
@@ -340,10 +388,22 @@ public sealed class PhysicsSync : IAsyncDisposable
         }
     }
 
-    /// <summary>Thrust levers that differ from the PF's stream by more than the profile's tolerance (follower only).</summary>
+    /// <summary>Thrust levers whose hardware differs from the PF's by more than the profile's tolerance, or never moved (follower only).</summary>
     public IReadOnlyList<LeverDifference> LeverDifferences()
     {
         lock (_gate) return LeverDifferencesLocked();
+    }
+
+    /// <summary>After a sidestick takeover: levers whose hardware is not yet within the tolerance of where the aircraft's lever was.</summary>
+    public IReadOnlyList<TakeoverLever> TakeoverLevers()
+    {
+        lock (_gate) return TakeoverLeversLocked();
+    }
+
+    /// <summary>The pilot's own hardware position of a lever, null if never seen to move in this session.</summary>
+    public double? LeverHardware(string name)
+    {
+        lock (_gate) return _levers.Hardware(name);
     }
 
     /// <summary>What the status bar and the red line show.</summary>
@@ -368,7 +428,13 @@ public sealed class PhysicsSync : IAsyncDisposable
                 && (double.IsNaN(_lastArrivalS) ? false : nowS - _lastArrivalS > _options.NoStreamAfterS);
             var levers = new JsonArray();
             foreach (var d in LeverDifferencesLocked())
-                levers.Add(new JsonObject { ["var"] = d.Var, ["pf"] = d.Pf, ["mine"] = d.Mine });
+                levers.Add(new JsonObject { ["var"] = d.Var, ["pf"] = d.Pf, ["mine"] = d.Mine, ["detent"] = d.Detent });
+            var takeover = new JsonArray();
+            foreach (var t in TakeoverLeversLocked())
+                takeover.Add(new JsonObject
+                {
+                    ["var"] = t.Var, ["aircraft"] = t.Aircraft, ["aircraft_detent"] = t.AircraftDetent, ["mine"] = t.Mine, ["mine_detent"] = t.MineDetent,
+                });
             return new JsonObject
             {
                 ["mode"] = ModeWord(_mode),
@@ -383,6 +449,8 @@ public sealed class PhysicsSync : IAsyncDisposable
                 ["latency_ms"] = Rtt() is { } rtt ? Math.Round(rtt) : null,
                 ["no_stream"] = noStream,
                 ["levers"] = levers,
+                ["levers_moved"] = _mode is FollowMode.Waiting or FollowMode.Following && _clock.NowMs - _leverNoticeMs < _options.LeverNoticeShowS * 1000,
+                ["takeover_levers"] = takeover,
                 ["refused"] = new JsonArray(_refusedVars.Order().Select(v => (JsonNode)v).ToArray()),
             };
         }
@@ -404,15 +472,22 @@ public sealed class PhysicsSync : IAsyncDisposable
     {
         (long No, JsonObject Data)? send = null;
         Action<long, JsonObject>? sender = null;
-        List<(string Var, double Value)>? leverWrites = null;
+        IReadOnlyList<(string Var, double Value)>? leverWrites = null;
         lock (_gate)
         {
+            // A frame a little older than the last one seen (frames handled out of order) must not look like a lever
+            // move. A jump back of more than 1 s is a new sim clock (a new flight): taken as the new start.
+            _leverFrameStale = own.Frame.T < _leverFrameT && own.Frame.T > _leverFrameT - 1;
+            if (!_leverFrameStale) _leverFrameT = own.Frame.T;
             _own = own;
             _ownAtS = _sw.Elapsed.TotalSeconds;
             switch (_mode)
             {
-                case FollowMode.Streaming when _send is not null:
-                    if (own.Frame.T >= _nextSendT - 1e-4)
+                case FollowMode.Streaming:
+                    // The PF never writes a lever: hardware moves are only noted (sidestick takeover check).
+                    LeversLocked(own, write: false);
+                    UpdateTakeoverCheckLocked();
+                    if (_send is not null && own.Frame.T >= _nextSendT - 1e-4)
                     {
                         // Step a fixed grid; a clock that stalled or jumped starts a new one.
                         var period = 1 / _options.StreamHz;
@@ -422,7 +497,11 @@ public sealed class PhysicsSync : IAsyncDisposable
                     }
                     break;
                 case FollowMode.Waiting or FollowMode.Following:
-                    leverWrites = PlaceLocked(own.Frame.T);
+                    leverWrites = LeversLocked(own, write: PlaceLocked(own.Frame.T));
+                    break;
+                case FollowMode.PfLost:
+                    // Held, nothing written: only note the pilot's hardware (for "take control").
+                    LeversLocked(own, write: false);
                     break;
             }
         }
@@ -435,10 +514,11 @@ public sealed class PhysicsSync : IAsyncDisposable
         foreach (var (v, value) in leverWrites ?? []) _ = WriteLeverAsync(v, value);
     }
 
-    private List<(string, double)>? PlaceLocked(double now)
+    /// <returns>true if a frame was placed (the levers are written only then).</returns>
+    private bool PlaceLocked(double now)
     {
         var r = _buffer.Sample(now);
-        if (r.Status == PlayoutStatus.Empty) return null;
+        if (r.Status == PlayoutStatus.Empty) return false;
         _lastStatus = r.Status;
         _lastLateBy = r.LateBy;
         switch (r.Status)
@@ -476,18 +556,44 @@ public sealed class PhysicsSync : IAsyncDisposable
         catch (Exception e) when (e is SafetyViolationException or InvalidOperationException or AggregateException)
         {
             _log.Event("place_failed", new JsonObject { ["why"] = e.Message });
-            return null;
+            return false;
         }
-        // Thrust levers: only once a range is confirmed in the profile (owner decision 2026-11-04: measure first).
-        List<(string, double)>? writes = null;
-        foreach (var (name, _) in _leverTolerance)
+        return true;
+    }
+
+    /// <summary>
+    /// The thrust levers for one own frame: hardware moves are noted in every mode that calls this; values are written
+    /// only with <paramref name="write"/> (follower, frame placed), within the profile range, through the guard.
+    /// </summary>
+    private IReadOnlyList<(string Var, double Value)> LeversLocked(OwnFrame own, bool write)
+    {
+        if (_leverFrameStale) return [];
+        var step = _levers.Step(own.Lvars, _pfLevers, write, _leverWritable);
+        if (write && !_leversOn && _levers.Levers.Any(l => l.Min is not null && _leverWritable(l.Name) && _pfLevers.ContainsKey(l.Name.ToLowerInvariant())))
         {
-            if (!_leverWritable(name) || !_pfLevers.TryGetValue(name.ToLowerInvariant(), out var pf)) continue;
-            if (_leverWritten.TryGetValue(name, out var last) && Math.Abs(last - pf) < 1e-9) continue;
-            _leverWritten[name] = pf;
-            (writes ??= []).Add((name, pf));
+            _leversOn = true;
+            _log.Event("follow_levers", new JsonObject
+            {
+                ["on"] = true,
+                ["cause"] = "following",
+                ["levers"] = new JsonArray(_levers.Levers.Where(l => _leverWritable(l.Name)).Select(l => (JsonNode)l.Name).ToArray()),
+            });
         }
-        return writes;
+        if (step.Moved.Count > 0 && _mode is FollowMode.Waiting or FollowMode.Following && _clock.NowMs - _leverNoticeMs >= _options.LeverNoticeEveryS * 1000)
+        {
+            // "Your thrust levers moved. The pilot flying's position is used." at most once per 30 s.
+            _leverNoticeMs = _clock.NowMs;
+            _log.Event("lever_hardware", new JsonObject
+            {
+                ["levers"] = new JsonArray(step.Moved.Select(m => (JsonNode)new JsonObject
+                {
+                    ["var"] = m.Var,
+                    ["hardware"] = m.Hardware,
+                    ["pf"] = _pfLevers.TryGetValue(m.Var.ToLowerInvariant(), out var pf) ? _levers.Clamp(m.Var, pf) : null,
+                }).ToArray()),
+            });
+        }
+        return step.Writes;
     }
 
     /// <summary>
@@ -588,7 +694,6 @@ public sealed class PhysicsSync : IAsyncDisposable
         _pfLostCause = null;
         _lastStatus = PlayoutStatus.Empty;
         _lastArrivalS = double.NaN;
-        _leverWritten.Clear();
         _surfacesDecided = false;
         _placement = NewPlacement();
         _link.SetFollower(true);
@@ -642,12 +747,62 @@ public sealed class PhysicsSync : IAsyncDisposable
 
     private IReadOnlyList<LeverDifference> LeverDifferencesLocked()
     {
-        if (_mode is not (FollowMode.Following or FollowMode.PfLost or FollowMode.Waiting) || _own is null) return [];
+        if (_mode is not (FollowMode.Following or FollowMode.PfLost or FollowMode.Waiting)) return [];
         var list = new List<LeverDifference>();
         foreach (var (name, tol) in _leverTolerance)
         {
-            if (!_pfLevers.TryGetValue(name.ToLowerInvariant(), out var pf) || !_own.Lvars.TryGetValue(name, out var mine)) continue;
-            if (Math.Abs(pf - mine) > tol) list.Add(new LeverDifference(name, pf, mine));
+            if (!_pfLevers.TryGetValue(name.ToLowerInvariant(), out var raw)) continue;
+            // The pilot's hardware, not the sim value: on the follower the sim shows what we wrote.
+            var pf = _levers.Clamp(name, raw);
+            var mine = _levers.Hardware(name);
+            if (mine is null || Math.Abs(pf - mine.Value) > tol) list.Add(new LeverDifference(name, pf, mine, LeverDetents.NameOf(_detents, pf)));
+        }
+        return list;
+    }
+
+    // ---------------------------------------------------------------- sidestick takeover lever check (0.6.2)
+
+    private void StartTakeoverCheckLocked()
+    {
+        _takeoverAircraft = new Dictionary<string, double>(StringComparer.Ordinal);
+        foreach (var l in _levers.Levers)
+            if (_pfLevers.TryGetValue(l.Name.ToLowerInvariant(), out var raw)) _takeoverAircraft[l.Name] = _levers.Clamp(l.Name, raw);
+        var open = TakeoverLeversLocked();
+        if (open.Count == 0)
+        {
+            _takeoverAircraft = null;
+            return;
+        }
+        _log.Event("takeover_levers", new JsonObject
+        {
+            ["on"] = true,
+            ["levers"] = new JsonArray(open.Select(t => (JsonNode)new JsonObject { ["var"] = t.Var, ["aircraft"] = t.Aircraft, ["mine"] = t.Mine }).ToArray()),
+        });
+    }
+
+    private void UpdateTakeoverCheckLocked()
+    {
+        if (_takeoverAircraft is not null && TakeoverLeversLocked().Count == 0) EndTakeoverCheckLocked("matched");
+    }
+
+    private void EndTakeoverCheckLocked(string cause)
+    {
+        if (_takeoverAircraft is null) return;
+        _takeoverAircraft = null;
+        _log.Event("takeover_levers", new JsonObject { ["on"] = false, ["cause"] = cause });
+    }
+
+    private IReadOnlyList<TakeoverLever> TakeoverLeversLocked()
+    {
+        if (_takeoverAircraft is null) return [];
+        var list = new List<TakeoverLever>();
+        foreach (var (name, aircraft) in _takeoverAircraft)
+        {
+            var tol = _leverTolerance.TryGetValue(name, out var t) ? t : LeverDetents.Reach;
+            var mine = _levers.Hardware(name);
+            if (mine is null || Math.Abs(mine.Value - aircraft) > tol)
+                list.Add(new TakeoverLever(name, aircraft, LeverDetents.NameOf(_detents, aircraft), mine,
+                    mine is { } m ? LeverDetents.NameOf(_detents, m) : null));
         }
         return list;
     }
@@ -658,6 +813,11 @@ public sealed class PhysicsSync : IAsyncDisposable
         var from = _mode;
         _mode = mode;
         _log.Event("follow_mode", new JsonObject { ["from"] = ModeWord(from), ["to"] = ModeWord(mode), ["cause"] = cause });
+        if (_leversOn && mode is not (FollowMode.Waiting or FollowMode.Following))
+        {
+            _leversOn = false;
+            _log.Event("follow_levers", new JsonObject { ["on"] = false, ["cause"] = cause });
+        }
     }
 
     // ---------------------------------------------------------------- CRO-18 timing log
@@ -707,6 +867,11 @@ public sealed class PhysicsSync : IAsyncDisposable
         }
         _log.Event("stream_stats", o);
         return o;
+    }
+
+    private sealed class StopwatchClock(Stopwatch sw) : IClock
+    {
+        public double NowMs => sw.Elapsed.TotalMilliseconds;
     }
 
     public async ValueTask DisposeAsync()

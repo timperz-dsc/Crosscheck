@@ -284,8 +284,10 @@ L: vars. A bridge may freeze and place its aircraft ONLY while it is the followe
 the three `FREEZE_LATITUDE_LONGITUDE_SET`, `FREEZE_ALTITUDE_SET`, `FREEZE_ATTITUDE_SET` events, and the
 follower's position, attitude, the mixed velocity set and control surfaces (section 9; since 0.6.1 the surfaces
 are not written while the PF is on the ground below 40 kt). Thrust levers are
-profile `stream` vars and go through the guard like every L: var: written only once the profile gives
-them a range the owner confirmed from a measurement (until then never). Pausing the sim, the sim rate,
+profile `stream` vars and go through the guard like every L: var: since 0.6.2 the follower writes them
+(never the PF), only within the measured range [0, 5] the owner confirmed (2026-11-05,
+`profiles/fenix-a320/throttle-results.md`); the `A_FC_THROTTLE_*_GATE` vars are Fenix-computed and never
+written. Pausing the sim, the sim rate,
 slew and every other event or sim var stay forbidden. A bridge that becomes PF releases its freezes at
 once. If the PF (or the server) is lost, the follower stays frozen where it is, with a red line
 "<seat> lost – take control?"; only the pilot's yes releases it (never automatically in the air).
@@ -517,9 +519,20 @@ a logged pilot command, and the correction loop guard stays.
 **The aircraft at a transfer (CRO-14).** On `control_changed` the new PF's bridge releases its freezes
 where its aircraft stands: it was placed every sim frame with the PF's velocities, so it rolls or flies
 on from there. The old PF's bridge starts following: its first placement is the new PF's stream, then it
-freezes. Before "I have control", the follower's UI shows "Match your thrust levers" when its own levers
-differ from the PF's stream by more than the profile's `tolerance` (the takeover push button cannot ask:
-the line stays until they match).
+freezes. Before "I have control", the follower's UI checks the thrust levers against the pilot's own
+hardware position (0.6.2): the last lever position the follower's bridge saw that was not its own write.
+On the follower the sim shows the PF's levers, so the sim value says nothing about the hardware.
+- Hardware never seen to move: "Move your thrust levers to <detent>" (detent names from the profile note).
+- Hardware known and more than the profile's `tolerance` (0.1) from the PF's lever: "Match your thrust
+  levers ...".
+Once the levers are within 0.1, control is taken without a second click, but only within 30 s of the click;
+after that the request expires. "Take control anyway" and Cancel stay available.
+
+The takeover push button stays instant. After a takeover by it (control granted within 10 s of the press),
+the new PF's bridge compares its pilot's hardware position with the old PF's last lever value. While a lever
+is unknown or more than 0.1 away, the new PF sees a red line: "Thrust levers: yours at <detent>, the aircraft
+was at <detent>. Move them before you touch them." (unknown: "Move your thrust levers to <detent>."). It
+clears when the hardware is within 0.1. Nothing is written for it. Logged as `takeover_levers {on, ...}`.
 
 **Takeover pushbutton.** The bridge treats a press of a sidestick takeover pushbutton (profile
 `roles.takeover`, either seat) by the PM as `control_request` (granted at once, as above).
@@ -588,8 +601,14 @@ a PM is dropped, with one `notice stream_dropped` every 5 s at most.
   `follow_surfaces {on, cause (engage|speed|airborne|ground_slow), pf_gs_kt, on_ground}`. When writing
   resumes the surfaces jump to the PF's values. After the first placement the three freezes go on; every 6th sim frame the bridge
   reads them back and sends a freeze again that reads off (after 1 s).
-- Thrust levers: the follower writes `lv_` values only for profile `stream` vars that have a confirmed
-  `range` (none yet: measured first, owner decision 2026-11-04).
+- Thrust levers (0.6.2): the follower writes the `lv_` values of profile `stream` vars that have a confirmed
+  `range` (the two `A_FC_THROTTLE_*_INPUT` vars, [0, 5]). It clamps to the range, writes only when its own lever
+  differs by more than 0.005, and writes on the ground too. The PF never writes them. Logged:
+  `follow_levers {on, cause}` when writing starts and stops.
+- The follower pilot's hardware: a lever change that is not the read-back of the bridge's own write (the
+  echo tracker) is the pilot's hardware. The bridge remembers it as the pilot's hardware position, writes the
+  PF's value back on the next frame, and shows one amber line, at most every 30 s: "Your thrust levers
+  moved. The pilot flying's position is used." Logged: `lever_hardware`.
 - PF lost (`peer_status lost|left`) or the follower's own server link lost: the follower stops placing
   and stays frozen where it is. Red line "<seat> lost – take control?"; only the pilot's yes releases
   (section 8). When frames come back, it follows again without releasing.
@@ -686,7 +705,6 @@ this file to a desync report.
 ## 14. Not in v6
 
 - Hosting, accounts, rate limits on join attempts (phase 1 runs locally).
-- Writing the thrust levers on the follower (after the lever range is measured).
 - A WASM module that places the follower from inside the sim (research section 6.9, item 7; only if
   method B is not smooth enough, owner decision needed).
 - Momentary pulses (`press: momentary`) in snapshots: they always return to 0.

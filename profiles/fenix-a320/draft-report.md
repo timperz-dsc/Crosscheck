@@ -67,8 +67,8 @@ From `overrides.yaml` (`open:`). Everything on the review list below is open too
 | supervised write test 2026-11-03 | 2 |
 | gate test 2 (CRO-22) section 2 A; owner plan CRO-33 | 2 |
 | owner decision 7 (EFB cosmetics) | 2 |
-| owner decision 2026-11-04 (CRO-13) | 2 |
-| owner decision (CRO-27) | 2 |
+| read-only throttle probe 2026-11-05 (throttle-results.md) | 2 |
+| read-only throttle probe 2026-11-05 | 2 |
 | gate test 2 cause A | 2 |
 | observe-report.md | 2 |
 | 0.6.1, flight 1 (2026-11-04) logs | 2 |

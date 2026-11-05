@@ -473,8 +473,68 @@ describe('physics stream (CRO-13)', () => {
     expect(screen.getByRole('heading', { name: 'Server lost – take control?' })).toBeInTheDocument();
   });
 
+  const LEFT = 'A_FC_THROTTLE_LEFT_INPUT';
+  const RIGHT = 'A_FC_THROTTLE_RIGHT_INPUT';
+  const neverMoved = [{ var: LEFT, pf: 3, mine: null, detent: 'CL' }, { var: RIGHT, pf: 3, mine: null, detent: 'CL' }];
+  const asPf = { is_pf: true, role: 'pf' as const, crew: [{ side: 'fo' as const, you: true, role: 'pf' as const, state: 'connected' as const }, { side: 'captain' as const, you: false, role: 'pm' as const, state: 'connected' as const }] };
+
+  it('asks to move never-moved thrust levers to the detent, without the collapsed line', async () => {
+    const b = bridge(inSession({ physics: physics({ levers: neverMoved }) }));
+    show(b);
+    expect(screen.queryByText(/Your thrust levers differ/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'I have control' }));
+    expect(b.actions.takeControl).not.toHaveBeenCalled();
+    expect(screen.getByText('Move your thrust levers to CL.')).toHaveClass('warning');
+    expect(screen.getByRole('button', { name: 'Take control anyway' })).toBeInTheDocument();
+  });
+
+  it('takes control by itself once the levers match within 30 s of the click', async () => {
+    const b = bridge(inSession({ physics: physics({ levers: neverMoved }) }));
+    const view = show(b);
+    await userEvent.click(screen.getByRole('button', { name: 'I have control' }));
+    view.rerender(<Screens bridge={{ ...b, status: inSession({ physics: physics({ levers: [] }) }) }} now={NOW + 12_000} />);
+    expect(b.actions.takeControl).toHaveBeenCalledTimes(1);
+    expect(b.actions.takeControl).toHaveBeenCalledWith(false);
+  });
+
+  it('a lever request expires after 30 s and nothing happens', async () => {
+    const b = bridge(inSession({ physics: physics({ levers: neverMoved }) }));
+    const view = show(b);
+    await userEvent.click(screen.getByRole('button', { name: 'I have control' }));
+    view.rerender(<Screens bridge={b} now={NOW + 31_000} />);
+    expect(screen.queryByText('Move your thrust levers to CL.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'I have control' })).toBeInTheDocument();
+    view.rerender(<Screens bridge={{ ...b, status: inSession({ physics: physics({ levers: [] }) }) }} now={NOW + 32_000} />);
+    expect(b.actions.takeControl).not.toHaveBeenCalled();
+  });
+
+  it('says once that the follower pilot\'s thrust levers moved (amber)', () => {
+    show(bridge(inSession({ physics: physics({ levers_moved: true }) })));
+    expect(screen.getByText("Your thrust levers moved. The pilot flying's position is used.")).toHaveClass('warning');
+  });
+
+  it('after a sidestick takeover: red line until the hardware levers are where the aircraft was', () => {
+    const takeover = [
+      { var: LEFT, aircraft: 2, aircraft_detent: 'IDLE', mine: 3, mine_detent: 'CL' },
+      { var: RIGHT, aircraft: 2, aircraft_detent: 'IDLE', mine: 3, mine_detent: 'CL' },
+    ];
+    const view = show(bridge(inSession({ ...asPf, physics: physics({ mode: 'streaming', frozen: false, takeover_levers: takeover }) })));
+    expect(screen.getByText('Thrust levers: yours at CL, the aircraft was at IDLE. Move them before you touch them.')).toHaveClass('differs');
+    view.rerender(<Screens bridge={bridge(inSession({ ...asPf, physics: physics({ mode: 'streaming', frozen: false, takeover_levers: [] }) }))} now={NOW} />);
+    expect(screen.queryByText(/Thrust levers: yours at/)).not.toBeInTheDocument();
+  });
+
+  it('after a sidestick takeover with hardware never seen: move the levers to the aircraft detent (red)', () => {
+    const takeover = [
+      { var: LEFT, aircraft: 2, aircraft_detent: 'IDLE', mine: null, mine_detent: null },
+      { var: RIGHT, aircraft: 2, aircraft_detent: 'IDLE', mine: null, mine_detent: null },
+    ];
+    show(bridge(inSession({ ...asPf, physics: physics({ mode: 'streaming', frozen: false, takeover_levers: takeover }) })));
+    expect(screen.getByText('Move your thrust levers to IDLE.')).toHaveClass('differs');
+  });
+
   it('asks to match the thrust levers before taking control', async () => {
-    const b = bridge(inSession({ physics: physics({ levers: [{ var: 'A_FC_THROTTLE_LEFT_INPUT', pf: 3.5, mine: 2 }] }) }));
+    const b = bridge(inSession({ physics: physics({ levers: [{ var: 'A_FC_THROTTLE_LEFT_INPUT', pf: 3.5, mine: 2, detent: '3.5' }] }) }));
     show(b);
     expect(screen.getByText("Your thrust levers differ from the captain's. Match them before you take control.")).toHaveClass('warning');
     await userEvent.click(screen.getByRole('button', { name: 'I have control' }));

@@ -10437,14 +10437,16 @@ vars:
     label: "Throttle left input"
     class: stream
     group: flightcontrols
-    tolerance: 0.2
-    note: "label generated; thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
+    range: [0, 5]
+    tolerance: 0.1
+    note: "label generated; thrust lever: the PF streams it, the follower writes it (CRO-13); detents MAX REV 0, REV IDLE 1, IDLE 2, CL 3, FLX/MCT 4, TOGA 5"
   - name: A_FC_THROTTLE_RIGHT_INPUT
     label: "Throttle right input"
     class: stream
     group: flightcontrols
-    tolerance: 0.2
-    note: "label generated; thrust lever: the PF streams it (CRO-13); never written until the owner confirms a measured range; tolerance is a first guess for \"Match your thrust levers\""
+    range: [0, 5]
+    tolerance: 0.1
+    note: "label generated; thrust lever: the PF streams it, the follower writes it (CRO-13); detents MAX REV 0, REV IDLE 1, IDLE 2, CL 3, FLX/MCT 4, TOGA 5"
   - name: B_FC_ELEVATOR_TRIM_MOTOR_POWER
     label: "Elevator trim motor power"
     class: observe
@@ -11701,12 +11703,12 @@ vars:
     label: "Throttle left gate"
     class: ignore
     group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
+    note: "label generated; Fenix-computed detent value: never written (owner decision 2026-11-05)"
   - name: A_FC_THROTTLE_RIGHT_GATE
     label: "Throttle right gate"
     class: ignore
     group: flightcontrols
-    note: "label generated; hardware axis: never written or corrected; synced by the stream later (CRO-13)"
+    note: "label generated; Fenix-computed detent value: never written (owner decision 2026-11-05)"
   - name: B_FC_SPEEDBRAKE
     label: "Speedbrake"
     class: ignore
