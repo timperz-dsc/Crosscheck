@@ -22,6 +22,7 @@ dotnet run --project tools/profile-probe -- <command>
 | `verified` | brief item 1 + 4: `[0,1]` guesses (tries 2 only where 2 is known); which lamp half reacts | yes |
 | `buttons` | item 2: momentary vs latching | yes |
 | `positions [--run gate3\|gate2] [--only ID]` | CRO-24: guided, the pilot moves each control through its positions (FCU knobs: push, then pull; unsure buttons: one click); every value is recorded and classified; see below | no |
+| `throttle` | flight-1 diagnosis item 7: guided, the pilot moves the thrust levers (hands off, each detent, one sweep per lever); range, detents and noise, with a proposed `range:` (not applied); see below | no |
 | `encoders` | item 5: +1/-1, which `N_` var follows | yes |
 | `breakers` | item 6: the 11 sampled `E_CB_`, 0 and 1 only | yes |
 | `auto` | verified, buttons, encoders, breakers back to back | yes |
@@ -87,6 +88,28 @@ timestamped raw copies in `.probe/`. The old write test of this name stays off.
     var, or that the hidden direction is still not visible (next: how the public YourControls Fenix
     profile detects it, mechanism only).
 - `gate2`: the run before gate test 2 (`positions-results.csv`).
+
+## throttle (flight-1 diagnosis item 7)
+
+Read only, like `positions`: no writes, no events, no pause or sim rate; only `ObserveReader` and
+`SimvarReader`. Same parked setup check (on the ground, parking brake set, ENG MASTERs off, no engine
+running, external power), before every step. Ctrl+C stops and saves what was recorded.
+
+```
+dotnet run -c Release --project tools/profile-probe -- throttle
+```
+
+Steps: hands off 10 s (noise); both levers held 2 s at MAX REV, REV IDLE, IDLE, CL, FLX/MCT, TOGA;
+one slow sweep MAX REV → TOGA per lever (Enter to start, Enter at TOGA). At each prompt: s = skip,
+r = redo the step before, q = stop and save.
+
+Vars: `A_FC_THROTTLE_LEFT/RIGHT_INPUT`, `A_FC_THROTTLE_LEFT/RIGHT_GATE`, `WT_VIRTUAL_THROTTLE_LEVER_POS_1/2`,
+`XMLVAR_Throttle1/2Position`, `S_FC_THROTTLE_LEFT/RIGHT_MAX_REVERSE` (all in the scan) and the SDK sim vars
+`GENERAL ENG THROTTLE LEVER POSITION:1/2` (reported as missing if the sim rejects the name).
+
+Output: `profiles/fenix-a320/throttle-results.md` (noise, per-detent stats, full range, left vs right,
+sweep plateaus matched to the held detents, and a proposed `range:` for `overrides.yaml`, marked "not
+applied") and `throttle-samples.csv` (every frame); timestamped copies in `.probe/`.
 
 ## writetest (gate test 3 prep, owner approved 2026-11-03)
 

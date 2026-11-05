@@ -38,6 +38,9 @@ static class SimVars
         ["INTERACTIVE POINT OPEN:7"] = "percent over 100",
         ["INTERACTIVE POINT OPEN:8"] = "percent over 100",
         ["INTERACTIVE POINT OPEN:9"] = "percent over 100",
+        // The `throttle` run (flight-1 diagnosis item 7): documented SDK sim vars, not in our L: var scan.
+        ["GENERAL ENG THROTTLE LEVER POSITION:1"] = "percent",
+        ["GENERAL ENG THROTTLE LEVER POSITION:2"] = "percent",
     };
 
     public const string Prefix = "A:";

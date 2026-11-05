@@ -24,7 +24,7 @@ static class Program
         {
             // First Ctrl+C: stop after restoring the current var. A second one kills the process;
             // the checkpoint then restores the var on the next start.
-            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine(args[0] is "observe" or "positions" ? "Ctrl+C: saving what was recorded, then stopping..." : "Ctrl+C: restoring the current var, then stopping..."); }
+            if (Interlocked.Increment(ref presses) == 1) { e.Cancel = true; cts.Cancel(); Console.WriteLine(args[0] is "observe" or "positions" or "throttle" ? "Ctrl+C: saving what was recorded, then stopping..." : "Ctrl+C: restoring the current var, then stopping..."); }
         };
 
         try
@@ -64,6 +64,8 @@ static class Program
                 // Read only: the pilot moves the controls (CRO-24). The old write test of this name stays off:
                 // writing positions that do not exist most likely crashed the Fenix WASM.
                 case "positions": return await PositionsCommand(paths, opts, cts.Token);
+                // Read only (flight-1 diagnosis item 7): the pilot moves the thrust levers, the tool records them.
+                case "throttle": return await ThrottleCommand(paths, cts.Token);
                 default:
                     if (Enum.TryParse<Phase>(args[0], true, out var phase) && AutoPhases.Contains(phase))
                         return await SimCommand(paths, phase, opts, cts.Token);
@@ -86,6 +88,8 @@ static class Program
           positions [--run gate3|gate3b|gate2] [--only ID]
                                     CRO-24: read only; you move each control through its positions, it records and classifies every value
                                     (gate3, the default: the gate test 3 prep run; gate2: the run before gate test 2)
+          throttle                  read only: you move the thrust levers (hands off, each detent, one sweep per lever);
+                                    writes profiles/fenix-a320/throttle-results.md with a proposed range (not applied)
           takeover --side capt|fo   supervised a: press 1 s, release
           hold --var NAME --value N [--seconds 60]   supervised b: hold a known ND value, then restore
           writetest [--only ID] [--bridge-profile]
@@ -336,6 +340,30 @@ static class Program
         };
         var lines = new ConsoleLines();
         return await new PositionsPhase(source, simvars, Console.Out, lines.ReadAsync, settings).Run(ct);
+    }
+
+    /// <summary>
+    /// Read only (flight-1 diagnosis item 7), like positions: only ObserveReader and SimvarReader, no SimConnectAdapter.
+    /// </summary>
+    static async Task<int> ThrottleCommand(RepoPaths paths, CancellationToken ct)
+    {
+        Directory.CreateDirectory(paths.WorkDir);
+        FileStream runLock;
+        try { runLock = new FileStream(Path.Combine(paths.WorkDir, "run.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+        catch (IOException) { Console.WriteLine("another profile-probe run is active; not starting"); return ExitError; }
+        using var heldLock = runLock;
+
+        await using var source = new ObserveReader(ThrottleVars.All);
+        await using var simvars = new SimvarReader();
+        var settings = new ThrottleSettings
+        {
+            ResultsPath = Path.Combine(paths.ProfileDir, "throttle-results.md"),
+            SamplesPath = Path.Combine(paths.ProfileDir, "throttle-samples.csv"),
+            RawDir = paths.WorkDir,
+            MissingSimVars = () => source.MissingSimVars,
+        };
+        var lines = new ConsoleLines();
+        return await new ThrottlePhase(source, simvars, Console.Out, lines.ReadAsync, settings).Run(ct);
     }
 
     /// <summary>

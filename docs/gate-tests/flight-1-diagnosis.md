@@ -216,31 +216,27 @@ at least 5 s before stopping again (no flicker around 40 kt). The PF frame alrea
 the surfaces start following at 40 kt, well before rotation. Check for a visible jump when writing resumes.
 **Sim test needed:** yes (control check on the ground, then a takeoff to see the hand-over at 40 kt).
 
-## 7. Thrust lever range: read-only probe plan (not run)
+## 7. Thrust lever range: read-only probe (built, not run yet)
 
 Goal: the real range and detent values of `A_FC_THROTTLE_LEFT_INPUT` / `A_FC_THROTTLE_RIGHT_INPUT`, so Sebastian can
 confirm a `range:` and the follower may write the levers (CLAUDE.md, follower placement rule).
 
-**Design.** A new step `throttle` in the existing read-only `positions` command of `tools/profile-probe`
-(same model as `positions`: the pilot moves the control, the tool only reads and records).
-- Reads, every sim frame: A_FC_THROTTLE_LEFT_INPUT, A_FC_THROTTLE_RIGHT_INPUT, A_FC_THROTTLE_LEFT_GATE,
-  A_FC_THROTTLE_RIGHT_GATE, WT_VIRTUAL_THROTTLE_LEVER_POS_1/2, XMLVAR_Throttle1/2Position, and the SimVars
-  GENERAL ENG THROTTLE LEVER POSITION:1/2. Writes nothing.
-- Preconditions it checks and refuses without: on ground, parking brake set, engines off (TURB ENG N1 < 1 %,
-  already read by `SimvarReader.cs`).
-- Prompts the pilot, one lever at a time, to move to and hold for 3 s: MAX REV, REV IDLE, IDLE, CL, FLX/MCT, TOGA,
-  then a slow sweep IDLE → TOGA → MAX REV.
-- Records per detent the plateau value (median of the hold) and the overall min/max; writes
-  `profiles/fenix-a320/throttle-range-results.md` and a proposed `range:` for `overrides.yaml` (marked
-  "to be confirmed by the owner").
+**Tool.** `profile-probe throttle` (own command; `ThrottleVars.cs`, `ThrottlePhase.cs`, `ThrottleAnalysis.cs`).
+Read only: only `ObserveReader` and `SimvarReader`, checked by `ObserveTests`. Writes nothing, no events.
+- Reads every sim frame: A_FC_THROTTLE_LEFT/RIGHT_INPUT, A_FC_THROTTLE_LEFT/RIGHT_GATE, WT_VIRTUAL_THROTTLE_LEVER_POS_1/2,
+  XMLVAR_Throttle1/2Position, S_FC_THROTTLE_LEFT/RIGHT_MAX_REVERSE (all in the scan) and the SDK sim vars
+  GENERAL ENG THROTTLE LEVER POSITION:1/2 (not in our scan; reported as missing if rejected).
+- Refuses without the parked setup (on ground, parking brake set, ENG MASTERs off, no engine running, external power),
+  checked again before every step.
+- Steps: hands off 10 s; both levers held 2 s at MAX REV, REV IDLE, IDLE, CL, FLX/MCT, TOGA; one slow sweep
+  MAX REV → TOGA per lever.
+- Writes `profiles/fenix-a320/throttle-results.md` (noise, per-detent min/max/mean/median, full range, left vs right,
+  sweep plateaus matched to the held detents, a proposed `range:` marked "not applied") and `throttle-samples.csv`.
 
-**Commands (to run later, after Sebastian's OK; nothing installed, no WASM needed):**
+**Command (after Sebastian's OK; nothing installed, no WASM needed):**
 
 ```
-cd tools/profile-probe
-dotnet run -c Release -- plan
-dotnet run -c Release -- positions --only throttle
-dotnet run -c Release -- propose
+dotnet run -c Release --project tools/profile-probe -- throttle
 ```
 
 **Sim test needed:** yes – this is the sim test. Read-only.

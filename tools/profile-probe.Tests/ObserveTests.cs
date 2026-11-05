@@ -52,7 +52,8 @@ sealed class FakeObserveSource : IObserveSource
 public class ObserveTests
 {
     static readonly string[] ObserveFiles =
-        ["ObserveReader.cs", "ObservePhase.cs", "ObserveVars.cs", "ObserveAnalysis.cs", "PositionsPhase.cs", "PositionsVars.cs", "PositionsAnalysis.cs", "SimVars.cs"];
+        ["ObserveReader.cs", "ObservePhase.cs", "ObserveVars.cs", "ObserveAnalysis.cs", "PositionsPhase.cs", "PositionsVars.cs", "PositionsAnalysis.cs", "SimVars.cs",
+         "ThrottleVars.cs", "ThrottlePhase.cs", "ThrottleAnalysis.cs"];
 
     [Fact]
     public void Observe_sources_contain_no_write_calls()
@@ -79,9 +80,11 @@ public class ObserveTests
             Assert.Contains(m.Name, allowed);
         var ctor = typeof(ObservePhase).GetConstructors().Single();
         Assert.All(ctor.GetParameters(), p => Assert.False(typeof(ISimAdapter).IsAssignableFrom(p.ParameterType), p.Name));
+        var throttleCtor = typeof(ThrottlePhase).GetConstructors().Single();
+        Assert.All(throttleCtor.GetParameters(), p => Assert.False(typeof(ISimAdapter).IsAssignableFrom(p.ParameterType), p.Name));
         var positionsCtor = typeof(PositionsPhase).GetConstructors().Single();
         Assert.All(positionsCtor.GetParameters(), p => Assert.False(typeof(ISimAdapter).IsAssignableFrom(p.ParameterType), p.Name));
-        foreach (var t in new[] { typeof(ObservePhase), typeof(PositionsPhase), typeof(ObserveReader), typeof(ObserveRecorder) })
+        foreach (var t in new[] { typeof(ObservePhase), typeof(PositionsPhase), typeof(ThrottlePhase), typeof(ThrottleSampler), typeof(ObserveReader), typeof(ObserveRecorder) })
             Assert.All(t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public),
                 f => Assert.False(typeof(ISimAdapter).IsAssignableFrom(f.FieldType), $"{t.Name}.{f.Name}"));
     }
